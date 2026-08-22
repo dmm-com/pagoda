@@ -2,6 +2,7 @@ import logging
 from typing import Any, List, cast
 
 from django.db.models import F, QuerySet
+from django.db.models.functions import Lower
 from django.http import Http404, HttpRequest
 from django.http.response import HttpResponse, JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -31,6 +32,7 @@ from entity.api_v2.serializers import (
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import EntryBaseSerializer, EntryCreateSerializer
 from entry.models import Entry
+from job.api_v2.serializers import ImportPreviewJobSerializer
 from job.models import Job
 from user.models import History, User
 
@@ -151,6 +153,14 @@ class EntityPermission(BasePermission):
         return True
 
 
+class NameCaseInsensitiveSearchFilter(filters.SearchFilter):
+    def get_search_fields(self, view: APIView, request: Request) -> list[str]:
+        return ["name_lower"]
+
+    def get_search_terms(self, request: Request) -> list[str]:
+        return [term.lower() for term in super().get_search_terms(request)]
+
+
 @extend_schema(
     parameters=[
         OpenApiParameter("is_toplevel", OpenApiTypes.BOOL, OpenApiParameter.QUERY),
@@ -159,7 +169,7 @@ class EntityPermission(BasePermission):
 class EntityAPI(viewsets.ModelViewSet[Entity]):
     pagination_class = LimitOffsetPagination
     permission_classes = [IsAuthenticated & EntityPermission]
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, NameCaseInsensitiveSearchFilter]
     search_fields = ["name"]
     ordering = ["name"]
 
@@ -183,7 +193,11 @@ class EntityAPI(viewsets.ModelViewSet[Entity]):
             else:
                 exclude_condition["status"] = F("status").bitor(Entity.STATUS_TOP_LEVEL)
 
-        return Entity.objects.filter(**filter_condition).exclude(**exclude_condition)
+        return (
+            Entity.objects.filter(**filter_condition)
+            .exclude(**exclude_condition)
+            .annotate(name_lower=Lower("name"))
+        )
 
     @extend_schema(request=EntityCreateSerializer, responses={202: None})
     def create(self, request: Request, *args: object, **kwargs: object) -> Response:
@@ -235,17 +249,18 @@ class EntityAPI(viewsets.ModelViewSet[Entity]):
 
 class AliasSearchFilter(filters.SearchFilter):
     def get_search_fields(self, view: APIView, request: Request) -> list[str]:
-        # SearchFilter.get_search_fields is typed as returning "list of field
-        # names or None"; we always append to a real list of strings.
-        original_fields: list[str] = list(super().get_search_fields(view, request) or [])
+        original_fields: list[str] = ["name_lower"]
 
         # update search_fields when "with_alias" parameter was specified
         # to consier aliases that are related with target item
         # filtered by specified "search" parameter
         if request.query_params.get("with_alias"):
-            return original_fields + ["aliases__name"]
+            return original_fields + ["aliases_name_lower"]
         else:
             return original_fields
+
+    def get_search_terms(self, request: Request) -> list[str]:
+        return [term.lower() for term in super().get_search_terms(request)]
 
 
 @extend_schema(
@@ -281,9 +296,14 @@ class EntityEntryAPI(PluginOverrideMixin, viewsets.ModelViewSet[Entry]):
         entity = Entity.objects.filter(id=entity_id, is_active=True).first()
         if not entity:
             raise Http404
-        return (
+        qs = (
             self.queryset.filter(schema=entity).select_related("schema").prefetch_related("aliases")
         )
+        if self.request.query_params.get("with_alias"):
+            qs = qs.annotate(name_lower=Lower("name"), aliases_name_lower=Lower("aliases__name"))
+        else:
+            qs = qs.annotate(name_lower=Lower("name"))
+        return qs
 
     @extend_schema(request=EntryCreateSerializer, responses={202: None})
     def create(self, request: Request, entity_id: int) -> Response:
@@ -434,6 +454,41 @@ class EntityImportAPI(generics.GenericAPIView[Entity]):
         serializer.save()
 
         return Response()
+
+
+class EntityImportPreviewAPI(generics.GenericAPIView[Entity]):
+    """Start a job that reports what an import file would change.
+
+    Previewing walks the same rows the import walks, so it costs the same: it is
+    handed to a worker and this endpoint returns the job to poll, rather than
+    holding a request open for as long as the import would take. That also means
+    a preview has no row limit -- a file too big to preview in a request is
+    exactly the file whose preview is worth waiting for.
+
+    The preview stays optional: clients may post straight to ``EntityImportAPI``.
+    """
+
+    parser_classes = [YAMLParser]
+    serializer_class = ImportPreviewJobSerializer  # type: ignore[assignment]
+
+    @extend_schema(
+        request=EntityImportExportRootSerializer,
+        responses={202: ImportPreviewJobSerializer},
+    )
+    def post(self, request: Request) -> Response:
+        user = cast(User, request.user)
+        if user.is_readonly:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        serializer = EntityImportExportRootSerializer(
+            data=request.data, context={"request": self.request}
+        )
+        serializer.is_valid(raise_exception=True)
+
+        job = Job.new_import_entity_preview(user, request.data)
+        job.run()
+
+        return Response({"job_id": job.id}, status=status.HTTP_202_ACCEPTED)
 
 
 class EntityExportAPI(generics.RetrieveAPIView[Entity]):

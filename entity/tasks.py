@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import Any, Optional, Self
 
 from celery import Task
@@ -613,3 +614,36 @@ def delete_entity_v2(self: Task[Any, Any], job: Job) -> JobStatus:
         custom_view.call_custom("after_delete_entity_v2", None, job.user, entity)
 
     return JobStatus.DONE
+
+
+@register_job_task(JobOperation.IMPORT_ENTITY_PREVIEW)
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def import_entities_preview_v2(self: Task[Any, Any], job: Job) -> JobStatus:
+    """Build the preview of a model import file and store it on the job.
+
+    Previewing costs as much as the import it previews, so it runs here rather
+    than in the request that asked for it. It writes nothing.
+    """
+    from entity.api_v2.serializers import EntityImportExportRootSerializer
+
+    serializer = EntityImportExportRootSerializer(
+        data=json.loads(job.params), context={"request": _JobRequest(job.user)}
+    )
+    if not serializer.is_valid():
+        return JobStatus.ERROR
+
+    payload = serializer.build_preview(job=job)
+    if payload is None:
+        return JobStatus.CANCELED
+
+    job.set_cache(payload)
+
+    return JobStatus.DONE
+
+
+class _JobRequest:
+    """The minimum a serializer needs from a request when it runs on a worker."""
+
+    def __init__(self, user: User) -> None:
+        self.user = user

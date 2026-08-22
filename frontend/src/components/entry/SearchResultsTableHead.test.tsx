@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import {
@@ -15,43 +14,43 @@ import { SearchResultsTableHead } from "./SearchResultsTableHead";
 import { TestWrapper } from "TestWrapper";
 
 // Mock react-router hooks
-jest.mock("react-router", () => ({
-  ...jest.requireActual("react-router"),
-  useLocation: jest.fn(),
-  useNavigate: jest.fn(),
+vi.mock("react-router", async () => ({
+  ...((await vi.importActual("react-router")) as object),
+  useLocation: vi.fn(),
+  useNavigate: vi.fn(),
 }));
 
 // Mock getIsFiltered function
-jest.mock("pages/AdvancedSearchResultsPage", () => ({
-  getIsFiltered: jest.fn(() => false),
+vi.mock("pages/AdvancedSearchResultsPage", () => ({
+  getIsFiltered: vi.fn(() => false),
 }));
 
 // Mock the child components
-jest.mock("./SearchResultControlMenu", () => ({
+vi.mock("./SearchResultControlMenu", () => ({
   SearchResultControlMenu: () => (
     <div data-testid="search-result-control-menu" />
   ),
 }));
 
-jest.mock("./SearchResultControlMenuForEntry", () => ({
+vi.mock("./SearchResultControlMenuForEntry", () => ({
   SearchResultControlMenuForEntry: () => (
     <div data-testid="search-result-control-menu-for-entry" />
   ),
 }));
 
-jest.mock("./SearchResultControlMenuForReferral", () => ({
+vi.mock("./SearchResultControlMenuForReferral", () => ({
   SearchResultControlMenuForReferral: () => (
     <div data-testid="search-result-control-menu-for-referral" />
   ),
 }));
 
-jest.mock("./AdvancedSearchJoinModal", () => ({
+vi.mock("./AdvancedSearchJoinModal", () => ({
   AdvancedSearchJoinModal: () => (
     <div data-testid="advanced-search-join-modal" />
   ),
 }));
 
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 const mockLocation = {
   pathname: "/test",
   search: "?entity=1&entity=2",
@@ -69,7 +68,7 @@ describe("SearchResultsTableHead", () => {
     entityIds: stableEntityIds,
     searchAllEntities: false,
     joinAttrs: stableJoinAttrs,
-    handleChangeAllBulkOperationEntryIds: jest.fn(),
+    handleChangeAllBulkOperationEntryIds: vi.fn(),
     entityAttrs: [],
     totalCount: 0,
   };
@@ -92,9 +91,9 @@ describe("SearchResultsTableHead", () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
-    (useLocation as jest.Mock).mockReturnValue(mockLocation);
+    vi.clearAllMocks();
+    (useNavigate as vi.Mock).mockReturnValue(mockNavigate);
+    (useLocation as vi.Mock).mockReturnValue(mockLocation);
   });
 
   test("should render without crashing", () => {

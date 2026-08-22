@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 import { render, screen, fireEvent } from "@testing-library/react";
 import { useForm } from "react-hook-form";
@@ -12,7 +11,7 @@ import { TestWrapper } from "TestWrapper";
 const TestModal = ({
   initialNote = "",
   idx = 0,
-  onClose = jest.fn(),
+  onClose = vi.fn(),
   onForm,
 }: {
   initialNote?: string;
@@ -63,7 +62,7 @@ describe("AttributeNoteModal", () => {
   });
 
   test("should call handleCloseModal when clicking close button", () => {
-    const onClose = jest.fn();
+    const onClose = vi.fn();
     render(<TestModal onClose={onClose} />, { wrapper: TestWrapper });
     const input = screen.getByPlaceholderText("説明");
     fireEvent.change(input, { target: { value: "テストメモ" } });

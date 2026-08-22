@@ -28,6 +28,12 @@ export const EntityHistoryListParam = {
   MAX_ROW_COUNT: 30,
 };
 
+export const ImportPreviewParam = {
+  // A preview is scanned, not paged through, so it fetches a large first page.
+  MAX_ROW_COUNT: 200,
+  POLL_INTERVAL_MS: 1000,
+};
+
 export const AdvancedSerarchResultListParam = {
   MAX_ROW_COUNT: 100,
 };

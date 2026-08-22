@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { PaginatedEntityHistoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
@@ -91,7 +90,7 @@ describe("EntityHistoryList", () => {
   };
 
   test("should render entity histories", () => {
-    const changePage = jest.fn();
+    const changePage = vi.fn();
 
     render(
       <EntityHistoryList

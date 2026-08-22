@@ -156,5 +156,5 @@ runs:
       if: ${{ inputs.prepare-mysql == 'true' }}
       shell: bash
       run: |
-        mysql -protocol=tcp -uroot -h127.0.0.1 -ppassword -e "SET GLOBAL character_set_server=utf8; SET GLOBAL collation_server=utf8_general_ci; SET GLOBAL default_storage_engine=InnoDB;"
+        mysql -protocol=tcp -uroot -h127.0.0.1 -ppassword -e "SET GLOBAL character_set_server=utf8mb4; SET GLOBAL collation_server=utf8mb4_0900_as_cs; SET GLOBAL default_storage_engine=InnoDB;"
         mysql -protocol=tcp -uroot -h127.0.0.1 -ppassword -e "GRANT ALL ON *.* to airone@'%'"

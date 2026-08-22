@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { EntryRetrieve } from "@dmm-com/airone-apiclient-typescript-fetch";
@@ -26,7 +25,7 @@ describe("CopyForm", () => {
   };
 
   test("should set copied entries", function () {
-    const setEntries = jest.fn();
+    const setEntries = vi.fn();
 
     render(
       <CopyForm

@@ -132,9 +132,9 @@ npm run test:update
 ```
 
 **Writing tests:**
-- Jest + `@testing-library/react`
+- Vitest + `@testing-library/react`
 - Wrap with `TestWrapper` for providers (SWRConfig, ThemeProvider, SnackbarProvider, MemoryRouter)
-- API mocking: `jest.spyOn(aironeApiClient, "methodName").mockResolvedValue(...)`
+- API mocking: `vi.spyOn(aironeApiClient, "methodName").mockResolvedValue(...)`
 - Test custom hooks with `renderHook()`
 - Wrap async operations with `act()`
 - Timezone: fixed at `TZ=UTC` (configured in package.json)

@@ -9,8 +9,13 @@ import environ
 from configurations import Configuration
 from ddtrace import config, patch_all, tracer  # type: ignore[attr-defined]
 
+from airone.lib import devmode
+
 env = environ.Env()
 env.read_env(os.path.join(environ.Path(__file__) - 2, ".env"))
+
+# Lite mode: no MySQL, no Elasticsearch, no RabbitMQ. See airone/lib/devmode.py.
+LITE = devmode.is_lite()
 
 
 class Common(Configuration):  # type: ignore[misc]
@@ -24,7 +29,20 @@ class Common(Configuration):  # type: ignore[misc]
     SECRET_KEY = env.str("AIRONE_SECRET_KEY", "(ch@ngeMe)")
 
     # Celery settings
-    CELERY_BROKER_URL = env.str("AIRONE_RABBITMQ_URL", "amqp://guest:guest@localhost//")
+    #
+    # Lite mode replaces RabbitMQ with kombu's in-process "memory" transport.
+    # That reproduces the environment the test-suite is written against -- a
+    # broker that accepts tasks and no worker that consumes them -- without a
+    # container, so `.delay()` neither blocks on a connection nor runs inline.
+    #
+    # Set AIRONE_CELERY_EAGER=1 to execute tasks inline instead. That is what
+    # the lite dev *server* wants (jobs actually complete), but it changes the
+    # semantics tests rely on, so it is opt-in rather than implied by LITE.
+    CELERY_BROKER_URL = env.str(
+        "AIRONE_RABBITMQ_URL", "memory://" if LITE else "amqp://guest:guest@localhost//"
+    )
+    CELERY_TASK_ALWAYS_EAGER = env.bool("AIRONE_CELERY_EAGER", False)
+    CELERY_TASK_EAGER_PROPAGATES = env.bool("AIRONE_CELERY_EAGER_PROPAGATES", False)
 
     #: Only add pickle to this list if your broker is secured
     #: from unwanted access (see userguide/security.html)
@@ -138,7 +156,9 @@ class Common(Configuration):  # type: ignore[misc]
     USE_X_FORWARDED_PORT = True
 
     # https://docs.djangoproject.com/en/3.2/ref/settings/#session-cookie-secure
-    SESSION_COOKIE_SECURE = env.bool("AIRONE_SSL_ENABLE", True)
+    # The lite dev server speaks plain HTTP on localhost; leaving this on would
+    # make the browser drop the session cookie and every login silently fail.
+    SESSION_COOKIE_SECURE = env.bool("AIRONE_SSL_ENABLE", not LITE)
 
     # https://docs.djangoproject.com/en/3.2/ref/middleware/#http-strict-transport-security
     SECURE_HSTS_PRELOAD = True
@@ -147,12 +167,40 @@ class Common(Configuration):  # type: ignore[misc]
     # Database
     # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
+    # Lite mode defaults to a per-checkout SQLite file so that concurrent
+    # worktrees never share (or corrupt) each other's database.
     DATABASES = {
         "default": env.db(
             "AIRONE_MYSQL_MASTER_URL",
-            "mysql://airone:password@127.0.0.1:3306/airone?charset=utf8mb4",
+            devmode.sqlite_url()
+            if LITE
+            else "mysql://airone:password@127.0.0.1:3306/airone?charset=utf8mb4",
         )
     }
+
+    if DATABASES["default"].get("ENGINE") == "django.db.backends.sqlite3":
+        if LITE:
+            # Only lite mode keeps a database file; tools/test_local.sh --sqlite
+            # runs in memory and should not leave a state directory behind.
+            devmode.ensure_state_dir()
+        # Swap in the MySQL-flavoured SQLite backend (integer ranges and
+        # case-insensitive text) so any SQLite run -- lite mode or
+        # tools/test_local.sh --sqlite -- agrees with MySQL on validation and
+        # name lookups. See airone/db/backends/sqlite_pagoda/base.py.
+        DATABASES["default"]["ENGINE"] = env.str(
+            "AIRONE_SQLITE_ENGINE", "airone.db.backends.sqlite_pagoda"
+        )
+        # WAL keeps readers from blocking on the writer, and a generous busy
+        # timeout absorbs the lock contention that eager Celery tasks would
+        # otherwise hit while a request is mid-transaction.
+        DATABASES["default"].setdefault("OPTIONS", {})
+        DATABASES["default"]["OPTIONS"].update(
+            {
+                "init_command": "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;",
+                "transaction_mode": "IMMEDIATE",
+                "timeout": 20,
+            }
+        )
 
     DATABASE_ROUTERS = ["multidb.PinningReplicaRouter"]
     REPLICA_DATABASES = ["default"]
@@ -204,7 +252,10 @@ class Common(Configuration):  # type: ignore[misc]
     if os.path.exists(_custom_static):
         STATICFILES_DIRS.append(_custom_static)
     STATIC_ROOT = os.path.join(BASE_DIR, "static_root")
-    MEDIA_ROOT = env.str("AIRONE_FILE_STORE_PATH", "/tmp/airone_app")
+    MEDIA_ROOT = env.str(
+        "AIRONE_FILE_STORE_PATH",
+        os.path.join(devmode.state_dir(), "media") if LITE else "/tmp/airone_app",
+    )
 
     STORAGES = {
         "default": {
@@ -332,13 +383,26 @@ class Common(Configuration):  # type: ignore[misc]
             logging.getLogger(__name__).warning("git command not found.")
 
     ES_CONFIG = env.search_url(
-        "AIRONE_ELASTICSEARCH_URL", "elasticsearch://airone:password@localhost:9200/airone"
+        "AIRONE_ELASTICSEARCH_URL",
+        "elasticsearch://airone:password@localhost:9200/airone-%s" % devmode.namespace()
+        if LITE
+        else "elasticsearch://airone:password@localhost:9200/airone",
     )
     ES_CONFIG.update(
         {
             "MAXIMUM_RESULTS_NUM": 500000,
             "MAXIMUM_NESTED_OBJECT_NUM": 999999,
             "TIMEOUT": None,
+            # "inmemory" runs the index inside this process (see
+            # airone/lib/es_inmemory.py); "http" talks to a real cluster.
+            # Lite mode defaults to in-memory but can be pointed at a shared
+            # container with AIRONE_ES_BACKEND=http, in which case the
+            # per-checkout index name above keeps worktrees from colliding.
+            "BACKEND": env.str("AIRONE_ES_BACKEND", "inmemory" if LITE else "http"),
+            # Where the in-memory backend mirrors its documents so a dev server
+            # restart does not silently empty the search index. Tests clear
+            # this (see AironeTestCase) to stay isolated.
+            "PERSIST_PATH": os.path.join(devmode.state_dir(), "es") if LITE else None,
         }
     )
 

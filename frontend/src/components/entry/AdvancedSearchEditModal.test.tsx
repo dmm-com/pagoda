@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { render, screen } from "@testing-library/react";
@@ -8,12 +7,12 @@ import { AdvancedSearchEditModal } from "./AdvancedSearchEditModal";
 
 import { TestWrapper } from "TestWrapper";
 
-jest.mock("hooks/usePagodaSWR", () => ({
+vi.mock("hooks/usePagodaSWR", () => ({
   usePagodaSWR: () => ({ data: ["attrA", "attrB", "attrC"] }),
 }));
-jest.mock("react-router", () => ({
-  ...jest.requireActual("react-router"),
-  useNavigate: () => jest.fn(),
+vi.mock("react-router", async () => ({
+  ...((await vi.importActual("react-router")) as object),
+  useNavigate: () => vi.fn(),
 }));
 
 describe("AdvancedSearchEditModal", () => {

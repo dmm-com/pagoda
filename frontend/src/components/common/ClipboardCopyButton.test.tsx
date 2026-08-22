@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { fireEvent, render, screen } from "@testing-library/react";
@@ -17,7 +16,7 @@ describe("ClipboardCopyButton", () => {
 
   test("copies text to clipboard when clicked", async () => {
     // Mock clipboard API
-    const writeTextMock = jest.fn();
+    const writeTextMock = vi.fn();
     Object.defineProperty(navigator, "clipboard", {
       value: { writeText: writeTextMock },
       configurable: true,

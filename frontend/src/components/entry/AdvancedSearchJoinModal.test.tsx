@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 import {
   AdvancedSearchJoinAttrInfo,
@@ -41,15 +40,14 @@ const joinAttrs: AdvancedSearchJoinAttrInfo[] = [
   },
 ];
 
-jest.mock("hooks/usePagodaSWR", () => ({
+vi.mock("hooks/usePagodaSWR", () => ({
   usePagodaSWR: () => ({ data: ["attrA", "attrB", "attrC"] }),
 }));
-jest.mock("react-router", () => ({
-  ...jest.requireActual("react-router"),
-  useNavigate: () => jest.fn(),
+vi.mock("react-router", async () => ({
+  ...((await vi.importActual("react-router")) as object),
+  useNavigate: () => vi.fn(),
 }));
-jest
-  .spyOn(aironeApiClient, "getEntityAttrs")
+vi.spyOn(aironeApiClient, "getEntityAttrs")
   //.mockResolvedValue(["attrA", "attrB", "attrC"]);
   .mockResolvedValue([
     { name: "attrA", id: 1, type: EntryAttributeTypeTypeEnum.STRING },
@@ -65,7 +63,7 @@ describe("AdvancedSearchJoinModal", () => {
         searchAllEntities={false}
         targetAttrname="ref_item"
         joinAttrs={joinAttrs}
-        handleClose={jest.fn()}
+        handleClose={vi.fn()}
       />,
       { wrapper: TestWrapper },
     );
@@ -75,7 +73,7 @@ describe("AdvancedSearchJoinModal", () => {
   });
 
   test("should call handleClose when clicking cancel button", () => {
-    const onClose = jest.fn();
+    const onClose = vi.fn();
     render(
       <AdvancedSearchJoinModal
         targetEntityIds={[1]}
@@ -97,7 +95,7 @@ describe("AdvancedSearchJoinModal", () => {
         searchAllEntities={false}
         targetAttrname=""
         joinAttrs={joinAttrs}
-        handleClose={jest.fn()}
+        handleClose={vi.fn()}
       />,
       { wrapper: TestWrapper },
     );

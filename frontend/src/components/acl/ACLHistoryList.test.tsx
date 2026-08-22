@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { ACLHistory } from "@dmm-com/airone-apiclient-typescript-fetch";

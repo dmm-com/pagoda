@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { renderHook } from "@testing-library/react";
@@ -31,7 +30,7 @@ describe("usePrompt", () => {
   const originalConfirm = window.confirm;
 
   beforeEach(() => {
-    window.confirm = jest.fn();
+    window.confirm = vi.fn();
   });
 
   afterEach(() => {

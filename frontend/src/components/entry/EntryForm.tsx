@@ -18,7 +18,7 @@ import {
 import { styled } from "@mui/material/styles";
 import { FC } from "react";
 import { Control, Controller, useFormState } from "react-hook-form";
-import { UseFormSetValue } from "react-hook-form/dist/types/form";
+import { UseFormSetValue } from "react-hook-form";
 
 import { AttributeValueField } from "components/entry/entryForm/AttributeValueField";
 import { Schema } from "components/entry/entryForm/EntryFormSchema";
@@ -47,7 +47,7 @@ const HeaderTableRow = styled(TableRow)(({}) => ({
 
 const HeaderTableCell = styled(TableCell)(({}) => ({
   color: "#FFFFFF",
-  width: "384px",
+  width: "150px",
 }));
 
 const TableBox = styled(Box)(({}) => ({

@@ -11,7 +11,7 @@ import {
 import { styled } from "@mui/material/styles";
 import { FC } from "react";
 import { Control, Controller } from "react-hook-form";
-import { UseFormSetValue } from "react-hook-form/dist/types/form";
+import { UseFormSetValue } from "react-hook-form";
 
 import { Schema } from "./categoryForm/CategoryFormSchema";
 

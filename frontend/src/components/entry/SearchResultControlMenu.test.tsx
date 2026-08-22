@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { AdvancedSearchResultAttrInfoFilterKeyEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
@@ -17,17 +16,17 @@ describe("SearchResultControlMenu", () => {
       keyword: "",
     },
     anchorElem: null,
-    handleUpdateAttrFilter: jest.fn(),
-    handleSelectFilterConditions: jest.fn(),
-    handleClose: jest.fn(),
-    setOpenEditModal: jest.fn(),
+    handleUpdateAttrFilter: vi.fn(),
+    handleSelectFilterConditions: vi.fn(),
+    handleClose: vi.fn(),
+    setOpenEditModal: vi.fn(),
     isDisabledEditModal: false,
     entityAttrs: [],
     totalCount: 0,
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test("should render menu when anchorElem is provided", () => {
