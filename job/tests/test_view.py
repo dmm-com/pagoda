@@ -1,4 +1,3 @@
-
 from requests_html import HTML
 
 from airone.lib.test import AironeViewTest

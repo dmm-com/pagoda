@@ -86,6 +86,7 @@ class JobAPI(APIView):
 
         return Response("Success to cancel job")
 
+
 class SearchJobResponse(BaseModel):
     class Job(BaseModel):
         id: int
