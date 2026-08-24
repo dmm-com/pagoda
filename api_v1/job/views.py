@@ -87,33 +87,6 @@ class JobAPI(APIView):
         return Response("Success to cancel job")
 
 
-class SpecificJobAPI(APIView):
-    def post(self, request: Request, job_id: int, format: str | None = None) -> Response:
-        job = Job.objects.filter(id=job_id).first()
-        if not job:
-            return Response(
-                "Failed to find Job(id=%s)" % job_id, status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # check job status before starting processing
-        if job.status == JobStatus.DONE:
-            return Response("Target job has already been done")
-        elif job.status == JobStatus.PROCESSING:
-            return Response("Target job is under processing", status=status.HTTP_400_BAD_REQUEST)
-
-        # check job target status
-        if not job.target or not job.target.is_active:
-            return Response(
-                "Job target has already been deleted",
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Run job on an Application node
-        job.run(will_delay=False)
-
-        return Response("Success to run command")
-
-
 class SearchJobResponse(BaseModel):
     class Job(BaseModel):
         id: int

@@ -150,12 +150,7 @@
             {% endif %}
             </td>
 
-            <!-- set re-run button if it's under executing -->
             <td class='operations'>
-              {% if job.status != JOB.STATUS.DONE and job.status != JOB.STATUS.PROCESSING and job.status != JOB.STATUS.CANCELED %}
-              <p><button type='button' class='btn btn-info btn-sm rerun-job' value='{{ job.id }}'>Re-run</button></p>
-              {% endif %}
-
               {% if job.status != JOB.STATUS.DONE and job.status != JOB.STATUS.CANCELED %}
               <p><button type='button' class='btn btn-danger btn-sm cancel-job' value='{{ job.id }}' {% if not job.can_cancel %}disabled=True{% endif %}>Cancel</button></p>
               {% endif %}
@@ -173,20 +168,6 @@
 {% block script %}
 <script>
 $(document).ready(function() {
-
-  $('.rerun-job').on('click', function(e) {
-    $(this).prop("disabled", true);
-
-    $.ajax({
-      type: 'POST',
-      url: `/api/v1/job/run/${$(this).val()}`,
-    }).done(function(data) {
-      location.reload();
-    }).fail(function(data) {
-      MessageBox.error(data);
-    });
-  });
-
   $('.cancel-job').on('click', function(e) {
     if(window.confirm('ジョブをキャンセルしますか？')) {
       $.ajax({
