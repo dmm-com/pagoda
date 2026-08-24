@@ -6,7 +6,7 @@ from typing import Any, cast
 from django.db.models import Q, QuerySet
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
-from rest_framework import generics, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -309,36 +309,3 @@ class JobListAPI(viewsets.ModelViewSet[Job]):
         context[JobSerializers.PREFETCHED_ENTRIES_KEY] = {e["id"]: e for e in entries}
 
         return context
-
-
-@extend_schema(request=None, responses={200: OpenApiTypes.STR})
-class JobRerunAPI(generics.UpdateAPIView[Job]):
-    serializer_class = None
-
-    def get_queryset(self) -> QuerySet[Job]:
-        return Job.objects.filter(user=cast(User, self.request.user))
-
-    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        return Response(
-            "Unsupported. use PATCH alternatively", status=status.HTTP_405_METHOD_NOT_ALLOWED
-        )
-
-    def patch(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        job: Job = self.get_object()
-
-        # check job status before starting processing
-        if job.status == JobStatus.DONE:
-            return Response("Target job has already been done")
-        elif job.status == JobStatus.PROCESSING:
-            return Response("Target job is under processing", status=status.HTTP_400_BAD_REQUEST)
-
-        # check job target status
-        if not job.target or not job.target.is_active:
-            return Response(
-                "Job target has already been deleted", status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Run job on an Application node
-        job.run(will_delay=False)
-
-        return Response("Success to run command")
