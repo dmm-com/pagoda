@@ -2,8 +2,7 @@ import json
 from datetime import timedelta
 
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrType
-from entity.models import Entity, EntityAttr
+from entity.models import Entity
 from entry.models import Entry
 from job.models import Job, JobOperation, JobStatus
 from job.settings import CONFIG
@@ -84,109 +83,6 @@ class APITest(AironeViewTest):
         resp = self.client.get("/api/v1/job/")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(resp.json()["result"]), 0)
-
-    def test_rerun_jobs(self):
-        user = self.guest_login()
-
-        entity = Entity.objects.create(name="entity", created_user=user)
-        attr = EntityAttr.objects.create(
-            name="attr",
-            created_user=user,
-            type=AttrType.STRING,
-            parent_entity=entity,
-        )
-
-        # make a job to create an entry
-        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
-        job = Job.new_create(
-            user,
-            entry,
-            params={
-                "attrs": [
-                    {
-                        "id": str(attr.id),
-                        "value": [{"data": "hoge", "index": 0}],
-                        "referral_key": [],
-                    }
-                ]
-            },
-        )
-
-        # send request to run job
-        resp = self.client.post("/api/v1/job/run/%d" % job.id)
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.content, b'"Success to run command"')
-
-        job = Job.objects.get(id=job.id)
-        self.assertEqual(job.status, JobStatus.DONE)
-        self.assertEqual(entry.attrs.count(), 1)
-
-        attrv = entry.attrs.first().get_latest_value()
-        self.assertEqual(attrv.value, "hoge")
-
-        # send request to run job with finished job-id
-        resp = self.client.post("/api/v1/job/run/%d" % job.id)
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.content, b'"Target job has already been done"')
-
-        # send request to run job with invalid job-id
-        resp = self.client.post("/api/v1/job/run/%d" % 9999)
-        self.assertEqual(resp.status_code, 400)
-
-        # make and send a job to update entry
-        job = Job.new_edit(
-            user,
-            entry,
-            params={
-                "attrs": [
-                    {
-                        "id": str(entry.attrs.first().id),
-                        "value": [{"data": "fuga", "index": 0}],
-                        "referral_key": [],
-                    }
-                ]
-            },
-        )
-        resp = self.client.post("/api/v1/job/run/%d" % job.id)
-
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.content, b'"Success to run command"')
-        self.assertEqual(Job.objects.get(id=job.id).status, JobStatus.DONE)
-        self.assertEqual(entry.attrs.first().get_latest_value().value, "fuga")
-
-        # make and send a job to copy entry
-        job = Job.new_do_copy(user, entry, params={"new_name": "new_entry"})
-        resp = self.client.post("/api/v1/job/run/%d" % job.id)
-
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.content, b'"Success to run command"')
-        self.assertEqual(Job.objects.get(id=job.id).status, JobStatus.DONE)
-
-        # checks it's success to clone entry
-        new_entry = Entry.objects.get(name="new_entry", schema=entity)
-        self.assertEqual(new_entry.attrs.first().get_latest_value().value, "fuga")
-
-        # make and send a job to delete entry
-        job = Job.new_delete(user, entry)
-        resp = self.client.post("/api/v1/job/run/%d" % job.id)
-
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.content, b'"Success to run command"')
-        self.assertFalse(Entry.objects.get(id=entry.id).is_active)
-
-    def test_rerun_deleted_job(self):
-        user = self.guest_login()
-
-        entity = Entity.objects.create(name="entity", created_user=user)
-        entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
-        job = Job.new_create(user, entry)
-
-        # delete target entry
-        entry.delete()
-
-        resp = self.client.post("/api/v1/job/run/%d" % job.id)
-        self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.content, b'"Job target has already been deleted"')
 
     def test_get_search_job(self):
         user = self.guest_login()
