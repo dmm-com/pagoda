@@ -1198,18 +1198,6 @@ class AironeApiClient {
     return resp.results ?? [];
   }
 
-  async rerunJob(id: number): Promise<void> {
-    await this.job.jobApiV2RerunPartialUpdate(
-      { id: id },
-      {
-        headers: {
-          "Content-Type": "application/yaml",
-          "X-CSRFToken": getCsrfToken(),
-        },
-      },
-    );
-  }
-
   async cancelJob(id: number): Promise<void> {
     await this.job.jobApiV2Destroy(
       { id: id },

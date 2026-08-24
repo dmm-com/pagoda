@@ -121,11 +121,6 @@ export const JobList: FC<Props> = ({ jobs, showUser }) => {
     [key: number]: string;
   }>({});
 
-  const handleRerun = async (jobId: number) => {
-    await aironeApiClient.rerunJob(jobId);
-    navigate(0);
-  };
-
   const handleCancel = async (jobId: number) => {
     await aironeApiClient
       .cancelJob(jobId)
@@ -260,20 +255,6 @@ export const JobList: FC<Props> = ({ jobs, showUser }) => {
                   <Typography>{jobStatusLabel(job.status)}</Typography>
                 </Box>
                 <Box>
-                  {![
-                    JobStatuses.DONE,
-                    JobStatuses.PROCESSING,
-                    JobStatuses.CANCELED,
-                  ].includes(job.status ?? 0) && (
-                    <Button
-                      variant="contained"
-                      color="error"
-                      sx={{ my: "4px" }}
-                      onClick={() => handleRerun(job.id)}
-                    >
-                      再実行
-                    </Button>
-                  )}
                   {![
                     JobStatuses.DONE,
                     JobStatuses.ERROR,
