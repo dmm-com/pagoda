@@ -2,7 +2,7 @@
  */
 
 import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 
 import { TestWrapper } from "../../TestWrapper";
 
@@ -20,6 +20,29 @@ describe("AttributeValue", () => {
     expect(
       within(screen.getByRole("listitem")).getByText("hoge"),
     ).toBeVisible();
+  });
+
+  test("should render url as confirmed external link", async () => {
+    const openSpy = vi.spyOn(window, "open").mockImplementation(() => null);
+    const attrInfo = {
+      type: EntryAttributeTypeTypeEnum.STRING,
+      value: { asString: "see https://example.com/docs for details" },
+    };
+    render(<AttributeValue attrInfo={attrInfo} />, { wrapper: TestWrapper });
+
+    const link = within(screen.getByRole("listitem")).getByRole("button", {
+      name: "https://example.com/docs",
+    });
+    fireEvent.click(link);
+
+    expect(screen.getByText("外部サイトを開きますか？")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Open" }));
+    expect(openSpy).toHaveBeenCalledWith(
+      "https://example.com/docs",
+      "_blank",
+      "noopener,noreferrer",
+    );
+    openSpy.mockRestore();
   });
 
   test("should show text typed value", async () => {
