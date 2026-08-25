@@ -8,7 +8,9 @@ import {
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Box, Checkbox, Chip, Divider, List, ListItem } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { FC } from "react";
+import { FC, ReactNode } from "react";
+
+import { ExternalLinkConfirmDialog } from "./ExternalLinkConfirmDialog";
 
 import { AironeLink } from "components/common";
 import { entryDetailsPath, groupsPath, rolePath } from "routes/Routes";
@@ -29,6 +31,36 @@ const StyledListItem = styled(ListItem)(({ theme }) => ({
   },
 }));
 
+const URL_RE = /(https?:\/\/[^\s<>()]+[^\s<>().,;:"'\]])/g;
+
+const renderTextWithLinks = (text: string): ReactNode[] => {
+  const parts: ReactNode[] = [];
+  let lastIndex = 0;
+
+  for (const match of text.matchAll(URL_RE)) {
+    const url = match[0];
+    const index = match.index ?? 0;
+
+    if (index > lastIndex) {
+      parts.push(text.slice(lastIndex, index));
+    }
+
+    parts.push(
+      <ExternalLinkConfirmDialog key={`${index}-${url}`} url={url}>
+        {url}
+      </ExternalLinkConfirmDialog>,
+    );
+
+    lastIndex = index + url.length;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  return parts.length > 0 ? parts : [text];
+};
+
 const ElemBool: FC<{ attrValue: string | boolean }> = ({ attrValue }) => {
   const checkd =
     typeof attrValue === "string"
@@ -40,12 +72,9 @@ const ElemBool: FC<{ attrValue: string | boolean }> = ({ attrValue }) => {
 const ElemString: FC<{ attrValue: string }> = ({ attrValue }) => {
   return (
     <Box>
-      {
-        // Separate line breaks with tags
-        attrValue?.split("\n").map((line, key) => (
-          <Box key={key}>{line}</Box>
-        ))
-      }
+      {attrValue?.split("\n").map((line, key) => (
+        <Box key={key}>{renderTextWithLinks(line)}</Box>
+      ))}
     </Box>
   );
 };
