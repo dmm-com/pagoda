@@ -56,7 +56,13 @@ search-semantics changes).
   those no longer diverge. Elasticsearch semantics still can, so keep running
   the final pre-push check against the real stack or rely on CI.
 - **Lint (ruff):** `uv run ruff check .`
-- **Type check:** `uv run mypy .`
+- **Type check:** `PAGODA_LITE=1 uv run mypy .` shows all current diagnostics.
+  CI runs `uv run python tools/mypy_ratchet.py --base-ref <git-ref>` and fails
+  only when the diagnostic multiset grows relative to that revision. It uses
+  the current checkout's mypy configuration and dependencies for both runs.
+  This is a source-regression gate: configuration or toolchain changes can
+  alter both measurements and may cancel out diagnostic changes. Git-detected
+  file renames are normalized before comparison.
 - **Generate test data:** `uv run python tools/generate_testdata.py`
 
 ### Frontend (TypeScript/React)

@@ -9,6 +9,7 @@ on:
       - "**/*.py"
       - "templates/**/*.html"
       - ".github/workflows/build-core.yml"
+      - "pyproject.toml"
       - "uv.lock"
 
 jobs:
@@ -21,10 +22,25 @@ jobs:
         with:
           clone: "false"
           base-dir: .
+      - name: Fetch mypy comparison base
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          else
+            base="${{ github.event.before }}"
+          fi
+          if ! [[ "${base}" =~ ^[0-9a-f]{40}$ ]] || [[ "${base}" =~ ^0+$ ]]; then
+            echo "::error::Invalid mypy comparison base: ${base}"
+            exit 1
+          fi
+          git fetch --no-tags --depth=1 origin "${base}"
+          git cat-file -e "${base}^{commit}"
+          echo "MYPY_BASE_REF=${base}" >> "$GITHUB_ENV"
+
       - name: staticchecks
         run: |
           mv custom_view_sample custom_view
-          uv run mypy ./
+          uv run python tools/mypy_ratchet.py --base-ref "${MYPY_BASE_REF}"
           uv run ruff check --output-format=github .
           uv run ruff format --check .
       - name: Check OpenAPI schema generation
@@ -149,4 +165,3 @@ jobs:
           config: .octocov.yml
           github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
-

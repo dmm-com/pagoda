@@ -58,6 +58,12 @@ uv run ruff check --fix <changed-files>
 
 # Mypy (type checking) — target changed modules
 uv run mypy <changed-modules> --config-file=pyproject.toml
+
+# Whole-tree ratchet, exactly as CI runs it. The base revision and current tree
+# are checked with the current checkout's mypy configuration and dependencies.
+# This gates source regressions; configuration/toolchain changes affect both
+# sides. Git-detected file renames are normalized before comparison.
+uv run python tools/mypy_ratchet.py --base-ref <git-ref>
 ```
 
 **Ruff rules:**
@@ -106,7 +112,7 @@ uv run python manage.py test entity
 
 Before completing changes:
 1. `uv run ruff check <changed-files>` — lint and import order OK
-2. `uv run mypy <changed-modules>` — type checking OK
+2. `uv run python tools/mypy_ratchet.py --base-ref <git-ref>` — no new type errors
 3. `uv run python manage.py test <related-tests>` — tests pass
 4. Comments and docstrings are written in English
 

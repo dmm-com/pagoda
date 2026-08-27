@@ -46,18 +46,8 @@ ignore_errors = true
 module = ["*.migrations.*"]
 ignore_errors = true
 
-# entry is the largest, most complex app; it is typed in a follow-up PR so this
-# PR can be reviewed in a focused slice.
-[[tool.mypy.overrides]]
-module = [
-    "entry.api_v1.views",
-    "entry.api_v2.serializers",
-    "entry.api_v2.views",
-    "entry.services",
-    "entry.tasks",
-    "entry.views",
-]
-ignore_errors = true
+# CI compares these diagnostics with the base revision using the current
+# configuration and toolchain. See tools/mypy_ratchet.py.
 
 [tool.ruff]
 # Pyflakes (F), pycodestyle (E, W), isort (I)
