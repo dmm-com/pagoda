@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Typography } from "@mui/material";
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
@@ -34,31 +34,39 @@ export const CategoryEditPage: FC = () => {
   const navigate = useNavigate();
   const { enqueueSubmitResult } = useFormNotification("カテゴリ", willCreate);
 
+  const { data: category, isLoading: categoryLoading } = usePagodaSWR(
+    categoryId != null ? ["category", categoryId] : null,
+    () => aironeApiClient.getCategory(categoryId!),
+  );
+
+  // Fill schema-required defaults for optional API fields.
+  const initialValues: Schema | undefined = useMemo(
+    () =>
+      category != null
+        ? { ...category, priority: category.priority ?? 0 }
+        : undefined,
+    [category],
+  );
+
   const {
     formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
     handleSubmit,
-    reset,
     setError,
     setValue,
     control,
   } = useForm<Schema>({
     resolver: zodResolver(schema),
     mode: "onBlur",
+    // Sync form values when the fetched category arrives. Dirty fields are
+    // kept so a background revalidation does not clobber user edits.
+    values: initialValues,
+    resetOptions: { keepDirtyValues: true },
   });
 
   usePrompt(
     isDirty && !isSubmitSuccessful,
     "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
-
-  const { data: category, isLoading: categoryLoading } = usePagodaSWR(
-    categoryId != null ? ["category", categoryId] : null,
-    () => aironeApiClient.getCategory(categoryId!),
-  );
-
-  useEffect(() => {
-    !categoryLoading && category != null && reset(category);
-  }, [categoryLoading, category, reset]);
 
   useEffect(() => {
     isSubmitSuccessful && navigate(listCategoryPath());

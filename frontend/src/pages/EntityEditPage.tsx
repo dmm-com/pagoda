@@ -1,7 +1,7 @@
 import { WebhookCreateUpdate } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box } from "@mui/material";
-import { FC, useEffect } from "react";
+import { FC, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
@@ -11,6 +11,7 @@ import { SubmitButton } from "components/common/SubmitButton";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntityForm } from "components/entity/EntityForm";
 import { Schema, schema } from "components/entity/entityForm/EntityFormSchema";
+import { toEntityFormValues } from "components/entity/entityForm/toEntityFormValues";
 import { useFormNotification } from "hooks/useFormNotification";
 import { usePageTitle } from "hooks/usePageTitle";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
@@ -35,23 +36,6 @@ export const EntityEditPage: FC = () => {
   const navigate = useNavigate();
   const { enqueueSubmitResult } = useFormNotification("モデル", willCreate);
 
-  const {
-    formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
-    handleSubmit,
-    reset,
-    setError,
-    setValue,
-    control,
-  } = useForm<Schema>({
-    resolver: zodResolver(schema),
-    mode: "onBlur",
-  });
-
-  usePrompt(
-    isDirty && !isSubmitSuccessful,
-    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
-  );
-
   const { data: entity, isLoading: entityLoading } = usePagodaSWR(
     entityId !== undefined ? ["entity", entityId] : null,
     () => aironeApiClient.getEntity(entityId!),
@@ -62,6 +46,34 @@ export const EntityEditPage: FC = () => {
       const entities = await aironeApiClient.getEntities();
       return entities.results;
     });
+
+  // Convert the fetched entity into the EntityFormSchema value shape.
+  // Dirty fields are kept (via resetOptions below) while editing.
+  const formValues = useMemo(
+    () =>
+      !entityLoading && entity != null ? toEntityFormValues(entity) : undefined,
+    [entity, entityLoading],
+  );
+
+  const {
+    formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
+    handleSubmit,
+    setError,
+    setValue,
+    control,
+  } = useForm<Schema>({
+    resolver: zodResolver(schema),
+    mode: "onBlur",
+    // Sync form values when the fetched entity arrives. Dirty fields are
+    // kept so a background revalidation does not clobber user edits.
+    values: formValues,
+    resetOptions: { keepDirtyValues: true },
+  });
+
+  usePrompt(
+    isDirty && !isSubmitSuccessful,
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
+  );
 
   const handleCancel = () => {
     if (entityId !== undefined) {
@@ -238,74 +250,6 @@ export const EntityEditPage: FC = () => {
   usePageTitle(entityLoading ? "読み込み中..." : TITLE_TEMPLATES.entityEdit, {
     prefix: entity?.name ?? (entityId == null ? "新規作成" : undefined),
   });
-
-  useEffect(() => {
-    if (!entityLoading && entity != null) {
-      // Convert entity data to form schema format, ensuring defaultValue is included
-      const formData: Schema = {
-        name: entity.name,
-        note: entity.note ?? "",
-        itemNamePattern: entity.itemNamePattern ?? "",
-        itemNameType: entity.itemNameType ?? "US",
-        isToplevel: entity.isToplevel,
-        isolationRules: entity.isolationRules.map((rule) => ({
-          ...rule,
-          conditions: rule.conditions.map((c) => ({
-            attr: {
-              id: c.attr.id,
-              name: c.attr.name,
-              type: c.attr.type ?? 0,
-            },
-            strCond: c.strCond ?? null,
-            refCond: c.refCond
-              ? { id: c.refCond.id, name: c.refCond.name }
-              : null,
-            boolCond: c.boolCond ?? false,
-            isUnmatch: c.isUnmatch ?? false,
-          })),
-          action: {
-            isPreventAll: rule.action?.isPreventAll ?? false,
-            preventFrom: rule.action?.preventFrom ?? null,
-          },
-        })),
-        webhooks: entity.webhooks.map((webhook) => ({
-          ...webhook,
-          url: webhook.url ?? "",
-          label: webhook.label ?? "",
-          isEnabled: webhook.isEnabled ?? false,
-          headers: webhook.headers ?? [],
-        })),
-        deleteChainExcludeEntities: (
-          entity.deleteChainExcludeEntities ?? []
-        ).map((e: { id: number; name: string }) => ({
-          id: e.id,
-          name: e.name,
-        })),
-        attrs: entity.attrs.map((attr) => ({
-          ...attr,
-          name: attr.name ?? "",
-          note: attr.note ?? "",
-          referral: (attr.referral ?? []).map((ref) => ({
-            id: ref.id,
-            name: ref.name,
-          })),
-          defaultValue: attr.defaultValue as
-            | string
-            | number
-            | boolean
-            | null
-            | undefined,
-          isSummarized: attr.isSummarized,
-          nameOrder: attr.nameOrder?.toString() ?? "0",
-          namePrefix: attr.namePrefix ?? "",
-          namePostfix: attr.namePostfix ?? "",
-          displayAttr: attr.displayAttr ?? "",
-        })),
-      };
-
-      reset(formData);
-    }
-  }, [entity, entityLoading, reset]);
 
   useEffect(() => {
     if (isSubmitSuccessful) {
