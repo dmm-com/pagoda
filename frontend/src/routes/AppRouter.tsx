@@ -179,7 +179,14 @@ export const AppRouter: FC<Props> = ({
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route errorElement={<ErrorBridge />}>
-        <Route path={loginPath()} element={<LoginPage />} />
+        <Route
+          path={loginPath()}
+          element={
+            <Suspense fallback={<Loading />}>
+              <LoginPage />
+            </Suspense>
+          }
+        />
         <Route
           path="/"
           element={
