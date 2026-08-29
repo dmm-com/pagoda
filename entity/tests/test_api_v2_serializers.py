@@ -86,12 +86,8 @@ class EntityAttrSerializerTest(AironeViewTest):
         """Object defaults are stored as IDs and restricted to referred entities."""
         referred_entity = Entity.objects.create(name="referred", created_user=self.user)
         other_entity = Entity.objects.create(name="other", created_user=self.user)
-        first = Entry.objects.create(
-            name="first", schema=referred_entity, created_user=self.user
-        )
-        second = Entry.objects.create(
-            name="second", schema=referred_entity, created_user=self.user
-        )
+        first = Entry.objects.create(name="first", schema=referred_entity, created_user=self.user)
+        second = Entry.objects.create(name="second", schema=referred_entity, created_user=self.user)
         outside = Entry.objects.create(name="outside", schema=other_entity, created_user=self.user)
 
         object_serializer = EntityAttrCreateSerializer(
@@ -116,9 +112,7 @@ class EntityAttrSerializerTest(AironeViewTest):
             context=self._get_serializer_context(),
         )
         self.assertTrue(array_serializer.is_valid(), array_serializer.errors)
-        self.assertEqual(
-            array_serializer.validated_data["default_value"], [second.id, first.id]
-        )
+        self.assertEqual(array_serializer.validated_data["default_value"], [second.id, first.id])
 
         invalid_serializer = EntityAttrCreateSerializer(
             data={

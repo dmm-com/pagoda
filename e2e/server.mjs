@@ -267,7 +267,9 @@ const materializeAttrs = (entity, submittedAttrs) =>
       return [
         attrValue(attr.id, attr.type, attr.name, {
           as_array_object: value.flatMap((id) => {
-            const entry = state.entries.find((candidate) => candidate.id === id);
+            const entry = state.entries.find(
+              (candidate) => candidate.id === id,
+            );
             return entry ? [switchValue(entry.id, entry.name)] : [];
           }),
         }),

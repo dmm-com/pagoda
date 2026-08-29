@@ -662,9 +662,7 @@ class EntryCreateSerializer(EntryBaseSerializer):
                 continue
             if entity_attr.type not in EntityAttr.CUSTOM_DEFAULT_VALUE_TYPES:
                 continue
-            if not self.privileged_mode and not user.has_permission(
-                entity_attr, ACLType.Writable
-            ):
+            if not self.privileged_mode and not user.has_permission(entity_attr, ACLType.Writable):
                 continue
 
             # Preserve the existing type-based fallback for primitive attributes
