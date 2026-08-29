@@ -51,10 +51,16 @@ export function formalizeEntryInfo(
           attrDetail: EntityDetail["attrs"][0],
         ): EditableEntryAttrValue {
           if (!value) {
-            // Use defaultValue from EntityAttr if available
-            // Backend returns raw primitive values (string, boolean, null)
-            // Auto-generated types show it as object but it's actually scalar values
-            const defaultValue = attrDetail.defaultValue;
+            // Use defaultValue from EntityAttr only when creating a new entry
+            // (i.e. the caller passed no entry). When editing an existing
+            // entry, an attribute without any stored value must stay empty:
+            // prefilling the default here would re-materialize it as a real
+            // value on every save, and an explicitly emptied value could
+            // never stick. Backend returns raw primitive values (string,
+            // boolean, null). Auto-generated types show it as object but it's
+            // actually scalar values.
+            const defaultValue =
+              entry === undefined ? attrDetail.defaultValue : null;
 
             // Default values for when no default is specified
             const defaults = {

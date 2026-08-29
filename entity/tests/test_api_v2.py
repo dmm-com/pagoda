@@ -4306,6 +4306,94 @@ class ViewTest(AironeViewTest):
         self.assertEqual(string_attr.default_value, "updated string value")
         self.assertEqual(bool_attr.default_value, True)
 
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
+    def test_update_entity_attr_clear_default_value(self):
+        """Explicitly null default_value must clear an existing default value"""
+        entity = Entity.objects.create(name="clear_default_entity", created_user=self.user)
+        string_attr = EntityAttr.objects.create(
+            name="string_attr",
+            type=AttrType.STRING,
+            created_user=self.user,
+            parent_entity=entity,
+            default_value="old default",
+        )
+        number_attr = EntityAttr.objects.create(
+            name="number_attr",
+            type=AttrType.NUMBER,
+            created_user=self.user,
+            parent_entity=entity,
+            default_value=42,
+        )
+
+        params = {
+            "id": entity.id,
+            "name": "clear_default_entity",
+            "attrs": [
+                {
+                    "id": string_attr.id,
+                    "name": "string_attr",
+                    "type": AttrType.STRING,
+                    "default_value": None,
+                    "index": 1,
+                },
+                {
+                    "id": number_attr.id,
+                    "name": "number_attr",
+                    "type": AttrType.NUMBER,
+                    "default_value": None,
+                    "index": 2,
+                },
+            ],
+        }
+
+        resp = self.client.put(
+            f"/entity/api/v2/{entity.id}/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # Verify default values were cleared
+        string_attr.refresh_from_db()
+        number_attr.refresh_from_db()
+
+        self.assertIsNone(string_attr.default_value)
+        self.assertIsNone(number_attr.default_value)
+
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
+    def test_update_entity_attr_default_value_kept_when_omitted(self):
+        """Omitting default_value in an update must keep the existing value"""
+        entity = Entity.objects.create(name="keep_default_entity", created_user=self.user)
+        string_attr = EntityAttr.objects.create(
+            name="string_attr",
+            type=AttrType.STRING,
+            created_user=self.user,
+            parent_entity=entity,
+            default_value="existing default",
+        )
+
+        # Update another field of the attribute without specifying default_value
+        params = {
+            "id": entity.id,
+            "name": "keep_default_entity",
+            "attrs": [
+                {
+                    "id": string_attr.id,
+                    "name": "string_attr",
+                    "type": AttrType.STRING,
+                    "note": "updated note",
+                    "index": 1,
+                },
+            ],
+        }
+
+        resp = self.client.put(
+            f"/entity/api/v2/{entity.id}/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        string_attr.refresh_from_db()
+        self.assertEqual(string_attr.default_value, "existing default")
+        self.assertEqual(string_attr.note, "updated note")
+
     def test_retrieve_entity_includes_default_values(self):
         """Test that entity retrieval includes default_value in response"""
         # Create entity with attributes that have default values

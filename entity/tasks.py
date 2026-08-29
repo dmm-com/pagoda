@@ -574,7 +574,13 @@ def edit_entity_v2(self: Task[Any, Any], job: Job) -> JobStatus:
 
     # Convert Pydantic model to dict for serializer
     # (EntityUpdateSerializer expects dict input)
-    params_dict = params.model_dump(exclude_none=True)
+    #
+    # Use exclude_unset (NOT exclude_none) so that explicitly specified nulls
+    # keep their "clear this field" semantics. E.g. the UI sends
+    # default_value: null to remove an EntityAttr's default value; dropping
+    # that null made it impossible to clear a default once set, because
+    # update_or_create keeps the stored value for absent fields.
+    params_dict = params.model_dump(exclude_unset=True)
 
     serializer = EntityUpdateSerializer(
         instance=entity, data=params_dict, context={"_user": job.user}

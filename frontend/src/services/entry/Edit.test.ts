@@ -356,6 +356,103 @@ test("formalizeEntryInfo should use defaultValue when creating new entry", () =>
   expect(result.attrs[5].value.asString).toBe("");
 });
 
+test("formalizeEntryInfo should not prefill defaultValue when editing an existing entry", () => {
+  // Same entity fixture as the create-mode test above
+  const entity = {
+    id: 1,
+    name: "TestEntity",
+    note: "hoge",
+    status: 0,
+    isToplevel: true,
+    hasOngoingChanges: false,
+    permission: ACLType.Full,
+    attrs: [
+      {
+        id: 2,
+        index: 0,
+        name: "string_with_default",
+        type: EntryAttributeTypeTypeEnum.STRING,
+        isMandatory: true,
+        isDeleteInChain: true,
+        isWritable: true,
+        isSummarized: false,
+        referral: [],
+        note: "",
+        defaultValue: { asString: "default string value" },
+      },
+      {
+        id: 3,
+        index: 1,
+        name: "boolean_with_default",
+        type: EntryAttributeTypeTypeEnum.BOOLEAN,
+        isMandatory: false,
+        isDeleteInChain: true,
+        isWritable: true,
+        isSummarized: false,
+        referral: [],
+        note: "",
+        defaultValue: { asBoolean: true },
+      },
+      {
+        id: 4,
+        index: 2,
+        name: "text_with_default",
+        type: EntryAttributeTypeTypeEnum.TEXT,
+        isMandatory: false,
+        isDeleteInChain: true,
+        isWritable: true,
+        isSummarized: false,
+        referral: [],
+        note: "",
+        defaultValue: { asString: "default\ntext\nvalue" },
+      },
+      {
+        id: 5,
+        index: 3,
+        name: "string_without_default",
+        type: EntryAttributeTypeTypeEnum.STRING,
+        isMandatory: false,
+        isDeleteInChain: true,
+        isWritable: true,
+        isSummarized: false,
+        referral: [],
+        note: "",
+        defaultValue: null,
+      },
+    ],
+    webhooks: [],
+    isolationRules: [],
+    deleteChainExcludeEntities: [],
+    isPublic: true,
+  };
+
+  // An entry whose attributes have no stored value (e.g. the attribute was
+  // added to the entity after the entry was created). Prefilling the entity
+  // default here would re-materialize it on every save and an explicitly
+  // emptied value could never stick.
+  const entry = {
+    id: 10,
+    name: "TestEntry",
+    schema: {
+      id: 1,
+      name: "TestEntity",
+      permission: ACLType.Full,
+    },
+    isActive: true,
+    deletedUser: null,
+    permission: ACLType.Full,
+    attrs: [],
+  };
+
+  const result = formalizeEntryInfo(entry, entity, []);
+
+  // Valueless attributes must stay empty instead of being prefilled
+  expect(result.attrs[2].value.asString).toBe("");
+  expect(result.attrs[3].value.asBoolean).toBe(false);
+  expect(result.attrs[4].value.asString).toBe("");
+  expect(result.attrs[5].value.asString).toBe("");
+});
+
 test("convertAttrsFormatCtoS() returns expected value", () => {
   const cases: Array<{
     client_data: {

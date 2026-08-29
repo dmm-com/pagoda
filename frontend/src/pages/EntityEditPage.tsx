@@ -24,6 +24,7 @@ import {
   isResponseError,
 } from "services/AironeAPIErrorUtil";
 import { BaseAttributeTypes } from "services/Constants";
+import { processAttrDefaultValue } from "services/entity/Edit";
 
 export const EntityEditPage: FC = () => {
   const { entityId } = useTypedParams<{
@@ -76,26 +77,12 @@ export const EntityEditPage: FC = () => {
     const attrs = entityForm.attrs
       .filter((attr) => attr.isWritable)
       .map((attr, index) => {
-        // Convert defaultValue to appropriate type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let processedDefaultValue: any | null = null;
-        if (attr.defaultValue != null) {
-          if (attr.type === BaseAttributeTypes.number) {
-            const numValue = Number(attr.defaultValue);
-            if (!isNaN(numValue)) {
-              processedDefaultValue = numValue;
-            }
-          } else if (attr.type === BaseAttributeTypes.bool) {
-            processedDefaultValue = Boolean(attr.defaultValue);
-          } else if (
-            attr.type === BaseAttributeTypes.string ||
-            attr.type === BaseAttributeTypes.text
-          ) {
-            processedDefaultValue = String(attr.defaultValue);
-          } else {
-            processedDefaultValue = attr.defaultValue;
-          }
-        }
+        // Convert defaultValue to appropriate type. An emptied input is sent
+        // as null so the backend clears the stored default value.
+        const processedDefaultValue = processAttrDefaultValue(
+          attr.type,
+          attr.defaultValue,
+        );
 
         const isSelectLikeType = (attr.type & BaseAttributeTypes.select) !== 0;
 
