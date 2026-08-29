@@ -617,7 +617,7 @@ class AttributeDataSerializer(serializers.Serializer):
 class EntryCreateData(TypedDict, total=False):
     name: str
     schema: Entity
-    attrs: list[AttributeDataSerializer]
+    attrs: list[dict[str, Any]]
     created_user: User
 
 

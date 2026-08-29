@@ -147,3 +147,6 @@ plugins = [
     "pagoda-cross-entity-sample-plugin",
     "pagoda-echo-plugin",
 ]
+
+[tool.ruff.lint.extend-per-file-ignores]
+"./tools/mypy_ratchet.py" = ["T201"]
