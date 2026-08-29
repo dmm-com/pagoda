@@ -410,7 +410,11 @@ class ModelTest(BaseModelTest):
         attr.values.add(attr_value)
 
         self.assertFalse(attr.is_updated([e1.id, e2.id]))
-        self.assertFalse(attr.is_updated([e2.id, e1.id]))
+        # Order carries meaning for ARRAY_OBJECT: the referrals are stored and
+        # rendered in the order they were given, and EntityAttr default values
+        # rely on that order being preserved. Reordering the same set is
+        # therefore a real change, not a no-op.
+        self.assertTrue(attr.is_updated([e2.id, e1.id]))  # reorder
         self.assertTrue(attr.is_updated([e1.id, e3.id]))  # update
         self.assertTrue(attr.is_updated([e1.id]))  # delete
         self.assertTrue(attr.is_updated([e3.id]))  # delete & update
@@ -423,7 +427,8 @@ class ModelTest(BaseModelTest):
         self.assertTrue(attr.is_updated(["hoge", e1.id]))
 
         # checks that this method also accepts Entry
-        self.assertFalse(attr.is_updated([e2, e1]))
+        self.assertFalse(attr.is_updated([e1, e2]))
+        self.assertTrue(attr.is_updated([e2, e1]))  # reorder
         self.assertTrue(attr.is_updated([e1, e3]))
 
     def test_attr_helper_of_attribute_with_array_object_values_at_empty(self):
