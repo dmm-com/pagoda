@@ -4,6 +4,7 @@ from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrType
 from entity.api_v2.serializers import EntityAttrCreateSerializer, EntityAttrUpdateSerializer
 from entity.models import Entity, EntityAttr
+from entry.models import Entry
 from user.models import User
 
 
@@ -80,6 +81,96 @@ class EntityAttrSerializerTest(AironeViewTest):
         serializer = EntityAttrCreateSerializer(data=data, context=self._get_serializer_context())
         self.assertTrue(serializer.is_valid())
         self.assertEqual(serializer.validated_data["default_value"], 0.0)
+
+    def test_create_object_attrs_with_entry_id_defaults(self):
+        """Object defaults are stored as IDs and restricted to referred entities."""
+        referred_entity = Entity.objects.create(name="referred", created_user=self.user)
+        other_entity = Entity.objects.create(name="other", created_user=self.user)
+        first = Entry.objects.create(
+            name="first", schema=referred_entity, created_user=self.user
+        )
+        second = Entry.objects.create(
+            name="second", schema=referred_entity, created_user=self.user
+        )
+        outside = Entry.objects.create(name="outside", schema=other_entity, created_user=self.user)
+
+        object_serializer = EntityAttrCreateSerializer(
+            data={
+                "name": "object_attr",
+                "type": AttrType.OBJECT,
+                "referral": [referred_entity.id],
+                "default_value": first.id,
+            },
+            context=self._get_serializer_context(),
+        )
+        self.assertTrue(object_serializer.is_valid(), object_serializer.errors)
+        self.assertEqual(object_serializer.validated_data["default_value"], first.id)
+
+        array_serializer = EntityAttrCreateSerializer(
+            data={
+                "name": "array_object_attr",
+                "type": AttrType.ARRAY_OBJECT,
+                "referral": [referred_entity.id],
+                "default_value": [second.id, first.id],
+            },
+            context=self._get_serializer_context(),
+        )
+        self.assertTrue(array_serializer.is_valid(), array_serializer.errors)
+        self.assertEqual(
+            array_serializer.validated_data["default_value"], [second.id, first.id]
+        )
+
+        invalid_serializer = EntityAttrCreateSerializer(
+            data={
+                "name": "invalid_object_attr",
+                "type": AttrType.OBJECT,
+                "referral": [referred_entity.id],
+                "default_value": outside.id,
+            },
+            context=self._get_serializer_context(),
+        )
+        self.assertFalse(invalid_serializer.is_valid())
+        self.assertIn("must be active and belong", str(invalid_serializer.errors))
+
+    def test_array_object_default_rejects_invalid_shape_and_duplicates(self):
+        referred_entity = Entity.objects.create(name="referred", created_user=self.user)
+        referred_entry = Entry.objects.create(
+            name="first", schema=referred_entity, created_user=self.user
+        )
+
+        for default_value in ([referred_entry.id, referred_entry.id], ["1"], True):
+            serializer = EntityAttrCreateSerializer(
+                data={
+                    "name": "array_object_attr",
+                    "type": AttrType.ARRAY_OBJECT,
+                    "referral": [referred_entity.id],
+                    "default_value": default_value,
+                },
+                context=self._get_serializer_context(),
+            )
+            self.assertFalse(serializer.is_valid(), default_value)
+
+    def test_update_referral_rejects_an_out_of_scope_existing_default(self):
+        referred_entity = Entity.objects.create(name="referred", created_user=self.user)
+        other_entity = Entity.objects.create(name="other", created_user=self.user)
+        referred_entry = Entry.objects.create(
+            name="first", schema=referred_entity, created_user=self.user
+        )
+        entity_attr = EntityAttr.objects.create(
+            name="object_attr",
+            type=AttrType.OBJECT,
+            parent_entity=self.entity,
+            created_user=self.user,
+            default_value=referred_entry.id,
+        )
+        entity_attr.referral.add(referred_entity)
+
+        serializer = EntityAttrUpdateSerializer(
+            data={"id": entity_attr.id, "referral": [other_entity.id]},
+            context={"_user": self.user},
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("must be active and belong", str(serializer.errors))
 
     def test_create_attr_boolean_string_conversion(self):
         """Test boolean attribute with string values should be rejected"""
@@ -218,14 +309,10 @@ class EntityAttrSerializerTest(AironeViewTest):
 
     def test_create_attr_unsupported_type_clears_default_value(self):
         """Test that unsupported types clear the default_value"""
-        # Create a reference entity for the OBJECT type
-        ref_entity = Entity.objects.create(name="ref_entity", created_user=self.user)
-
         data = {
-            "name": "object_attr",
-            "type": AttrType.OBJECT,
+            "name": "group_attr",
+            "type": AttrType.GROUP,
             "default_value": "some value",
-            "referral": [ref_entity.id],
         }
         serializer = EntityAttrCreateSerializer(data=data, context=self._get_serializer_context())
         # This should be valid but default_value should be cleared

@@ -293,6 +293,7 @@ export const EntityEditPage: FC = () => {
             | string
             | number
             | boolean
+            | number[]
             | null
             | undefined,
           isSummarized: attr.isSummarized,

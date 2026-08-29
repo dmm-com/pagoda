@@ -135,15 +135,7 @@ class EntityAttrCreateRequest(BaseModel):
         if self.default_value is None:
             return self
 
-        # Only String, Text, Boolean, Number types support default values
-        # (SELECT defers default_value because choice ids are auto-assigned on save).
-        supported_types = [
-            AttrType.STRING,
-            AttrType.TEXT,
-            AttrType.BOOLEAN,
-            AttrType.NUMBER,
-        ]
-        if self.type not in supported_types:
+        if self.type not in EntityAttr.CUSTOM_DEFAULT_VALUE_TYPES:
             # Clear default_value for unsupported types
             self.default_value = None
             return self
@@ -175,6 +167,27 @@ class EntityAttrCreateRequest(BaseModel):
                 )
             if math.isnan(self.default_value) or math.isinf(self.default_value):
                 raise ValueError("Default value cannot be NaN or Infinity for NUMBER type")
+
+        elif self.type == AttrType.OBJECT:
+            if (
+                not isinstance(self.default_value, int)
+                or isinstance(self.default_value, bool)
+                or self.default_value <= 0
+            ):
+                raise ValueError("Default value must be a positive entry ID for OBJECT type")
+
+        elif self.type == AttrType.ARRAY_OBJECT:
+            if not isinstance(self.default_value, list) or not all(
+                isinstance(item, int) and not isinstance(item, bool) and item > 0
+                for item in self.default_value
+            ):
+                raise ValueError(
+                    "Default value must be a list of positive entry IDs for ARRAY_OBJECT type"
+                )
+            if len(self.default_value) != len(set(self.default_value)):
+                raise ValueError("Default value entry IDs must be unique for ARRAY_OBJECT type")
+            if not self.default_value:
+                self.default_value = None
 
         return self
 
@@ -314,6 +327,26 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer[EntityAttr]):
                 f"got {type(default_value).__name__}"
             )
 
+        elif attr_type == AttrType.OBJECT:
+            if isinstance(default_value, int) and not isinstance(default_value, bool):
+                if default_value > 0:
+                    return default_value
+            raise ValidationError("Default value must be a positive entry ID for OBJECT type")
+
+        elif attr_type == AttrType.ARRAY_OBJECT:
+            if isinstance(default_value, list) and all(
+                isinstance(item, int) and not isinstance(item, bool) and item > 0
+                for item in default_value
+            ):
+                if len(default_value) != len(set(default_value)):
+                    raise ValidationError(
+                        "Default value entry IDs must be unique for ARRAY_OBJECT type"
+                    )
+                return default_value or None
+            raise ValidationError(
+                "Default value must be a list of positive entry IDs for ARRAY_OBJECT type"
+            )
+
         return default_value
 
     def validate(self, attr: dict[str, Any]) -> dict[str, Any]:
@@ -364,6 +397,17 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer[EntityAttr]):
                 raise RequiredParameterError(
                     "When specified object type, referral field is required"
                 )
+            if attr.get("default_value") is not None and attr["type"] in (
+                AttrType.OBJECT,
+                AttrType.ARRAY_OBJECT,
+            ):
+                referral_ids = [getattr(item, "id", item) for item in referral]
+                try:
+                    EntityAttr.validate_default_object_referrals(
+                        attr["type"], attr["default_value"], referral_ids
+                    )
+                except ValueError as exc:
+                    raise ValidationError(str(exc)) from exc
 
         name_order = attr.get("name_order", 0)
         if name_order > 0 and attr.get("type") not in Entity.ITEM_NAME_SELECTABLE_TYPES:
@@ -485,6 +529,26 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer[EntityAttr]):
                 f"got {type(default_value).__name__}"
             )
 
+        elif attr_type == AttrType.OBJECT:
+            if isinstance(default_value, int) and not isinstance(default_value, bool):
+                if default_value > 0:
+                    return default_value
+            raise ValidationError("Default value must be a positive entry ID for OBJECT type")
+
+        elif attr_type == AttrType.ARRAY_OBJECT:
+            if isinstance(default_value, list) and all(
+                isinstance(item, int) and not isinstance(item, bool) and item > 0
+                for item in default_value
+            ):
+                if len(default_value) != len(set(default_value)):
+                    raise ValidationError(
+                        "Default value entry IDs must be unique for ARRAY_OBJECT type"
+                    )
+                return default_value or None
+            raise ValidationError(
+                "Default value must be a list of positive entry IDs for ARRAY_OBJECT type"
+            )
+
         return default_value
 
     def validate(self, attr: dict[str, Any]) -> dict[str, Any]:
@@ -524,7 +588,7 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer[EntityAttr]):
                     "This attribute type is not supported for autoname configuration"
                 )
 
-        # Only String, Text, Boolean, Number, Select types support default values (MVP)
+        # Validate and preserve custom defaults supported by the attribute type.
         attr_type = attr.get("type")
         default_value = attr.get("default_value")
 
@@ -576,13 +640,7 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer[EntityAttr]):
             attr["choices"] = None
 
         if default_value is not None and attr_type is not None:
-            supported_types = [
-                AttrType.STRING,
-                AttrType.TEXT,
-                AttrType.BOOLEAN,
-                AttrType.NUMBER,
-            ]
-            if attr_type not in supported_types:
+            if attr_type not in EntityAttr.CUSTOM_DEFAULT_VALUE_TYPES:
                 # Clear default_value for unsupported types (incl. SELECT/MULTI_SELECT
                 # whose choice ids are auto-assigned, making static default storage
                 # ambiguous; deferred to a follow-up).
@@ -591,6 +649,26 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer[EntityAttr]):
                 attr["default_value"] = self._validate_default_value_for_type(
                     attr_type, default_value
                 )
+
+        effective_default_value = attr.get(
+            "default_value",
+            existing_attr.default_value if existing_attr is not None else None,
+        )
+        if effective_default_value is not None and attr_type in (
+            AttrType.OBJECT,
+            AttrType.ARRAY_OBJECT,
+        ):
+            referral = attr.get("referral")
+            if referral is None and existing_attr is not None:
+                referral_ids = list(existing_attr.referral.values_list("id", flat=True))
+            else:
+                referral_ids = [getattr(item, "id", item) for item in (referral or [])]
+            try:
+                EntityAttr.validate_default_object_referrals(
+                    attr_type, effective_default_value, referral_ids
+                )
+            except ValueError as exc:
+                raise ValidationError(str(exc)) from exc
 
         return attr
 
@@ -736,15 +814,7 @@ class EntitySerializer(serializers.ModelSerializer[Entity]):
         if default_value is None:
             return None
 
-        # Only certain types support default values (SELECT/MULTI_SELECT excluded
-        # because choice ids are auto-assigned; default_value handling deferred).
-        supported_types = [
-            AttrType.STRING,
-            AttrType.TEXT,
-            AttrType.BOOLEAN,
-            AttrType.NUMBER,
-        ]
-        if attr_type not in supported_types:
+        if attr_type not in EntityAttr.CUSTOM_DEFAULT_VALUE_TYPES:
             return None
 
         # String and Text types
@@ -774,6 +844,26 @@ class EntitySerializer(serializers.ModelSerializer[Entity]):
             raise ValidationError(
                 f"Default value must be a number for NUMBER type, "
                 f"got {type(default_value).__name__}"
+            )
+
+        elif attr_type == AttrType.OBJECT:
+            if isinstance(default_value, int) and not isinstance(default_value, bool):
+                if default_value > 0:
+                    return default_value
+            raise ValidationError("Default value must be a positive entry ID for OBJECT type")
+
+        elif attr_type == AttrType.ARRAY_OBJECT:
+            if isinstance(default_value, list) and all(
+                isinstance(item, int) and not isinstance(item, bool) and item > 0
+                for item in default_value
+            ):
+                if len(default_value) != len(set(default_value)):
+                    raise ValidationError(
+                        "Default value entry IDs must be unique for ARRAY_OBJECT type"
+                    )
+                return default_value or None
+            raise ValidationError(
+                "Default value must be a list of positive entry IDs for ARRAY_OBJECT type"
             )
 
         return default_value

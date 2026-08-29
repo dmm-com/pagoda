@@ -111,7 +111,13 @@ export const schema = z.object({
             .default([]),
           note: z.string().default(""),
           defaultValue: z
-            .union([z.string(), z.number(), z.boolean(), z.null()])
+            .union([
+              z.string(),
+              z.number(),
+              z.boolean(),
+              z.array(z.number().int().positive()),
+              z.null(),
+            ])
             .optional(),
           choices: z
             .array(

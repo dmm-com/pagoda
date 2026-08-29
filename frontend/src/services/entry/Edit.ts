@@ -57,7 +57,7 @@ export function formalizeEntryInfo(
             const defaultValue = attrDetail.defaultValue;
 
             // Default values for when no default is specified
-            const defaults = {
+            const defaults: EditableEntryAttrValue = {
               asString: "",
               asBoolean: false,
               asArrayString: [{ value: "" }],
@@ -76,7 +76,11 @@ export function formalizeEntryInfo(
             };
 
             // Apply defaultValue for supported types (backend returns raw primitive values)
-            if (defaultValue !== null && defaultValue !== undefined) {
+            if (
+              entry === undefined &&
+              defaultValue !== null &&
+              defaultValue !== undefined
+            ) {
               switch (attrType) {
                 case EntryAttributeTypeTypeEnum.STRING:
                 case EntryAttributeTypeTypeEnum.TEXT:
@@ -119,6 +123,31 @@ export function formalizeEntryInfo(
                     defaults.asNumber = (
                       defaultValue as { asNumber: number }
                     ).asNumber;
+                  }
+                  break;
+                case EntryAttributeTypeTypeEnum.OBJECT:
+                  if (
+                    typeof defaultValue === "number" &&
+                    Number.isInteger(defaultValue) &&
+                    defaultValue > 0
+                  ) {
+                    defaults.asObject = { id: defaultValue, name: "" };
+                  }
+                  break;
+                case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
+                  if (
+                    Array.isArray(defaultValue) &&
+                    defaultValue.every(
+                      (item) =>
+                        typeof item === "number" &&
+                        Number.isInteger(item) &&
+                        item > 0,
+                    )
+                  ) {
+                    defaults.asArrayObject = defaultValue.map((id) => ({
+                      id,
+                      name: "",
+                    }));
                   }
                   break;
               }

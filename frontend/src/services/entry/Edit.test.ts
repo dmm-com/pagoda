@@ -334,6 +334,32 @@ test("formalizeEntryInfo should use defaultValue when creating new entry", () =>
         note: "",
         defaultValue: null,
       },
+      {
+        id: 6,
+        index: 4,
+        name: "object_with_default",
+        type: EntryAttributeTypeTypeEnum.OBJECT,
+        isMandatory: false,
+        isDeleteInChain: false,
+        isWritable: true,
+        isSummarized: false,
+        referral: [{ id: 10, name: "References" }],
+        note: "",
+        defaultValue: 101 as unknown as object,
+      },
+      {
+        id: 7,
+        index: 5,
+        name: "array_object_with_default",
+        type: EntryAttributeTypeTypeEnum.ARRAY_OBJECT,
+        isMandatory: false,
+        isDeleteInChain: false,
+        isWritable: true,
+        isSummarized: false,
+        referral: [{ id: 10, name: "References" }],
+        note: "",
+        defaultValue: [102, 101] as unknown as object,
+      },
     ],
     webhooks: [],
     isolationRules: [],
@@ -354,6 +380,33 @@ test("formalizeEntryInfo should use defaultValue when creating new entry", () =>
 
   // Check string attribute without default value (should use empty string)
   expect(result.attrs[5].value.asString).toBe("");
+
+  expect(result.attrs[6].value.asObject).toEqual({ id: 101, name: "" });
+  expect(result.attrs[7].value.asArrayObject).toEqual([
+    { id: 102, name: "" },
+    { id: 101, name: "" },
+  ]);
+
+  const existingResult = formalizeEntryInfo(
+    {
+      id: 200,
+      name: "Existing entry",
+      schema: {
+        id: entity.id,
+        name: entity.name,
+        permission: ACLType.Full,
+      },
+      isActive: true,
+      deletedUser: null,
+      permission: ACLType.Full,
+      attrs: [],
+    },
+    entity,
+    [],
+  );
+
+  expect(existingResult.attrs[6].value.asObject).toBeNull();
+  expect(existingResult.attrs[7].value.asArrayObject).toEqual([]);
 });
 
 test("convertAttrsFormatCtoS() returns expected value", () => {

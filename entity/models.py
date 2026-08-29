@@ -23,6 +23,17 @@ class ItemNameType(models.TextChoices):
 
 
 class EntityAttr(ACLBase):
+    CUSTOM_DEFAULT_VALUE_TYPES = frozenset(
+        {
+            AttrType.STRING,
+            AttrType.TEXT,
+            AttrType.BOOLEAN,
+            AttrType.NUMBER,
+            AttrType.OBJECT,
+            AttrType.ARRAY_OBJECT,
+        }
+    )
+
     # This parameter is needed to make a relationship to the corresponding Entity at importing
     parent_entity = models.ForeignKey("Entity", related_name="attrs", on_delete=models.DO_NOTHING)
 
@@ -140,14 +151,7 @@ class EntityAttr(ACLBase):
         if value is None:
             return True  # None is always valid
 
-        # Only String, Text, Boolean, Number types support custom default values, currently
-        supported_types = [
-            AttrType.STRING,
-            AttrType.TEXT,
-            AttrType.BOOLEAN,
-            AttrType.NUMBER,
-        ]
-        if self.type not in supported_types:
+        if self.type not in self.CUSTOM_DEFAULT_VALUE_TYPES:
             return False
 
         # Type-specific validation for supported types
@@ -163,8 +167,44 @@ class EntityAttr(ACLBase):
             if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
                 return False
             return True
+        elif self.type == AttrType.OBJECT:
+            return isinstance(value, int) and not isinstance(value, bool) and value > 0
+        elif self.type == AttrType.ARRAY_OBJECT:
+            return (
+                isinstance(value, list)
+                and all(
+                    isinstance(item, int) and not isinstance(item, bool) and item > 0
+                    for item in value
+                )
+                and len(value) == len(set(value))
+            )
 
         return True
+
+    @staticmethod
+    def validate_default_object_referrals(
+        attr_type: int, default_value: Any, referral_ids: list[int]
+    ) -> None:
+        """Validate object defaults against the active referred entities."""
+        if default_value is None or attr_type not in (AttrType.OBJECT, AttrType.ARRAY_OBJECT):
+            return
+
+        from entry.models import Entry
+
+        entry_ids = [default_value] if attr_type == AttrType.OBJECT else default_value
+        valid_ids = set(
+            Entry.objects.filter(
+                id__in=entry_ids,
+                is_active=True,
+                schema_id__in=referral_ids,
+            ).values_list("id", flat=True)
+        )
+        invalid_ids = [entry_id for entry_id in entry_ids if entry_id not in valid_ids]
+        if invalid_ids:
+            raise ValueError(
+                "Object default entries must be active and belong to a referred entity: %s"
+                % ", ".join(str(entry_id) for entry_id in invalid_ids)
+            )
 
     @staticmethod
     def validate_choices(choices: Any) -> None:
