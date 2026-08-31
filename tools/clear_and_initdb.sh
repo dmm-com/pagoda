@@ -35,6 +35,18 @@ parse_argv() {
   done
 }
 
+get_mysql_ssl_disabled_opt() {
+  mysql_help=$("$@" --help 2>/dev/null || true)
+
+  if echo "${mysql_help}" | grep -q -- "--skip-ssl"
+  then
+    echo "--skip-ssl"
+  elif echo "${mysql_help}" | grep -q -- "--ssl-mode"
+  then
+    echo "--ssl-mode=DISABLED"
+  fi
+}
+
 main() {
   parse_argv $*
 
@@ -59,10 +71,12 @@ main() {
 
   if [ ${IS_BAREMETAL} = "true" ]
   then
-    MYSQL_COMMAND="mysql --skip-ssl -u${db_user} -p${db_pass} -h${db_host}"
-    MYSQL_ROOT_COMMAND="mysql --skip-ssl -uroot ${root_pass_opt} -h${db_host}"
+    MYSQL_SSL_OPT=$(get_mysql_ssl_disabled_opt mysql)
+    MYSQL_COMMAND="mysql ${MYSQL_SSL_OPT} -u${db_user} -p${db_pass} -h${db_host}"
+    MYSQL_ROOT_COMMAND="mysql ${MYSQL_SSL_OPT} -uroot ${root_pass_opt} -h${db_host}"
   else
-    MYSQL_COMMAND="sudo docker exec -i mysql mysql --skip-ssl -uroot ${root_pass_opt}"
+    MYSQL_SSL_OPT=$(get_mysql_ssl_disabled_opt sudo docker exec mysql mysql)
+    MYSQL_COMMAND="sudo docker exec -i mysql mysql ${MYSQL_SSL_OPT} -uroot ${root_pass_opt}"
     MYSQL_ROOT_COMMAND="${MYSQL_COMMAND}"
   fi
 
