@@ -149,6 +149,10 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
 
+        # Mark the entry as being edited before dispatching the async job.
+        # This keeps the ongoing-changes indicator visible while the worker
+        # is unavailable or the job is waiting in the queue.
+        entry.set_status(Entry.STATUS_EDITING)
         job = Job.new_edit_entry_v2(user, entry, params=request.data)
         job.run()
 
