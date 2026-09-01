@@ -32,7 +32,7 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
     joinAttrs.find((attr) => attr.name === targetAttrname);
 
   const [selectedAttrNames, setSelectedAttrNames] = useState<Array<string>>(
-    currentAttrInfo?.attrinfo.map((attr) => attr.name) ?? [],
+    [...new Set(currentAttrInfo?.attrinfo.map((attr) => attr.name) ?? [])],
   );
 
   const { data: referralAttrs } = usePagodaSWR(
@@ -44,6 +44,10 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
         targetAttrname,
       ),
   );
+
+  const attrNameOptions = [
+    ...new Set(referralAttrs?.map((attr) => attr.name) ?? []),
+  ];
 
   const handleUpdatePageURL = () => {
     // to prevent duplication of same name parameter
@@ -85,7 +89,7 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
       onClose={handleClose}
     >
       <Autocomplete
-        options={referralAttrs?.map((x) => x.name) ?? []}
+        options={attrNameOptions}
         value={selectedAttrNames}
         onChange={(_, value: Array<string>) => {
           setSelectedAttrNames(value);
