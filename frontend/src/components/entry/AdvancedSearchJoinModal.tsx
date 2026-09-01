@@ -31,9 +31,9 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
   const currentAttrInfo: AdvancedSearchJoinAttrInfo | undefined =
     joinAttrs.find((attr) => attr.name === targetAttrname);
 
-  const [selectedAttrNames, setSelectedAttrNames] = useState<Array<string>>(
-    [...new Set(currentAttrInfo?.attrinfo.map((attr) => attr.name) ?? [])],
-  );
+  const [selectedAttrNames, setSelectedAttrNames] = useState<Array<string>>([
+    ...new Set(currentAttrInfo?.attrinfo.map((attr) => attr.name) ?? []),
+  ]);
 
   const { data: referralAttrs } = usePagodaSWR(
     ["referralAttrs", targetEntityIds, searchAllEntities, targetAttrname],
