@@ -128,12 +128,7 @@ const EntryDetailsContent: FC<Props> = ({
     <FlexBox>
       <EntryBreadcrumbs entry={entry} />
 
-      <PageHeader
-        title={entry.name ?? ""}
-        description="アイテム詳細"
-        targetId={entryId}
-        hasOngoingProcess={entry.hasOngoingChanges}
-      >
+      <PageHeader title={entry.name ?? ""} description="アイテム詳細">
         <ChipBox>
           <Stack direction="row" spacing={1}>
             {[
