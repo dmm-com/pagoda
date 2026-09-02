@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack');
 
 module.exports = {
   mode: 'production',
@@ -47,4 +48,10 @@ module.exports = {
     'react-router',
     'notistack'
   ],
-} 
+  // The library is distributed as a single file; inline all async chunks
+  // (React.lazy() page splits) into the main bundle.
+  optimization: {
+    splitChunks: false,
+  },
+  plugins: [new webpack.optimize.LimitChunkCountPlugin({ maxChunks: 1 })],
+}
