@@ -288,6 +288,63 @@ class ViewTest(BaseViewTest):
             ],
         )
 
+    def test_join_attr_keeps_fetching_until_page_is_full(self):
+        """Join filtering must fill a 100-row page from later ES candidate pages."""
+        non_matching_refs = [
+            self.add_entry(
+                self.user,
+                f"non-matching-ref-{i:03d}",
+                self.ref_entity,
+                values={"val": ""},
+            )
+            for i in range(10)
+        ]
+        matching_refs = [
+            self.add_entry(
+                self.user,
+                f"matching-ref-{i:03d}",
+                self.ref_entity,
+                values={"val": "matched"},
+            )
+            for i in range(100)
+        ]
+
+        for i, ref_entry in enumerate(non_matching_refs + matching_refs):
+            self.add_entry(
+                self.user,
+                f"entry-{i:03d}",
+                self.entity,
+                values={"ref": ref_entry.id},
+            )
+
+        params = {
+            "entities": [self.entity.id],
+            "attrinfo": [{"name": "ref"}],
+            "entry_limit": 100,
+            "join_attrs": [
+                {
+                    "name": "ref",
+                    "attrinfo": [
+                        {"name": "val", "keyword": "matched"},
+                    ],
+                }
+            ],
+        }
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
+        )
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], 100)
+        self.assertEqual(resp.json()["total_count"], 100)
+        self.assertEqual(len(resp.json()["values"]), 100)
+        self.assertTrue(
+            all(
+                result["attrs"]["ref.val"]["value"] == {"as_string": "matched"}
+                for result in resp.json()["values"]
+            )
+        )
+
     def test_join_attr_add_attribute_case(self):
         # Added new attribute
         new_attr = EntityAttr.objects.create(
