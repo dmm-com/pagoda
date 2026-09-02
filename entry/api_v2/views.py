@@ -83,7 +83,7 @@ logger = logging.getLogger(__name__)
 
 class EntryPermission(BasePermission):
     def has_object_permission(self, request: Request, view: Any, obj: Any) -> bool:
-        user = cast(User, request.user)
+        user = cast("User", request.user)
 
         permisson = {
             "retrieve": ACLType.Readable,
@@ -144,7 +144,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         if response is not None:
             return response
 
-        user = cast(User, request.user)
+        user = cast("User", request.user)
 
         serializer = EntryUpdateSerializer(
             instance=entry, data=request.data, context={"_user": user}
@@ -390,7 +390,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
     def post(self, request: Request) -> Response:
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = cast(User, request.user)
+        user = cast("User", request.user)
 
         hint_entry = serializer.validated_data.get("hint_entry")
         if hint_entry and (hint_entry.get("filter_key") is not None or hint_entry.get("keyword")):
