@@ -298,10 +298,14 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         # Keep all history rows in the database, but only display rows where
         # the entry name differs from the immediately preceding state.
         history_model = entry.history.model
-        previous_name = history_model.objects.filter(
-            id=OuterRef("id"),
-            history_date__lt=OuterRef("history_date"),
-        ).order_by("-history_date", "-history_id").values("name")[:1]
+        previous_name = (
+            history_model.objects.filter(
+                id=OuterRef("id"),
+                history_date__lt=OuterRef("history_date"),
+            )
+            .order_by("-history_date", "-history_id")
+            .values("name")[:1]
+        )
         self.queryset = (
             entry.history.all()
             .annotate(previous_name=Subquery(previous_name))
