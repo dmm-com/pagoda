@@ -295,8 +295,10 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         """List entry self history records"""
         entry: Entry = self.get_object()
 
-        # Keep all history rows in the database, but only display rows where
-        # the entry name differs from the immediately preceding state.
+        # Keep the initial/baseline row and display later rows only when the
+        # entry name differs from the immediately preceding state. The initial
+        # row has no preceding history row, so filtering out NULL previous_name
+        # would incorrectly hide it.
         history_model = entry.history.model
         previous_name = (
             history_model.objects.filter(
@@ -309,8 +311,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         self.queryset = (
             entry.history.all()
             .annotate(previous_name=Subquery(previous_name))
-            .filter(previous_name__isnull=False)
-            .exclude(name=Subquery(previous_name))
+            .filter(Q(previous_name__isnull=True) | ~Q(name=Subquery(previous_name)))
             .order_by("-history_date")
             .select_related("history_user")
         )
