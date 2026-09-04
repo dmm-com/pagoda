@@ -11,7 +11,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { FC } from "react";
+import { FC, ReactElement } from "react";
 
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { EntityHistoryListParam } from "services/Constants";
@@ -39,7 +39,7 @@ const formatChangeValue = (value: unknown): string => {
 const formatChanges = (
   changes: EntityHistoryChange[] | undefined,
   type: "before" | "after",
-): JSX.Element => {
+): ReactElement => {
   if (!changes || changes.length === 0) {
     return <Typography>-</Typography>;
   }
