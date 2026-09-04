@@ -4,7 +4,7 @@ import re
 from collections import Counter
 from copy import deepcopy
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from django.db.models import OuterRef, Prefetch, Q, QuerySet, Subquery
 from drf_spectacular.types import OpenApiTypes
@@ -31,6 +31,8 @@ from airone.lib.drf import (
 )
 from airone.lib.elasticsearch import (
     ENTRY_NAME_SORT_TARGET,
+    AdvancedSearchResultRecord,
+    AdvancedSearchResults,
     AttrHint,
     EntryHint,
     FilterKey,
@@ -81,7 +83,7 @@ logger = logging.getLogger(__name__)
 
 class EntryPermission(BasePermission):
     def has_object_permission(self, request: Request, view: Any, obj: Any) -> bool:
-        user: User = request.user
+        user = cast("User", request.user)
 
         permisson = {
             "retrieve": ACLType.Readable,
@@ -142,7 +144,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         if response is not None:
             return response
 
-        user: User = request.user
+        user = cast("User", request.user)
 
         serializer = EntryUpdateSerializer(
             instance=entry, data=request.data, context={"_user": user}
@@ -406,6 +408,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
     def post(self, request: Request) -> Response:
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        user = cast("User", request.user)
 
         hint_entry = serializer.validated_data.get("hint_entry")
         if hint_entry and (hint_entry.get("filter_key") is not None or hint_entry.get("keyword")):
@@ -465,8 +468,10 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 else:
                     entity = Entity.objects.filter(name=hint_entity, is_active=True).first()
 
-            if entity and request.user.has_permission(entity, ACLType.Readable):
+            if entity and user.has_permission(entity, ACLType.Readable):
                 hint_entity_ids.append(entity.id)
+
+        search_entity_ids = [str(entity_id) for entity_id in hint_entity_ids]
 
         # Validate sort parameter.
         sort_input = serializer.validated_data.get("sort")
@@ -498,32 +503,73 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     return Response("sort target attribute type is not sortable", status=400)
                 sort_target_attr_type = attr_type
 
-        resp = AdvancedSearchService.search_entries(
-            request.user,
-            hint_entity_ids,
-            hint_attrs,
-            entry_limit,
-            None,  # don't use in APIv2
-            hint_referral,
-            is_output_all,
-            offset=entry_offset,
-            hint_entry=hint_entry,
-            allow_missing_attributes=True,  # For APIv2, allow entries missing attributes
-            exclude_referrals=exclude_referrals,
-            include_referrals=include_referrals,
-            sort_target_attrname=sort_target_attrname,
-            sort_order=sort_order,
-            sort_target_attr_type=sort_target_attr_type,
-        )
+        if not join_attrs:
+            resp = AdvancedSearchService.search_entries(
+                user,
+                search_entity_ids,
+                hint_attrs,
+                entry_limit,
+                None,  # don't use in APIv2
+                hint_referral,
+                is_output_all,
+                offset=entry_offset,
+                hint_entry=hint_entry,
+                allow_missing_attributes=True,
+                exclude_referrals=exclude_referrals,
+                include_referrals=include_referrals,
+                sort_target_attrname=sort_target_attrname,
+                sort_order=sort_order,
+                sort_target_attr_type=sort_target_attr_type,
+            )
+            total_count = deepcopy(resp.ret_count)
+            resp = AdvancedSearchService.apply_join_attrs(user, resp, join_attrs)
+        else:
+            # Join filters are applied after the initial ES search. Continue
+            # scanning candidates until the requested page is full.
+            joined_values: list[AdvancedSearchResultRecord] = []
+            candidate_offset = 0
+            target_end = entry_offset + entry_limit
+            total_count = 0
+            exhausted = False
+            while len(joined_values) < target_end:
+                candidate_resp = AdvancedSearchService.search_entries(
+                    user,
+                    search_entity_ids,
+                    hint_attrs,
+                    entry_limit,
+                    None,
+                    hint_referral,
+                    is_output_all,
+                    offset=candidate_offset,
+                    hint_entry=hint_entry,
+                    allow_missing_attributes=True,
+                    exclude_referrals=exclude_referrals,
+                    include_referrals=include_referrals,
+                    sort_target_attrname=sort_target_attrname,
+                    sort_order=sort_order,
+                    sort_target_attr_type=sort_target_attr_type,
+                )
+                total_count = candidate_resp.ret_count
+                if not candidate_resp.ret_values:
+                    exhausted = True
+                    break
+                joined_resp = AdvancedSearchService.apply_join_attrs(
+                    user, candidate_resp, join_attrs
+                )
+                joined_values.extend(joined_resp.ret_values)
+                candidate_count = len(candidate_resp.ret_values)
+                candidate_offset += candidate_count
+                if candidate_count < entry_limit:
+                    exhausted = True
+                    break
 
-        # save total population number
-        total_count = deepcopy(resp.ret_count)
-
-        resp = AdvancedSearchService.apply_join_attrs(
-            request.user,
-            resp,
-            join_attrs,
-        )
+            if exhausted:
+                total_count = len(joined_values)
+            page_values = joined_values[entry_offset : entry_offset + entry_limit]
+            resp = AdvancedSearchResults(
+                ret_count=len(page_values),
+                ret_values=page_values,
+            )
 
         # convert field values to fit entry retrieve API data type, as a workaround.
         # FIXME should be replaced with DRF serializer etc
