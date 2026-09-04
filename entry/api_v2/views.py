@@ -6,7 +6,7 @@ from copy import deepcopy
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
-from django.db.models import Prefetch, Q, QuerySet
+from django.db.models import OuterRef, Prefetch, Q, QuerySet, Subquery
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, status, viewsets
@@ -295,8 +295,26 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         """List entry self history records"""
         entry: Entry = self.get_object()
 
-        # Get historical records for the entry
-        self.queryset = entry.history.all().order_by("-history_date").select_related("history_user")
+        # Keep the initial/baseline row and display later rows only when the
+        # entry name differs from the immediately preceding state. The initial
+        # row has no preceding history row, so filtering out NULL previous_name
+        # would incorrectly hide it.
+        history_model = entry.history.model
+        previous_name = (
+            history_model.objects.filter(
+                id=OuterRef("id"),
+                history_date__lt=OuterRef("history_date"),
+            )
+            .order_by("-history_date", "-history_id")
+            .values("name")[:1]
+        )
+        self.queryset = (
+            entry.history.all()
+            .annotate(previous_name=Subquery(previous_name))
+            .filter(Q(previous_name__isnull=True) | ~Q(name=Subquery(previous_name)))
+            .order_by("-history_date")
+            .select_related("history_user")
+        )
 
         return super().list(request, *args, **kwargs)
 
