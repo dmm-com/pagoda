@@ -34,21 +34,6 @@ export const UserEditPage: FC = () => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { enqueueSubmitResult } = useFormNotification("ユーザ", willCreate);
-  const {
-    formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
-    handleSubmit,
-    reset,
-    setError,
-    control,
-  } = useForm<Schema>({
-    resolver: zodResolver(schema),
-    mode: "onBlur",
-  });
-
-  usePrompt(
-    isDirty && !isSubmitSuccessful,
-    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
-  );
 
   const {
     data: user,
@@ -58,16 +43,38 @@ export const UserEditPage: FC = () => {
     aironeApiClient.getUser(userId!),
   );
 
-  useEffect(() => {
-    if (!userLoading && user) {
-      reset({
-        username: user.username,
-        email: user.email,
-        isSuperuser: user.isSuperuser,
-        tokenLifetime: user.token?.lifetime ?? 0,
-      });
-    }
-  }, [user, userLoading, reset]);
+  // Fill schema-required defaults for optional API fields.
+  const formValues: Schema | undefined = useMemo(
+    () =>
+      user != null
+        ? {
+            username: user.username,
+            email: user.email ?? "",
+            isSuperuser: user.isSuperuser ?? false,
+            tokenLifetime: user.token?.lifetime ?? 0,
+          }
+        : undefined,
+    [user],
+  );
+
+  const {
+    formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
+    handleSubmit,
+    setError,
+    control,
+  } = useForm<Schema>({
+    resolver: zodResolver(schema),
+    mode: "onBlur",
+    // Sync form values when the fetched user arrives. Dirty fields are
+    // kept so a background revalidation does not clobber user edits.
+    values: formValues,
+    resetOptions: { keepDirtyValues: true },
+  });
+
+  usePrompt(
+    isDirty && !isSubmitSuccessful,
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
+  );
 
   useEffect(() => {
     isSubmitSuccessful && navigate(usersPath());

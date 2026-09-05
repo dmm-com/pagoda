@@ -20,7 +20,7 @@ export const RateLimitedClickable: FC<Props> = ({
   onClick,
   children,
 }) => {
-  const lastProcessingDate = useRef<Date>();
+  const lastProcessingDate = useRef<Date | undefined>(undefined);
 
   const handleClick = (e: SyntheticEvent) => {
     const allowedAfter = (() => {

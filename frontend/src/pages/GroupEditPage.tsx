@@ -34,31 +34,30 @@ export const GroupEditPage: FC = () => {
   const navigate = useNavigate();
   const { enqueueSubmitResult } = useFormNotification("グループ", willCreate);
 
+  const { data: group, isLoading: groupLoading } = usePagodaSWR(
+    groupId != null ? ["group", groupId] : null,
+    () => aironeApiClient.getGroup(groupId!),
+  );
+
   const {
     formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
     handleSubmit,
-    reset,
     setError,
     setValue,
     control,
   } = useForm<Schema>({
     resolver: zodResolver(schema),
     mode: "onBlur",
+    // Sync form values when the fetched group arrives. Dirty fields are
+    // kept so a background revalidation does not clobber user edits.
+    values: group,
+    resetOptions: { keepDirtyValues: true },
   });
 
   usePrompt(
     isDirty && !isSubmitSuccessful,
     "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
-
-  const { data: group, isLoading: groupLoading } = usePagodaSWR(
-    groupId != null ? ["group", groupId] : null,
-    () => aironeApiClient.getGroup(groupId!),
-  );
-
-  useEffect(() => {
-    !groupLoading && group != null && reset(group);
-  }, [group, groupLoading, reset]);
 
   const handleSubmitOnValid = async (group: Schema) => {
     try {

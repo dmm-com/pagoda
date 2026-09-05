@@ -15,8 +15,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from ..exceptions import PluginError
-from ..mixins import PluginAPIViewMixin
+from pagoda_plugin_sdk.exceptions import PluginError
+from pagoda_plugin_sdk.mixins import PluginAPIViewMixin
 
 logger = logging.getLogger(__name__)
 

@@ -20,6 +20,7 @@ from airone.lib.elasticsearch import (
     AttributeDocument,
     EntryDocument,
 )
+from airone.lib.log import Logger
 from airone.lib.types import (
     AttrDefaultValue,
     AttrType,
@@ -2988,7 +2989,9 @@ class AdvancedSearchAttributeIndex(models.Model):
                     value = [coerce_number(v.value) for v in attrv.data_array.all()]
                     key = ",".join([str(v) if v is not None else "" for v in value])
                 case _:
-                    print("TODO implement it")
+                    Logger.warning(
+                        "Unsupported AttrType for advanced search index: %s", entity_attr.type
+                    )
 
         return AdvancedSearchAttributeIndex(
             entity=entry.schema,
@@ -3023,7 +3026,7 @@ class AdvancedSearchAttributeIndex(models.Model):
             ):
                 return self.raw_value
             case _:
-                print("TODO implement it")
+                Logger.warning("Unsupported AttrType for advanced search index: %s", self.type)
 
 
 class AliasEntry(models.Model):

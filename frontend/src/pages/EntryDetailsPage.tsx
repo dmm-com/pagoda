@@ -3,7 +3,14 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { Box, Chip, IconButton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { styled } from "@mui/material/styles";
-import { FC, Suspense, useEffect, useMemo, useState } from "react";
+import {
+  FC,
+  ReactElement,
+  Suspense,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useNavigate } from "react-router";
 
 import { Loading } from "components/common/Loading";
@@ -62,9 +69,9 @@ interface Props {
   additionalContents?: {
     name: string;
     label: string;
-    content: JSX.Element;
+    content: ReactElement;
   }[];
-  sideContent?: JSX.Element;
+  sideContent?: ReactElement;
 }
 
 const EntryDetailsContent: FC<Props> = ({
@@ -128,7 +135,12 @@ const EntryDetailsContent: FC<Props> = ({
     <FlexBox>
       <EntryBreadcrumbs entry={entry} />
 
-      <PageHeader title={entry.name ?? ""} description="アイテム詳細">
+      <PageHeader
+        title={entry.name ?? ""}
+        description="アイテム詳細"
+        targetId={entryId}
+        hasOngoingProcess={entry.hasOngoingChanges}
+      >
         <ChipBox>
           <Stack direction="row" spacing={1}>
             {[

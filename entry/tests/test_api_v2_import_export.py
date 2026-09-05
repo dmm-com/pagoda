@@ -4,9 +4,11 @@ import json
 import logging
 from datetime import date
 from unittest.mock import Mock, patch
+from urllib.parse import urlencode
 
 import yaml
 
+from airone.lib.acl import ACLType
 from airone.lib.elasticsearch import EntryFilterKey
 from airone.lib.log import Logger
 from airone.lib.types import (
@@ -20,6 +22,7 @@ from entry.tests.test_api_v2 import BaseViewTest
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus
 from role.models import Role
+from trigger.models import TriggerCondition
 from user.models import User
 
 
@@ -467,6 +470,471 @@ class ViewTest(BaseViewTest):
 
             data = content.replace(header, "", 1).strip()
             self.assertEqual(data, '"%s,""ENTRY""",' % type_name + expected)
+
+    def _preview_import(self, payload, **params):
+        """Start item preview jobs, run them inline, and read the results back."""
+        with patch(
+            "entry.tasks.import_entries_preview_v2.delay",
+            Mock(side_effect=tasks.import_entries_preview_v2),
+        ):
+            resp = self.client.post("/entry/api/v2/import/preview/", payload, "application/yaml")
+        self.assertEqual(resp.status_code, 202)
+
+        previews = []
+        for job in resp.json()["result"]["jobs"]:
+            query = "?" + urlencode(params) if params else ""
+            preview = self.client.get("/job/api/v2/%d/preview%s" % (job["job_id"], query))
+            self.assertEqual(preview.status_code, 200)
+            previews.append(preview.json())
+        return previews
+
+    def test_import_preview_reports_creations_without_writing(self):
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        [preview] = self._preview_import(payload)
+
+        self.assertEqual(
+            preview["summary"],
+            {
+                "created": 1,
+                "updated": 0,
+                "unchanged": 0,
+                "skipped": 0,
+                "errored": 0,
+                "total": 1,
+            },
+        )
+        [row] = preview["rows"]
+        self.assertEqual(row["name"], "test-entry")
+        self.assertEqual(row["action"], "create")
+        self.assertIn(
+            {"field": "val", "before": None, "after": "foo"},
+            row["changes"],
+        )
+
+        # the preview did not create the item
+        self.assertFalse(Entry.objects.filter(name="test-entry", is_active=True).exists())
+
+    def test_import_preview_reports_the_attributes_that_would_change(self):
+        entry = self.add_entry(self.user, "test-entry", self.entity, values={"val": "before"})
+
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        [preview] = self._preview_import(payload)
+
+        self.assertEqual(preview["summary"]["updated"], 1)
+        [row] = preview["rows"]
+        self.assertEqual(row["action"], "update")
+        self.assertIn(
+            {"field": "val", "before": "before", "after": "foo"},
+            row["changes"],
+        )
+
+        # the preview did not touch the value
+        self.assertEqual(
+            entry.attrs.get(schema__name="val").get_latest_value().get_value(), "before"
+        )
+
+    def test_import_preview_reports_no_change_for_an_identical_file(self):
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        with patch(
+            "entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2)
+        ):
+            with patch(
+                "entry.tasks.notify_create_entry.delay",
+                Mock(side_effect=tasks.notify_create_entry),
+            ):
+                self.client.post("/entry/api/v2/import/", payload, "application/yaml")
+
+        [preview] = self._preview_import(payload)
+
+        self.assertEqual(preview["summary"]["unchanged"], 1)
+        self.assertEqual(preview["summary"]["updated"], 0)
+
+    def test_import_preview_announces_a_trigger_that_would_fire(self):
+        entity_attr = self.entity.attrs.get(name="val")
+        TriggerCondition.register(
+            self.entity,
+            [{"attr_id": entity_attr.id, "cond": "foo"}],
+            [{"attr_id": entity_attr.id, "values": ["triggered"]}],
+        )
+
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        [preview] = self._preview_import(payload)
+
+        # A trigger changes values the file never mentions, so a preview that
+        # stayed silent about it would be describing the wrong outcome.
+        [row] = preview["rows"]
+        self.assertTrue(row["will_invoke_trigger"])
+
+    def test_import_leaves_alone_an_item_changed_since_the_preview(self):
+        entry = self.add_entry(self.user, "test-entry", self.entity, values={"val": "before"})
+
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        with patch(
+            "entry.tasks.import_entries_preview_v2.delay",
+            Mock(side_effect=tasks.import_entries_preview_v2),
+        ):
+            resp = self.client.post("/entry/api/v2/import/preview/", payload, "application/yaml")
+        preview_job_id = resp.json()["result"]["jobs"][0]["job_id"]
+
+        # Someone else edits the very attribute the file would overwrite.
+        entry.attrs.get(schema__name="val").add_value(self.user, "changed by someone else")
+
+        with patch(
+            "entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2)
+        ):
+            resp = self.client.post(
+                "/entry/api/v2/import/?force=true&preview_job_id=%d" % preview_job_id,
+                payload,
+                "application/yaml",
+            )
+        self.assertEqual(resp.status_code, 200)
+
+        job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2).last()
+        self.assertEqual(job.status, JobStatus.WARNING)
+        self.assertIn("Changed by someone else since the preview", job.text)
+
+        # The other person's value survived: the preview the user approved no
+        # longer described this item, so it was not applied.
+        self.assertEqual(
+            entry.attrs.get(schema__name="val").get_latest_value().get_value(),
+            "changed by someone else",
+        )
+
+    def test_import_leaves_alone_an_item_someone_else_created_since_the_preview(self):
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        with patch(
+            "entry.tasks.import_entries_preview_v2.delay",
+            Mock(side_effect=tasks.import_entries_preview_v2),
+        ):
+            resp = self.client.post("/entry/api/v2/import/preview/", payload, "application/yaml")
+        preview_job_id = resp.json()["result"]["jobs"][0]["job_id"]
+
+        # The preview said "create". Someone else gets there first with the same
+        # name, so applying the preview would update their item, not create one.
+        entry = self.add_entry(self.user, "test-entry", self.entity, values={"val": "theirs"})
+
+        with patch(
+            "entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2)
+        ):
+            self.client.post(
+                "/entry/api/v2/import/?force=true&preview_job_id=%d" % preview_job_id,
+                payload,
+                "application/yaml",
+            )
+
+        job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2).last()
+        self.assertEqual(job.status, JobStatus.WARNING)
+        self.assertEqual(
+            entry.attrs.get(schema__name="val").get_latest_value().get_value(), "theirs"
+        )
+
+    def test_import_applies_normally_when_nothing_changed_since_the_preview(self):
+        entry = self.add_entry(self.user, "test-entry", self.entity, values={"val": "before"})
+
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        with patch(
+            "entry.tasks.import_entries_preview_v2.delay",
+            Mock(side_effect=tasks.import_entries_preview_v2),
+        ):
+            resp = self.client.post("/entry/api/v2/import/preview/", payload, "application/yaml")
+        preview_job_id = resp.json()["result"]["jobs"][0]["job_id"]
+
+        with patch(
+            "entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2)
+        ):
+            self.client.post(
+                "/entry/api/v2/import/?force=true&preview_job_id=%d" % preview_job_id,
+                payload,
+                "application/yaml",
+            )
+
+        self.assertEqual(entry.attrs.get(schema__name="val").get_latest_value().get_value(), "foo")
+
+    def test_preview_does_not_expose_its_internal_fingerprints(self):
+        entry = self.add_entry(self.user, "test-entry", self.entity, values={"val": "before"})
+        self.assertTrue(entry)
+
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        [preview] = self._preview_import(payload)
+
+        # The values a row would overwrite are recorded for the import to compare
+        # against. They are database ids of no use to a client, so they stay in.
+        for row in preview["rows"]:
+            self.assertNotIn("baseline", row)
+
+    def test_preview_can_be_downloaded_as_csv(self):
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        with patch(
+            "entry.tasks.import_entries_preview_v2.delay",
+            Mock(side_effect=tasks.import_entries_preview_v2),
+        ):
+            resp = self.client.post("/entry/api/v2/import/preview/", payload, "application/yaml")
+        job_id = resp.json()["result"]["jobs"][0]["job_id"]
+
+        resp = self.client.get("/job/api/v2/%d/preview/download" % job_id)
+        self.assertEqual(resp.status_code, 200)
+
+        content = resp.content.decode("utf-8")
+        self.assertIn("kind,name,action,reason,changes,will_invoke_trigger", content)
+        self.assertIn("Item,test-entry,create", content)
+
+    def test_import_preview_never_writes(self):
+        self.add_entry(self.user, "test-entry", self.entity, values={"val": "before"})
+
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        # An item import also reindexes and notifies, so its preview cannot lean
+        # on a transaction to undo itself. It must simply not write.
+        with patch.object(Entry, "save", side_effect=AssertionError("wrote Entry")):
+            with patch.object(
+                AttributeValue, "save", side_effect=AssertionError("wrote AttributeValue")
+            ):
+                [preview] = self._preview_import(payload)
+
+        self.assertEqual(preview["summary"]["updated"], 1)
+
+    def test_import_preview_reports_an_attribute_the_user_cannot_write(self):
+        entry = self.add_entry(self.user, "test-entry", self.entity, values={"val": "before"})
+        attr = entry.attrs.get(schema__name="val")
+        attr.is_public = False
+        attr.default_permission = ACLType.Readable.id
+        attr.save(update_fields=["is_public", "default_permission"])
+
+        other = self._create_user("other")
+        self.client.force_login(other)
+
+        payload = yaml.dump(
+            [
+                {
+                    "entity": self.entity.name,
+                    "entries": [
+                        {"name": "test-entry", "attrs": [{"name": "val", "value": "after"}]}
+                    ],
+                }
+            ]
+        )
+
+        [preview] = self._preview_import(payload)
+
+        # The import would leave this attribute alone. Calling that "unchanged"
+        # would be true but misleading -- the file does ask for a change.
+        [row] = preview["rows"]
+        self.assertEqual(row["action"], "skip")
+        self.assertEqual(row["reason"], "permission_denied")
+
+    def test_import_preview_warns_about_references_it_cannot_resolve(self):
+        payload = yaml.dump(
+            [
+                {
+                    "entity": "test-entity",
+                    "entries": [
+                        {
+                            "name": "test-entry",
+                            "attrs": [{"name": "ref", "value": "no-such-item"}],
+                        }
+                    ],
+                }
+            ]
+        )
+
+        [preview] = self._preview_import(payload)
+
+        [row] = preview["rows"]
+        # The importer stores an unresolvable reference as an empty value and says
+        # nothing about it, so the preview is the only place a user can see it.
+        self.assertEqual(row["action"], "create")
+        self.assertEqual(row["reason"], "ref: 参照先が見つかりません (no-such-item)")
+
+    def test_import_preview_reports_a_row_the_import_would_reject(self):
+        payload = yaml.dump(
+            [
+                {
+                    "entity": "test-entity",
+                    "entries": [
+                        {"name": "bad-value", "attrs": [{"name": "num", "value": "not-a-number"}]}
+                    ],
+                }
+            ]
+        )
+
+        [preview] = self._preview_import(payload)
+
+        self.assertEqual(preview["summary"]["errored"], 1)
+        [row] = preview["rows"]
+        self.assertEqual(row["action"], "error")
+        # The importer's own complaint is passed through, so the file can be
+        # fixed without running the import to find out what it objects to.
+        self.assertIn("is not a valid number string", row["reason"])
+
+    def test_import_preview_keeps_the_message_of_a_nested_error(self):
+        payload = yaml.dump(
+            [
+                {
+                    "entity": "test-entity",
+                    "entries": [
+                        {"name": "bad-attr", "attrs": [{"name": "no-such-attr", "value": "x"}]}
+                    ],
+                }
+            ]
+        )
+
+        [preview] = self._preview_import(payload)
+
+        [row] = preview["rows"]
+        self.assertEqual(row["action"], "error")
+        # Errors reported per attribute are keyed by row index, so reading only
+        # the top level would reduce this to "attrs: 0".
+        self.assertEqual(row["reason"], "attrs: 0: id: This field is required.")
+
+    def test_import_preview_starts_one_job_per_model_in_the_file(self):
+        other = self.create_entity(self.user, "other-entity", attrs=[])
+        payload = yaml.dump(
+            [
+                {"entity": "test-entity", "entries": [{"name": "in-first", "attrs": []}]},
+                {"entity": "other-entity", "entries": [{"name": "in-second", "attrs": []}]},
+            ]
+        )
+
+        with patch(
+            "entry.tasks.import_entries_preview_v2.delay",
+            Mock(side_effect=tasks.import_entries_preview_v2),
+        ):
+            resp = self.client.post("/entry/api/v2/import/preview/", payload, "application/yaml")
+        self.assertEqual(resp.status_code, 202)
+
+        result = resp.json()["result"]
+        self.assertEqual(result["error"], [])
+        self.assertEqual(
+            [(x["entity"], Job.objects.get(id=x["job_id"]).target.id) for x in result["jobs"]],
+            [("test-entity", self.entity.id), ("other-entity", other.id)],
+        )
+
+    def test_import_preview_reports_models_it_cannot_preview(self):
+        denied = self.create_entity(self.user, "denied-entity", attrs=[])
+        denied.is_public = False
+        denied.save()
+
+        payload = yaml.dump(
+            [
+                {"entity": "no-such-entity", "entries": []},
+                {"entity": "denied-entity", "entries": []},
+            ]
+        )
+
+        other_user = self._create_user("other-user")
+        self.client.force_login(other_user)
+        with patch(
+            "entry.tasks.import_entries_preview_v2.delay",
+            Mock(side_effect=tasks.import_entries_preview_v2),
+        ):
+            resp = self.client.post("/entry/api/v2/import/preview/", payload, "application/yaml")
+
+        # Nothing can be previewed, and the caller is told why for each model
+        # rather than being handed an empty preview.
+        self.assertEqual(resp.status_code, 202)
+        self.assertEqual(
+            resp.json()["result"],
+            {
+                "jobs": [],
+                "error": [
+                    "no-such-entity: Entity does not exists.",
+                    "denied-entity: Entity is permission denied.",
+                ],
+            },
+        )
+
+    def test_import_preview_is_forbidden_for_readonly_user(self):
+        readonly = self._create_user("readonly-user")
+        readonly.authenticate_type = User.AuthenticateType.AUTH_TYPE_LOCAL
+        readonly.is_readonly = True
+        readonly.save()
+        self.client.force_login(readonly)
+
+        payload = yaml.dump([{"entity": "test-entity", "entries": []}])
+        resp = self.client.post("/entry/api/v2/import/preview/", payload, "application/yaml")
+
+        self.assertEqual(resp.status_code, 403)
+
+    def test_import_rejects_a_preview_job_id_that_is_not_a_number(self):
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        with patch(
+            "entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2)
+        ):
+            resp = self.client.post(
+                "/entry/api/v2/import/?preview_job_id=not-a-number",
+                payload,
+                "application/yaml",
+            )
+
+        # A typo in the query string is the client's mistake, not a server error.
+        self.assertEqual(resp.status_code, 400)
+        self.assertFalse(Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2).exists())
+
+    def test_import_ignores_a_preview_that_belongs_to_someone_else(self):
+        entry = self.add_entry(self.user, "test-entry", self.entity, values={"val": "before"})
+
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        with patch(
+            "entry.tasks.import_entries_preview_v2.delay",
+            Mock(side_effect=tasks.import_entries_preview_v2),
+        ):
+            resp = self.client.post("/entry/api/v2/import/preview/", payload, "application/yaml")
+        preview_job_id = resp.json()["result"]["jobs"][0]["job_id"]
+
+        # Someone else edits the attribute, then imports quoting a preview that
+        # is not theirs. The values it recorded must not gate their import.
+        entry.attrs.get(schema__name="val").add_value(self.user, "changed by someone else")
+
+        other_user = self._create_user("other-user")
+        self.client.force_login(other_user)
+        with patch(
+            "entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2)
+        ):
+            resp = self.client.post(
+                "/entry/api/v2/import/?force=true&preview_job_id=%d" % preview_job_id,
+                payload,
+                "application/yaml",
+            )
+        self.assertEqual(resp.status_code, 200)
+
+        job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2).last()
+        self.assertEqual(job.status, JobStatus.DONE)
+        self.assertEqual(entry.attrs.get(schema__name="val").get_latest_value().get_value(), "foo")
 
     @patch("entry.tasks.notify_create_entry.delay", Mock(side_effect=tasks.notify_create_entry))
     @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))

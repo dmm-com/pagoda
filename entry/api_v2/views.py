@@ -6,7 +6,7 @@ from copy import deepcopy
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
-from django.db.models import Prefetch, Q, QuerySet
+from django.db.models import OuterRef, Prefetch, Q, QuerySet, Subquery
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, status, viewsets
@@ -24,6 +24,7 @@ from airone.lib.drf import (
     DuplicatedObjectExistsError,
     FrequentImportError,
     IncorrectTypeError,
+    InvalidValueError,
     ObjectNotExistsError,
     RequiredParameterError,
     YAMLParser,
@@ -68,6 +69,7 @@ from entry.services import AdvancedSearchService
 from entry.settings import CONFIG
 from entry.settings import CONFIG as ENTRY_CONFIG
 from group.models import Group
+from job.api_v2.serializers import ImportPreviewJobsSerializer
 from job.models import Job, JobOperation, JobStatus
 from role.models import Role
 
@@ -147,6 +149,10 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
 
+        # Mark the entry as being edited before dispatching the async job.
+        # This keeps the ongoing-changes indicator visible while the worker
+        # is unavailable or the job is waiting in the queue.
+        entry.set_status(Entry.STATUS_EDITING)
         job = Job.new_edit_entry_v2(user, entry, params=request.data)
         job.run()
 
@@ -289,8 +295,26 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         """List entry self history records"""
         entry: Entry = self.get_object()
 
-        # Get historical records for the entry
-        self.queryset = entry.history.all().order_by("-history_date").select_related("history_user")
+        # Keep the initial/baseline row and display later rows only when the
+        # entry name differs from the immediately preceding state. The initial
+        # row has no preceding history row, so filtering out NULL previous_name
+        # would incorrectly hide it.
+        history_model = entry.history.model
+        previous_name = (
+            history_model.objects.filter(
+                id=OuterRef("id"),
+                history_date__lt=OuterRef("history_date"),
+            )
+            .order_by("-history_date", "-history_id")
+            .values("name")[:1]
+        )
+        self.queryset = (
+            entry.history.all()
+            .annotate(previous_name=Subquery(previous_name))
+            .filter(Q(previous_name__isnull=True) | ~Q(name=Subquery(previous_name)))
+            .order_by("-history_date")
+            .select_related("history_user")
+        )
 
         return super().list(request, *args, **kwargs)
 
@@ -815,6 +839,15 @@ class EntryImportAPI(generics.GenericAPIView):
     @extend_schema(
         parameters=[
             OpenApiParameter("force", OpenApiTypes.BOOL, OpenApiParameter.QUERY, default=False),
+            OpenApiParameter(
+                "preview_job_id",
+                OpenApiTypes.INT,
+                OpenApiParameter.QUERY,
+                description=(
+                    "The preview this import was approved from. Items changed by "
+                    "someone else since then are left alone and reported."
+                ),
+            ),
         ],
         responses={
             200: None,
@@ -825,6 +858,7 @@ class EntryImportAPI(generics.GenericAPIView):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         import_datas = request.data
+        preview_job_id = _preview_job_id_param(request)
         user: User = request.user
         serializer = EntryImportSerializer(data=import_datas)
         serializer.is_valid(raise_exception=True)
@@ -861,13 +895,87 @@ class EntryImportAPI(generics.GenericAPIView):
                 continue
 
             job = Job.new_import_v2(
-                user, entity, text="Preparing to import data", params=import_data
+                user,
+                entity,
+                text="Preparing to import data",
+                params=(
+                    {**import_data, "preview_job_id": preview_job_id}
+                    if preview_job_id is not None
+                    else import_data
+                ),
             )
             job.run()
             job_ids.append(job.id)
 
         return Response(
             {"result": {"job_ids": job_ids, "error": error_list}}, status=status.HTTP_200_OK
+        )
+
+
+def _preview_job_id_param(request: Request) -> int | None:
+    """Read the approved preview's job id, or None when the import has no preview.
+
+    A query parameter is whatever the client sent, so it is checked here rather
+    than handed to int() where a typo would surface as a server error.
+    """
+    raw = request.query_params.get("preview_job_id")
+    if not raw:
+        return None
+    try:
+        return int(raw)
+    except ValueError:
+        raise InvalidValueError("'preview_job_id' must be an integer")
+
+
+class EntryImportPreviewAPI(generics.GenericAPIView):
+    """Start a job that reports what an item import file would change.
+
+    Nothing is written: applying an item import also reindexes Elasticsearch and
+    queues webhook and trigger jobs, so the preview runs the import's decisions
+    (the same serializers, the same change detection) and stops before the write.
+
+    One job is started per model in the file, mirroring the import itself. The
+    preview is optional -- posting to ``EntryImportAPI`` imports straight away.
+    """
+
+    parser_classes = [YAMLParser]
+    serializer_class = ImportPreviewJobsSerializer
+
+    @extend_schema(
+        request=EntryImportSerializer,
+        responses={202: ImportPreviewJobsSerializer},
+    )
+    def post(self, request: Request) -> Response:
+        if request.user.is_readonly:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        import_datas = request.data
+        user: User = request.user
+        serializer = EntryImportSerializer(data=import_datas)
+        serializer.is_valid(raise_exception=True)
+
+        entities = Entity.objects.filter(
+            name__in=[d["entity"] for d in import_datas], is_active=True
+        )
+
+        jobs: list[dict[str, int]] = []
+        error_list: list[str] = []
+        for import_data in import_datas:
+            entity = next((e for e in entities if e.name == import_data["entity"]), None)
+            if not entity:
+                error_list.append("%s: Entity does not exists." % import_data["entity"])
+                continue
+
+            if not user.has_permission(entity, ACLType.Writable):
+                error_list.append("%s: Entity is permission denied." % import_data["entity"])
+                continue
+
+            job = Job.new_import_entry_preview(user, entity, params=import_data)
+            job.run()
+            jobs.append({"entity": entity.name, "job_id": job.id})
+
+        return Response(
+            {"result": {"jobs": jobs, "error": error_list}}, status=status.HTTP_202_ACCEPTED
         )
 
 

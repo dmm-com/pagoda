@@ -1,4 +1,4 @@
-import { FC, ReactNode } from "react";
+import { FC, Suspense, lazy, ReactNode } from "react";
 import {
   createBrowserRouter,
   createRoutesFromElements,
@@ -8,38 +8,12 @@ import {
   useRouteError,
 } from "react-router";
 
-import { ACLHistoryPage } from "../pages/ACLHistoryPage";
-import { AliasEntryListPage } from "../pages/AliasEntryListPage";
-import { CategoryListPage } from "../pages/CategoryListPage";
-import { EntryCopyPage } from "../pages/EntryCopyPage";
-import { EntryDetailsPage } from "../pages/EntryDetailsPage";
-import { EntryRestorePage } from "../pages/EntryRestorePage";
 import { NotFoundErrorPage } from "../pages/NotFoundErrorPage";
-import { RoleEditPage } from "../pages/RoleEditPage";
-import { RoleListPage } from "../pages/RoleListPage";
 
 import { EntityAwareRoute } from "./EntityAwareRoute";
 
 import { Header } from "components/common/Header";
-import { ACLEditPage } from "pages/ACLEditPage";
-import { AdvancedSearchPage } from "pages/AdvancedSearchPage";
-import { AdvancedSearchResultsPage } from "pages/AdvancedSearchResultsPage";
-import { CategoryEditPage } from "pages/CategoryEditPage";
-import { DashboardPage } from "pages/DashboardPage";
-import { EntityEditPage } from "pages/EntityEditPage";
-import { EntityHistoryPage } from "pages/EntityHistoryPage";
-import { EntityListPage } from "pages/EntityListPage";
-import { EntryEditPage } from "pages/EntryEditPage";
-import { EntryHistoryListPage } from "pages/EntryHistoryListPage";
-import { EntryListPage } from "pages/EntryListPage";
-import { GroupEditPage } from "pages/GroupEditPage";
-import { GroupListPage } from "pages/GroupListPage";
-import { JobListPage } from "pages/JobListPage";
-import { LoginPage } from "pages/LoginPage";
-import { TriggerEditPage } from "pages/TriggerEditPage";
-import { TriggerListPage } from "pages/TriggerListPage";
-import { UserEditPage } from "pages/UserEditPage";
-import { UserListPage } from "pages/UserListPage";
+import { Loading } from "components/common/Loading";
 import { Plugin } from "plugins";
 import {
   aclHistoryPath,
@@ -78,6 +52,113 @@ import {
   usersPath,
 } from "routes/Routes";
 
+// Each page component is code-split and loaded on demand
+const ACLHistoryPage = lazy(() =>
+  import("pages/ACLHistoryPage").then((m) => ({
+    default: m.ACLHistoryPage,
+  })),
+);
+const ACLEditPage = lazy(() =>
+  import("pages/ACLEditPage").then((m) => ({ default: m.ACLEditPage })),
+);
+const AdvancedSearchPage = lazy(() =>
+  import("pages/AdvancedSearchPage").then((m) => ({
+    default: m.AdvancedSearchPage,
+  })),
+);
+const AdvancedSearchResultsPage = lazy(() =>
+  import("pages/AdvancedSearchResultsPage").then((m) => ({
+    default: m.AdvancedSearchResultsPage,
+  })),
+);
+const AliasEntryListPage = lazy(() =>
+  import("pages/AliasEntryListPage").then((m) => ({
+    default: m.AliasEntryListPage,
+  })),
+);
+const CategoryEditPage = lazy(() =>
+  import("pages/CategoryEditPage").then((m) => ({
+    default: m.CategoryEditPage,
+  })),
+);
+const CategoryListPage = lazy(() =>
+  import("pages/CategoryListPage").then((m) => ({
+    default: m.CategoryListPage,
+  })),
+);
+const DashboardPage = lazy(() =>
+  import("pages/DashboardPage").then((m) => ({ default: m.DashboardPage })),
+);
+const EntryCopyPage = lazy(() =>
+  import("pages/EntryCopyPage").then((m) => ({ default: m.EntryCopyPage })),
+);
+const EntryDetailsPage = lazy(() =>
+  import("pages/EntryDetailsPage").then((m) => ({
+    default: m.EntryDetailsPage,
+  })),
+);
+const EntryEditPage = lazy(() =>
+  import("pages/EntryEditPage").then((m) => ({ default: m.EntryEditPage })),
+);
+const EntryHistoryListPage = lazy(() =>
+  import("pages/EntryHistoryListPage").then((m) => ({
+    default: m.EntryHistoryListPage,
+  })),
+);
+const EntryListPage = lazy(() =>
+  import("pages/EntryListPage").then((m) => ({ default: m.EntryListPage })),
+);
+const EntryRestorePage = lazy(() =>
+  import("pages/EntryRestorePage").then((m) => ({
+    default: m.EntryRestorePage,
+  })),
+);
+const EntityEditPage = lazy(() =>
+  import("pages/EntityEditPage").then((m) => ({ default: m.EntityEditPage })),
+);
+const EntityHistoryPage = lazy(() =>
+  import("pages/EntityHistoryPage").then((m) => ({
+    default: m.EntityHistoryPage,
+  })),
+);
+const EntityListPage = lazy(() =>
+  import("pages/EntityListPage").then((m) => ({ default: m.EntityListPage })),
+);
+const GroupEditPage = lazy(() =>
+  import("pages/GroupEditPage").then((m) => ({ default: m.GroupEditPage })),
+);
+const GroupListPage = lazy(() =>
+  import("pages/GroupListPage").then((m) => ({ default: m.GroupListPage })),
+);
+const JobListPage = lazy(() =>
+  import("pages/JobListPage").then((m) => ({ default: m.JobListPage })),
+);
+const LoginPage = lazy(() =>
+  import("pages/LoginPage").then((m) => ({ default: m.LoginPage })),
+);
+const RoleEditPage = lazy(() =>
+  import("pages/RoleEditPage").then((m) => ({ default: m.RoleEditPage })),
+);
+const RoleListPage = lazy(() =>
+  import("pages/RoleListPage").then((m) => ({ default: m.RoleListPage })),
+);
+const TriggerEditPage = lazy(() =>
+  import("pages/TriggerEditPage").then((m) => ({
+    default: m.TriggerEditPage,
+  })),
+);
+const TriggerListPage = lazy(() =>
+  import("pages/TriggerListPage").then((m) => ({
+    default: m.TriggerListPage,
+  })),
+);
+const UserEditPage = lazy(() =>
+  import("pages/UserEditPage").then((m) => ({ default: m.UserEditPage })),
+);
+const UserListPage = lazy(() =>
+  import("pages/UserListPage").then((m) => ({ default: m.UserListPage })),
+);
+
 // re-throw error to be caught by the root error boundary
 const ErrorBridge: FC = () => {
   throw useRouteError();
@@ -98,13 +179,23 @@ export const AppRouter: FC<Props> = ({
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route errorElement={<ErrorBridge />}>
-        <Route path={loginPath()} element={<LoginPage />} />
+        <Route
+          path={loginPath()}
+          element={
+            <Suspense fallback={<Loading />}>
+              <LoginPage />
+            </Suspense>
+          }
+        />
         <Route
           path="/"
           element={
             <>
               <Header />
-              <Outlet />
+              {/* page chunks resolved by the routes below are shown here */}
+              <Suspense fallback={<Loading />}>
+                <Outlet />
+              </Suspense>
             </>
           }
         >

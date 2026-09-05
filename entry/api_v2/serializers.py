@@ -872,6 +872,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
     attrs = serializers.SerializerMethodField()
     schema = EntitySerializer()
     permission = serializers.SerializerMethodField()
+    has_ongoing_changes = serializers.SerializerMethodField()
 
     class Meta:
         model = Entry
@@ -885,8 +886,12 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
             "attrs",
             "is_public",
             "permission",
+            "has_ongoing_changes",
         ]
         read_only_fields = ["is_active"]
+
+    def get_has_ongoing_changes(self, obj: Entry) -> bool:
+        return bool(obj.status & (Entry.STATUS_CREATING | Entry.STATUS_EDITING))
 
     def get_permission(self, obj: Entry) -> int:
         user = self.context["request"].user
@@ -1949,7 +1954,8 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer):
         # create a job to export search result and run it
         job = Job.new_export_search_result_v2(
             user=user,
-            text="search_results.%s" % self.validated_data["export_style"],
+            text="search_results_%s.%s"
+            % (datetime.now().strftime("%Y_%m_%d_%H_%M"), self.validated_data["export_style"]),
             params=self.validated_data,
         )
         job.run()

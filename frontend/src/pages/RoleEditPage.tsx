@@ -1,7 +1,7 @@
 import { RoleCreateUpdate } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Container, Typography } from "@mui/material";
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
@@ -33,16 +33,31 @@ export const RoleEditPage: FC = () => {
   const navigate = useNavigate();
   const { enqueueSubmitResult } = useFormNotification("ロール", willCreate);
 
+  const { data: role, isLoading: roleLoading } = usePagodaSWR(
+    roleId != null ? ["role", roleId] : null,
+    () => aironeApiClient.getRole(roleId!),
+  );
+
+  // Fill schema-required defaults for optional API fields.
+  const initialValues: Schema | undefined = useMemo(
+    () =>
+      role != null ? { ...role, isActive: role.isActive ?? true } : undefined,
+    [role],
+  );
+
   const {
     formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
     handleSubmit,
-    reset,
     setError,
     setValue,
     control,
   } = useForm<Schema>({
     resolver: zodResolver(schema),
     mode: "onBlur",
+    // Sync form values when the fetched role arrives. Dirty fields are
+    // kept so a background revalidation does not clobber user edits.
+    values: initialValues,
+    resetOptions: { keepDirtyValues: true },
   });
 
   usePrompt(
@@ -50,20 +65,11 @@ export const RoleEditPage: FC = () => {
     "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
-  const { data: role, isLoading: roleLoading } = usePagodaSWR(
-    roleId != null ? ["role", roleId] : null,
-    () => aironeApiClient.getRole(roleId!),
-  );
-
   useEffect(() => {
     if (!roleLoading && role && !role.isEditable) {
       throw new ForbiddenError("Only admin can edit a role");
     }
   }, [role, roleLoading]);
-
-  useEffect(() => {
-    !roleLoading && role != null && reset(role);
-  }, [role, roleLoading, reset]);
 
   useEffect(() => {
     isSubmitSuccessful && navigate(rolesPath());

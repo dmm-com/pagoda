@@ -2,7 +2,7 @@ import { ACLObjtypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Container, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
-import { FC, Suspense, useCallback, useEffect } from "react";
+import { FC, Suspense, useCallback, useEffect, useMemo } from "react";
 import { FieldErrors, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
@@ -31,26 +31,40 @@ const ACLEditContent: FC<{ objectId: number }> = ({ objectId }) => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
 
+  const { data: acl } = usePagodaSWR(
+    ["acl", objectId],
+    () => aironeApiClient.getAcl(objectId),
+    { suspense: true },
+  );
+
+  // Initialize form values from the fetched acl. Dirty fields are kept so a
+  // background revalidation does not clobber user edits.
+  const initialValues = useMemo(
+    () => ({
+      isPublic: acl.isPublic ?? false,
+      defaultPermission: acl.defaultPermission,
+      objtype: acl.objtype,
+      roles: acl.roles,
+    }),
+    [acl],
+  );
+
   const {
     formState: { isDirty, isSubmitting, isSubmitSuccessful },
     handleSubmit,
-    reset,
     control,
     watch,
   } = useForm<Schema>({
     resolver: zodResolver(schema),
     mode: "onSubmit",
+    // Sync form values when the fetched acl arrives.
+    values: initialValues,
+    resetOptions: { keepDirtyValues: true },
   });
 
   usePrompt(
     isDirty && !isSubmitSuccessful,
     "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
-  );
-
-  const { data: acl } = usePagodaSWR(
-    ["acl", objectId],
-    () => aironeApiClient.getAcl(objectId),
-    { suspense: true },
   );
 
   // Fetch the parent/self entity or entry that the breadcrumbs and
@@ -176,16 +190,6 @@ const ACLEditContent: FC<{ objectId: number }> = ({ objectId }) => {
   const handleCancel = async () => {
     historyReplace();
   };
-
-  /* initialize permissions and isPublic variables from acl parameter */
-  useEffect(() => {
-    reset({
-      isPublic: acl.isPublic,
-      defaultPermission: acl.defaultPermission,
-      objtype: acl.objtype,
-      roles: acl.roles,
-    });
-  }, [acl, reset]);
 
   // Navigate after the submit succeeded. This must stay in an effect so that
   // the usePrompt blocker is disabled (isSubmitSuccessful=true) before leaving.

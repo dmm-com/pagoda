@@ -51,6 +51,8 @@ class PreviewCollector:
         action: PreviewAction,
         reason: str | None = None,
         changes: list[dict[str, str | None]] | None = None,
+        will_invoke_trigger: bool = False,
+        baseline: dict[str, Any] | None = None,
     ) -> None:
         self.summary[PREVIEW_SUMMARY_KEYS[action]] += 1
         self.summary["total"] += 1
@@ -62,6 +64,10 @@ class PreviewCollector:
             "action": action,
             "reason": reason,
             "changes": changes or [],
+            "will_invoke_trigger": will_invoke_trigger,
+            # What the row looked like when it was previewed. Never served to a
+            # client; the import reads it to notice values changed since.
+            "baseline": baseline,
         }
 
         bucket = self._unchanged if action == "unchanged" else self._notable

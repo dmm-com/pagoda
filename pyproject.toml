@@ -46,27 +46,36 @@ ignore_errors = true
 module = ["*.migrations.*"]
 ignore_errors = true
 
-# entry is the largest, most complex app; it is typed in a follow-up PR so this
-# PR can be reviewed in a focused slice.
-[[tool.mypy.overrides]]
-module = [
-    "entry.api_v1.views",
-    "entry.api_v2.serializers",
-    "entry.api_v2.views",
-    "entry.services",
-    "entry.tasks",
-    "entry.views",
-]
-ignore_errors = true
+# CI compares these diagnostics with the base revision using the current
+# configuration and toolchain. See tools/mypy_ratchet.py.
 
 [tool.ruff]
-# Pyflakes (F), pycodestyle (E, W), isort (I)
-lint.select = ["E", "F", "I", "W"]
+# Pyflakes (F), pycodestyle (E, W), isort (I),
+# flake8-async (ASYNC), flake8-import-conventions (ICN), flake8-logging (LOG),
+# flake8-no-pep420 (INP), flake8-tidy-imports (TID), flake8-print (T20).
+#
+# The six rule sets after isort were chosen because the codebase already
+# satisfies them (10 violations in total, all addressed in the same change),
+# so they act purely as a guard against new occurrences rather than as a
+# backlog. Larger rule sets (B, SIM, S, DTZ, ...) are introduced separately.
+lint.select = ["E", "F", "I", "W", "ASYNC", "ICN", "LOG", "INP", "TID", "T20"]
 line-length = 100
 extend-exclude = ["./*/migrations", "manage.py", "./node_modules"]
 
 [tool.ruff.lint.per-file-ignores]
 "./airone/tests/test_elasticsearch.py" = ["E501"]
+# Command-line helpers whose stdout is the interface: generate_testdata.py
+# reports progress, and devmode.py is run by tools/lite.sh as
+# `airone/lib/devmode.py --env` with its output consumed by the shell.
+# mypy_ratchet.py is a CI gate script whose stdout/stderr messages are its
+# interface.
+"./tools/generate_testdata.py" = ["T201"]
+"./airone/lib/devmode.py" = ["T201"]
+"./tools/mypy_ratchet.py" = ["T201"]
+# Fixtures emulating an out-of-tree custom_view directory. They are loaded by
+# file path via importlib (airone/lib/custom_view.py), so they are deliberately
+# not a Python package.
+"./entry/tests/custom_view/**" = ["INP001"]
 
 [project]
 name = "airone"
@@ -88,7 +97,7 @@ dependencies = [
     "django-simple-history==3.11.0",
     "django-storages==1.14.6",
     "django==5.2.16",
-    "djangorestframework==3.16.1",
+    "djangorestframework==3.17.2",
     "markdown>=3.7",
     "drf-spectacular==0.29.0",
     "elasticsearch==8.17.0",
@@ -147,6 +156,3 @@ plugins = [
     "pagoda-cross-entity-sample-plugin",
     "pagoda-echo-plugin",
 ]
-
-[tool.ruff.lint.extend-per-file-ignores]
-"./tools/mypy_ratchet.py" = ["T201"]

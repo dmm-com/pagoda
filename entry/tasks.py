@@ -50,7 +50,7 @@ from entry.api_v2.serializers import (
     ReferralEntry,
 )
 from entry.models import Attribute, Entry
-from entry.services import AdvancedSearchService
+from entry.services import AdvancedSearchService, EntryImportPreviewService
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus, JobTarget
 from role.models import Role
@@ -423,7 +423,7 @@ def _yaml_export_v2(
 
 
 @register_job_task(JobOperation.CREATE_ENTRY)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready_with_handlers(
     on_cancelled=lambda job: (
         Entry.objects.filter(id=job.target.id, is_active=True).first().delete()
@@ -497,7 +497,7 @@ def create_entry_attrs(self: Task, job: Job) -> JobStatus | None:
 
 
 @register_job_task(JobOperation.EDIT_ENTRY)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def edit_entry_attrs(self: Task, job: Job) -> JobStatus:
     user = User.objects.get(id=job.user.id)
@@ -551,7 +551,7 @@ def edit_entry_attrs(self: Task, job: Job) -> JobStatus:
 
 
 @register_job_task(JobOperation.DELETE_ENTRY)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def delete_entry(self: Task, job: Job) -> JobStatus:
     entry = Entry.objects.get(id=job.target.id)
@@ -572,7 +572,7 @@ def delete_entry(self: Task, job: Job) -> JobStatus:
 
 
 @register_job_task(JobOperation.RESTORE_ENTRY)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def restore_entry(self: Task, job: Job) -> JobStatus:
     entry = Entry.objects.get(id=job.target.id)
@@ -597,7 +597,7 @@ def restore_entry(self: Task, job: Job) -> JobStatus:
 
 
 @register_job_task(JobOperation.COPY_ENTRY)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def copy_entry(self: Task, job: Job) -> tuple[JobStatus, str, None] | None:
     src_entry = Entry.objects.get(id=job.target.id)
@@ -623,7 +623,7 @@ def copy_entry(self: Task, job: Job) -> tuple[JobStatus, str, None] | None:
 
 
 @register_job_task(JobOperation.DO_COPY_ENTRY)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def do_copy_entry(self: Task, job: Job) -> tuple[JobStatus, str, None]:
     src_entry = Entry.objects.get(id=job.target.id)
@@ -665,7 +665,7 @@ def do_copy_entry(self: Task, job: Job) -> tuple[JobStatus, str, None]:
 
 
 @register_job_task(JobOperation.IMPORT_ENTRY)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def import_entries(self: Task, job: Job) -> tuple[JobStatus, str, None] | None:
     try:
@@ -677,7 +677,7 @@ def import_entries(self: Task, job: Job) -> tuple[JobStatus, str, None] | None:
 
 
 @register_job_task(JobOperation.IMPORT_ENTRY_V2)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def import_entries_v2(self: Task, job: Job) -> tuple[JobStatus, str, None] | None:
     user: User = job.user
@@ -688,6 +688,8 @@ def import_entries_v2(self: Task, job: Job) -> tuple[JobStatus, str, None] | Non
 
     total_count = len(import_serializer.validated_data["entries"])
     err_msg: list[str] = []
+    stale: list[str] = []
+    baselines = EntryImportPreviewService.load_baselines(job)
     for index, entry_data in enumerate(import_serializer.validated_data["entries"]):
         job.text = "Now importing... (progress: [%5d/%5d])" % (index + 1, total_count)
         job.save(update_fields=["text"])
@@ -710,6 +712,12 @@ def import_entries_v2(self: Task, job: Job) -> tuple[JobStatus, str, None] | Non
                 name=entry_data["name"], schema=entity, is_active=True
             ).first()
 
+        if entry and EntryImportPreviewService.is_stale(entry, entry_data, baselines):
+            # Someone changed this item after the preview was built, so the
+            # preview the user approved no longer describes what would happen.
+            stale.append(entry_data["name"])
+            continue
+
         if entry:
             serializer = EntryUpdateSerializer(instance=entry, data=entry_data, context=context)
         else:
@@ -724,18 +732,19 @@ def import_entries_v2(self: Task, job: Job) -> tuple[JobStatus, str, None] | Non
                 % (entry_data["name"], e)
             )
 
-    if err_msg:
-        return (
-            JobStatus.WARNING,
-            "Imported Entry count: %d, Failed import Entry: %s" % (total_count, err_msg),
-            None,
-        )
+    if err_msg or stale:
+        text = "Imported Entry count: %d" % total_count
+        if err_msg:
+            text += ", Failed import Entry: %s" % err_msg
+        if stale:
+            text += ", Changed by someone else since the preview: %s" % stale
+        return (JobStatus.WARNING, text, None)
     else:
         return JobStatus.DONE, "Imported Entry count: %d" % total_count, None
 
 
 @register_job_task(JobOperation.EXPORT_ENTRY)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def export_entries(self: Task, job: Job) -> None:
     user = job.user
@@ -801,7 +810,7 @@ def export_entries(self: Task, job: Job) -> None:
 
 
 @register_job_task(JobOperation.EXPORT_ENTRY_V2)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def export_entries_v2(self: Task, job: Job) -> None:
     user = job.user
@@ -961,7 +970,7 @@ def _csv_export_v2(
 
 
 @register_job_task(JobOperation.EXPORT_SEARCH_RESULT_V2)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def export_search_result_v2(self: Any, job: Job) -> tuple[JobStatus, str, ACLBase | None] | None:
     user = job.user
@@ -1034,7 +1043,7 @@ def export_search_result_v2(self: Any, job: Job) -> tuple[JobStatus, str, ACLBas
 
 
 @register_job_task(JobOperation.REGISTER_REFERRALS)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def register_referrals(self: Task, job: Job) -> None:
     # register entries data which refer target entry to elasticsearch
@@ -1058,7 +1067,7 @@ def _notify_event(
 
 
 @register_job_task(JobOperation.UPDATE_DOCUMENT)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def update_es_documents(self: Task, job: Job) -> JobStatus:
     params = json.loads(job.params)
@@ -1070,28 +1079,28 @@ def update_es_documents(self: Task, job: Job) -> JobStatus:
 
 
 @register_job_task(JobOperation.NOTIFY_CREATE_ENTRY)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def notify_create_entry(self: Task, job: Job) -> tuple[JobStatus, str, None] | None:
     return _notify_event(notify_entry_create, job.target.id, job.user)
 
 
 @register_job_task(JobOperation.NOTIFY_UPDATE_ENTRY)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def notify_update_entry(self: Task, job: Job) -> tuple[JobStatus, str, None] | None:
     return _notify_event(notify_entry_update, job.target.id, job.user)
 
 
 @register_job_task(JobOperation.NOTIFY_DELETE_ENTRY)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def notify_delete_entry(self: Task, job: Job) -> tuple[JobStatus, str, None] | None:
     return _notify_event(notify_entry_delete, job.target.id, job.user)
 
 
 @register_job_task(JobOperation.CREATE_ENTRY_V2)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def create_entry_v2(self: Task, job: Job) -> JobStatus:
     serializer = EntryCreateSerializer(data=json.loads(job.params), context={"_user": job.user})
@@ -1112,7 +1121,7 @@ def create_entry_v2(self: Task, job: Job) -> JobStatus:
 
 
 @register_job_task(JobOperation.EDIT_ENTRY_V2)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def edit_entry_v2(self: Task, job: Job) -> JobStatus:
     entry: Entry | None = Entry.objects.filter(id=job.target.id, is_active=True).first()
@@ -1131,7 +1140,7 @@ def edit_entry_v2(self: Task, job: Job) -> JobStatus:
 
 
 @register_job_task(JobOperation.DELETE_ENTRY_V2)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def delete_entry_v2(self: Task, job: Job) -> JobStatus:
     entry: Entry | None = Entry.objects.filter(id=job.target.id, is_active=True).first()
@@ -1157,7 +1166,7 @@ def delete_entry_v2(self: Task, job: Job) -> JobStatus:
 
 
 @register_job_task(JobOperation.BULK_EDIT_ENTRY)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def bulk_update_entries(
     self: Any, job: Job
@@ -1211,4 +1220,35 @@ def bulk_update_entries(
 
     job.text = "Bulk update completed [%5d/%5d]" % (total_count, total_count)
     job.save(update_fields=["text"])
+    return JobStatus.DONE
+
+
+@register_job_task(JobOperation.IMPORT_ENTRY_PREVIEW)
+@app.task(bind=True)  # type: ignore[misc]
+@may_schedule_until_job_is_ready
+def import_entries_preview_v2(self: Task, job: Job) -> JobStatus:
+    """Report what importing this file would do to the items of one model.
+
+    It touches no item and no value; the only thing it writes is its own
+    progress, onto the job row it runs as. See EntryImportPreviewService.
+    """
+    entity = Entity.objects.get(id=job.target.id)
+    raw_data = json.loads(job.params)
+
+    import_serializer = EntryImportEntitySerializer(data=raw_data)
+    if not import_serializer.is_valid():
+        return JobStatus.ERROR
+
+    payload = EntryImportPreviewService.build(
+        job,
+        job.user,
+        entity,
+        import_serializer.validated_data["entries"],
+        raw_data.get("entries", []),
+    )
+    if payload is None:
+        return JobStatus.CANCELED
+
+    job.set_cache(payload)
+
     return JobStatus.DONE

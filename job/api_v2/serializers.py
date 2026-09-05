@@ -98,6 +98,9 @@ class ImportPreviewRowSerializer(serializers.Serializer[dict[str, Any]]):
     action = serializers.ChoiceField(choices=["create", "update", "unchanged", "skip", "error"])
     reason = serializers.CharField(allow_null=True)
     changes = ImportPreviewChangeSerializer(many=True)
+    will_invoke_trigger = serializers.BooleanField(
+        help_text="True when importing this row would fire a TriggerAction"
+    )
 
 
 class ImportPreviewSummarySerializer(serializers.Serializer[dict[str, Any]]):
@@ -121,3 +124,18 @@ class ImportPreviewSerializer(serializers.Serializer[dict[str, Any]]):
 
 class ImportPreviewJobSerializer(serializers.Serializer[dict[str, Any]]):
     job_id = serializers.IntegerField(help_text="Poll this job, then read its preview")
+
+
+class ImportPreviewJobForEntitySerializer(ImportPreviewJobSerializer):
+    entity = serializers.CharField(help_text="The model whose items this preview covers")
+
+
+class ImportPreviewJobsResultSerializer(serializers.Serializer[dict[str, Any]]):
+    jobs = ImportPreviewJobForEntitySerializer(many=True)
+    error = serializers.ListField(child=serializers.CharField())
+
+
+class ImportPreviewJobsSerializer(serializers.Serializer[dict[str, Any]]):
+    """One preview job per model, mirroring the shape of the item import API."""
+
+    result = ImportPreviewJobsResultSerializer()
