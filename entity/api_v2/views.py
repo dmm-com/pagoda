@@ -1,3 +1,4 @@
+import copy
 import logging
 from typing import Any, List, cast
 
@@ -206,9 +207,10 @@ class EntityAPI(viewsets.ModelViewSet[Entity]):
 
         serializer = EntityCreateSerializer(data=request.data, context={"_user": user})
         serializer.is_valid(raise_exception=True)
+        job_params = copy.deepcopy(serializer.validated_data)
         entity = serializer.create(serializer.validated_data)
 
-        job = Job.new_create_entity_v2(user, entity, params=request.data)
+        job = Job.new_create_entity_v2(user, entity, params=job_params)
         job.run()
 
         return Response(status=status.HTTP_202_ACCEPTED)
@@ -222,9 +224,10 @@ class EntityAPI(viewsets.ModelViewSet[Entity]):
             instance=entity, data=request.data, context={"_user": user}
         )
         serializer.is_valid(raise_exception=True)
+        job_params = copy.deepcopy(serializer.validated_data)
         serializer.update(entity, serializer.validated_data)
 
-        job = Job.new_edit_entity_v2(user, entity, params=request.data)
+        job = Job.new_edit_entity_v2(user, entity, params=job_params)
         job.run()
 
         return Response(status=status.HTTP_202_ACCEPTED)
@@ -485,7 +488,7 @@ class EntityImportPreviewAPI(generics.GenericAPIView[Entity]):
         )
         serializer.is_valid(raise_exception=True)
 
-        job = Job.new_import_entity_preview(user, request.data)
+        job = Job.new_import_entity_preview(user, serializer.validated_data)
         job.run()
 
         return Response({"job_id": job.id}, status=status.HTTP_202_ACCEPTED)

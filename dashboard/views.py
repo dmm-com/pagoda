@@ -20,7 +20,7 @@ from entry.admin import AttrResource, AttrValueResource, EntryResource
 from entry.models import AttributeValue, Entry
 from entry.services import AdvancedSearchService
 from entry.settings import CONFIG as CONFIG_ENTRY
-from job.models import Job, JobStatus
+from job.models import Job, JobOperation, JobStatus
 from user.models import User
 
 from .settings import CONFIG
@@ -319,7 +319,11 @@ def export_search_result(request: HttpRequest, recv_data: dict[str, Any]) -> Htt
     user = cast(User, request.user)
     # check whether same job is sent
     job_status_not_finished: list[JobStatus] = [JobStatus.PREPARING, JobStatus.PROCESSING]
-    if Job.get_job_with_params(user, recv_data).filter(status__in=job_status_not_finished).exists():
+    if (
+        Job.get_job_with_params(user, JobOperation.EXPORT_SEARCH_RESULT, recv_data)
+        .filter(status__in=job_status_not_finished)
+        .exists()
+    ):
         return HttpResponse("Same export processing is under execution", status=400)
 
     # create a job to export search result and run it

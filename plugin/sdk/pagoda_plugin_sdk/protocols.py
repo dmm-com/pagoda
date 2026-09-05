@@ -263,6 +263,19 @@ class JobProtocol(Protocol):
     ) -> None: ...
     def to_json(self) -> dict[str, Any]: ...
     def run(self, will_delay: bool = True) -> None: ...
+    def get_typed_params(self, expected_type: type[Any] | None = None) -> Any: ...
+
+    @classmethod
+    def new_custom_job(
+        cls,
+        user: UserProtocol,
+        operation: int,
+        *,
+        params: Any,
+        target: EntryProtocol | None = None,
+        text: str = "",
+        depend_on: Any = None,
+    ) -> "JobProtocol": ...
 
     @classmethod
     def method_table(cls) -> dict[str, Any]: ...
