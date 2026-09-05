@@ -108,7 +108,7 @@ class CreateEntityV2Attr(BaseModel):
     is_summarized: bool = False
     referral: list[int] = Field(default_factory=list)
     note: str = ""
-    default_value: Optional[str | bool | int | float] = None
+    default_value: Any = None
     choices: Optional[list[dict[str, str]]] = None
     name_order: Optional[int] = 0  # for internal use only
     name_prefix: Optional[str] = ""  # for internal use only
@@ -143,6 +143,8 @@ class CreateEntityV2Attr(BaseModel):
             AttrType.TEXT,
             AttrType.BOOLEAN,
             AttrType.NUMBER,
+            AttrType.OBJECT,
+            AttrType.ARRAY_OBJECT,
         ]
 
         # Clear default_value for unsupported types (don't raise error)
@@ -163,8 +165,29 @@ class CreateEntityV2Attr(BaseModel):
             if not isinstance(self.default_value, bool):
                 is_valid = False
         elif self.type == AttrType.NUMBER:
-            if not isinstance(self.default_value, (int, float)):
+            if not isinstance(self.default_value, (int, float)) or isinstance(
+                self.default_value, bool
+            ):
                 is_valid = False
+        elif self.type == AttrType.OBJECT:
+            if (
+                not isinstance(self.default_value, int)
+                or isinstance(self.default_value, bool)
+                or self.default_value <= 0
+            ):
+                is_valid = False
+        elif self.type == AttrType.ARRAY_OBJECT:
+            if (
+                not isinstance(self.default_value, list)
+                or not all(
+                    isinstance(item, int) and not isinstance(item, bool) and item > 0
+                    for item in self.default_value
+                )
+                or len(self.default_value) != len(set(self.default_value))
+            ):
+                is_valid = False
+            elif not self.default_value:
+                self.default_value = None
 
         if not is_valid:
             Logger.warning(
@@ -210,7 +233,7 @@ class EditEntityV2Attr(BaseModel):
     is_summarized: Optional[bool] = None
     referral: Optional[list[int]] = None
     note: Optional[str] = None
-    default_value: Optional[str | bool | int | float] = None
+    default_value: Any = None
     choices: Optional[list[dict[str, str]]] = None
     is_deleted: bool = False
     name_order: Optional[int] = 0  # for internal use only
@@ -253,6 +276,8 @@ class EditEntityV2Attr(BaseModel):
             AttrType.TEXT,
             AttrType.BOOLEAN,
             AttrType.NUMBER,
+            AttrType.OBJECT,
+            AttrType.ARRAY_OBJECT,
         ]
 
         # Clear default_value for unsupported types (don't raise error)
@@ -273,8 +298,29 @@ class EditEntityV2Attr(BaseModel):
             if not isinstance(self.default_value, bool):
                 is_valid = False
         elif self.type == AttrType.NUMBER:
-            if not isinstance(self.default_value, (int, float)):
+            if not isinstance(self.default_value, (int, float)) or isinstance(
+                self.default_value, bool
+            ):
                 is_valid = False
+        elif self.type == AttrType.OBJECT:
+            if (
+                not isinstance(self.default_value, int)
+                or isinstance(self.default_value, bool)
+                or self.default_value <= 0
+            ):
+                is_valid = False
+        elif self.type == AttrType.ARRAY_OBJECT:
+            if (
+                not isinstance(self.default_value, list)
+                or not all(
+                    isinstance(item, int) and not isinstance(item, bool) and item > 0
+                    for item in self.default_value
+                )
+                or len(self.default_value) != len(set(self.default_value))
+            ):
+                is_valid = False
+            elif not self.default_value:
+                self.default_value = None
 
         if not is_valid:
             Logger.warning(

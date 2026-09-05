@@ -617,7 +617,7 @@ class AttributeDataSerializer(serializers.Serializer):
 class EntryCreateData(TypedDict, total=False):
     name: str
     schema: Entity
-    attrs: list[AttributeDataSerializer]
+    attrs: list[dict[str, Any]]
     created_user: User
 
 
@@ -653,6 +653,45 @@ class EntryCreateSerializer(EntryBaseSerializer):
             )
 
         attrs_data = validated_data.pop("attrs", [])
+
+        # Materialize omitted defaults before creating the Entry. This keeps
+        # validation atomic, makes defaults visible to Trigger processing, and
+        # preserves explicit null / [] values as overrides.
+        for entity_attr in validated_data["schema"].attrs.filter(is_active=True):
+            if any(int(item["id"]) == entity_attr.id for item in attrs_data):
+                continue
+            if entity_attr.type not in EntityAttr.CUSTOM_DEFAULT_VALUE_TYPES:
+                continue
+            if not self.privileged_mode and not user.has_permission(entity_attr, ACLType.Writable):
+                continue
+
+            # Preserve the existing type-based fallback for primitive attributes
+            # while allowing OBJECT variants to use their custom Entry ID defaults.
+            default_value = entity_attr.get_default_value()
+            if default_value is None:
+                continue
+            try:
+                EntityAttr.validate_default_object_referrals(
+                    entity_attr.type,
+                    default_value,
+                    list(entity_attr.referral.values_list("id", flat=True)),
+                )
+                is_valid, message = AttributeValue.validate_attr_value(
+                    entity_attr.type,
+                    default_value,
+                    False,
+                    entity_attr=entity_attr,
+                )
+            except Exception as exc:
+                raise IncorrectTypeError(
+                    f"default value for attrs id({entity_attr.id}) is invalid: {exc}"
+                ) from exc
+            if not is_valid:
+                raise IncorrectTypeError(
+                    f"default value for attrs id({entity_attr.id}) is invalid: {message}"
+                )
+            attrs_data.append({"id": entity_attr.id, "value": default_value})
+
         entry: Entry = Entry(**validated_data, status=Entry.STATUS_CREATING)
 
         # for history record
@@ -672,19 +711,6 @@ class EntryCreateSerializer(EntryBaseSerializer):
             if attr_data:
                 # Use provided attribute value
                 attr.add_value(user, attr_data[0]["value"])
-            else:
-                # Check if entity attribute has a default value (only for supported types)
-                supported_types = [
-                    AttrType.STRING,
-                    AttrType.TEXT,
-                    AttrType.BOOLEAN,
-                    AttrType.NUMBER,
-                ]
-                if entity_attr.type in supported_types:
-                    default_value = entity_attr.get_default_value()
-                    if default_value is not None:
-                        # Apply default value from EntityAttr
-                        attr.add_value(user, default_value)
 
         # for updating its name from attribute values
         entry.save_autoname()

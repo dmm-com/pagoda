@@ -1,6 +1,13 @@
 import { BaseAttributeTypes } from "services/Constants";
 
-type EntityAttrDefaultValue = string | number | boolean | null | undefined;
+// number[] carries the OBJECT / ARRAY_OBJECT defaults, which are entry ids.
+type EntityAttrDefaultValue =
+  | string
+  | number
+  | boolean
+  | number[]
+  | null
+  | undefined;
 
 // Convert the form's attr.defaultValue to the API payload value.
 //

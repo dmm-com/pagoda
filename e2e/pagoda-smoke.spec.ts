@@ -170,3 +170,65 @@ test("@smoke @object-values renders object-like attribute values", async ({
     note: "Object, array-object, named-object, and array-named-object values rendered as links to their entries.",
   });
 });
+
+test("@defaults @object-values configures and applies object defaults", async ({
+  page,
+}, testInfo) => {
+  await page.goto("/ui/entities/1");
+
+  const primaryDefault = page.getByRole("combobox", {
+    name: "2 番目の属性のデフォルト値",
+  });
+  const backupDefault = page.getByRole("combobox", {
+    name: "3 番目の属性のデフォルト値",
+  });
+  await expect(primaryDefault).toHaveValue("switch-core-01");
+  await expect(
+    backupDefault
+      .locator("xpath=ancestor::div[contains(@class, 'MuiAutocomplete-root')]")
+      .getByText("switch-backup-01"),
+  ).toBeVisible();
+  await expect(
+    backupDefault
+      .locator("xpath=ancestor::div[contains(@class, 'MuiAutocomplete-root')]")
+      .getByText("switch-core-01"),
+  ).toBeVisible();
+
+  await captureEvidence(page, testInfo, {
+    name: "object-default-configuration",
+    title: "Object Default Configuration",
+    note: "The entity editor restored one OBJECT default and an ordered ARRAY_OBJECT default by Entry ID.",
+  });
+
+  await page.goto("/ui/entities/1/entries/new");
+  const primaryRow = page.getByRole("row").filter({
+    has: page.getByText("primary_switch", { exact: true }),
+  });
+  const backupRow = page.getByRole("row").filter({
+    has: page.getByText("backup_switches", { exact: true }),
+  });
+  await expect(primaryRow.getByRole("combobox")).toHaveValue("switch-core-01");
+  await expect(backupRow.getByText("switch-backup-01")).toBeVisible();
+  await expect(backupRow.getByText("switch-core-01")).toBeVisible();
+
+  await page.locator("#entry-name").fill("defaulted-server");
+  await page.locator("#entry-name").press("Tab");
+  await page.getByRole("button", { name: "保存" }).click();
+  await expect(page).toHaveURL(/\/ui\/entities\/1\/entries$/);
+  await page.getByRole("link", { name: "defaulted-server" }).click();
+  await expect(
+    page.getByRole("heading", { name: "defaulted-server" }),
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: "switch-core-01" })).toHaveCount(
+    2,
+  );
+  await expect(
+    page.getByRole("link", { name: "switch-backup-01" }),
+  ).toBeVisible();
+
+  await captureEvidence(page, testInfo, {
+    name: "object-default-entry-result",
+    title: "Object Defaults Applied to Entry",
+    note: "A newly created Entry persisted the OBJECT and ordered ARRAY_OBJECT defaults as normal reference links.",
+  });
+});

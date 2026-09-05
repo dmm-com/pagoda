@@ -63,7 +63,7 @@ export function formalizeEntryInfo(
               entry === undefined ? attrDetail.defaultValue : null;
 
             // Default values for when no default is specified
-            const defaults = {
+            const defaults: EditableEntryAttrValue = {
               asString: "",
               asBoolean: false,
               asArrayString: [{ value: "" }],
@@ -81,7 +81,9 @@ export function formalizeEntryInfo(
               asMultiSelect: [] as Array<{ value: string; label: string }>,
             };
 
-            // Apply defaultValue for supported types (backend returns raw primitive values)
+            // Apply defaultValue for supported types (backend returns raw primitive values).
+            // defaultValue is already null when editing an existing entry, so
+            // the create-only condition is covered by the null check alone.
             if (defaultValue !== null && defaultValue !== undefined) {
               switch (attrType) {
                 case EntryAttributeTypeTypeEnum.STRING:
@@ -125,6 +127,31 @@ export function formalizeEntryInfo(
                     defaults.asNumber = (
                       defaultValue as { asNumber: number }
                     ).asNumber;
+                  }
+                  break;
+                case EntryAttributeTypeTypeEnum.OBJECT:
+                  if (
+                    typeof defaultValue === "number" &&
+                    Number.isInteger(defaultValue) &&
+                    defaultValue > 0
+                  ) {
+                    defaults.asObject = { id: defaultValue, name: "" };
+                  }
+                  break;
+                case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
+                  if (
+                    Array.isArray(defaultValue) &&
+                    defaultValue.every(
+                      (item) =>
+                        typeof item === "number" &&
+                        Number.isInteger(item) &&
+                        item > 0,
+                    )
+                  ) {
+                    defaults.asArrayObject = defaultValue.map((id) => ({
+                      id,
+                      name: "",
+                    }));
                   }
                   break;
               }
