@@ -19,17 +19,21 @@ class ModelTest(AironeTestCase):
         self.admin = User.objects.create(username="admin", password="passwd", is_superuser=True)
         self.entity = Entity.objects.create(name="entity", created_user=self.guest)
         self.entry = Entry.objects.create(name="entry", created_user=self.guest, schema=self.entity)
+        self.create_params = {"entry_name": "entry", "attrs": []}
+        self.edit_params = {"entry_name": "entry", "attrs": []}
+        self.copy_params = {"new_name_list": [], "post_data": {}}
         self.test_data = None
 
     def test_create_object(self):
         jobinfos = [
-            {"method": "new_create", "op": JobOperation.CREATE_ENTRY},
-            {"method": "new_edit", "op": JobOperation.EDIT_ENTRY},
-            {"method": "new_delete", "op": JobOperation.DELETE_ENTRY},
-            {"method": "new_copy", "op": JobOperation.COPY_ENTRY},
+            {"method": "new_create", "op": JobOperation.CREATE_ENTRY, "params": self.create_params},
+            {"method": "new_edit", "op": JobOperation.EDIT_ENTRY, "params": self.edit_params},
+            {"method": "new_delete", "op": JobOperation.DELETE_ENTRY, "params": None},
+            {"method": "new_copy", "op": JobOperation.COPY_ENTRY, "params": self.copy_params},
         ]
         for info in jobinfos:
-            job = getattr(Job, info["method"])(self.guest, self.entry)
+            kwargs = {"params": info["params"]} if info["params"] is not None else {}
+            job = getattr(Job, info["method"])(self.guest, self.entry, **kwargs)
 
             self.assertEqual(job.user, self.guest)
             self.assertEqual(job.target, self.entry)
@@ -39,30 +43,37 @@ class ModelTest(AironeTestCase):
 
     def test_get_object(self):
         params = {
-            "entities": self.entity.id,
-            "attrinfo": {"name": "foo", "keyword": ""},
-            "export_style": '"yaml"',
+            "entities": [self.entity.id],
+            "attrinfo": [{"name": "foo", "keyword": ""}],
+            "export_style": "yaml",
         }
 
         # check there is no job
-        self.assertFalse(Job.get_job_with_params(self.guest, params).exists())
+        self.assertFalse(
+            Job.get_job_with_params(self.guest, JobOperation.EXPORT_SEARCH_RESULT, params).exists()
+        )
 
         # create a new job
-        job = Job.new_export(self.guest, text="hoge", params=params)
+        job = Job.new_export_search_result(self.guest, text="hoge", params=params)
         self.assertEqual(job.target_type, JobTarget.UNKNOWN)
-        self.assertEqual(job.operation, JobOperation.EXPORT_ENTRY)
+        self.assertEqual(job.operation, JobOperation.EXPORT_SEARCH_RESULT)
         self.assertEqual(job.text, "hoge")
 
         # check created job is got by specified params
-        self.assertEqual(Job.get_job_with_params(self.guest, params).count(), 1)
-        self.assertEqual(Job.get_job_with_params(self.guest, params).last(), job)
+        matching_jobs = Job.get_job_with_params(
+            self.guest, JobOperation.EXPORT_SEARCH_RESULT, params
+        )
+        self.assertEqual(matching_jobs.count(), 1)
+        self.assertEqual(matching_jobs.last(), job)
 
         # check the case when different params is specified then it returns None
-        params["attrinfo"]["name"] = ""
-        self.assertFalse(Job.get_job_with_params(self.guest, params).exists())
+        params["attrinfo"][0]["name"] = ""
+        self.assertFalse(
+            Job.get_job_with_params(self.guest, JobOperation.EXPORT_SEARCH_RESULT, params).exists()
+        )
 
     def test_cache(self):
-        job = Job.new_create(self.guest, self.entry)
+        job = Job.new_create(self.guest, self.entry, params=self.create_params)
 
         registering_values = [
             1234,
@@ -75,24 +86,29 @@ class ModelTest(AironeTestCase):
             self.assertEqual(job.get_cache(), json.dumps(value))
 
     def test_dependent_job(self):
-        (job1, job2) = [Job.new_edit(self.guest, self.entry) for x in range(2)]
+        (job1, job2) = [
+            Job.new_edit(self.guest, self.entry, params=self.edit_params) for x in range(2)
+        ]
         self.assertIsNone(job1.dependent_job)
         self.assertEqual(job2.dependent_job, job1)
 
         # When a job don't has target parameter, dependent_job is not set because
         # there is no problem when these tasks are run simultaneouslly.
-        jobs = [Job.new_export(self.guest) for x in range(2)]
+        jobs = [
+            Job._create_new_job(self.guest, None, JobOperation.NOTIFY_UPDATE_ENTRY, "", {})
+            for x in range(2)
+        ]
         self.assertTrue(all([j.dependent_job is None for j in jobs]))
 
         # overwrite timeout timeout value for testing
         settings.AIRONE["JOB_TIMEOUT"] = -1
 
         # Because jobs[1] is created after the expiry of jobs[0]
-        jobs = [Job.new_edit(self.guest, self.entry) for x in range(2)]
+        jobs = [Job.new_edit(self.guest, self.entry, params=self.edit_params) for x in range(2)]
         self.assertTrue(all([j.dependent_job is None for j in jobs]))
 
     def test_job_is_timeout(self):
-        job = Job.new_create(self.guest, self.entry)
+        job = Job.new_create(self.guest, self.entry, params=self.create_params)
         self.assertFalse(job.is_timeout())
 
         # overwrite timeout timeout value for testing
@@ -101,7 +117,7 @@ class ModelTest(AironeTestCase):
         self.assertTrue(job.is_timeout())
 
     def test_is_finished(self):
-        job = Job.new_create(self.guest, self.entry)
+        job = Job.new_create(self.guest, self.entry, params=self.create_params)
 
         for status in [
             JobStatus.DONE,
@@ -115,7 +131,7 @@ class ModelTest(AironeTestCase):
             self.assertTrue(job.is_finished())
 
     def test_is_canceled(self):
-        job = Job.new_create(self.guest, self.entry)
+        job = Job.new_create(self.guest, self.entry, params=self.create_params)
 
         self.assertFalse(job.is_canceled())
 
@@ -126,7 +142,7 @@ class ModelTest(AironeTestCase):
         self.assertTrue(job.is_canceled())
 
     def test_update_method(self):
-        job = Job.new_create(self.guest, self.entry, "original text")
+        job = Job.new_create(self.guest, self.entry, "original text", params=self.create_params)
         self.assertEqual(job.status, JobStatus.PREPARING)
         self.assertEqual(job.operation, JobOperation.CREATE_ENTRY)
         last_updated_time = job.updated_at
@@ -183,7 +199,7 @@ class ModelTest(AironeTestCase):
         self.assertEqual(job.operation, JobOperation.EDIT_ENTRY)
 
     def test_proceed_if_ready(self):
-        job = Job.new_create(self.guest, self.entry)
+        job = Job.new_create(self.guest, self.entry, params=self.create_params)
 
         for status in [
             JobStatus.DONE,
@@ -207,7 +223,9 @@ class ModelTest(AironeTestCase):
         def side_effect():
             self.test_data += 1
 
-        [job1, job2] = [Job.new_create(self.guest, self.entry) for _ in range(2)]
+        [job1, job2] = [
+            Job.new_create(self.guest, self.entry, params=self.create_params) for _ in range(2)
+        ]
 
         # Checks dependent_job parameters of both entries are set properly
         self.assertIsNone(job1.dependent_job)
@@ -247,7 +265,7 @@ class ModelTest(AironeTestCase):
         mock_import_module.side_effect = side_effect
 
         # create a job and call get_task_module method many times
-        job = Job.new_create(self.guest, self.entry)
+        job = Job.new_create(self.guest, self.entry, params=self.create_params)
         for _x in range(3):
             job.get_task_module("hoge")
 
@@ -281,7 +299,7 @@ class ModelTest(AironeTestCase):
         # register custom operation and method
         Job.register_method_table("custom_operation", custom_method)
 
-        job = Job.new_create(self.guest, self.entry)
+        job = Job.new_create(self.guest, self.entry, params=self.create_params)
         job.operation = "custom_operation"
 
         # run job and check custom_method is called properly

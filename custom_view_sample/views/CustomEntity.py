@@ -15,13 +15,10 @@ def list_entry(request: HttpRequest, entity: Entity, context: dict[str, Any]) ->
 
 
 def after_create_entry(recv_data: dict[str, Any], user: User, entry: Entry) -> None:
-    job = Job.new_create(
+    job = Job.new_custom_job(
         user=user,
+        operation=JobOperationCustom.UPDATE_CUSTOM_ATTRIBUTE,
         target=entry,
-    )
-
-    operation = JobOperationCustom.UPDATE_CUSTOM_ATTRIBUTE
-    job.update(
-        operation=operation,
+        params={},
     )
     job.run()

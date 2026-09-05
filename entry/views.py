@@ -27,7 +27,7 @@ from entity.models import Entity
 from entry.models import Attribute, AttributeValue, Entry
 from entry.utils import get_sort_order
 from group.models import Group
-from job.models import Job, JobStatus
+from job.models import Job, JobOperation, JobStatus
 from role.models import Role
 from user.models import User
 
@@ -479,7 +479,7 @@ def export(request: HttpRequest, entity_id: int, recv_data: dict[str, Any]) -> H
     # check whether same job is sent
     job_status_not_finished = [JobStatus.PREPARING, JobStatus.PROCESSING]
     if (
-        Job.get_job_with_params(request.user, job_params)
+        Job.get_job_with_params(request.user, JobOperation.EXPORT_ENTRY, job_params)
         .filter(status__in=job_status_not_finished)
         .exists()
     ):
@@ -492,11 +492,9 @@ def export(request: HttpRequest, entity_id: int, recv_data: dict[str, Any]) -> H
     # create a job to export search result and run it
     job = Job.new_export(
         request.user,
-        **{
-            "text": "entry_%s.%s" % (entity.name, job_params["export_format"]),
-            "target": entity,
-            "params": job_params,
-        },
+        target=entity,
+        text="entry_%s.%s" % (entity.name, job_params["export_format"]),
+        params=job_params,
     )
     job.run()
 

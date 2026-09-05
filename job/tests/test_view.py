@@ -32,7 +32,10 @@ class ViewTest(AironeViewTest):
         entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
 
         # create three jobs
-        [Job.new_create(user, entry) for _ in range(0, _TEST_MAX_LIST_VIEW + 1)]
+        [
+            Job.new_create(user, entry, params={"entry_name": entry.name, "attrs": []})
+            for _ in range(0, _TEST_MAX_LIST_VIEW + 1)
+        ]
         self.assertEqual(Job.objects.filter(user=user).count(), _TEST_MAX_LIST_VIEW + 1)
 
         # checks number of the returned objects are as expected
@@ -70,7 +73,7 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="entity", created_user=user)
         entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
-        Job.new_create(user, entry)
+        Job.new_create(user, entry, params={"entry_name": entry.name, "attrs": []})
 
         resp = self.client.get("/job/")
         self.assertEqual(resp.status_code, 200)
@@ -107,7 +110,7 @@ class ViewTest(AironeViewTest):
     def test_get_non_target_job(self):
         user = self.guest_login()
 
-        Job.new_create(user, None)
+        Job.new_create(user, None, params={"entry_name": "synthetic-entry", "attrs": []})
 
         resp = self.client.get("/job/")
         self.assertEqual(resp.status_code, 200)
@@ -117,8 +120,13 @@ class ViewTest(AironeViewTest):
         user = self.guest_login()
 
         # create jobs which are related with export
-        (Job.new_export(user),)
-        (Job.new_export_search_result(user),)
+        (Job.new_export(user, params={"export_format": "yaml", "target_id": 0}),)
+        (
+            Job.new_export_search_result(
+                user,
+                params={"entities": [], "attrinfo": [], "export_style": "yaml"},
+            ),
+        )
 
         resp = self.client.get("/job/")
         self.assertEqual(resp.status_code, 200)
@@ -128,7 +136,7 @@ class ViewTest(AironeViewTest):
         user = self.guest_login()
         entity = Entity.objects.create(name="entity", created_user=user)
 
-        job = Job.new_create(user, entity, "hoge")
+        job = Job.new_create(user, entity, "hoge", params={"entry_name": entity.name, "attrs": []})
 
         # When user send a download request of Job with invalid Job-id, then HTTP 400 is returned
         resp = self.client.get("/job/download/%d" % (job.id + 1))
@@ -141,14 +149,14 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.content.decode(), "Target Job has no value to return")
 
         # The case user sends a download request for a job which doesn't have a result
-        job = Job.new_export(user, text="fuga")
+        job = Job.new_export(user, text="fuga", params={"export_format": "yaml", "target_id": 0})
         resp = self.client.get("/job/download/%d" % job.id)
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.content.decode(), "This result is no longer available")
 
         # When user send a download request of export Job by differenct user from creating one,
         # then HTTP 400 is returned
-        job = Job.new_export(user, text="fuga")
+        job = Job.new_export(user, text="fuga", params={"export_format": "yaml", "target_id": 0})
         user = self.admin_login()
         resp = self.client.get("/job/download/%d" % job.id)
         self.assertEqual(resp.status_code, 400)
@@ -158,7 +166,7 @@ class ViewTest(AironeViewTest):
         user = self.guest_login()
 
         # initialize an export Job
-        job = Job.new_export(user, text="hoge")
+        job = Job.new_export(user, text="hoge", params={"export_format": "yaml", "target_id": 0})
         job.set_cache("abcd")
 
         # check job contents could be downloaded
@@ -171,7 +179,11 @@ class ViewTest(AironeViewTest):
         user = self.guest_login()
 
         # initialize an export Job
-        job = Job.new_export_search_result(user, text="hoge")
+        job = Job.new_export_search_result(
+            user,
+            text="hoge",
+            params={"entities": [], "attrinfo": [], "export_style": "yaml"},
+        )
         job.set_cache("abcd")
 
         # check job contents could be downloaded
@@ -190,7 +202,7 @@ class ViewTest(AironeViewTest):
         Job.new_register_referrals(user, entry)
 
         # create an unhidden job
-        Job.new_create(user, entry)
+        Job.new_create(user, entry, params={"entry_name": entry.name, "attrs": []})
 
         # access job list page and check only unhidden jobs are returned
         resp = self.client.get("/job/")

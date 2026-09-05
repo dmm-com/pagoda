@@ -33,7 +33,10 @@ class APITest(AironeViewTest):
         entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
 
         # create three jobs
-        jobs = [Job.new_create(user, entry) for _ in range(0, 3)]
+        jobs = [
+            Job.new_create(user, entry, params={"entry_name": entry.name, "attrs": []})
+            for _ in range(0, 3)
+        ]
 
         resp = self.client.get("/api/v1/job/")
         self.assertEqual(resp.status_code, 200)
@@ -140,7 +143,7 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.content, b'"Target job cannot be canceled"')
 
         # send request with proper parameter
-        job = Job.new_create(user, entry)
+        job = Job.new_create(user, entry, params={"entry_name": entry.name, "attrs": []})
         self.assertEqual(job.status, JobStatus.PREPARING)
 
         resp = self.client.delete(
@@ -162,7 +165,7 @@ class APITest(AironeViewTest):
         Job.new_register_referrals(user, entry)
 
         # create an unhidden job
-        Job.new_create(user, entry)
+        Job.new_create(user, entry, params={"entry_name": entry.name, "attrs": []})
 
         resp = self.client.get("/api/v1/job/")
         self.assertEqual(resp.status_code, 200)

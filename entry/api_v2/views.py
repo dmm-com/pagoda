@@ -713,7 +713,11 @@ class EntryExportAPI(generics.GenericAPIView):
         # check whether same job is sent
         job_status_not_finished = [JobStatus.PREPARING, JobStatus.PROCESSING]
         if (
-            Job.get_job_with_params(request.user, job_params.dict())
+            Job.get_job_with_params(
+                request.user,
+                JobOperation.EXPORT_ENTRY_V2,
+                job_params.model_dump(mode="json"),
+            )
             .filter(status__in=job_status_not_finished)
             .exists()
         ):
@@ -730,11 +734,9 @@ class EntryExportAPI(generics.GenericAPIView):
         # create a job to export search result and run it
         job = Job.new_export_v2(
             request.user,
-            **{
-                "text": "entry_%s.%s" % (entity.name, str(job_params.export_format)),
-                "target": entity,
-                "params": job_params.dict(),
-            },
+            target=entity,
+            text="entry_%s.%s" % (entity.name, str(job_params.export_format)),
+            params=job_params.model_dump(mode="json"),
         )
         job.run()
 
@@ -862,6 +864,7 @@ class EntryImportAPI(generics.GenericAPIView):
         user: User = request.user
         serializer = EntryImportSerializer(data=import_datas)
         serializer.is_valid(raise_exception=True)
+        import_datas = serializer.validated_data
         entities = self.get_queryset()
 
         # limit import job to deny accidental frequent import for same entity

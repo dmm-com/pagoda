@@ -19,6 +19,7 @@ from typing import Any, Callable, TypeAlias
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from pydantic import BaseModel
 
 from airone.lib.log import Logger
 
@@ -42,6 +43,7 @@ class PluginTaskConfig:
         cancelable_operations: List of operations that can be canceled (default: empty)
         parallelizable_operations: List of operations that can run in parallel
         downloadable_operations: List of operations that can be downloaded (default: empty)
+        parameter_models: Optional mapping of operation names to Pydantic payload models
 
     Note:
         The key in tasks is the operation name, and the value is a tuple of (offset, function name).
@@ -55,6 +57,7 @@ class PluginTaskConfig:
     cancelable_operations: list[str] = field(default_factory=list)
     parallelizable_operations: list[str] = field(default_factory=list)
     downloadable_operations: list[str] = field(default_factory=list)
+    parameter_models: dict[str, type[BaseModel]] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         """Validation after initialization"""
@@ -87,6 +90,18 @@ class PluginTaskConfig:
         self.cancelable_operations = self.cancelable_operations or []
         self.parallelizable_operations = self.parallelizable_operations or []
         self.downloadable_operations = self.downloadable_operations or []
+        unknown_parameter_models = set(self.parameter_models) - set(self.tasks)
+        if unknown_parameter_models:
+            raise ValueError(
+                f"Parameter models reference unknown operations for plugin '{self.plugin_id}': "
+                f"{sorted(unknown_parameter_models)}"
+            )
+        for op_name, contract in self.parameter_models.items():
+            if not isinstance(contract, type) or not issubclass(contract, BaseModel):
+                raise TypeError(
+                    f"Parameter model for operation '{op_name}' in plugin "
+                    f"'{self.plugin_id}' must be a Pydantic model class"
+                )
 
 
 class PluginTaskRegistry:
@@ -118,6 +133,7 @@ class PluginTaskRegistry:
     _registry: dict[str, PluginTaskConfig] = {}
     _operation_id_map: dict[tuple[str, str], int] = {}  # (plugin_id, op_name) -> operation_id
     _reverse_map: dict[int, tuple[str, str]] = {}  # operation_id -> (plugin_id, op_name)
+    _registered_parameter_operation_ids: set[int] = set()
     _initialized = False
 
     @classmethod
@@ -227,6 +243,14 @@ class PluginTaskRegistry:
             )
             raise ImproperlyConfigured(error_message)
 
+        from job.params import register_job_params
+
+        for (plugin_id, op_name), operation_id in cls._operation_id_map.items():
+            contract = cls._registry[plugin_id].parameter_models.get(op_name)
+            if contract is not None:
+                register_job_params(operation_id, contract)
+                cls._registered_parameter_operation_ids.add(operation_id)
+
         cls._initialized = True
         logger.info(f"Plugin operation_id validation completed ({len(used_ids)} IDs)")
 
@@ -307,6 +331,11 @@ class PluginTaskRegistry:
     @classmethod
     def reset(cls) -> None:
         """Reset registry (for testing)"""
+        from job.params import unregister_job_params
+
+        for operation_id in cls._registered_parameter_operation_ids:
+            unregister_job_params(operation_id)
+        cls._registered_parameter_operation_ids.clear()
         cls._registry.clear()
         cls._operation_id_map.clear()
         cls._reverse_map.clear()

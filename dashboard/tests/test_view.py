@@ -1438,7 +1438,7 @@ class ViewTest(AironeViewTest):
         }
 
         # create a job to export search result
-        job = Job.new_export(user, params=export_params)
+        job = Job.new_export_search_result(user, params=export_params)
 
         # A request with same parameter which is under execution will be denied
         resp = self.client.post(

@@ -28,7 +28,7 @@ from entity.models import Entity, EntityAttr
 from entry.models import AliasEntry, Attribute, AttributeValue, Entry
 from entry.settings import CONFIG as CONFIG_ENTRY
 from group.models import Group
-from job.models import Job, JobStatus
+from job.models import Job, JobOperation, JobStatus
 from role.models import Role
 from user.api_v2.serializers import UserBaseSerializer
 from user.models import User
@@ -1919,7 +1919,11 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer):
 
         job_status_not_finished: list[JobStatus] = [JobStatus.PREPARING, JobStatus.PROCESSING]
         if (
-            Job.get_job_with_params(user, self.validated_data)
+            Job.get_job_with_params(
+                user,
+                JobOperation.EXPORT_SEARCH_RESULT_V2,
+                self.validated_data,
+            )
             .filter(status__in=job_status_not_finished)
             .exists()
         ):
