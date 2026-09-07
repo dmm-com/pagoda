@@ -1,5 +1,6 @@
 const path = require('path');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const webpack = require('webpack');
 
 module.exports = {
   entry: {
@@ -8,6 +9,9 @@ module.exports = {
   output: {
     filename: "ui.js",
     path: path.resolve('static/js')
+  },
+  optimization: {
+    splitChunks: false,
   },
   resolve: {
     extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js"],
@@ -54,5 +58,8 @@ module.exports = {
     ]
   },
   ignoreWarnings: [/Failed to parse source map/],
-  plugins: [new ForkTsCheckerWebpackPlugin()]
+  plugins: [
+    new ForkTsCheckerWebpackPlugin(),
+    new webpack.optimize.LimitChunkCountPlugin({ maxChunks: 1 }),
+  ]
 };
