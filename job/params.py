@@ -349,6 +349,15 @@ def _normalize_entity_attr_default(value: Any, attr_type: Any) -> Any:
         return value if isinstance(value, bool) else None
     if attr_type == AttrType.NUMBER:
         return value if isinstance(value, (int, float)) and not isinstance(value, bool) else None
+    if attr_type == AttrType.OBJECT:
+        return value if isinstance(value, int) and not isinstance(value, bool) else None
+    if attr_type == AttrType.ARRAY_OBJECT:
+        return (
+            value
+            if isinstance(value, list)
+            and all(isinstance(item, int) and not isinstance(item, bool) for item in value)
+            else None
+        )
     return None
 
 
