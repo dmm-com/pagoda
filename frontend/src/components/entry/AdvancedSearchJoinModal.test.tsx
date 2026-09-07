@@ -6,6 +6,7 @@ import {
   EntryAttributeTypeTypeEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
 
 import { AdvancedSearchJoinModal } from "./AdvancedSearchJoinModal";
 
@@ -43,9 +44,10 @@ const joinAttrs: AdvancedSearchJoinAttrInfo[] = [
 vi.mock("hooks/usePagodaSWR", () => ({
   usePagodaSWR: () => ({ data: ["attrA", "attrB", "attrC"] }),
 }));
+const navigateMock = vi.hoisted(() => vi.fn());
 vi.mock("react-router", async () => ({
   ...((await vi.importActual("react-router")) as object),
-  useNavigate: () => vi.fn(),
+  useNavigate: () => navigateMock,
 }));
 vi.spyOn(aironeApiClient, "getEntityAttrs")
   //.mockResolvedValue(["attrA", "attrB", "attrC"]);
@@ -86,6 +88,31 @@ describe("AdvancedSearchJoinModal", () => {
     );
     fireEvent.click(screen.getByText("キャンセル"));
     expect(onClose).toHaveBeenCalled();
+  });
+
+  test("should preserve item-name filter when adding a join", () => {
+    const hintEntry = encodeURIComponent(
+      JSON.stringify({ filterKey: 1, keyword: "target-item" }),
+    );
+    render(
+      <MemoryRouter
+        initialEntries={[`/ui/advanced-search-results?hint_entry=${hintEntry}`]}
+      >
+        <AdvancedSearchJoinModal
+          targetEntityIds={[1]}
+          searchAllEntities={false}
+          targetAttrname="ref_item"
+          joinAttrs={joinAttrs}
+          handleClose={vi.fn()}
+        />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByText("保存"));
+
+    const navigation = navigateMock.mock.calls.at(-1)?.[0];
+    expect(navigation.search).toContain("hint_entry=");
+    expect(decodeURIComponent(navigation.search)).toContain("target-item");
   });
 
   test("should not render modal when targetAttrname is empty", () => {
