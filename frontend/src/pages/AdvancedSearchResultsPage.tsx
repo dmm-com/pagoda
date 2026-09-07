@@ -376,7 +376,7 @@ export const AdvancedSearchResultsPage: FC = () => {
         </Box>
       </PageHeader>
 
-      {joinAttrs.length === 0 && searchResults.isInProcessing ? (
+      {searchResults.isInProcessing ? (
         <Loading />
       ) : (
         <Box>
