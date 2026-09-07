@@ -26,7 +26,10 @@ class ViewTest(AironeViewTest):
         entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
 
         # create three jobs
-        [Job.new_create(user, entry) for _ in range(0, _TEST_MAX_LIST_VIEW)]
+        [
+            Job.new_create(user, entry, params={"entry_name": entry.name, "attrs": []})
+            for _ in range(0, _TEST_MAX_LIST_VIEW)
+        ]
         self.assertEqual(Job.objects.filter(user=user).count(), _TEST_MAX_LIST_VIEW)
 
         # checks number of the returned objects are as expected
@@ -54,7 +57,7 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="entity", created_user=user)
         entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
-        Job.new_create(user, entry)
+        Job.new_create(user, entry, params={"entry_name": entry.name, "attrs": []})
 
         resp = self.client.get(f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0")
         self.assertEqual(resp.status_code, 200)
@@ -152,7 +155,7 @@ class ViewTest(AironeViewTest):
     def test_get_non_target_job(self):
         user = self.guest_login()
 
-        Job.new_create(user, None)
+        Job.new_create(user, None, params={"entry_name": "synthetic-entry", "attrs": []})
 
         resp = self.client.get(f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0")
         self.assertEqual(resp.status_code, 200)
@@ -162,8 +165,13 @@ class ViewTest(AironeViewTest):
         user = self.guest_login()
 
         # create jobs which are related with export
-        (Job.new_export(user),)
-        (Job.new_export_search_result(user),)
+        (Job.new_export(user, params={"export_format": "yaml", "target_id": 0}),)
+        (
+            Job.new_export_search_result(
+                user,
+                params={"entities": [], "attrinfo": [], "export_style": "yaml"},
+            ),
+        )
 
         resp = self.client.get(f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0")
         self.assertEqual(resp.status_code, 200)
@@ -174,7 +182,7 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="entity", created_user=user)
         entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
-        job = Job.new_create(user, entry, "hoge")
+        job = Job.new_create(user, entry, "hoge", params={"entry_name": entry.name, "attrs": []})
 
         # match the created_after
         created_after = job.created_at.strftime("%Y-%m-%d")
@@ -202,10 +210,13 @@ class ViewTest(AironeViewTest):
         entry2 = Entry.objects.create(name="entry2", created_user=user, schema=entity)
 
         # create three jobs for entry1
-        [Job.new_create(user, entry1) for _ in range(0, _TEST_MAX_LIST_VIEW)]
+        [
+            Job.new_create(user, entry1, params={"entry_name": entry1.name, "attrs": []})
+            for _ in range(0, _TEST_MAX_LIST_VIEW)
+        ]
         self.assertEqual(Job.objects.filter(user=user).count(), _TEST_MAX_LIST_VIEW)
         # create one job for entry2
-        Job.new_create(user, entry2)
+        Job.new_create(user, entry2, params={"entry_name": entry2.name, "attrs": []})
 
         # checks number of the returned objects are for entry1
         resp = self.client.get(
@@ -224,7 +235,7 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="entity", created_user=user)
         entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
-        job = Job.new_create(user, entry, "hoge")
+        job = Job.new_create(user, entry, "hoge", params={"entry_name": entry.name, "attrs": []})
 
         resp = self.client.get("/job/api/v2/%d/" % job.id)
         self.assertEqual(resp.status_code, 200)
@@ -246,7 +257,7 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="entity", created_user=guest)
         entry = Entry.objects.create(name="entry", created_user=guest, schema=entity)
-        job = Job.new_create(guest, entry, "hoge")
+        job = Job.new_create(guest, entry, "hoge", params={"entry_name": entry.name, "attrs": []})
 
         self.admin_login()
 
@@ -265,12 +276,12 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="entity", created_user=guest)
         entry = Entry.objects.create(name="entry", created_user=guest, schema=entity)
-        Job.new_create(guest, entry)
+        Job.new_create(guest, entry, params={"entry_name": entry.name, "attrs": []})
 
         from user.models import User
 
         other = User.objects.create(username="other", password="passwd", is_superuser=False)
-        other_job = Job.new_create(other, entry)
+        other_job = Job.new_create(other, entry, params={"entry_name": entry.name, "attrs": []})
 
         # all_users=true is silently ignored for non-admin; only own jobs are returned
         resp = self.client.get(
@@ -302,7 +313,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
 
         # make a cancellable job
-        job = Job.new_create(user, entry)
+        job = Job.new_create(user, entry, params={"entry_name": entry.name, "attrs": []})
         self.assertEqual(job.status, JobStatus.PREPARING)
         resp = self.client.delete("/job/api/v2/%d/" % job.id)
         self.assertEqual(resp.status_code, 204)
@@ -318,7 +329,7 @@ class ViewTest(AironeViewTest):
         )
 
         # Send a request to a job that cannot be downloaded
-        job = Job.new_create(user, None)
+        job = Job.new_create(user, None, params={"entry_name": "synthetic-entry", "attrs": []})
 
         resp = self.client.get("/job/api/v2/%d/download" % job.id)
         self.assertEqual(resp.status_code, 400)
@@ -327,7 +338,7 @@ class ViewTest(AironeViewTest):
         )
 
         # send request to download job when job is not done
-        job = Job.new_export(user, text="hoge")
+        job = Job.new_export(user, text="hoge", params={"export_format": "yaml", "target_id": 0})
 
         resp = self.client.get("/job/api/v2/%d/download" % job.id)
         self.assertEqual(resp.status_code, 400)

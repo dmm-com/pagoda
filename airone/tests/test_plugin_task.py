@@ -5,12 +5,19 @@ from types import ModuleType
 
 from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase, override_settings
+from pydantic import BaseModel, ConfigDict, ValidationError
 
 from airone.lib.plugin_task import (
     PluginTaskConfig,
     PluginTaskRegistry,
 )
 from job.models import Job
+from job.params import (
+    get_job_params_contract,
+    register_job_params,
+    unregister_job_params,
+    validate_job_params,
+)
 
 
 class PluginTaskRegistrySandboxMixin:
@@ -27,6 +34,7 @@ class PluginTaskRegistrySandboxMixin:
             dict(PluginTaskRegistry._registry),
             dict(PluginTaskRegistry._operation_id_map),
             dict(PluginTaskRegistry._reverse_map),
+            set(PluginTaskRegistry._registered_parameter_operation_ids),
             PluginTaskRegistry._initialized,
         )
         self._method_table_snapshot = dict(Job._METHOD_TABLE)
@@ -34,11 +42,17 @@ class PluginTaskRegistrySandboxMixin:
         PluginTaskRegistry.reset()
 
     def _restore_plugin_task_registry(self):
-        registry, operation_id_map, reverse_map, initialized = self._registry_snapshot
+        registry, operation_id_map, reverse_map, parameter_operation_ids, initialized = (
+            self._registry_snapshot
+        )
         PluginTaskRegistry.reset()
         PluginTaskRegistry._registry.update(registry)
         PluginTaskRegistry._operation_id_map.update(operation_id_map)
         PluginTaskRegistry._reverse_map.update(reverse_map)
+        for (plugin_id, op_name), operation_id in operation_id_map.items():
+            if operation_id in parameter_operation_ids:
+                register_job_params(operation_id, registry[plugin_id].parameter_models[op_name])
+        PluginTaskRegistry._registered_parameter_operation_ids.update(parameter_operation_ids)
         PluginTaskRegistry._initialized = initialized
         Job._METHOD_TABLE.clear()
         Job._METHOD_TABLE.update(self._method_table_snapshot)
@@ -158,6 +172,54 @@ class TestPluginTaskRegistry(PluginTaskRegistrySandboxMixin, TestCase):
 
         PluginTaskRegistry.validate_all()
         self.assertTrue(True)
+
+    @override_settings(
+        PLUGIN_OPERATION_ID_CONFIG={
+            "test_plugin": (5000, 5099),
+        }
+    )
+    def test_validate_all_registers_operation_parameter_model(self):
+        class OperationParams(BaseModel):
+            model_config = ConfigDict(strict=True, extra="forbid")
+            count: int
+
+        config = PluginTaskConfig(
+            plugin_id="test_plugin",
+            module_path="test_plugin.tasks",
+            tasks={"operation_a": (0, "task_a")},
+            parameter_models={"operation_a": OperationParams},
+        )
+        PluginTaskRegistry.register(config)
+
+        PluginTaskRegistry.validate_all()
+
+        self.assertIs(get_job_params_contract(5000), OperationParams)
+        self.assertEqual(validate_job_params(5000, {"count": 1}).count, 1)
+        with self.assertRaises(ValidationError):
+            validate_job_params(5000, {"count": "1"})
+
+    @override_settings(
+        PLUGIN_OPERATION_ID_CONFIG={
+            "test_plugin": (5000, 5099),
+        }
+    )
+    def test_reset_preserves_manually_registered_parameter_model(self):
+        class ManualParams(BaseModel):
+            value: str
+
+        config = PluginTaskConfig(
+            plugin_id="test_plugin",
+            module_path="test_plugin.tasks",
+            tasks={"operation_a": (0, "task_a")},
+        )
+        PluginTaskRegistry.register(config)
+        PluginTaskRegistry.validate_all()
+        register_job_params(5000, ManualParams)
+        self.addCleanup(unregister_job_params, 5000)
+
+        PluginTaskRegistry.reset()
+
+        self.assertIs(get_job_params_contract(5000), ManualParams)
 
     def test_validate_all_unregistered_plugin_raises_error(self):
         """Plugin configured in settings but not registered"""

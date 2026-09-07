@@ -20,6 +20,13 @@ from airone.lib.plugin_task import PluginTaskRegistry
 from airone.lib.types import BaseIntEnum
 from entity.models import Entity
 from entry.models import Entry
+from job.params import (
+    CORE_JOB_PARAMS,
+    assert_core_registry_complete,
+    get_job_params_contract,
+    parse_job_params,
+    serialize_job_params,
+)
 from job.settings import CONFIG as JOB_CONFIG
 from user.models import User
 
@@ -92,6 +99,11 @@ class JobOperation(BaseIntEnum):
     BULK_EDIT_ENTRY = 31
     IMPORT_ENTITY_PREVIEW = 32
     IMPORT_ENTRY_PREVIEW = 33
+
+
+# Core operation additions must never silently fall through to the untyped
+# external-plugin compatibility path, even outside the test suite.
+assert_core_registry_complete()
 
 
 @enum.unique
@@ -215,6 +227,31 @@ class Job(models.Model):
     # When this has another job, this job have to wait until it would be finished.
     dependent_job = models.ForeignKey("Job", null=True, on_delete=models.SET_NULL)
 
+    def get_typed_params(self, expected_type: type[Any] | None = None) -> Any:
+        """Return validated job parameters, parsing persisted JSON only once."""
+
+        try:
+            contract = get_job_params_contract(self.operation)
+        except ValueError:
+            if expected_type is not None:
+                raise TypeError(
+                    f"Job operation {self.operation} has no registered parameter contract"
+                ) from None
+            cache_key = (self.operation, self.params)
+            if getattr(self, "_typed_params_cache_key", None) != cache_key:
+                self._typed_params_cache = json.loads(self.params)
+                self._typed_params_cache_key = cache_key
+            return self._typed_params_cache
+        if expected_type is not None and contract is not expected_type:
+            raise TypeError(
+                f"Job operation {self.operation} uses {contract!r}, not {expected_type!r}"
+            )
+        cache_key = (self.operation, self.params)
+        if getattr(self, "_typed_params_cache_key", None) != cache_key:
+            self._typed_params_cache = parse_job_params(self.operation, self.params)
+            self._typed_params_cache_key = cache_key
+        return self._typed_params_cache
+
     def may_schedule(self) -> bool:
         # Operations that can run in parallel exclude checking for dependent jobs
         if self.operation in self.PARALLELIZABLE_OPERATIONS:
@@ -264,9 +301,24 @@ class Job(models.Model):
 
         return self.status == JobStatus.CANCELED
 
+    def _validate_params_for_processing(self) -> bool:
+        try:
+            self.get_typed_params()
+        except (ValueError, TypeError):
+            Logger.error(f"Job(id={self.id}, operation={self.operation}) has invalid parameters")
+            self.update(JobStatus.ERROR)
+            return False
+        return True
+
     def proceed_if_ready(self) -> bool:
         # In this case, job is finished (might be canceled or proceeded same job by other process)
         if self.is_finished() or self.status == JobStatus.PROCESSING:
+            return False
+
+        # All tracked task implementations use this readiness boundary. The
+        # PROCESSING transition below repeats the check as a backstop for
+        # external tasks that omit it.
+        if not self._validate_params_for_processing():
             return False
 
         # This checks whether dependent job is and it hasn't finished yet.
@@ -284,6 +336,9 @@ class Job(models.Model):
     ) -> None:
         update_fields = ["updated_at"]
 
+        if status == JobStatus.PROCESSING and not self._validate_params_for_processing():
+            raise ValueError(f"Job(id={self.id}) cannot process invalid parameters")
+
         if status is not None and status in [s.value for s in JobStatus]:
             update_fields.append("status")
             self.status = status
@@ -297,7 +352,10 @@ class Job(models.Model):
             self.target = target
 
         if operation is not None and operation in self.method_table():
-            update_fields.append("operation")
+            # An operation change changes the meaning of params. Validate before
+            # persisting it so custom/plugin jobs cannot bypass their contract.
+            self.params = self._serialize_params(operation, json.loads(self.params))
+            update_fields.extend(["operation", "params"])
             self.operation = operation
 
         self.save(update_fields=update_fields)
@@ -369,11 +427,7 @@ class Job(models.Model):
         if dependent_job is None and depend_on is not None:
             dependent_job = depend_on
 
-        params_str = (
-            json.dumps(params, default=_support_time_default, sort_keys=True)
-            if params is not None
-            else "{}"
-        )
+        params_str = kls._serialize_params(operation, {} if params is None else params)
 
         job_params: JobParams = {
             "user": user,
@@ -389,6 +443,41 @@ class Job(models.Model):
             job_params["target"] = target
 
         return kls.objects.create(**job_params)
+
+    @staticmethod
+    def _serialize_params(operation: int, params: Any) -> str:
+        """Validate core/registered params; retain legacy external compatibility."""
+
+        try:
+            get_job_params_contract(operation)
+        except ValueError:
+            # Unregistered external operations predate typed contracts. Keep
+            # them usable until their plugin registers a contract.
+            return json.dumps(
+                params,
+                default=_support_time_default,
+                ensure_ascii=False,
+                separators=(",", ":"),
+                sort_keys=True,
+            )
+        return serialize_job_params(operation, params)
+
+    @classmethod
+    def new_custom_job(
+        kls,
+        user: User,
+        operation: int,
+        *,
+        params: Any,
+        target: ACLBase | None = None,
+        text: str = "",
+        depend_on: "Job | None" = None,
+    ) -> "Job":
+        """Public creation API for custom/plugin operations."""
+
+        if int(operation) in CORE_JOB_PARAMS:
+            raise ValueError("Use the operation-specific factory for core jobs")
+        return kls._create_new_job(user, target, operation, text, params, depend_on)
 
     @classmethod
     def get_task_module(kls, component: str) -> ModuleType:
@@ -435,13 +524,26 @@ class Job(models.Model):
         kls._METHOD_TABLE[operation] = method
 
     @classmethod
-    def get_job_with_params(kls, user: User, params: JobParams) -> models.QuerySet["Job"]:
+    def get_job_with_params(
+        kls, user: User, operation: int, params: JobParams | list[Any]
+    ) -> models.QuerySet["Job"]:
+        canonical_params = kls._serialize_params(operation, params)
+        legacy_params = json.dumps(params, default=_support_time_default, sort_keys=True)
         return kls.objects.filter(
-            user=user, params=json.dumps(params, default=_support_time_default, sort_keys=True)
+            user=user,
+            operation=operation,
+            params__in={canonical_params, legacy_params},
         )
 
     @classmethod
-    def new_create(kls, user: User, target: Entry, text: str = "", params: JobParams = {}) -> "Job":
+    def new_create(
+        kls, user: User, target: Entry, text: str = "", params: JobParams | None = None
+    ) -> "Job":
+        if params is None:
+            # Preserve the historical custom-view staging pattern:
+            # Job.new_create(...).update(operation=<custom>). The synthesized
+            # payload is also safe if the core task is accidentally dispatched.
+            params = {"entry_name": target.name, "attrs": []}
         return kls._create_new_job(
             user=user,
             target=target,
@@ -451,7 +553,9 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_edit(kls, user: User, target: Entry, text: str = "", params: JobParams = {}) -> "Job":
+    def new_edit(
+        kls, user: User, target: Entry, text: str = "", params: JobParams | None = None
+    ) -> "Job":
         return kls._create_new_job(
             user=user,
             target=target,
@@ -467,7 +571,9 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_copy(kls, user: User, target: Entry, text: str = "", params: JobParams = {}) -> "Job":
+    def new_copy(
+        kls, user: User, target: Entry, text: str = "", params: JobParams | None = None
+    ) -> "Job":
         return kls._create_new_job(
             user=user,
             target=target,
@@ -478,7 +584,7 @@ class Job(models.Model):
 
     @classmethod
     def new_do_copy(
-        kls, user: User, target: Entry, text: str = "", params: JobParams = {}
+        kls, user: User, target: Entry, text: str = "", params: JobParams | None = None
     ) -> "Job":
         return kls._create_new_job(
             user=user,
@@ -490,7 +596,7 @@ class Job(models.Model):
 
     @classmethod
     def new_import(
-        kls, user: User, entity: Entity, text: str = "", params: JobParams = {}
+        kls, user: User, entity: Entity, text: str = "", params: JobParams | None = None
     ) -> "Job":
         return kls._create_new_job(
             user=user,
@@ -502,7 +608,7 @@ class Job(models.Model):
 
     @classmethod
     def new_import_v2(
-        kls, user: User, entity: Entity, text: str = "", params: JobParams = {}
+        kls, user: User, entity: Entity, text: str = "", params: JobParams | None = None
     ) -> "Job":
         return kls._create_new_job(
             user=user,
@@ -536,7 +642,11 @@ class Job(models.Model):
 
     @classmethod
     def new_export(
-        kls, user: User, target: ACLBase | None = None, text: str = "", params: JobParams = {}
+        kls,
+        user: User,
+        target: ACLBase | None = None,
+        text: str = "",
+        params: JobParams | None = None,
     ) -> "Job":
         return kls._create_new_job(
             user=user,
@@ -548,7 +658,11 @@ class Job(models.Model):
 
     @classmethod
     def new_export_v2(
-        kls, user: User, target: ACLBase | None = None, text: str = "", params: JobParams = {}
+        kls,
+        user: User,
+        target: ACLBase | None = None,
+        text: str = "",
+        params: JobParams | None = None,
     ) -> "Job":
         return kls._create_new_job(
             user=user,
@@ -560,7 +674,7 @@ class Job(models.Model):
 
     @classmethod
     def new_restore(
-        kls, user: User, target: Entry, text: str = "", params: JobParams = {}
+        kls, user: User, target: Entry, text: str = "", params: JobParams | None = None
     ) -> "Job":
         return kls._create_new_job(
             user=user,
@@ -572,7 +686,11 @@ class Job(models.Model):
 
     @classmethod
     def new_export_search_result(
-        kls, user: User, target: ACLBase | None = None, text: str = "", params: JobParams = {}
+        kls,
+        user: User,
+        target: ACLBase | None = None,
+        text: str = "",
+        params: JobParams | None = None,
     ) -> "Job":
         return kls._create_new_job(
             user=user,
@@ -584,7 +702,11 @@ class Job(models.Model):
 
     @classmethod
     def new_export_search_result_v2(
-        kls, user: User, target: ACLBase | None = None, text: str = "", params: JobParams = {}
+        kls,
+        user: User,
+        target: ACLBase | None = None,
+        text: str = "",
+        params: JobParams | None = None,
     ) -> "Job":
         return kls._create_new_job(
             user=user,
@@ -600,7 +722,7 @@ class Job(models.Model):
         user: User,
         target: ACLBase | None,
         operation_value: int = JobOperation.REGISTER_REFERRALS,
-        params: JobParams = {},
+        params: JobParams | None = None,
     ) -> "Job":
         return kls._create_new_job(
             user=user,
@@ -612,7 +734,7 @@ class Job(models.Model):
 
     @classmethod
     def new_create_entity(
-        kls, user: User, target: Entity, text: str = "", params: JobParams = {}
+        kls, user: User, target: Entity, text: str = "", params: JobParams | None = None
     ) -> "Job":
         return kls._create_new_job(
             user=user,
@@ -624,7 +746,7 @@ class Job(models.Model):
 
     @classmethod
     def new_edit_entity(
-        kls, user: User, target: Entity, text: str = "", params: JobParams = {}
+        kls, user: User, target: Entity, text: str = "", params: JobParams | None = None
     ) -> "Job":
         return kls._create_new_job(
             user=user,
@@ -642,7 +764,7 @@ class Job(models.Model):
 
     @classmethod
     def new_update_documents(
-        kls, target: ACLBase | None, text: str = "", params: JobParams = {}
+        kls, target: ACLBase | None, text: str = "", params: JobParams | None = None
     ) -> "Job":
         user = auto_complement.get_auto_complement_user(None)
         if not user:
@@ -678,7 +800,7 @@ class Job(models.Model):
         kls,
         user: User,
         target_entry: Entry,
-        recv_attrs: list[Any] | dict[str, Any] = {},
+        recv_attrs: list[Any] | dict[str, Any] | None = None,
         dependent_job: "Job | None" = None,
     ) -> "Job":
         return kls._create_new_job(
@@ -686,13 +808,13 @@ class Job(models.Model):
             target=target_entry,
             operation=JobOperation.MAY_INVOKE_TRIGGER,
             text="",
-            params=recv_attrs,
+            params=[] if recv_attrs is None else recv_attrs,
             depend_on=dependent_job,
         )
 
     @classmethod
     def new_create_entity_v2(
-        kls, user: User, target: Entity, text: str = "", params: JobParams = {}
+        kls, user: User, target: Entity, text: str = "", params: JobParams | None = None
     ) -> "Job":
         return kls._create_new_job(
             user=user,
@@ -704,7 +826,7 @@ class Job(models.Model):
 
     @classmethod
     def new_edit_entity_v2(
-        kls, user: User, target: Entity, text: str = "", params: JobParams = {}
+        kls, user: User, target: Entity, text: str = "", params: JobParams | None = None
     ) -> "Job":
         return kls._create_new_job(
             user=user,
@@ -716,7 +838,7 @@ class Job(models.Model):
 
     @classmethod
     def new_delete_entity_v2(
-        kls, user: User, target: Entity, text: str = "", params: JobParams = {}
+        kls, user: User, target: Entity, text: str = "", params: JobParams | None = None
     ) -> "Job":
         return kls._create_new_job(
             user=user,
@@ -728,7 +850,7 @@ class Job(models.Model):
 
     @classmethod
     def new_create_entry_v2(
-        kls, user: User, target: Entry | None, text: str = "", params: JobParams = {}
+        kls, user: User, target: Entry | None, text: str = "", params: JobParams | None = None
     ) -> "Job":
         return kls._create_new_job(
             user=user,
@@ -740,7 +862,7 @@ class Job(models.Model):
 
     @classmethod
     def new_edit_entry_v2(
-        kls, user: User, target: Entry, text: str = "", params: JobParams = {}
+        kls, user: User, target: Entry, text: str = "", params: JobParams | None = None
     ) -> "Job":
         return kls._create_new_job(
             user=user,
@@ -752,7 +874,7 @@ class Job(models.Model):
 
     @classmethod
     def new_delete_entry_v2(
-        kls, user: User, target: Entry, text: str = "", params: JobParams = {}
+        kls, user: User, target: Entry, text: str = "", params: JobParams | None = None
     ) -> "Job":
         return kls._create_new_job(
             user=user,
@@ -789,7 +911,9 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_bulk_edit_entry_v2(kls, user: User, target: Entity, params: JobParams = {}) -> "Job":
+    def new_bulk_edit_entry_v2(
+        kls, user: User, target: Entity, params: JobParams | None = None
+    ) -> "Job":
         return kls._create_new_job(
             user=user, target=target, operation=JobOperation.BULK_EDIT_ENTRY, text="", params=params
         )

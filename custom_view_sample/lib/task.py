@@ -1,5 +1,7 @@
 import enum
 
+from job.params import EmptyParams, register_job_params
+
 
 @enum.unique
 class JobOperationCustom(enum.IntEnum):
@@ -15,3 +17,5 @@ CUSTOM_DOWNLOADABLE_OPERATIONS: list[JobOperationCustom] = []
 CUSTOM_TASKS: dict[JobOperationCustom, str] = {
     JobOperationCustom.UPDATE_CUSTOM_ATTRIBUTE: "update_custom_attribute",
 }
+
+register_job_params(JobOperationCustom.UPDATE_CUSTOM_ATTRIBUTE, EmptyParams)
