@@ -56,8 +56,16 @@ class ViewTest(BaseViewTest):
         return (model_lb, model_sg)
 
     @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=tasks.create_entry_v2))
-    def test_create_entry_with_default_values(self):
+    @mock.patch("entry.api_v2.serializers.Job.new_notify_create_entry")
+    @mock.patch("entry.api_v2.serializers.Job.new_invoke_trigger")
+    def test_create_entry_with_default_values(self, invoke_trigger, notify_create):
         """Test entries are created with default values from EntityAttr when no value provided"""
+        notify_create.return_value.run.return_value = None
+        invoke_trigger.return_value.run.return_value = None
+        referred_entity = self.create_entity(self.user, "ReferredEntity")
+        first_ref = self.add_entry(self.user, "first-ref", referred_entity)
+        second_ref = self.add_entry(self.user, "second-ref", referred_entity)
+
         # Create entity with attributes that have default values
         entity = self.create_entity(
             self.user,
@@ -67,6 +75,12 @@ class ViewTest(BaseViewTest):
                 {"name": "bool_with_default", "type": AttrType.BOOLEAN},
                 {"name": "text_with_default", "type": AttrType.TEXT},
                 {"name": "number_with_default", "type": AttrType.NUMBER},
+                {"name": "object_with_default", "type": AttrType.OBJECT, "ref": referred_entity},
+                {
+                    "name": "array_object_with_default",
+                    "type": AttrType.ARRAY_OBJECT,
+                    "ref": referred_entity,
+                },
                 {"name": "string_no_default", "type": AttrType.STRING},
             ],
         )
@@ -87,6 +101,14 @@ class ViewTest(BaseViewTest):
         number_attr = entity.attrs.get(name="number_with_default")
         number_attr.default_value = 42.5
         number_attr.save()
+
+        object_attr = entity.attrs.get(name="object_with_default")
+        object_attr.default_value = first_ref.id
+        object_attr.save()
+
+        array_object_attr = entity.attrs.get(name="array_object_with_default")
+        array_object_attr.default_value = [second_ref.id, first_ref.id]
+        array_object_attr.save()
 
         # Create entry without providing values for attributes with defaults
         params = {
@@ -122,6 +144,26 @@ class ViewTest(BaseViewTest):
 
         number_attr_value = entry.attrs.get(schema=number_attr)
         self.assertEqual(number_attr_value.get_latest_value().get_value(), 42.5)
+
+        object_attr_value = entry.attrs.get(schema=object_attr)
+        self.assertEqual(object_attr_value.get_latest_value().referral_id, first_ref.id)
+
+        array_object_attr_value = entry.attrs.get(schema=array_object_attr)
+        self.assertEqual(
+            list(
+                array_object_attr_value.get_latest_value()
+                .data_array.order_by("id")
+                .values_list("referral_id", flat=True)
+            ),
+            [second_ref.id, first_ref.id],
+        )
+
+        effective_attrs = invoke_trigger.call_args.args[2]
+        self.assertIn({"id": object_attr.id, "value": first_ref.id}, effective_attrs)
+        self.assertIn(
+            {"id": array_object_attr.id, "value": [second_ref.id, first_ref.id]},
+            effective_attrs,
+        )
 
         # Check that attribute without default was not created (no value provided)
         string_no_default_attr = entity.attrs.get(name="string_no_default")
@@ -195,24 +237,16 @@ class ViewTest(BaseViewTest):
     @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=tasks.create_entry_v2))
     def test_create_entry_unsupported_type_no_default(self):
         """Test that unsupported types don't get default values applied"""
-        # Create reference entity
-        ref_entity = self.create_entity(self.user, "RefEntity", attrs=[])
-
         # Create entity with unsupported type attribute that has default_value
         entity = self.create_entity(
             self.user,
             "TestEntity",
             attrs=[
-                {"name": "object_attr", "type": AttrType.OBJECT, "referral": [ref_entity]},
                 {"name": "date_attr", "type": AttrType.DATE},
             ],
         )
 
         # Try to set default values (should be ignored for unsupported types)
-        object_attr = entity.attrs.get(name="object_attr")
-        object_attr.default_value = "ignored value"
-        object_attr.save()
-
         date_attr = entity.attrs.get(name="date_attr")
         date_attr.default_value = "2023-01-01"
         date_attr.save()
@@ -237,16 +271,10 @@ class ViewTest(BaseViewTest):
 
         # Since unsupported types don't apply default_value, these attributes should either
         # not have AttributeValues created or use the hardcoded type defaults
-        object_attr_values = entry.attrs.filter(schema=object_attr)
         date_attr_values = entry.attrs.filter(schema=date_attr)
 
         # For unsupported types, no custom default should be applied
         # The behavior should be the same as before (either no value or type default)
-        if object_attr_values.exists():
-            object_attr_value = object_attr_values.first()
-            # Should not be the custom default "ignored value"
-            self.assertNotEqual(object_attr_value.get_latest_value().get_value(), "ignored value")
-
         if date_attr_values.exists():
             date_attr_value = date_attr_values.first()
             # Should not be the custom default "2023-01-01"

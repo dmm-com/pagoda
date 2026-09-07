@@ -297,7 +297,9 @@ class AttributeValue(models.Model):
 
             case AttrType.ARRAY_OBJECT:
                 value = [
-                    _get_object_value(x, is_active) for x in self.data_array.all() if x.referral
+                    _get_object_value(x, is_active)
+                    for x in self.data_array.order_by("id")
+                    if x.referral
                 ]
             case AttrType.ARRAY_GROUP:
                 value = [
@@ -334,7 +336,7 @@ class AttributeValue(models.Model):
             case AttrType.ARRAY_NUMBER:
                 return [coerce_number(x.value) for x in self.data_array.all()]
             case AttrType.ARRAY_OBJECT:
-                return [x.referral for x in self.data_array.all()]
+                return [x.referral for x in self.data_array.order_by("id")]
             case AttrType.OBJECT:
                 return self.referral
             case AttrType.BOOLEAN:
@@ -808,27 +810,22 @@ class Attribute(ACLBase):
                     # in the latest AttributeValue
                     return last_value.data_array.count() > 0
 
-                # the case of changing value
-                if last_value.data_array.count() != len(recv_value):
-                    return True
+                stored_ids = list(
+                    last_value.data_array.order_by("id").values_list("referral_id", flat=True)
+                )
 
-                # the case of appending or deleting
-                for value in recv_value:
-                    # formalize value type
+                def _entry_id(value: Any) -> int | None:
+                    if isinstance(value, Entry):
+                        return value.id
+                    if not value:
+                        return None
                     try:
-                        if isinstance(value, Entry):
-                            entry_id = value.id
-                        elif not value:
-                            entry_id = 0
-                        else:
-                            entry_id = int(value)
+                        return int(value)
+                    except (TypeError, ValueError):
+                        return None
 
-                    except ValueError:
-                        # When user specify an invalid value (e.g. ""), ValueError will be occcured
-                        entry_id = 0
-
-                    if not last_value.data_array.filter(referral__id=entry_id).exists():
-                        return True
+                incoming_ids = [_entry_id(value) for value in recv_value]
+                return stored_ids != incoming_ids
 
             case AttrType.BOOLEAN:
                 return last_value.boolean != bool(recv_value)

@@ -5,7 +5,7 @@ import {
   AutocompleteInputChangeReason,
   TextField,
 } from "@mui/material";
-import { FC, useState, useCallback } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 
 import { aironeApiClient } from "../../../repository/AironeApiClient";
 
@@ -48,6 +48,44 @@ export const ReferralsAutocomplete: FC<Props> = ({
   );
   const [loading, setLoading] = useState(false);
   const [hasFetchedInitial, setHasFetchedInitial] = useState(false);
+  const [resolvedLabels, setResolvedLabels] = useState<Record<number, string>>(
+    {},
+  );
+
+  useEffect(() => {
+    const selectedValues = Array.isArray(value) ? value : value ? [value] : [];
+    // ID-only defaults need an API label before the controlled input can render them.
+    // eslint-disable-next-line react-you-might-not-need-an-effect/no-pass-live-state-to-parent
+    const unresolved = selectedValues.filter(
+      (entry) => !labelOf(entry) && resolvedLabels[entry.id] == null,
+    );
+    if (unresolved.length === 0) return;
+
+    let active = true;
+    void Promise.all(
+      unresolved.map(async (entry) => {
+        try {
+          const resolved = await aironeApiClient.getEntry(entry.id);
+          return { id: entry.id, name: resolved.name };
+        } catch {
+          return { id: entry.id, name: `#${entry.id}` };
+        }
+      }),
+    ).then((entries) => {
+      if (!active) return;
+      setResolvedLabels((current) => ({
+        ...current,
+        ...Object.fromEntries(entries.map((entry) => [entry.id, entry.name])),
+      }));
+      if (!multiple && entries[0]) {
+        setInputValue(entries[0].name);
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [multiple, resolvedLabels, value]);
 
   const fetchInitialOptions = useCallback(async () => {
     if (hasFetchedInitial) return;
@@ -135,7 +173,9 @@ export const ReferralsAutocomplete: FC<Props> = ({
         (multiple ? [] : null)
       }
       inputValue={inputValue}
-      getOptionLabel={(option) => labelOf(option) ?? "-NOT SET-"}
+      getOptionLabel={(option) =>
+        resolvedLabels[option.id] ?? labelOf(option) ?? "-NOT SET-"
+      }
       isOptionEqualToValue={(option, value) => option.id === value.id}
       onChange={(_e, value, reason) => _handleChange(value, reason)}
       onInputChange={(e, value, reason) => handleInputChange(value, reason)}

@@ -48,9 +48,11 @@ const attrs = [
   makeAttr(11, 0, "hostname", 2),
   makeAttr(12, 1, "primary_switch", 1, {
     referral: [refSwitch],
+    defaultValue: 20,
   }),
   makeAttr(13, 2, "backup_switches", 1025, {
     referral: [refSwitch],
+    defaultValue: [21, 20],
   }),
   makeAttr(14, 3, "named_switch", 2049, {
     referral: [refSwitch],
@@ -211,6 +213,21 @@ state.entries.push(entryDetail, {
   name: "db-01",
   attrs: [],
 });
+for (const [id, name] of [
+  [20, "switch-core-01"],
+  [21, "switch-backup-01"],
+  [22, "switch-uplink-01"],
+  [23, "switch-standby-01"],
+]) {
+  state.entries.push({
+    id,
+    name,
+    is_active: true,
+    schema: { ...refSwitch, permission: ACL_FULL },
+    attrs: [],
+    permission: ACL_FULL,
+  });
+}
 
 const initialState = structuredClone(state);
 
@@ -230,6 +247,36 @@ function attrValue(id, type, name, value) {
     value,
   };
 }
+
+const materializeAttrs = (entity, submittedAttrs) =>
+  entity.attrs.flatMap((attr) => {
+    const submitted = submittedAttrs.find(({ id }) => id === attr.id);
+    const value = submitted ? submitted.value : attr.default_value;
+    if (value == null) return [];
+    if (attr.type === 1) {
+      const entry = state.entries.find(({ id }) => id === value);
+      return entry
+        ? [
+            attrValue(attr.id, attr.type, attr.name, {
+              as_object: switchValue(entry.id, entry.name),
+            }),
+          ]
+        : [];
+    }
+    if (attr.type === 1025 && Array.isArray(value)) {
+      return [
+        attrValue(attr.id, attr.type, attr.name, {
+          as_array_object: value.flatMap((id) => {
+            const entry = state.entries.find(
+              (candidate) => candidate.id === id,
+            );
+            return entry ? [switchValue(entry.id, entry.name)] : [];
+          }),
+        }),
+      ];
+    }
+    return [];
+  });
 
 const paginated = (results) => ({
   count: results.length,
@@ -406,7 +453,7 @@ const handleApi = async (req, res, parsed) => {
       name: input.name,
       is_active: true,
       schema: { id: 1, name: "Server", permission: ACL_FULL },
-      attrs: [],
+      attrs: materializeAttrs(serverEntity, input.attrs ?? []),
       submitted_attrs: input.attrs ?? [],
       permission: ACL_FULL,
     };
@@ -451,7 +498,7 @@ const handleApi = async (req, res, parsed) => {
         name: entity?.name ?? "Entity",
         permission: ACL_FULL,
       },
-      attrs: [],
+      attrs: materializeAttrs(entity, input.attrs ?? []),
       permission: ACL_FULL,
     };
     state.entries.push(created);

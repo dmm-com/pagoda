@@ -4229,15 +4229,55 @@ class ViewTest(AironeViewTest):
     @mock.patch(
         "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
     )
-    def test_create_entity_with_unsupported_type_default_value(self):
-        """Test that unsupported types clear default_value"""
+    def test_create_entity_with_object_default_values(self):
+        """Object defaults round-trip as Entry IDs through create and retrieve."""
+        first_ref = self.add_entry(self.user, "first-ref", self.ref_entity)
+        second_ref = self.add_entry(self.user, "second-ref", self.ref_entity)
         params = {
-            "name": "entity_with_unsupported_default",
+            "name": "entity_with_object_defaults",
             "attrs": [
                 {
                     "name": "object_attr",
                     "type": AttrType.OBJECT,
-                    "default_value": "some value",  # Should be cleared
+                    "default_value": first_ref.id,
+                    "referral": [self.ref_entity.id],
+                    "index": 1,
+                },
+                {
+                    "name": "array_object_attr",
+                    "type": AttrType.ARRAY_OBJECT,
+                    "default_value": [second_ref.id, first_ref.id],
+                    "referral": [self.ref_entity.id],
+                    "index": 2,
+                },
+            ],
+        }
+
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        entity = Entity.objects.get(name="entity_with_object_defaults")
+        object_attr = entity.attrs.get(name="object_attr")
+        array_object_attr = entity.attrs.get(name="array_object_attr")
+        self.assertEqual(object_attr.default_value, first_ref.id)
+        self.assertEqual(array_object_attr.default_value, [second_ref.id, first_ref.id])
+
+        detail = self.client.get(f"/entity/api/v2/{entity.id}/")
+        self.assertEqual(detail.status_code, status.HTTP_200_OK)
+        defaults = {attr["name"]: attr["default_value"] for attr in detail.json()["attrs"]}
+        self.assertEqual(defaults["object_attr"], first_ref.id)
+        self.assertEqual(defaults["array_object_attr"], [second_ref.id, first_ref.id])
+
+    def test_create_entity_rejects_object_default_from_unreferred_entity(self):
+        other_entity = self.create_entity(self.user, "other-default-entity")
+        outside = self.add_entry(self.user, "outside", other_entity)
+        params = {
+            "name": "entity_with_invalid_object_default",
+            "attrs": [
+                {
+                    "name": "object_attr",
+                    "type": AttrType.OBJECT,
+                    "default_value": outside.id,
                     "referral": [self.ref_entity.id],
                     "index": 1,
                 }
@@ -4245,12 +4285,8 @@ class ViewTest(AironeViewTest):
         }
 
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
-        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
-
-        # Verify entity was created and default_value was cleared
-        entity = Entity.objects.get(name="entity_with_unsupported_default")
-        object_attr = entity.attrs.get(name="object_attr")
-        self.assertIsNone(object_attr.default_value)
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("must be active and belong", str(resp.json()))
 
     @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
     def test_update_entity_attr_default_values(self):

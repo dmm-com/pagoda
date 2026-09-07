@@ -96,6 +96,23 @@ describe("ReferralsAutocomplete", () => {
     );
   });
 
+  test("resolves the label of an ID-only object default", async () => {
+    vi.spyOn(aironeApiClient, "getEntry").mockResolvedValue({
+      id: 42,
+      name: "Default server",
+    } as Awaited<ReturnType<typeof aironeApiClient.getEntry>>);
+
+    render(
+      <Harness initialValue={{ id: 42, name: "", displayLabel: null }} />,
+      { wrapper: TestWrapper },
+    );
+
+    await waitFor(() =>
+      expect(screen.getByRole("combobox")).toHaveValue("Default server"),
+    );
+    expect(aironeApiClient.getEntry).toHaveBeenCalledWith(42);
+  });
+
   test("queries by input and clears the single value", async () => {
     const fetchSpy = vi
       .spyOn(aironeApiClient, "getEntryAttrReferrals")

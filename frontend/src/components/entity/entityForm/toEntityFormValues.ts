@@ -55,6 +55,7 @@ export const toEntityFormValues = (entity: EntityDetail): Schema => ({
       | string
       | number
       | boolean
+      | number[]
       | null
       | undefined,
     isSummarized: attr.isSummarized,

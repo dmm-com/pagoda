@@ -37,6 +37,7 @@ import { Link } from "react-router";
 import { AttributeAutoNameConfigModal } from "./AttributeAutoNameConfigModal";
 import { AttributeNoteModal } from "./AttributeNoteModal";
 import { ChoicesEditor } from "./ChoicesEditor";
+import { DefaultObjectValueField } from "./DefaultObjectValueField";
 import { Schema } from "./EntityFormSchema";
 
 import { usePagodaSWR } from "hooks/usePagodaSWR";
@@ -359,6 +360,22 @@ export const AttributeField: FC<Props> = ({
           name={`attrs.${index}.defaultValue`}
           control={control}
           render={({ field }) => {
+            if (
+              attrType === AttributeTypes.object.type ||
+              attrType === AttributeTypes.array_object.type
+            ) {
+              return (
+                <DefaultObjectValueField
+                  value={field.value as number | number[] | null | undefined}
+                  referralEntityIds={referralIds}
+                  multiple={attrType === AttributeTypes.array_object.type}
+                  disabled={!isWritable || referralIds.length === 0}
+                  ariaLabel={`${index + 1} 番目の属性のデフォルト値`}
+                  onChange={field.onChange}
+                />
+              );
+            }
+
             // Check if this attribute type supports default values
             const isDefaultValueSupported =
               attrType === AttributeTypes.string.type ||

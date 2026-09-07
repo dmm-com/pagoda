@@ -551,17 +551,30 @@ class ModelTest(TestCase):
         )
         self.assertTrue(text_attr.validate_default_value("multi\nline\ntext"))
 
-        # Test unsupported type (should return False for non-None values)
+        # Object defaults use active Entry IDs at the storage boundary.
         object_attr = EntityAttr.objects.create(
             name="object_attr",
             type=AttrType.OBJECT,
             created_user=self._test_user,
             parent_entity=entity,
         )
-        self.assertFalse(object_attr.validate_default_value("any value"))
+        self.assertTrue(object_attr.validate_default_value(1))
+        self.assertFalse(object_attr.validate_default_value("1"))
+        self.assertFalse(object_attr.validate_default_value(True))
         self.assertTrue(
             object_attr.validate_default_value(None)
         )  # None should be valid for any type
+
+        array_object_attr = EntityAttr.objects.create(
+            name="array_object_attr",
+            type=AttrType.ARRAY_OBJECT,
+            created_user=self._test_user,
+            parent_entity=entity,
+        )
+        self.assertTrue(array_object_attr.validate_default_value([1, 2]))
+        self.assertTrue(array_object_attr.validate_default_value([]))
+        self.assertFalse(array_object_attr.validate_default_value([1, 1]))
+        self.assertFalse(array_object_attr.validate_default_value(["1"]))
 
     def test_validate_choices_method(self):
         """validate_choices accepts valid lists and rejects malformed payloads."""
