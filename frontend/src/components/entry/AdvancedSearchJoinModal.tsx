@@ -4,12 +4,15 @@ import {
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Autocomplete, Box, Button, TextField } from "@mui/material";
 import { FC, useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 
 import { AironeModal } from "components/common/AironeModal";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { aironeApiClient } from "repository/AironeApiClient";
-import { formatAdvancedSearchParams } from "services/entry/AdvancedSearch";
+import {
+  extractAdvancedSearchParams,
+  formatAdvancedSearchParams,
+} from "services/entry/AdvancedSearch";
 
 interface Props {
   targetEntityIds: number[];
@@ -27,6 +30,7 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
   handleClose,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   // This is join attributes that have been already been selected before.
   const currentAttrInfo: AdvancedSearchJoinAttrInfo | undefined =
     joinAttrs.find((attr) => attr.name === targetAttrname);
@@ -50,6 +54,9 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
   ];
 
   const handleUpdatePageURL = () => {
+    const { hintEntry } = extractAdvancedSearchParams(
+      new URLSearchParams(location.search),
+    );
     // to prevent duplication of same name parameter
     const currentJoinAttrs = joinAttrs.filter(
       (attr) => attr.name !== targetAttrname,
@@ -71,6 +78,7 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
     const params = formatAdvancedSearchParams({
       baseParams: new URLSearchParams(location.search),
       joinAttrs: newJoinAttrs,
+      hintEntry,
     });
 
     // Update Page URL parameters
