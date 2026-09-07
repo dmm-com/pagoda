@@ -1,5 +1,6 @@
 import copy
 import logging
+import unicodedata
 from typing import Any, List, cast
 
 from django.db.models import F, QuerySet
@@ -264,6 +265,30 @@ class AliasSearchFilter(filters.SearchFilter):
 
     def get_search_terms(self, request: Request) -> list[str]:
         return [term.lower() for term in super().get_search_terms(request)]
+
+    def filter_queryset(
+        self, request: Request, queryset: QuerySet[Entry], view: APIView
+    ) -> QuerySet[Entry] | list[Entry]:
+        terms = self.get_search_terms(request)
+        if not terms:
+            return queryset
+
+        normalized_terms = [unicodedata.normalize("NFKC", term).casefold() for term in terms]
+        with_alias = bool(request.query_params.get("with_alias"))
+        return [
+            entry
+            for entry in queryset
+            if all(
+                any(
+                    term in unicodedata.normalize("NFKC", value).casefold()
+                    for value in (
+                        [entry.name]
+                        + ([alias.name for alias in entry.aliases.all()] if with_alias else [])
+                    )
+                )
+                for term in normalized_terms
+            )
+        ]
 
 
 @extend_schema(
