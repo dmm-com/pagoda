@@ -267,8 +267,8 @@ class AliasSearchFilter(filters.SearchFilter):
         return [term.lower() for term in super().get_search_terms(request)]
 
     def filter_queryset(
-        self, request: Request, queryset: QuerySet[Entry], view: APIView
-    ) -> QuerySet[Entry] | list[Entry]:
+        self, request: Request, queryset: Any, view: APIView
+    ) -> Any:
         terms = self.get_search_terms(request)
         if not terms:
             return queryset
