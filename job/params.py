@@ -253,7 +253,7 @@ class EntityAttrV2Params(JobParamsModel):
     is_summarized: bool = False
     referral: list[int] = Field(default_factory=list)
     note: str = ""
-    default_value: str | bool | int | float | None = None
+    default_value: str | bool | int | float | list[int] | None = None
     choices: list[dict[str, str]] | None = None
     name_order: int | None = 0
     name_prefix: str | None = ""
@@ -299,7 +299,7 @@ class EditEntityAttrV2Params(JobParamsModel):
     is_summarized: bool | None = None
     referral: list[int] | None = None
     note: str | None = None
-    default_value: str | bool | int | float | None = None
+    default_value: str | bool | int | float | list[int] | None = None
     choices: list[dict[str, str]] | None = None
     is_deleted: bool = False
     name_order: int | None = 0
