@@ -1493,6 +1493,29 @@ class ModelValidationTest(BaseModelTest):
         )
         self.assertEqual(lb_sg1.autoname, "[LB0001] pagoda-test.example.com:80 #100")
 
+    def test_autoname_date_attribute(self):
+        model = self.create_entity(
+            self._user,
+            "DateAutoName",
+            attrs=[
+                {
+                    "name": "start_date",
+                    "type": AttrType.DATE,
+                    "name_order": 1,
+                    "name_prefix": "date=",
+                }
+            ],
+            item_name_type=ItemNameType.ATTR,
+        )
+        item = self.add_entry(
+            self._user,
+            "temporary",
+            model,
+            values={"start_date": date(2026, 9, 8)},
+        )
+
+        self.assertEqual(item.autoname, "date=2026-09-08")
+
     def test_save_autoname_with_duplicated_values(self):
         model = self.create_entity(
             self._user,

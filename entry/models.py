@@ -1936,9 +1936,13 @@ class Entry(ACLBase):
 
                 # NUMBER type returns float; represent whole numbers without decimal point
                 str_value = (
-                    str(int(value))
-                    if isinstance(value, float) and value.is_integer()
-                    else str(value)
+                    value.strftime("%Y-%m-%d")
+                    if attr.schema.type == AttrType.DATE
+                    else (
+                        str(int(value))
+                        if isinstance(value, float) and value.is_integer()
+                        else str(value)
+                    )
                 )
                 username += attr.schema.name_prefix + str_value + attr.schema.name_postfix
 

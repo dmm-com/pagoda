@@ -125,6 +125,35 @@ describe("AttributesFields", () => {
     expect(screen.getAllByTestId("attr-drag-handle")).toHaveLength(1);
   });
 
+  test("enables auto-naming for date attributes", async () => {
+    renderFields({
+      ...defaultValues,
+      attrs: [
+        {
+          name: "date-attr",
+          type: AttributeTypes.date.type,
+          isMandatory: false,
+          isDeleteInChain: false,
+          isSummarized: false,
+          isWritable: true,
+          referral: [],
+          note: "",
+          nameOrder: "0",
+          namePrefix: "",
+          namePostfix: "",
+          displayAttr: "",
+        },
+      ],
+    });
+
+    await act(async () => {
+      screen.getByRole("button", { name: "1 番目の属性の詳細メニューを開く" }).click();
+    });
+
+    expect(screen.getByRole("button", { name: /自動命名/ })).not.toBeDisabled();
+  });
+
+
   test("disables the drag handle for a non-writable attribute", () => {
     renderFields({
       ...defaultValues,
