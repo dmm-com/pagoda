@@ -147,12 +147,13 @@ describe("AttributesFields", () => {
     });
 
     await act(async () => {
-      screen.getByRole("button", { name: "1 番目の属性の詳細メニューを開く" }).click();
+      screen
+        .getByRole("button", { name: "1 番目の属性の詳細メニューを開く" })
+        .click();
     });
 
     expect(screen.getByRole("button", { name: /自動命名/ })).not.toBeDisabled();
   });
-
 
   test("disables the drag handle for a non-writable attribute", () => {
     renderFields({
