@@ -206,7 +206,7 @@ export const SearchResultControlMenuForReferral: FC<Props> = ({
           <TextField
             {...params}
             variant="outlined"
-            placeholder="次のモデルを含む"
+            placeholder="次のモデルを含まない"
             size="small"
           />
         )}

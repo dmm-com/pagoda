@@ -1,7 +1,7 @@
 /**
  */
 
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 
 import { SearchResultControlMenuForReferral } from "./SearchResultControlMenuForReferral";
 
@@ -36,6 +36,22 @@ describe("SearchResultControlMenuForReferral", () => {
     );
 
     expect(container).toBeInTheDocument();
+  });
+
+  test("should show distinct placeholders for included and excluded models", () => {
+    const anchorElem = document.createElement("button");
+    render(
+      <SearchResultControlMenuForReferral
+        {...defaultProps}
+        anchorElem={anchorElem}
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByPlaceholderText("次のモデルを含む")).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("次のモデルを含まない"),
+    ).toBeInTheDocument();
   });
 
   test("should not render menu when anchorElem is null", () => {
