@@ -27,6 +27,7 @@ import { aironeApiClient } from "repository/AironeApiClient";
 import { newGroupPath, topPath } from "routes/Routes";
 import { TITLE_TEMPLATES } from "services";
 import { ServerContext } from "services/ServerContext";
+import { fuzzyMatch } from "services/StringUtil";
 
 const StyledContainer = styled(Container)({
   paddingTop: "16px",
@@ -70,11 +71,8 @@ const GroupListContent: FC = () => {
   );
 
   const filteredUsersInGroup = useMemo(() => {
-    const keywordLower = keyword.toLowerCase();
     return (
-      usersInGroup?.filter((user) =>
-        user.username.toLowerCase().includes(keywordLower),
-      ) ?? []
+      usersInGroup?.filter((user) => fuzzyMatch(user.username, keyword)) ?? []
     );
   }, [usersInGroup, keyword]);
 

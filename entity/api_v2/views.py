@@ -1,6 +1,5 @@
 import copy
 import logging
-import unicodedata
 from typing import Any, List, cast
 
 from django.db.models import F, QuerySet
@@ -22,6 +21,7 @@ from airone.lib.acl import ACLType, get_permitted_objects
 from airone.lib.drf import EntryIsNotEmptyError, ObjectNotExistsError, YAMLParser, YAMLRenderer
 from airone.lib.http import http_get
 from airone.lib.plugin_dispatch import PluginOverrideMixin
+from airone.lib.text import normalize_search_text
 from entity.api_v2.serializers import (
     EntityAttrNameSerializer,
     EntityCreateSerializer,
@@ -162,6 +162,18 @@ class NameCaseInsensitiveSearchFilter(filters.SearchFilter):
     def get_search_terms(self, request: Request) -> list[str]:
         return [term.lower() for term in super().get_search_terms(request)]
 
+    def filter_queryset(self, request: Request, queryset: Any, view: APIView) -> Any:
+        terms = self.get_search_terms(request)
+        if not terms:
+            return queryset
+
+        normalized_terms = [normalize_search_text(term) for term in terms]
+        return [
+            entity
+            for entity in queryset
+            if all(term in normalize_search_text(entity.name) for term in normalized_terms)
+        ]
+
 
 @extend_schema(
     parameters=[
@@ -271,14 +283,14 @@ class AliasSearchFilter(filters.SearchFilter):
         if not terms:
             return queryset
 
-        normalized_terms = [unicodedata.normalize("NFKC", term).casefold() for term in terms]
+        normalized_terms = [normalize_search_text(term) for term in terms]
         with_alias = bool(request.query_params.get("with_alias"))
         return [
             entry
             for entry in queryset
             if all(
                 any(
-                    term in unicodedata.normalize("NFKC", value).casefold()
+                    term in normalize_search_text(value)
                     for value in (
                         [entry.name]
                         + ([alias.name for alias in entry.aliases.all()] if with_alias else [])
