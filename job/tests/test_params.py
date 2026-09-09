@@ -20,20 +20,10 @@ from job.params import (
 
 class JobParamsTest(SimpleTestCase):
     VALID_CORE_PARAMS = {
-        1: {
-            "entry_name": "a",
-            "attrs": [{"id": "1", "value": [], "prohibit": []}],
-            "bulk_flag": "0",
-            "start_number": "",
-            "count": "",
-            "owner_id": "1",
-            "reserved_flag": "0",
-        },
+        1: {"entry_name": "a", "attrs": [{"id": "1", "value": []}]},
         2: {
             "entry_name": "a",
-            "attrs": [{"entity_attr_id": "1", "id": "", "value": [], "prohibit": []}],
-            "bulk_flag": "0",
-            "reserved_flag": "0",
+            "attrs": [{"entity_attr_id": "1", "id": "", "value": []}],
         },
         3: {},
         4: {"new_name_list": ["copy"], "post_data": {}},
