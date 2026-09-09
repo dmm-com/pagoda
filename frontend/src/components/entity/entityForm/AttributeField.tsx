@@ -57,6 +57,7 @@ const AUTONAME_SELECTABLE_TYPES = [
   AttributeTypes.string.type,
   AttributeTypes.object.type,
   AttributeTypes.number.type,
+  AttributeTypes.date.type,
 ];
 
 // Attribute types eligible as display_attr on a referred entry (mirrors backend

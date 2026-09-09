@@ -459,7 +459,7 @@ class EntityAttrSerializerTest(AironeViewTest):
                 serializer.is_valid(raise_exception=True)
 
     def test_create_attr_with_name_order_and_unsupported_type_raises_error(self):
-        for unsupported_type in [AttrType.TEXT, AttrType.BOOLEAN, AttrType.DATE, AttrType.GROUP]:
+        for unsupported_type in [AttrType.TEXT, AttrType.BOOLEAN, AttrType.GROUP]:
             data = {"name": "test_attr", "type": unsupported_type, "name_order": 1}
             serializer = EntityAttrCreateSerializer(
                 data=data, context=self._get_serializer_context()
