@@ -48,9 +48,7 @@ describe("SearchResultControlMenuForReferral", () => {
       { wrapper: TestWrapper },
     );
 
-    expect(
-      screen.getByPlaceholderText("次のモデルを含む"),
-    ).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("次のモデルを含む")).toBeInTheDocument();
     expect(
       screen.getByPlaceholderText("次のモデルを含まない"),
     ).toBeInTheDocument();
