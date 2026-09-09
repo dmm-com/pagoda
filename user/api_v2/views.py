@@ -20,10 +20,12 @@ from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer, Serializer
+from rest_framework.views import APIView
 
 from airone.exceptions.model import UnexpectedAttributeType
 from airone.lib.acl import ACLType
 from airone.lib.drf import YAMLParser, YAMLRenderer
+from airone.lib.text import normalize_search_text
 from airone.lib.types import AttrType
 from entry.models import AttributeValue, Entry
 from group.models import Group
@@ -392,11 +394,25 @@ class UserActivityAPI(viewsets.GenericViewSet[User]):
         return Response(activities)
 
 
+class UserSearchFilter(filters.SearchFilter):
+    def filter_queryset(self, request: Request, queryset: Any, view: APIView) -> Any:
+        terms = self.get_search_terms(request)
+        if not terms:
+            return queryset
+
+        normalized_terms = [normalize_search_text(term) for term in terms]
+        return [
+            user
+            for user in queryset
+            if all(term in normalize_search_text(user.username) for term in normalized_terms)
+        ]
+
+
 class UserAPI(viewsets.ModelViewSet[User]):
     queryset = User.objects.filter(is_active=True)
     permission_classes = [IsAuthenticated & UserPermission]
     pagination_class = PageNumberPagination
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, UserSearchFilter]
     ordering = ["username"]
     search_fields = ["username"]
 
