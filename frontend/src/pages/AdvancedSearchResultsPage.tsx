@@ -226,7 +226,7 @@ export const AdvancedSearchResultsPage: FC = () => {
         if (myId !== requestIdRef.current) return;
         setSearchResults((prev) => ({ ...prev, isInProcessing: false }));
       });
-  }, [page, toggle, location.search]);
+  }, [toggle, location.search]);
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
     try {

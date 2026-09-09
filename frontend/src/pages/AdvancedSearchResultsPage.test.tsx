@@ -1,7 +1,13 @@
 /**
  */
 
-import { render, screen, act, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  act,
+  fireEvent,
+  waitFor,
+} from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 
@@ -53,6 +59,32 @@ const server = setupServer(
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
+
+test("should call advanced search once when changing to the next page", async () => {
+  const requests: Array<Record<string, unknown>> = [];
+  server.use(
+    http.post(
+      "http://localhost/entry/api/v2/advanced_search/",
+      async ({ request }) => {
+        const body = (await request.json()) as Record<string, unknown>;
+        requests.push(body);
+        return HttpResponse.json({ count: 1, total_count: 101, values: [] });
+      },
+    ),
+  );
+
+  await act(async () => {
+    render(<AdvancedSearchResultsPage />, { wrapper: TestWrapper });
+  });
+  await waitFor(() =>
+    expect(screen.queryByTestId("loading")).not.toBeInTheDocument(),
+  );
+  fireEvent.click(screen.getByLabelText("Go to page 2"));
+
+  await waitFor(() => expect(requests).toHaveLength(2));
+  expect(requests[0].entry_offset).toBe(0);
+  expect(requests[1].entry_offset).toBe(100);
+});
 
 test("should match snapshot", async () => {
   Object.defineProperty(window, "django_context", {

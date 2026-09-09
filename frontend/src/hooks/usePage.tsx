@@ -1,4 +1,4 @@
-import { startTransition, useCallback, useEffect, useState } from "react";
+import { startTransition, useCallback, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router";
 
 type UsePageReturn = {
@@ -15,17 +15,16 @@ export const usePage = (): UsePageReturn => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [page, setPage] = useState<number>(1);
-  const [query, setQuery] = useState<string>("");
-
-  useEffect(() => {
+  const { page, query } = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const pageParam = params.get("page");
     const pageNumber = pageParam ? Number(pageParam) : 1;
-    setPage(isNaN(pageNumber) ? 1 : pageNumber);
-    setQuery(
-      params.has("query") ? decodeURIComponent(params.get("query") ?? "") : "",
-    );
+    return {
+      page: isNaN(pageNumber) ? 1 : pageNumber,
+      query: params.has("query")
+        ? decodeURIComponent(params.get("query") ?? "")
+        : "",
+    };
   }, [location.search]);
 
   const changePage = useCallback(
