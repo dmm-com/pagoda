@@ -110,6 +110,8 @@ class ImportedEntry(JobParamsModel):
 class LegacyImportedEntry(JobParamsModel):
     name: str
     attrs: dict[str, Any]
+    # `has_referral` YAML exports carry this block; import ignores it.
+    referrals: list[Any] = Field(default_factory=list, exclude=True)
 
 
 class LegacyImportEntryParams(JobParamsRootModel[list[LegacyImportedEntry]]):
