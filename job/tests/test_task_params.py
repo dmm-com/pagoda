@@ -5,10 +5,13 @@ from django.test import TestCase
 from pydantic import BaseModel, ConfigDict, ValidationError
 
 from airone.lib.job import _handle_task
+from airone.lib.types import AttrType
 from entity.models import Entity
 from entry.models import Entry
 from job.models import Job, JobOperation, JobStatus, JobTarget
 from job.params import (
+    EditEntityParams,
+    LegacyImportEntryParams,
     UpdateDocumentParams,
     register_job_params,
     unregister_job_params,
@@ -32,6 +35,42 @@ class JobParamsBoundaryTest(TestCase):
             )
 
         self.assertEqual(Job.objects.count(), 0)
+
+    def test_edit_entity_params_coerces_legacy_string_ref_ids(self):
+        params = EditEntityParams.model_validate(
+            {
+                "name": "entity",
+                "note": "note",
+                "is_toplevel": False,
+                "attrs": [
+                    {
+                        "name": "ref_attr",
+                        "type": AttrType.OBJECT,
+                        "is_mandatory": False,
+                        "is_delete_in_chain": False,
+                        "row_index": "0",
+                        "ref_ids": ["59"],
+                    }
+                ],
+            }
+        )
+
+        self.assertEqual(params.attrs[0].ref_ids, [59])
+
+    def test_legacy_import_accepts_exported_referrals_without_persisting_them(self):
+        # `has_referral` YAML exports are re-importable, and the importer ignores the block.
+        params = LegacyImportEntryParams.model_validate(
+            [
+                {
+                    "name": "entry",
+                    "attrs": {"attr": "value"},
+                    "referrals": [{"entity": "model", "entry": "referring"}],
+                }
+            ]
+        )
+
+        self.assertEqual(params.root[0].name, "entry")
+        self.assertEqual(params.model_dump_json(), '[{"name":"entry","attrs":{"attr":"value"}}]')
 
     def test_canonical_serialization_and_operation_aware_deduplication(self):
         job = Job._create_new_job(

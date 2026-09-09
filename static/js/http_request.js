@@ -42,6 +42,10 @@ HttpPost = function(form_elem, add_data={}) {
 var parseJson = function(data) {
   var returnJson = {};
   for (idx = 0; idx < data.length; idx++) {
+    // csrfmiddlewaretoken is sent via the X-CSRFToken header, not the JSON body
+    if (data[idx].name === 'csrfmiddlewaretoken') {
+      continue;
+    }
     returnJson[data[idx].name] = data[idx].value
   }
   return returnJson;

@@ -110,6 +110,8 @@ class ImportedEntry(JobParamsModel):
 class LegacyImportedEntry(JobParamsModel):
     name: str
     attrs: dict[str, Any]
+    # `has_referral` YAML exports carry this block; import ignores it.
+    referrals: list[Any] = Field(default_factory=list, exclude=True)
 
 
 class LegacyImportEntryParams(JobParamsRootModel[list[LegacyImportedEntry]]):
@@ -212,6 +214,16 @@ class EntityAttrParams(JobParamsModel):
         # HTML form submissions historically persisted ids as decimal strings.
         if isinstance(value, str) and value.isdecimal():
             return int(value)
+        return value
+
+    @field_validator("ref_ids", mode="before")
+    @classmethod
+    def coerce_legacy_ref_ids(cls, value: Any) -> Any:
+        # Legacy HTML form submissions persist referral ids as decimal strings.
+        if isinstance(value, list):
+            return [
+                int(item) if isinstance(item, str) and item.isdecimal() else item for item in value
+            ]
         return value
 
 
