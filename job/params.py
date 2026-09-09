@@ -214,6 +214,16 @@ class EntityAttrParams(JobParamsModel):
             return int(value)
         return value
 
+    @field_validator("ref_ids", mode="before")
+    @classmethod
+    def coerce_legacy_ref_ids(cls, value: Any) -> Any:
+        # Legacy HTML form submissions persist referral ids as decimal strings.
+        if isinstance(value, list):
+            return [
+                int(item) if isinstance(item, str) and item.isdecimal() else item for item in value
+            ]
+        return value
+
 
 class CreateEntityParams(JobParamsModel):
     name: str
