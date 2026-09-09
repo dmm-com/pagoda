@@ -69,6 +69,7 @@ class LegacyCreateAttributeValue(JobParamsModel):
     type: str | int | None = None
     value: list[LegacyIndexedValue]
     referral_key: list[LegacyIndexedValue] = Field(default_factory=list)
+    prohibit: list[LegacyIndexedValue] = Field(default_factory=list)
 
 
 class LegacyEditAttributeValue(LegacyCreateAttributeValue):
@@ -78,11 +79,18 @@ class LegacyEditAttributeValue(LegacyCreateAttributeValue):
 class LegacyCreateEntryParams(JobParamsModel):
     entry_name: str
     attrs: list[LegacyCreateAttributeValue]
+    bulk_flag: str | None = None
+    start_number: str | None = None
+    count: str | None = None
+    owner_id: str | None = None
+    reserved_flag: str | None = None
 
 
 class LegacyEditEntryParams(JobParamsModel):
     entry_name: str
     attrs: list[LegacyEditAttributeValue]
+    bulk_flag: str | None = None
+    reserved_flag: str | None = None
 
 
 class CopyEntryParams(JobParamsModel):
