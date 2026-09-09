@@ -12,7 +12,10 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 
 import { TestWrapper } from "TestWrapper";
-import { AdvancedSearchResultsPage } from "pages/AdvancedSearchResultsPage";
+import {
+  AdvancedSearchResultsPage,
+  getDisplayedSearchResultCount,
+} from "pages/AdvancedSearchResultsPage";
 
 const server = setupServer(
   // getEntityAttrs
@@ -84,6 +87,12 @@ test("should call advanced search once when changing to the next page", async ()
   await waitFor(() => expect(requests).toHaveLength(2));
   expect(requests[0].entry_offset).toBe(0);
   expect(requests[1].entry_offset).toBe(100);
+});
+
+test("should cap the displayed loaded count at the total count", () => {
+  expect(getDisplayedSearchResultCount(2, 160, 100)).toBe(160);
+  expect(getDisplayedSearchResultCount(2, 200, 100)).toBe(200);
+  expect(getDisplayedSearchResultCount(1, 160, 100)).toBe(100);
 });
 
 test("should match snapshot", async () => {
