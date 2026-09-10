@@ -121,6 +121,12 @@ export const getIsFiltered = (filterKey?: number, keyword?: string) => {
   return false;
 };
 
+export const getDisplayedSearchResultCount = (
+  page: number,
+  totalCount: number,
+  maxRowCount: number,
+) => Math.min(page * maxRowCount, totalCount);
+
 interface AirOneAdvancedSearchResult extends AdvancedSearchResult {
   page: number;
   isInProcessing: boolean;
@@ -450,8 +456,12 @@ export const AdvancedSearchResultsPage: FC = () => {
                     <ArrowDropDownIcon />
                   </IconButton>
                   <Typography>
-                    {page * AdvancedSerarchResultListParam.MAX_ROW_COUNT} /{" "}
-                    {searchResults.totalCount} 件
+                    {getDisplayedSearchResultCount(
+                      page,
+                      searchResults.totalCount,
+                      AdvancedSerarchResultListParam.MAX_ROW_COUNT,
+                    )}{" "}
+                    / {searchResults.totalCount} 件
                   </Typography>
                 </CenterAlignedBox>
               )}
