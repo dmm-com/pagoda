@@ -22,6 +22,7 @@ import { Schema } from "./groupForm/GroupFormSchema";
 
 import { Loading } from "components/common/Loading";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { fuzzyMatch, normalizeToMatch } from "services/StringUtil";
 
 interface Props {
   control: Control<Schema>;
@@ -33,7 +34,10 @@ export const GroupForm: FC<Props> = ({ control, setValue, groupId }) => {
   const [userKeyword, setUserKeyword] = useState("");
 
   const { data: users } = usePagodaSWR(["users", 1, userKeyword], async () => {
-    const _users = await aironeApiClient.getUsers(1, userKeyword);
+    const _users = await aironeApiClient.getUsers(
+      1,
+      normalizeToMatch(userKeyword),
+    );
     return _users.results?.map(
       (user): GroupMember => ({ id: user.id, username: user.username }),
     );
@@ -97,6 +101,11 @@ export const GroupForm: FC<Props> = ({ control, setValue, groupId }) => {
                     {...field}
                     options={users ?? []}
                     getOptionLabel={(option: GroupMember) => option.username}
+                    filterOptions={(options, state) =>
+                      options.filter((option) =>
+                        fuzzyMatch(option.username, state.inputValue),
+                      )
+                    }
                     isOptionEqualToValue={(option: GroupMember, value) =>
                       option.id === value.id
                     }

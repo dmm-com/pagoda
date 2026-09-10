@@ -28,6 +28,8 @@ import { aironeApiClient } from "../../repository/AironeApiClient";
 
 import { Schema } from "./roleForm/RoleFormSchema";
 
+import { fuzzyMatch } from "services/StringUtil";
+
 interface Props {
   control: Control<Schema>;
   setValue: UseFormSetValue<Schema>;
@@ -325,6 +327,11 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                         {...field}
                         options={adminUsers ?? []}
                         getOptionLabel={(option: RoleUser) => option.username}
+                        filterOptions={(options, state) =>
+                          options.filter((option) =>
+                            fuzzyMatch(option.username, state.inputValue),
+                          )
+                        }
                         isOptionEqualToValue={(option, value) =>
                           option.id === value.id
                         }
@@ -397,6 +404,11 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                         {...field}
                         options={users ?? []}
                         getOptionLabel={(option: RoleUser) => option.username}
+                        filterOptions={(options, state) =>
+                          options.filter((option) =>
+                            fuzzyMatch(option.username, state.inputValue),
+                          )
+                        }
                         isOptionEqualToValue={(option, value) =>
                           option.id === value.id
                         }

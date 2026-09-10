@@ -1,3 +1,4 @@
+import unicodedata
 from typing import Any, cast
 
 from django.db.models import Prefetch
@@ -34,6 +35,23 @@ class UserPermission(BasePermission):
         return permisson.get(getattr(view, "action", ""), False)
 
 
+class GroupSearchFilter(filters.SearchFilter):
+    def filter_queryset(self, request: Request, queryset: Any, view: APIView) -> Any:
+        terms = self.get_search_terms(request)
+        if not terms:
+            return queryset
+
+        normalized_terms = [unicodedata.normalize("NFKC", term).casefold() for term in terms]
+        return [
+            group
+            for group in queryset
+            if all(
+                term in unicodedata.normalize("NFKC", group.name).casefold()
+                for term in normalized_terms
+            )
+        ]
+
+
 class GroupAPI(viewsets.ModelViewSet[Group]):
     queryset = Group.objects.filter(is_active=True).prefetch_related(  # type: ignore[assignment,misc]
         Prefetch(
@@ -44,7 +62,7 @@ class GroupAPI(viewsets.ModelViewSet[Group]):
     )
     permission_classes = [IsAuthenticated & UserPermission]
     pagination_class = PageNumberPagination
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, GroupSearchFilter]
     ordering = ["name"]
     search_fields = ["name"]
 
@@ -60,7 +78,7 @@ class GroupAPI(viewsets.ModelViewSet[Group]):
 class GroupTreeAPI(viewsets.ReadOnlyModelViewSet[Group]):
     queryset = Group.objects.filter(parent_group__isnull=True, is_active=True)  # type: ignore[assignment,misc]
     serializer_class = GroupTreeSerializer
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, GroupSearchFilter]
     ordering = ["name"]
     search_fields = ["name"]
 
