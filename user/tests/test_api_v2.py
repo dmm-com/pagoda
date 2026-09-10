@@ -78,9 +78,16 @@ class ViewTest(AironeViewTest):
         co_user = self._create_user("co_user", parent_user=parent_user)
         Token.objects.create(user=co_user)
 
-        resp = self.client.patch(
+        resp = self.client.put(
             "/user/api/v2/%d/" % co_user.id,
-            json.dumps({"token_lifetime": 3600}),
+            json.dumps(
+                {
+                    "username": co_user.username,
+                    "email": co_user.email,
+                    "is_superuser": co_user.is_superuser,
+                    "token_lifetime": 3600,
+                }
+            ),
             "application/json",
         )
 
@@ -92,9 +99,16 @@ class ViewTest(AironeViewTest):
         self.guest_login()
         other_user = self._create_user("other")
 
-        resp = self.client.patch(
+        resp = self.client.put(
             "/user/api/v2/%d/" % other_user.id,
-            json.dumps({"token_lifetime": 3600}),
+            json.dumps(
+                {
+                    "username": other_user.username,
+                    "email": other_user.email,
+                    "is_superuser": other_user.is_superuser,
+                    "token_lifetime": 3600,
+                }
+            ),
             "application/json",
         )
 
