@@ -73,6 +73,18 @@ class ViewTest(AironeViewTest):
         resp = self.client.get("/user/api/v2/%s/" % co_user.id)
         self.assertEqual(resp.status_code, 200)
 
+    def test_get_user_includes_created_readonly_users(self):
+        parent_user = self.guest_login()
+        co_user = self._create_user("co_user", parent_user=parent_user)
+
+        resp = self.client.get("/user/api/v2/%d/" % parent_user.id)
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp.json()["co_users"],
+            [{"id": co_user.id, "username": co_user.username}],
+        )
+
     def test_get_user_groups_and_roles(self):
         login_user = self.guest_login()
 
