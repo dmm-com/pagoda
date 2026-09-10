@@ -81,7 +81,7 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
-            resp.json()["co_users"],
+            resp.json()["child_read_only_users"],
             [{"id": co_user.id, "username": co_user.username}],
         )
 

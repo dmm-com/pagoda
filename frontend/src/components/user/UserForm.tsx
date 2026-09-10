@@ -42,9 +42,11 @@ import { groupPath, rolePath, userPath } from "routes/Routes";
 import { ServerContext } from "services/ServerContext";
 import { User } from "services/ServerContext";
 
-type CoUserLink = { id: number; username: string };
+type ChildReadOnlyUserLink = { id: number; username: string };
 
-type UserWithCoUsers = UserRetrieve & { coUsers?: CoUserLink[] };
+type UserWithChildReadOnlyUsers = UserRetrieve & {
+  childReadOnlyUsers?: ChildReadOnlyUserLink[];
+};
 
 const StyledTableRow = styled(TableRow)(() => ({
   "&:nth-of-type(odd)": {
@@ -404,9 +406,10 @@ const ElemRoles: FC<ReadonlyProps> = ({ user }) => {
   );
 };
 
-const ElemCoUsers: FC<ReadonlyProps> = ({ user }) => {
-  const coUsers = (user as UserWithCoUsers).coUsers ?? [];
-  if (coUsers.length === 0) return null;
+const ElemChildReadOnlyUsers: FC<ReadonlyProps> = ({ user }) => {
+  const childReadOnlyUsers =
+    (user as UserWithChildReadOnlyUsers).childReadOnlyUsers ?? [];
+  if (childReadOnlyUsers.length === 0) return null;
 
   return (
     <StyledTableRow>
@@ -416,13 +419,13 @@ const ElemCoUsers: FC<ReadonlyProps> = ({ user }) => {
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         {
           <ChipBox>
-            {coUsers.map((coUser) => (
+            {childReadOnlyUsers.map((childReadOnlyUser) => (
               <Chip
-                key={coUser.id}
-                label={coUser.username}
+                key={childReadOnlyUser.id}
+                label={childReadOnlyUser.username}
                 size="small"
                 component={AironeLink}
-                to={userPath(coUser.id)}
+                to={userPath(childReadOnlyUser.id)}
                 clickable
               />
             ))}
@@ -549,7 +552,7 @@ export const UserForm: FC<UserFormProps> = ({
               <>
                 <ElemGroups user={user} />
                 <ElemRoles user={user} />
-                <ElemCoUsers user={user} />
+                <ElemChildReadOnlyUsers user={user} />
               </>
             )}
 
