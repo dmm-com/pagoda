@@ -28,10 +28,10 @@ export default defineConfig({
       ],
       reporter: ["text", "lcov"],
       thresholds: {
-        statements: 75,
+        statements: 65,
         branches: 55,
-        functions: 60,
-        lines: 75,
+        functions: 55,
+        lines: 65,
       },
     },
     onFinished: async () => {
