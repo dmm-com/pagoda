@@ -73,6 +73,33 @@ class ViewTest(AironeViewTest):
         resp = self.client.get("/user/api/v2/%s/" % co_user.id)
         self.assertEqual(resp.status_code, 200)
 
+    def test_update_co_user_token_lifetime_by_parent_user(self):
+        parent_user = self.guest_login()
+        co_user = self._create_user("co_user", parent_user=parent_user)
+        Token.objects.create(user=co_user)
+
+        resp = self.client.patch(
+            "/user/api/v2/%d/" % co_user.id,
+            json.dumps({"token_lifetime": 3600}),
+            "application/json",
+        )
+
+        self.assertEqual(resp.status_code, 200)
+        co_user.refresh_from_db()
+        self.assertEqual(co_user.token_lifetime, 3600)
+
+    def test_update_other_user_by_guest_is_forbidden(self):
+        self.guest_login()
+        other_user = self._create_user("other")
+
+        resp = self.client.patch(
+            "/user/api/v2/%d/" % other_user.id,
+            json.dumps({"token_lifetime": 3600}),
+            "application/json",
+        )
+
+        self.assertEqual(resp.status_code, 403)
+
     def test_get_user_groups_and_roles(self):
         login_user = self.guest_login()
 

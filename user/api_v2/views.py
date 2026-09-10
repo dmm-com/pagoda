@@ -143,7 +143,11 @@ class UserPermission(BasePermission):
             or current_user == obj
             or current_user == obj.parent_user,
             "destroy": current_user.is_superuser or current_user == obj.parent_user,
-            "update": current_user.is_superuser or current_user == obj,
+            "update": (
+                current_user.is_superuser
+                or current_user == obj
+                or current_user == obj.parent_user
+            ),
         }
         return permisson.get(view.action, False)
 
