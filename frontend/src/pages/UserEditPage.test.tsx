@@ -114,4 +114,41 @@ describe("EditUserPage", () => {
       expect(screen.getByRole("button", { name: "保存" })).toBeEnabled(),
     );
   });
+
+  test("should navigate to the user list without a leave confirmation after creating a user", async () => {
+    const createUser = vi
+      .spyOn(aironeApiClient, "createUser")
+      .mockResolvedValue({} as never);
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
+    const router = createMemoryRouter(
+      [
+        { path: "/ui/users/new", element: <UserEditPage /> },
+        { path: "/ui/users", element: <div /> },
+      ],
+      { initialEntries: ["/ui/users/new"] },
+    );
+    render(<RouterProvider router={router} />, {
+      wrapper: TestWrapperWithoutRoutes,
+    });
+
+    const username = await screen.findByPlaceholderText(
+      "ユーザ名を入力してください",
+    );
+    const password = screen.getByPlaceholderText(
+      "パスワードを入力してください",
+    );
+    fireEvent.change(username, { target: { value: "new-user" } });
+    fireEvent.blur(username);
+    fireEvent.change(password, { target: { value: "password" } });
+    fireEvent.blur(password);
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "保存" })).toBeEnabled(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "保存" }));
+
+    await waitFor(() => expect(createUser).toHaveBeenCalledTimes(1));
+    expect(confirm).not.toHaveBeenCalled();
+    expect(router.state.location.pathname).toBe("/ui/users");
+    confirm.mockRestore();
+  });
 });

@@ -73,7 +73,7 @@ export const UserEditPage: FC = () => {
   });
 
   usePrompt(
-    isDirty,
+    isDirty && !isSubmitting,
     "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
@@ -131,6 +131,10 @@ export const UserEditPage: FC = () => {
         reset(user);
       }
       enqueueSubmitResult(true);
+      if (isCreateMode) {
+        reset(user);
+        navigate(usersPath());
+      }
     } catch (e) {
       if (e instanceof Error && isResponseError(e)) {
         await extractAPIException<Schema>(
