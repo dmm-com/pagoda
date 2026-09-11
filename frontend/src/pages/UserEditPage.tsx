@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Button, Container, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
@@ -58,8 +58,9 @@ export const UserEditPage: FC = () => {
   );
 
   const {
-    formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
+    formState: { isValid, isDirty, isSubmitting },
     handleSubmit,
+    reset,
     setError,
     control,
   } = useForm<Schema>({
@@ -72,13 +73,9 @@ export const UserEditPage: FC = () => {
   });
 
   usePrompt(
-    isDirty && !isSubmitSuccessful,
+    isDirty && !isSubmitting,
     "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
-
-  useEffect(() => {
-    isSubmitSuccessful && navigate(usersPath());
-  }, [isSubmitSuccessful, navigate]);
 
   usePageTitle(userLoading ? "読み込み中..." : TITLE_TEMPLATES.userEdit, {
     prefix: user?.username ?? (willCreate ? "新規作成" : undefined),
@@ -129,7 +126,15 @@ export const UserEditPage: FC = () => {
           user.tokenLifetime,
         );
       }
+      if (!isCreateMode) {
+        await refreshUser();
+        reset(user);
+      }
       enqueueSubmitResult(true);
+      if (isCreateMode) {
+        reset(user);
+        navigate(usersPath());
+      }
     } catch (e) {
       if (e instanceof Error && isResponseError(e)) {
         await extractAPIException<Schema>(
@@ -244,9 +249,7 @@ export const UserEditPage: FC = () => {
             isCreateMode={isCreateMode}
             isMyself={isMyself}
             isCoUser={isCoUser}
-            isSubmittable={
-              isDirty && isValid && !isSubmitting && !isSubmitSuccessful
-            }
+            isSubmittable={isDirty && isValid && !isSubmitting}
             handleSubmit={handleSubmit(handleSubmitOnValid)}
             handleCancel={handleCancel}
           />
