@@ -38,9 +38,15 @@ import { Schema } from "./userForm/UserFormSchema";
 
 import { AironeLink } from "components/common/AironeLink";
 import { FlexBox } from "components/common/FlexBox";
-import { groupPath, rolePath } from "routes/Routes";
+import { groupPath, rolePath, userPath } from "routes/Routes";
 import { ServerContext } from "services/ServerContext";
 import { User } from "services/ServerContext";
+
+type CoUserLink = { id: number; username: string };
+
+type UserWithCoUsers = UserRetrieve & {
+  coUsers?: CoUserLink[];
+};
 
 const StyledTableRow = styled(TableRow)(() => ({
   "&:nth-of-type(odd)": {
@@ -400,6 +406,35 @@ const ElemRoles: FC<ReadonlyProps> = ({ user }) => {
   );
 };
 
+const ElemCoUsers: FC<ReadonlyProps> = ({ user }) => {
+  const coUsers = (user as UserWithCoUsers).coUsers ?? [];
+  if (coUsers.length === 0) return null;
+
+  return (
+    <StyledTableRow>
+      <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
+        作成したRead-Onlyユーザー
+      </TableCell>
+      <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
+        {
+          <ChipBox>
+            {coUsers.map((coUser) => (
+              <Chip
+                key={coUser.id}
+                label={coUser.username}
+                size="small"
+                component={AironeLink}
+                to={userPath(coUser.id)}
+                clickable
+              />
+            ))}
+          </ChipBox>
+        }
+      </TableCell>
+    </StyledTableRow>
+  );
+};
+
 const ElemUserPassword: FC<Props> = ({ control }) => {
   return (
     <StyledTableRow>
@@ -516,6 +551,7 @@ export const UserForm: FC<UserFormProps> = ({
               <>
                 <ElemGroups user={user} />
                 <ElemRoles user={user} />
+                <ElemCoUsers user={user} />
               </>
             )}
 
