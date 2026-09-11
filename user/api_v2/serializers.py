@@ -164,6 +164,7 @@ class UserRetrieveSerializer(UserBaseSerializer):
     authenticate_type = AuthenticateTypeField()
     groups = serializers.SerializerMethodField()
     roles = serializers.SerializerMethodField()
+    co_users = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -178,6 +179,7 @@ class UserRetrieveSerializer(UserBaseSerializer):
             "parent_user",
             "groups",
             "roles",
+            "co_users",
         ]
 
     @extend_schema_field(UserRetrieveTokenSerializer(required=False))
@@ -205,6 +207,12 @@ class UserRetrieveSerializer(UserBaseSerializer):
         return [
             {"id": g.id, "name": g.name, "is_direct": g.id in direct_group_ids}
             for g in sorted(obj.belonging_groups(), key=lambda x: x.name)
+        ]
+
+    def get_co_users(self, obj: User) -> list[dict[str, Any]]:
+        return [
+            {"id": co_user.id, "username": co_user.username}
+            for co_user in obj.co_users.filter(is_active=True).order_by("username")
         ]
 
     @extend_schema_field(UserRoleSerializer(many=True))
