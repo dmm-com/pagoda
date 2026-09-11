@@ -145,20 +145,17 @@ jobs:
 
   report-coverage:
     runs-on: ubuntu-24.04
-    needs: [setup_python, test]
+    needs: test
     permissions:
       contents: read
       pull-requests: write
-    strategy:
-      fail-fast: false
-      matrix:
-        target: ${{ fromJson(needs.setup_python.outputs.targets) }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-      - name: Download coverage report
+      - name: Download coverage reports
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          name: coverage-${{ matrix.target }}
+          pattern: coverage-*
+          path: coverage-reports
       - name: octocov
         uses: k1LoW/octocov-action@b3b6ee60482a667950f87553abf1df63217235d9 # v1
         with:
