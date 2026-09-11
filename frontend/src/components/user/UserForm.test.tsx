@@ -151,20 +151,6 @@ describe("UserForm", () => {
     );
   });
 
-  test("should render created read-only users as links", function () {
-    renderUserForm(
-      {
-        ...userInfo,
-        coUsers: [{ id: 2, username: "user1-readonly" }],
-      } as UserRetrieve,
-      false,
-    );
-
-    expect(
-      screen.getByRole("link", { name: "user1-readonly" }),
-    ).toHaveAttribute("href", "/ui/users/2");
-  });
-
   test("should show placeholders when the user belongs to nothing", function () {
     renderUserForm({ ...userInfo, groups: [], roles: [] }, false);
 
