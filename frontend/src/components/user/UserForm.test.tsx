@@ -155,7 +155,7 @@ describe("UserForm", () => {
     renderUserForm(
       {
         ...userInfo,
-        childReadOnlyUsers: [{ id: 2, username: "user1-readonly" }],
+        coUsers: [{ id: 2, username: "user1-readonly" }],
       } as UserRetrieve,
       false,
     );

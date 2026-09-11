@@ -42,10 +42,10 @@ import { groupPath, rolePath, userPath } from "routes/Routes";
 import { ServerContext } from "services/ServerContext";
 import { User } from "services/ServerContext";
 
-type ChildReadOnlyUserLink = { id: number; username: string };
+type CoUserLink = { id: number; username: string };
 
-type UserWithChildReadOnlyUsers = UserRetrieve & {
-  childReadOnlyUsers?: ChildReadOnlyUserLink[];
+type UserWithCoUsers = UserRetrieve & {
+  coUsers?: CoUserLink[];
 };
 
 const StyledTableRow = styled(TableRow)(() => ({
@@ -406,10 +406,9 @@ const ElemRoles: FC<ReadonlyProps> = ({ user }) => {
   );
 };
 
-const ElemChildReadOnlyUsers: FC<ReadonlyProps> = ({ user }) => {
-  const childReadOnlyUsers =
-    (user as UserWithChildReadOnlyUsers).childReadOnlyUsers ?? [];
-  if (childReadOnlyUsers.length === 0) return null;
+const ElemCoUsers: FC<ReadonlyProps> = ({ user }) => {
+  const coUsers = (user as UserWithCoUsers).coUsers ?? [];
+  if (coUsers.length === 0) return null;
 
   return (
     <StyledTableRow>
@@ -419,13 +418,13 @@ const ElemChildReadOnlyUsers: FC<ReadonlyProps> = ({ user }) => {
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         {
           <ChipBox>
-            {childReadOnlyUsers.map((childReadOnlyUser) => (
+            {coUsers.map((coUser) => (
               <Chip
-                key={childReadOnlyUser.id}
-                label={childReadOnlyUser.username}
+                key={coUser.id}
+                label={coUser.username}
                 size="small"
                 component={AironeLink}
-                to={userPath(childReadOnlyUser.id)}
+                to={userPath(coUser.id)}
                 clickable
               />
             ))}
@@ -552,7 +551,7 @@ export const UserForm: FC<UserFormProps> = ({
               <>
                 <ElemGroups user={user} />
                 <ElemRoles user={user} />
-                <ElemChildReadOnlyUsers user={user} />
+                <ElemCoUsers user={user} />
               </>
             )}
 
