@@ -337,6 +337,11 @@ If your plugin needs to run long-running operations (e.g., data export, batch pr
 # my_first_plugin/config.py
 import enum
 from airone.lib.plugin_task import PluginTaskConfig
+from pydantic import BaseModel, ConfigDict
+
+class ProcessDataParams(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+    input: str | None = None
 
 class MyFirstPluginOperation(int, enum.Enum):
     """Operation offsets for job tasks"""
@@ -348,6 +353,7 @@ PLUGIN_TASK_CONFIG = PluginTaskConfig(
     tasks={
         "process_data": (MyFirstPluginOperation.PROCESS_DATA, "process_data"),
     },
+    parameter_models={"process_data": ProcessDataParams},
     # Optional: specify task behavior
     cancelable_operations=["process_data"],  # Allow user cancellation
 )
@@ -362,7 +368,7 @@ import time
 from airone.celery import app
 from airone.lib.plugin_task import register_plugin_job_task
 from job.models import Job, JobStatus
-from my_first_plugin.config import MyFirstPluginOperation
+from my_first_plugin.config import MyFirstPluginOperation, ProcessDataParams
 
 logger = logging.getLogger(__name__)
 
@@ -391,8 +397,8 @@ def process_data(self, job_id: int):
 
     try:
         # Get job parameters
-        params = job.params
-        input_data = params.get("input")
+        params = job.get_typed_params(ProcessDataParams)
+        input_data = params.input
 
         logger.info(f"Processing job {job_id} with input: {input_data}")
 
@@ -456,7 +462,7 @@ class ProcessDataView(PluginAPIViewMixin):
             )
 
             # Create new job
-            job = Job._create_new_job(
+            job = Job.new_custom_job(
                 user=request.user,
                 target=None,
                 operation=operation_id,
