@@ -199,7 +199,6 @@ class ElasticSearchTest(TestCase):
                                 }
                             },
                         ],
-                        "should": [],
                     }
                 }
             },
@@ -330,7 +329,6 @@ class ElasticSearchTest(TestCase):
                             }
                         },
                     ],
-                    "should": [],
                 }
             }
         }
@@ -379,45 +377,49 @@ class ElasticSearchTest(TestCase):
                                         },
                                         {
                                             "bool": {
-                                                "filter": {
-                                                    "nested": {
-                                                        "path": "attr",
-                                                        "query": {
-                                                            "bool": {
-                                                                "should": [
-                                                                    {
-                                                                        "bool": {
-                                                                            "filter": [
-                                                                                {
-                                                                                    "regexp": {
-                                                                                        "attr.value": ".*[hH][oO][gG][eE].*"
+                                                "filter": [
+                                                    {
+                                                        "nested": {
+                                                            "path": "attr",
+                                                            "query": {
+                                                                "bool": {
+                                                                    "should": [
+                                                                        {
+                                                                            "bool": {
+                                                                                "filter": [
+                                                                                    {
+                                                                                        "regexp": {
+                                                                                            "attr.value": ".*[hH][oO][gG][eE].*"
+                                                                                        }
                                                                                     }
-                                                                                }
-                                                                            ]
-                                                                        }
-                                                                    },
-                                                                    {
-                                                                        "bool": {
-                                                                            "filter": [
-                                                                                {
-                                                                                    "regexp": {
-                                                                                        "attr.value": ".*[fF][uU][gG][aA].*"
-                                                                                    }
-                                                                                },
-                                                                                {
-                                                                                    "regexp": {
-                                                                                        "attr.value": ".*1.*"
-                                                                                    }
-                                                                                },
-                                                                            ]
-                                                                        }
-                                                                    },
-                                                                ]
-                                                            }
-                                                        },
-                                                        "inner_hits": {"_source": ["attr.name"]},
+                                                                                ]
+                                                                            }
+                                                                        },
+                                                                        {
+                                                                            "bool": {
+                                                                                "filter": [
+                                                                                    {
+                                                                                        "regexp": {
+                                                                                            "attr.value": ".*[fF][uU][gG][aA].*"
+                                                                                        }
+                                                                                    },
+                                                                                    {
+                                                                                        "regexp": {
+                                                                                            "attr.value": ".*1.*"
+                                                                                        }
+                                                                                    },
+                                                                                ]
+                                                                            }
+                                                                        },
+                                                                    ]
+                                                                }
+                                                            },
+                                                            "inner_hits": {
+                                                                "_source": ["attr.name"]
+                                                            },
+                                                        }
                                                     }
-                                                }
+                                                ]
                                             }
                                         },
                                     ]
@@ -668,7 +670,9 @@ class ElasticSearchTest(TestCase):
 
         # Test Elasticsearch query generation with date range in _make_an_attribute_filter
         hint = elasticsearch.AttrHint(name="test_date")
-        filter_query = elasticsearch._make_an_attribute_filter(hint, "2023-01-01~2023-12-31")
+        filter_query = elasticsearch._make_an_attribute_filter(
+            hint, "2023-01-01~2023-12-31"
+        ).to_dict()
 
         # Verify expected query structure
         self.assertEqual(filter_query["nested"]["path"], "attr")
