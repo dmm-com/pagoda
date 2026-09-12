@@ -1,6 +1,5 @@
 import csv
 import io
-import json
 from typing import Any
 
 import yaml
@@ -13,6 +12,7 @@ from airone.lib.job import may_schedule_until_job_is_ready, register_job_task
 from airone.lib.types import AttrType
 from entry.services import AdvancedSearchService
 from job.models import Job, JobOperation
+from job.params import SearchExportParams
 
 
 def _csv_export(
@@ -193,7 +193,8 @@ def _yaml_export(
 @may_schedule_until_job_is_ready
 def export_search_result(self: Any, job: Job) -> None:
     user = job.user
-    recv_data = json.loads(job.params)
+    params = job.get_typed_params(SearchExportParams)
+    recv_data = params.model_dump(mode="json", by_alias=True, exclude_unset=True)
 
     # Do not care whether the "has_referral" value is
     has_referral: bool = recv_data.get("has_referral", False)

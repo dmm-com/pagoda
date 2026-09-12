@@ -1,4 +1,3 @@
-import json
 from typing import Any
 
 from acl.models import ACLBase
@@ -7,6 +6,7 @@ from airone.lib.job import may_schedule_until_job_is_ready, register_job_task
 from airone.lib.log import Logger
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus
+from job.params import RoleImportParams, RoleReferralParams
 from role.models import Role
 from user.models import User
 
@@ -15,8 +15,8 @@ from user.models import User
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def edit_role_referrals(self: Any, job: Job) -> JobStatus:
-    params = json.loads(job.params)
-    role = Role.objects.get(id=params["role_id"])
+    params = job.get_typed_params(RoleReferralParams)
+    role = Role.objects.get(id=params.role_id)
 
     for entry in [x for x in role.get_referred_entries()]:
         entry.register_es()
@@ -28,7 +28,7 @@ def edit_role_referrals(self: Any, job: Job) -> JobStatus:
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def import_role_v2(self: Any, job: Job) -> tuple[JobStatus, str, None] | None:
-    import_data = json.loads(job.params)
+    import_data = job.get_typed_params(RoleImportParams).root
     err_msg = []
     total_count = len(import_data)
 
@@ -42,45 +42,40 @@ def import_role_v2(self: Any, job: Job) -> tuple[JobStatus, str, None] | None:
             job.save(update_fields=["status"])
             return None
 
-        # Skip processing if the role name is not provided
-        if "name" not in role_data:
-            err_msg.append("Role name is required")
-            continue
-
         # Retrieve or create roles
-        if "id" in role_data:
-            role = Role.objects.filter(id=role_data["id"]).first()
+        if role_data.id is not None:
+            role = Role.objects.filter(id=role_data.id).first()
             if not role:
-                err_msg.append(f"Role with ID {role_data['id']} does not exist.")
+                err_msg.append(f"Role with ID {role_data.id} does not exist.")
                 continue
 
-            if (role.name != role_data["name"]) and (
-                Role.objects.filter(name=role_data["name"]).count() > 0
+            if (role.name != role_data.name) and (
+                Role.objects.filter(name=role_data.name).count() > 0
             ):
                 err_msg.append(
                     "New role name is already used(id:%s, group:%s->%s)"
-                    % (role_data["id"], role.name, role_data["name"])
+                    % (role_data.id, role.name, role_data.name)
                 )
                 continue
 
-            role.name = role_data["name"]
+            role.name = role_data.name
         else:
             # Update the group by name
-            role = Role.objects.filter(name=role_data["name"]).first()
+            role = Role.objects.filter(name=role_data.name).first()
             if not role:
                 # create group
-                role = Role.objects.create(name=role_data["name"])
+                role = Role.objects.create(name=role_data.name)
             else:
                 # Clear registered members (users, groups, and administrative ones) for that role
                 for key in ["users", "groups", "admin_users", "admin_groups"]:
                     getattr(role, key).clear()
 
         # Update role information
-        role.description = role_data.get("description", "")
+        role.description = role_data.description
 
         # Configure associated users and groups
         for key in ["users", "admin_users"]:
-            for name in role_data[key]:
+            for name in getattr(role_data, key):
                 instance = User.objects.filter(username=name, is_active=True).first()
                 if not instance:
                     err_msg.append("specified user is not found (username: %s)" % name)
@@ -88,7 +83,7 @@ def import_role_v2(self: Any, job: Job) -> tuple[JobStatus, str, None] | None:
                 getattr(role, key).add(instance)
 
         for key in ["groups", "admin_groups"]:
-            for name in role_data[key]:
+            for name in getattr(role_data, key):
                 group_instance = Group.objects.filter(
                     name=name,
                     is_active=True,  # type: ignore[misc]
@@ -99,7 +94,7 @@ def import_role_v2(self: Any, job: Job) -> tuple[JobStatus, str, None] | None:
                 getattr(role, key).add(group_instance)
 
         # Configure ACL
-        for permission in role_data.get("permissions", []):
+        for permission in role_data.permissions:
             acl = ACLBase.objects.filter(id=permission["obj_id"]).first()
             if not acl:
                 raise ValueError(f"Invalid obj_id: {permission['obj_id']}")
@@ -113,8 +108,8 @@ def import_role_v2(self: Any, job: Job) -> tuple[JobStatus, str, None] | None:
         try:
             role.save()
         except Exception as e:
-            err_msg.append(role_data["name"])
-            Logger.warning("failed to save role: name=%s, error=%s" % (role_data["name"], str(e)))
+            err_msg.append(role_data.name)
+            Logger.warning("failed to save role: name=%s, error=%s" % (role_data.name, str(e)))
 
     # Update the job based on the result of the process
     if err_msg:
