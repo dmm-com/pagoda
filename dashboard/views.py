@@ -11,7 +11,7 @@ from django.shortcuts import redirect
 from pydantic import ValidationError
 
 from airone.lib.acl import ACLType
-from airone.lib.elasticsearch import AttrHint
+from airone.lib.elasticsearch import AttrHint, SimpleSearchResultRecord
 from airone.lib.http import HttpResponseSeeOther, http_file_upload, http_get, http_post, render
 from airone.lib.log import Logger
 from entity.admin import EntityAttrResource, EntityResource
@@ -100,7 +100,7 @@ def do_import_data(request: HttpRequest, context: str) -> HttpResponse:
 
 def _search_by_keyword(
     query: str, entity_name: str | None, per_page: int, page_num: int
-) -> tuple[int, list[dict[str, Any]]]:
+) -> tuple[int, list[SimpleSearchResultRecord]]:
     # correct entries that contans query at EntryName or AttributeValue
     search_result = AdvancedSearchService.search_entries_for_simple(
         query, entity_name, [], per_page, (page_num - 1) * per_page
