@@ -38,8 +38,6 @@ Job ID: {job.id}
 Job Target ID: {job.target_id}
 Job Target Type: {job.target_type}
 Job Operaion ID: {job.operation}
-Job Params: {job.params}
-
 raised exception:
 {traceback.format_exc()}
 """

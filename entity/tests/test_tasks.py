@@ -55,7 +55,7 @@ class CreateEntityAttrTest(TestCase):
                 is_delete_in_chain=False,
                 row_index="1",
             )
-        self.assertIn("Invalid type value", str(context.exception))
+        self.assertIn("valid integer", str(context.exception))
 
     def test_name_max_length_validation(self):
         """Test that name exceeding max length raises ValidationError."""
@@ -75,6 +75,9 @@ class CreateEntityParamsTest(TestCase):
     def test_valid_params(self):
         """Test creating valid entity params."""
         params = CreateEntityParams(
+            name="test entity",
+            note="",
+            is_toplevel=False,
             attrs=[
                 {
                     "name": "attr1",
@@ -84,14 +87,14 @@ class CreateEntityParamsTest(TestCase):
                     "row_index": "1",
                     "ref_ids": [],
                 }
-            ]
+            ],
         )
         self.assertEqual(len(params.attrs), 1)
         self.assertEqual(params.attrs[0].name, "attr1")
 
     def test_empty_attrs(self):
         """Test that empty attrs list is valid."""
-        params = CreateEntityParams(attrs=[])
+        params = CreateEntityParams(name="test entity", note="", is_toplevel=False, attrs=[])
         self.assertEqual(len(params.attrs), 0)
 
 

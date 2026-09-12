@@ -141,7 +141,7 @@ class TaskView(PluginAPIViewMixin):
         try:
             operation_id = PluginTaskRegistry.get_operation_id("hello-world", "hello_world_task")
 
-            job = Job._create_new_job(
+            job = Job.new_custom_job(
                 user=request.user,
                 target=None,
                 operation=operation_id,

@@ -1,6 +1,5 @@
 import csv
 import io
-import json
 from datetime import date, datetime
 from typing import Any, Callable, List, TypeAlias
 
@@ -46,13 +45,28 @@ from entry.api_v2.serializers import (
     ExportedEntryAttributePrimitiveValue,
     ExportedEntryAttributeValue,
     ExportedEntryAttributeValueObject,
-    ExportTaskParams,
     ReferralEntry,
 )
 from entry.models import Attribute, Entry
 from entry.services import AdvancedSearchService, EntryImportPreviewService
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus, JobTarget
+from job.params import (
+    BulkEditParams,
+    CopyEntryParams,
+    CreateEntryV2Params,
+    DoCopyEntryParams,
+    EmptyParams,
+    EntryV2Params,
+    ExportEntryParams,
+    ImportEntryParams,
+    LegacyCreateEntryParams,
+    LegacyEditEntryParams,
+    LegacyImportEntryParams,
+    ReferralParams,
+    SearchExportParams,
+    UpdateDocumentParams,
+)
 from role.models import Role
 from trigger.models import TriggerCondition
 from user.models import User
@@ -151,7 +165,10 @@ def _convert_data_value(attr: Attribute, info: dict[str, Any]) -> Any:
 def _do_import_entries(job: Job) -> None:
     user: User = job.user
     entity: Entity = Entity.objects.get(id=job.target.id)
-    import_data = json.loads(job.params)
+    import_data = [
+        entry.model_dump(mode="json", by_alias=True, exclude_unset=True)
+        for entry in job.get_typed_params(LegacyImportEntryParams).root
+    ]
 
     # get custom_view method to prevent executing check method in every loop processing
     custom_view_handler = None
@@ -442,7 +459,8 @@ def create_entry_attrs(self: Task, job: Job) -> JobStatus | None:
         # Abort when specified entry doesn't exist
         return JobStatus.CANCELED
 
-    recv_data = json.loads(job.params)
+    params = job.get_typed_params(LegacyCreateEntryParams)
+    recv_data = params.model_dump(mode="json", by_alias=True, exclude_unset=True)
     # Create new Attributes objects based on the specified value
     for entity_attr in entry.schema.attrs.filter(is_active=True):
         # This creates Attibute object that contains AttributeValues.
@@ -506,7 +524,8 @@ def edit_entry_attrs(self: Task, job: Job) -> JobStatus:
     # for history record
     entry._history_user = user
 
-    recv_data = json.loads(job.params)
+    params = job.get_typed_params(LegacyEditEntryParams)
+    recv_data = params.model_dump(mode="json", by_alias=True, exclude_unset=True)
 
     for info in recv_data["attrs"]:
         if info["id"]:
@@ -554,6 +573,7 @@ def edit_entry_attrs(self: Task, job: Job) -> JobStatus:
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def delete_entry(self: Task, job: Job) -> JobStatus:
+    job.get_typed_params(EmptyParams)
     entry = Entry.objects.get(id=job.target.id)
 
     # for history record
@@ -575,6 +595,7 @@ def delete_entry(self: Task, job: Job) -> JobStatus:
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def restore_entry(self: Task, job: Job) -> JobStatus:
+    job.get_typed_params(EmptyParams)
     entry = Entry.objects.get(id=job.target.id)
 
     # for history record
@@ -602,9 +623,9 @@ def restore_entry(self: Task, job: Job) -> JobStatus:
 def copy_entry(self: Task, job: Job) -> tuple[JobStatus, str, None] | None:
     src_entry = Entry.objects.get(id=job.target.id)
 
-    params = json.loads(job.params)
-    total_count = len(params["new_name_list"])
-    for index, new_name in enumerate(params["new_name_list"]):
+    params = job.get_typed_params(CopyEntryParams)
+    total_count = len(params.new_name_list)
+    for index, new_name in enumerate(params.new_name_list):
         # abort processing when job is canceled
         if job.is_canceled():
             job.text = "Copy completed [%5d/%5d]" % (index, total_count)
@@ -614,8 +635,11 @@ def copy_entry(self: Task, job: Job) -> tuple[JobStatus, str, None] | None:
         job.text = "Now copying... (progress: [%5d/%5d])" % (index + 1, total_count)
         job.save(update_fields=["text"])
 
-        params["new_name"] = new_name
-        job_do_copy_entry = Job.new_do_copy(job.user, src_entry, new_name, params)
+        do_copy_params = {
+            **params.model_dump(mode="json", by_alias=True, exclude_unset=True),
+            "new_name": new_name,
+        }
+        job_do_copy_entry = Job.new_do_copy(job.user, src_entry, new_name, do_copy_params)
         job_do_copy_entry.run(will_delay=False)
 
     # update job status and save it
@@ -627,19 +651,19 @@ def copy_entry(self: Task, job: Job) -> tuple[JobStatus, str, None] | None:
 @may_schedule_until_job_is_ready
 def do_copy_entry(self: Task, job: Job) -> tuple[JobStatus, str, None]:
     src_entry = Entry.objects.get(id=job.target.id)
-    params = json.loads(job.params)
+    params = job.get_typed_params(DoCopyEntryParams)
 
     # abort this job when there is duplicated Alias exists
-    if not src_entry.schema.is_available(params["new_name"]):
+    if not src_entry.schema.is_available(params.new_name):
         return (
             JobStatus.ERROR,
-            "Duplicated Alias(name=%s) exists in this model" % params["new_name"],
+            "Duplicated Alias(name=%s) exists in this model" % params.new_name,
             src_entry,
         )
 
-    dest_entry = Entry.objects.filter(schema=src_entry.schema, name=params["new_name"]).first()
+    dest_entry = Entry.objects.filter(schema=src_entry.schema, name=params.new_name).first()
     if not dest_entry:
-        dest_entry = src_entry.clone(job.user, name=params["new_name"])
+        dest_entry = src_entry.clone(job.user, name=params.new_name)
 
         # for updating its name from attribute values
         dest_entry.save_autoname()
@@ -654,7 +678,7 @@ def do_copy_entry(self: Task, job: Job) -> tuple[JobStatus, str, None]:
             job.user,
             src_entry,
             dest_entry,
-            params["post_data"],
+            params.post_data,
         )
 
     # create and run event notification job
@@ -682,8 +706,11 @@ def import_entries(self: Task, job: Job) -> tuple[JobStatus, str, None] | None:
 def import_entries_v2(self: Task, job: Job) -> tuple[JobStatus, str, None] | None:
     user: User = job.user
     entity = Entity.objects.get(id=job.target.id)
-    import_serializer = EntryImportEntitySerializer(data=json.loads(job.params))
-    import_serializer.is_valid()
+    params = job.get_typed_params(ImportEntryParams)
+    import_serializer = EntryImportEntitySerializer(
+        data=params.model_dump(mode="json", by_alias=True, exclude_unset=True)
+    )
+    import_serializer.is_valid(raise_exception=True)
     context = {"request": DRFRequest(user)}
 
     total_count = len(import_serializer.validated_data["entries"])
@@ -749,7 +776,7 @@ def import_entries_v2(self: Task, job: Job) -> tuple[JobStatus, str, None] | Non
 def export_entries(self: Task, job: Job) -> None:
     user = job.user
     entity = Entity.objects.get(id=job.target.id)
-    params = json.loads(job.params)
+    params = job.get_typed_params(ExportEntryParams)
 
     exported_data = []
 
@@ -774,7 +801,7 @@ def export_entries(self: Task, job: Job) -> None:
         export_item_counter += 1
 
     output = None
-    if params["export_format"] == "csv":
+    if params.export_format == "csv":
         # newline is blank because csv module performs universal newlines
         # https://docs.python.org/ja/3/library/csv.html#id3
         output = io.StringIO(newline="")
@@ -815,7 +842,7 @@ def export_entries(self: Task, job: Job) -> None:
 def export_entries_v2(self: Task, job: Job) -> None:
     user = job.user
     entity = Entity.objects.get(id=job.target.id)
-    params = ExportTaskParams.model_validate_json(job.params)
+    params = job.get_typed_params(ExportEntryParams)
     with_entity = params.export_format != "csv"
 
     exported_entity: list[ExportedEntityEntries] = []
@@ -974,7 +1001,10 @@ def _csv_export_v2(
 @may_schedule_until_job_is_ready
 def export_search_result_v2(self: Any, job: Job) -> tuple[JobStatus, str, ACLBase | None] | None:
     user = job.user
-    serializer = AdvancedSearchResultExportSerializer(data=json.loads(job.params))
+    typed_params = job.get_typed_params(SearchExportParams)
+    serializer = AdvancedSearchResultExportSerializer(
+        data=typed_params.model_dump(mode="json", by_alias=True, exclude_unset=True)
+    )
     serializer.is_valid(raise_exception=True)
     params: dict[str, Any] = serializer.validated_data
     join_attrs = params.get("join_attrs", [])
@@ -1046,6 +1076,7 @@ def export_search_result_v2(self: Any, job: Job) -> tuple[JobStatus, str, ACLBas
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def register_referrals(self: Task, job: Job) -> None:
+    job.get_typed_params(ReferralParams)
     # register entries data which refer target entry to elasticsearch
     entry = Entry.objects.filter(id=job.target.id, is_active=True).first()
     if entry:
@@ -1070,10 +1101,10 @@ def _notify_event(
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def update_es_documents(self: Task, job: Job) -> JobStatus:
-    params = json.loads(job.params)
+    params = job.get_typed_params(UpdateDocumentParams)
 
     entity = Entity.objects.get(id=job.target.id)
-    AdvancedSearchService.update_documents(entity, params.get("is_update", False))
+    AdvancedSearchService.update_documents(entity, params.is_update)
 
     return JobStatus.DONE
 
@@ -1082,6 +1113,7 @@ def update_es_documents(self: Task, job: Job) -> JobStatus:
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def notify_create_entry(self: Task, job: Job) -> tuple[JobStatus, str, None] | None:
+    job.get_typed_params(EmptyParams)
     return _notify_event(notify_entry_create, job.target.id, job.user)
 
 
@@ -1089,6 +1121,7 @@ def notify_create_entry(self: Task, job: Job) -> tuple[JobStatus, str, None] | N
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def notify_update_entry(self: Task, job: Job) -> tuple[JobStatus, str, None] | None:
+    job.get_typed_params(EmptyParams)
     return _notify_event(notify_entry_update, job.target.id, job.user)
 
 
@@ -1096,6 +1129,7 @@ def notify_update_entry(self: Task, job: Job) -> tuple[JobStatus, str, None] | N
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def notify_delete_entry(self: Task, job: Job) -> tuple[JobStatus, str, None] | None:
+    job.get_typed_params(EmptyParams)
     return _notify_event(notify_entry_delete, job.target.id, job.user)
 
 
@@ -1103,7 +1137,11 @@ def notify_delete_entry(self: Task, job: Job) -> tuple[JobStatus, str, None] | N
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def create_entry_v2(self: Task, job: Job) -> JobStatus:
-    serializer = EntryCreateSerializer(data=json.loads(job.params), context={"_user": job.user})
+    params = job.get_typed_params(CreateEntryV2Params)
+    serializer = EntryCreateSerializer(
+        data=params.model_dump(mode="json", by_alias=True, exclude_unset=True),
+        context={"_user": job.user},
+    )
     if not serializer.is_valid():
         return JobStatus.ERROR
 
@@ -1128,8 +1166,11 @@ def edit_entry_v2(self: Task, job: Job) -> JobStatus:
     if not entry:
         return JobStatus.ERROR
 
+    params = job.get_typed_params(EntryV2Params)
     serializer = EntryUpdateSerializer(
-        instance=entry, data=json.loads(job.params), context={"_user": job.user}
+        instance=entry,
+        data=params.model_dump(mode="json", by_alias=True, exclude_unset=True),
+        context={"_user": job.user},
     )
     if not serializer.is_valid():
         return JobStatus.ERROR
@@ -1143,6 +1184,7 @@ def edit_entry_v2(self: Task, job: Job) -> JobStatus:
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def delete_entry_v2(self: Task, job: Job) -> JobStatus:
+    job.get_typed_params(EmptyParams)
     entry: Entry | None = Entry.objects.filter(id=job.target.id, is_active=True).first()
     if not entry:
         return JobStatus.ERROR
@@ -1171,7 +1213,8 @@ def delete_entry_v2(self: Task, job: Job) -> JobStatus:
 def bulk_update_entries(
     self: Any, job: Job
 ) -> JobStatus | tuple[JobStatus, str, ACLBase | None] | None:
-    job_params = json.loads(job.params)
+    params = job.get_typed_params(BulkEditParams)
+    job_params = params.model_dump(mode="json", by_alias=True, exclude_unset=True)
 
     # get target items from ES by job_params.attr_info parameter
     resp = AdvancedSearchService.search_entries(
@@ -1233,7 +1276,8 @@ def import_entries_preview_v2(self: Task, job: Job) -> JobStatus:
     progress, onto the job row it runs as. See EntryImportPreviewService.
     """
     entity = Entity.objects.get(id=job.target.id)
-    raw_data = json.loads(job.params)
+    params = job.get_typed_params(ImportEntryParams)
+    raw_data = params.model_dump(mode="json", by_alias=True, exclude_unset=True)
 
     import_serializer = EntryImportEntitySerializer(data=raw_data)
     if not import_serializer.is_valid():

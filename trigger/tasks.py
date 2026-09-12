@@ -1,10 +1,10 @@
-import json
 from typing import Any
 
 from airone.celery import app
 from airone.lib.job import may_schedule_until_job_is_ready, register_job_task
 from entry.models import Entry
 from job.models import Job, JobOperation, JobStatus
+from job.params import TriggerListParams
 from trigger.models import (
     TriggerCondition,
 )
@@ -19,7 +19,10 @@ def may_invoke_trigger(self: Any, job: Job) -> JobStatus:
     user = User.objects.filter(id=job.user.id).first()
     assert job.target is not None
     entry = Entry.objects.filter(id=job.target.id, is_active=True).first()
-    recv_data = json.loads(job.params)
+    recv_data = [
+        param.model_dump(mode="json", by_alias=True, exclude_unset=True)
+        for param in job.get_typed_params(TriggerListParams).root
+    ]
 
     assert user is not None
     assert entry is not None

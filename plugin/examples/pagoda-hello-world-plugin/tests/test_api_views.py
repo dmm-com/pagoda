@@ -22,9 +22,11 @@ from pagoda_hello_world_plugin.api_v2.views import (
     GreetView,
     HelloView,
     StatusView,
+    TaskView,
     TestView,
 )
 from rest_framework import status
+from rest_framework.test import force_authenticate
 
 
 class TestHelloView(TestCase):
@@ -514,7 +516,7 @@ class TestHelloViewCeleryTask(TestCase):
     def setUp(self):
         """Set up test fixtures"""
         self.factory = RequestFactory()
-        self.view = HelloView.as_view()
+        self.view = TaskView.as_view()
 
     @patch("pagoda_hello_world_plugin.api_v2.views.PluginTaskRegistry")
     @patch("pagoda_hello_world_plugin.api_v2.views.Job")
@@ -523,7 +525,7 @@ class TestHelloViewCeleryTask(TestCase):
         mock_job = Mock()
         mock_job.id = 1
         mock_job.status = 1
-        mock_job_class._create_new_job.return_value = mock_job
+        mock_job_class.new_custom_job.return_value = mock_job
 
         mock_registry.get_operation_id.return_value = 5001
 
@@ -535,6 +537,7 @@ class TestHelloViewCeleryTask(TestCase):
         request.user = Mock()
         request.user.username = "test_user"
         request.user.is_authenticated = True
+        force_authenticate(request, user=request.user)
 
         response = self.view(request)
 
@@ -544,7 +547,7 @@ class TestHelloViewCeleryTask(TestCase):
         self.assertIn("task_message", response.data)
         self.assertEqual(response.data["task_message"], "Test message")
 
-        mock_job_class._create_new_job.assert_called_once()
+        mock_job_class.new_custom_job.assert_called_once()
         mock_job.run.assert_called_once()
 
     @patch("pagoda_hello_world_plugin.api_v2.views.PluginTaskRegistry")
@@ -560,6 +563,7 @@ class TestHelloViewCeleryTask(TestCase):
         )
         request.user = Mock()
         request.user.is_authenticated = True
+        force_authenticate(request, user=request.user)
 
         response = self.view(request)
 
@@ -572,7 +576,7 @@ class TestHelloViewCeleryTask(TestCase):
     def test_post_with_job_creation_error(self, mock_job_class, mock_registry):
         """Test error handling when Job creation fails"""
         mock_registry.get_operation_id.return_value = 5001
-        mock_job_class._create_new_job.side_effect = Exception("Database error")
+        mock_job_class.new_custom_job.side_effect = Exception("Database error")
 
         request = self.factory.post(
             "/api/v2/plugins/hello-world-plugin/hello/",
@@ -581,6 +585,7 @@ class TestHelloViewCeleryTask(TestCase):
         )
         request.user = Mock()
         request.user.is_authenticated = True
+        force_authenticate(request, user=request.user)
 
         response = self.view(request)
 
