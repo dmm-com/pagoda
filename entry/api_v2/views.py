@@ -893,9 +893,12 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
         self._has_restricted_items = (
             getattr(self, "_has_restricted_items", False) or item_restricted
         )
-        return queryset.model.objects.filter(id__in=[obj.id for obj in readable]).order_by("name")[
-            : CONFIG.MAX_LIST_REFERRALS
-        ]
+        return cast(
+            QuerySet[Any],
+            queryset.model.objects.filter(id__in=[obj.id for obj in readable]).order_by("name")[
+                : CONFIG.MAX_LIST_REFERRALS
+            ],
+        )
 
     def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         queryset = self.filter_queryset(self.get_queryset())
