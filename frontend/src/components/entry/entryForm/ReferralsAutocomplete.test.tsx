@@ -57,7 +57,7 @@ describe("ReferralsAutocomplete", () => {
   test("fetches once on open and uses display labels with name fallback", async () => {
     const fetchSpy = vi
       .spyOn(aironeApiClient, "getEntryAttrReferrals")
-      .mockResolvedValue(options);
+      .mockResolvedValue({ results: options, hasRestrictedItems: false });
     render(<Harness />, { wrapper: TestWrapper });
 
     fireEvent.click(screen.getByRole("button", { name: "Open" }));
@@ -75,7 +75,7 @@ describe("ReferralsAutocomplete", () => {
   test("stores a selected option and restores its label after blur", async () => {
     const fetchSpy = vi
       .spyOn(aironeApiClient, "getEntryAttrReferrals")
-      .mockResolvedValue(options);
+      .mockResolvedValue({ results: options, hasRestrictedItems: false });
     render(<Harness />, { wrapper: TestWrapper });
 
     fireEvent.click(screen.getByRole("button", { name: "Open" }));
@@ -116,7 +116,7 @@ describe("ReferralsAutocomplete", () => {
   test("queries by input and clears the single value", async () => {
     const fetchSpy = vi
       .spyOn(aironeApiClient, "getEntryAttrReferrals")
-      .mockResolvedValue(options);
+      .mockResolvedValue({ results: options, hasRestrictedItems: false });
     render(<Harness initialValue={options[0]} />, { wrapper: TestWrapper });
 
     fireEvent.change(screen.getByRole("combobox"), {
@@ -135,7 +135,7 @@ describe("ReferralsAutocomplete", () => {
   test("clears multiple values to an empty array", async () => {
     const fetchSpy = vi
       .spyOn(aironeApiClient, "getEntryAttrReferrals")
-      .mockResolvedValue(options);
+      .mockResolvedValue({ results: options, hasRestrictedItems: false });
     render(<Harness initialValue={options} multiple />, {
       wrapper: TestWrapper,
     });
@@ -163,10 +163,29 @@ describe("ReferralsAutocomplete", () => {
     expect(screen.getByRole("combobox")).toBeEnabled();
   });
 
-  test("renders validation feedback and disabled state", () => {
-    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue(
-      options,
+  test("passes the restriction flag from the dict response", async () => {
+    const restrictionSpy = vi.fn();
+    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue({
+      results: [],
+      hasRestrictedItems: true,
+    });
+    render(
+      <ReferralsAutocomplete
+        attrId={7}
+        value={null}
+        handleChange={vi.fn()}
+        onRestrictedItemsChange={restrictionSpy}
+      />,
+      { wrapper: TestWrapper },
     );
+    await waitFor(() => expect(restrictionSpy).toHaveBeenCalledWith(true));
+  });
+
+  test("renders validation feedback and disabled state", () => {
+    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue({
+      results: options,
+      hasRestrictedItems: false,
+    });
     render(<Harness disabled error={{ message: "Selection is required" }} />, {
       wrapper: TestWrapper,
     });

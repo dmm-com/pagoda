@@ -5,7 +5,7 @@ import {
   AutocompleteInputChangeReason,
   TextField,
 } from "@mui/material";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 
 import { aironeApiClient } from "../../../repository/AironeApiClient";
 
@@ -27,6 +27,7 @@ interface Props {
   multiple?: boolean;
   error?: { message?: string };
   isDisabled?: boolean;
+  onRestrictedItemsChange?: (restricted: boolean) => void;
 }
 
 // Returns undefined only when the option itself is nullish, so the caller can
@@ -41,12 +42,15 @@ export const ReferralsAutocomplete: FC<Props> = ({
   multiple,
   error,
   isDisabled = false,
+  onRestrictedItemsChange,
 }) => {
   const [options, setOptions] = useState<GetEntryAttrReferral[]>([]);
   const [inputValue, setInputValue] = useState<string>(
     !multiple ? (labelOf(value as ReferralOption | null) ?? "") : "",
   );
   const [loading, setLoading] = useState(false);
+  const initialRequestInFlight = useRef(false);
+  const referralRequestId = useRef(0);
   const [hasFetchedInitial, setHasFetchedInitial] = useState(false);
   const [resolvedLabels, setResolvedLabels] = useState<Record<number, string>>(
     {},
@@ -88,28 +92,42 @@ export const ReferralsAutocomplete: FC<Props> = ({
   }, [multiple, resolvedLabels, value]);
 
   const fetchInitialOptions = useCallback(async () => {
-    if (hasFetchedInitial) return;
+    if (hasFetchedInitial || initialRequestInFlight.current) return;
+    initialRequestInFlight.current = true;
+    const requestId = ++referralRequestId.current;
     setLoading(true);
     try {
       const result = await aironeApiClient.getEntryAttrReferrals(attrId);
-      setOptions(result);
+      if (requestId !== referralRequestId.current) return;
+      setOptions(result.results);
+      onRestrictedItemsChange?.(result.hasRestrictedItems);
       setHasFetchedInitial(true);
     } catch {
       setOptions([]);
     } finally {
+      initialRequestInFlight.current = false;
       setLoading(false);
     }
   }, [attrId, hasFetchedInitial]);
 
+  useEffect(() => {
+    setHasFetchedInitial(false);
+    setOptions([]);
+    onRestrictedItemsChange?.(false);
+  }, [attrId]);
+
   const fetchFilteredOptions = useCallback(
     async (keyword: string) => {
       setLoading(true);
+      const requestId = ++referralRequestId.current;
       try {
         const result = await aironeApiClient.getEntryAttrReferrals(
           attrId,
           keyword,
         );
-        setOptions(result);
+        if (requestId !== referralRequestId.current) return;
+        setOptions(result.results);
+        onRestrictedItemsChange?.(result.hasRestrictedItems);
       } catch {
         setOptions([]);
       } finally {
@@ -118,6 +136,10 @@ export const ReferralsAutocomplete: FC<Props> = ({
     },
     [attrId],
   );
+
+  useEffect(() => {
+    void fetchInitialOptions();
+  }, [fetchInitialOptions]);
 
   const _handleChange = (
     value: GetEntryAttrReferral | GetEntryAttrReferral[] | null,
@@ -159,37 +181,38 @@ export const ReferralsAutocomplete: FC<Props> = ({
   };
 
   return (
-    <Autocomplete
-      fullWidth
-      multiple={multiple}
-      disabled={isDisabled}
-      loading={loading}
-      options={options}
-      // MUI Autocomplete's value must be structurally compatible with the
-      // options type; ReferralOption is a subset of GetEntryAttrReferral
-      // (displayLabel is optional here but nullable-required on the API).
-      value={
-        (value as GetEntryAttrReferral | GetEntryAttrReferral[] | null) ??
-        (multiple ? [] : null)
-      }
-      inputValue={inputValue}
-      getOptionLabel={(option) =>
-        resolvedLabels[option.id] ?? labelOf(option) ?? "-NOT SET-"
-      }
-      isOptionEqualToValue={(option, value) => option.id === value.id}
-      onChange={(_e, value, reason) => _handleChange(value, reason)}
-      onInputChange={(e, value, reason) => handleInputChange(value, reason)}
-      onBlur={handleBlur}
-      onOpen={fetchInitialOptions}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          error={error != null}
-          helperText={error?.message}
-          size="small"
-          placeholder={multiple ? "" : "-NOT SET-"}
-        />
-      )}
-    />
+    <>
+      <Autocomplete
+        fullWidth
+        multiple={multiple}
+        disabled={isDisabled}
+        loading={loading}
+        options={options}
+        // MUI Autocomplete's value must be structurally compatible with the
+        // options type; ReferralOption is a subset of GetEntryAttrReferral
+        // (displayLabel is optional here but nullable-required on the API).
+        value={
+          (value as GetEntryAttrReferral | GetEntryAttrReferral[] | null) ??
+          (multiple ? [] : null)
+        }
+        inputValue={inputValue}
+        getOptionLabel={(option) =>
+          resolvedLabels[option.id] ?? labelOf(option) ?? "-NOT SET-"
+        }
+        isOptionEqualToValue={(option, value) => option.id === value.id}
+        onChange={(_e, value, reason) => _handleChange(value, reason)}
+        onInputChange={(e, value, reason) => handleInputChange(value, reason)}
+        onBlur={handleBlur}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            error={error != null}
+            helperText={error?.message}
+            size="small"
+            placeholder={multiple ? "" : "-NOT SET-"}
+          />
+        )}
+      />
+    </>
   );
 };

@@ -16,19 +16,19 @@ import { schema, Schema } from "./EntryFormSchema";
 const server = setupServer(
   // getEntryAttrReferrals
   http.get("http://localhost/entry/api/v2/4/attr_referrals/", () => {
-    return HttpResponse.json([]);
+    return HttpResponse.json({ has_restricted_items: false, results: [] });
   }),
   // getEntryAttrReferrals
   http.get("http://localhost/entry/api/v2/5/attr_referrals/", () => {
-    return HttpResponse.json([]);
+    return HttpResponse.json({ has_restricted_items: false, results: [] });
   }),
   // getEntryAttrReferrals
   http.get("http://localhost/entry/api/v2/9/attr_referrals/", () => {
-    return HttpResponse.json([]);
+    return HttpResponse.json({ has_restricted_items: false, results: [] });
   }),
   // getEntryAttrReferrals
   http.get("http://localhost/entry/api/v2/10/attr_referrals/", () => {
-    return HttpResponse.json([]);
+    return HttpResponse.json({ has_restricted_items: false, results: [] });
   }),
   // getGroups
   http.get("http://localhost/group/api/v2/groups", () => {
@@ -36,7 +36,7 @@ const server = setupServer(
   }),
   // getRoles
   http.get("http://localhost/role/api/v2/", () => {
-    return HttpResponse.json([]);
+    return HttpResponse.json({ has_restricted_items: false, results: [] });
   }),
 );
 
