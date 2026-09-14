@@ -841,11 +841,12 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
         if entity_attr.type & AttrType.OBJECT:
             from isolation.models import IsolationParent
 
+            user = cast("User", self.request.user)
             referral_models = list(entity_attr.referral.all())
             readable_model_ids = {
                 model.id
                 for model in referral_models
-                if self.request.user.has_permission(model, ACLType.Readable)
+                if user.has_permission(model, ACLType.Readable)
             }
             self._has_restricted_items = len(readable_model_ids) != len(referral_models)
             qs = Entry.objects.filter(
@@ -881,14 +882,13 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
         else:
             raise IncorrectTypeError(f"unsupported attr type: {entity_attr.type}")
 
-    def _filter_readable(self, queryset: QuerySet) -> QuerySet:
+    def _filter_readable(self, queryset: QuerySet[Any]) -> QuerySet[Any]:
         if queryset.model is not Entry:
             self._has_restricted_items = False
             return queryset[: CONFIG.MAX_LIST_REFERRALS]
+        user = cast("User", self.request.user)
         objects = list(queryset)
-        readable = [
-            obj for obj in objects if self.request.user.has_permission(obj, ACLType.Readable)
-        ]
+        readable = [obj for obj in objects if user.has_permission(obj, ACLType.Readable)]
         item_restricted = len(readable) != len(objects)
         self._has_restricted_items = (
             getattr(self, "_has_restricted_items", False) or item_restricted

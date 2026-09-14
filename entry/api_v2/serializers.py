@@ -1461,7 +1461,7 @@ class GetEntryAttrReferralSerializer(serializers.ModelSerializer):
         return data
 
 
-class GetEntryAttrReferralListSerializer(serializers.Serializer):
+class GetEntryAttrReferralListSerializer(serializers.Serializer[Any]):
     has_restricted_items = serializers.BooleanField()
     results = GetEntryAttrReferralSerializer(many=True)
 
