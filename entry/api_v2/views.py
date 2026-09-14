@@ -874,7 +874,7 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
                     to_attr="_display_attr_list",
                 )
                 qs = qs.prefetch_related(display_attr_prefetch)
-            return self._filter_readable(qs)
+            return self._filter_readable(qs[: CONFIG.MAX_LIST_REFERRALS])
         elif entity_attr.type & AttrType.GROUP:
             return self._filter_readable(Group.objects.filter(**conditions).order_by("name"))
         elif entity_attr.type & AttrType.ROLE:
@@ -893,7 +893,9 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
         self._has_restricted_items = (
             getattr(self, "_has_restricted_items", False) or item_restricted
         )
-        return queryset.filter(id__in=[obj.id for obj in readable])[: CONFIG.MAX_LIST_REFERRALS]
+        return queryset.model.objects.filter(id__in=[obj.id for obj in readable]).order_by("name")[
+            : CONFIG.MAX_LIST_REFERRALS
+        ]
 
     def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         queryset = self.filter_queryset(self.get_queryset())
