@@ -1461,6 +1461,11 @@ class GetEntryAttrReferralSerializer(serializers.ModelSerializer):
         return data
 
 
+class GetEntryAttrReferralListSerializer(serializers.Serializer):
+    has_restricted_items = serializers.BooleanField()
+    results = GetEntryAttrReferralSerializer(many=True)
+
+
 class AttributeSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source="schema.name")
 
