@@ -849,9 +849,9 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
                 if user.has_permission(model, ACLType.Readable)
             }
             self._has_restricted_items = len(readable_model_ids) != len(referral_models)
-            qs = Entry.objects.filter(
-                **conditions, schema_id__in=readable_model_ids
-            ).order_by("name")
+            qs = Entry.objects.filter(**conditions, schema_id__in=readable_model_ids).order_by(
+                "name"
+            )
             isolated_ids = IsolationParent.get_isolated_entry_ids(qs, entity_attr.parent_entity)
             qs = qs.exclude(id__in=isolated_ids)
             # Bounded prefetch to resolve display_label without N+1 when
