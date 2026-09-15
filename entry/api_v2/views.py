@@ -828,11 +828,7 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
                 context["display_attr_name"] = entity_attr.display_attr
         return context
 
-    def get_queryset(
-        self,
-    ) -> (
-        QuerySet[Entry] | QuerySet[Group] | QuerySet[Role] | list[Entry] | list[Group] | list[Role]
-    ):
+    def get_queryset(self) -> QuerySet[Any]:
         keyword = self.request.query_params.get("keyword", None)
         entity_attr = self._resolve_entity_attr()
 
@@ -878,7 +874,7 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
                     for entry in entries
                     if normalized_keyword in normalize_search_text(entry.name)
                 ]
-            return entries[: CONFIG.MAX_LIST_REFERRALS]
+            return cast(QuerySet[Any], entries[: CONFIG.MAX_LIST_REFERRALS])
         elif entity_attr.type & AttrType.GROUP:
             groups: list[Group] = cast(
                 list[Group], list(Group.objects.filter(**conditions).order_by("name"))
@@ -889,14 +885,14 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
                     for group in groups
                     if normalized_keyword in normalize_search_text(group.name)
                 ]
-            return groups[0 : CONFIG.MAX_LIST_REFERRALS]
+            return cast(QuerySet[Any], groups[0 : CONFIG.MAX_LIST_REFERRALS])
         elif entity_attr.type & AttrType.ROLE:
             roles = list(Role.objects.filter(**conditions).order_by("name"))
             if keyword:
                 roles = [
                     role for role in roles if normalized_keyword in normalize_search_text(role.name)
                 ]
-            return roles[0 : CONFIG.MAX_LIST_REFERRALS]
+            return cast(QuerySet[Any], roles[0 : CONFIG.MAX_LIST_REFERRALS])
         else:
             raise IncorrectTypeError(f"unsupported attr type: {entity_attr.type}")
 
