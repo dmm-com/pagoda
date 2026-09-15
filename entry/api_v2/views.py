@@ -39,6 +39,7 @@ from airone.lib.elasticsearch import (
 )
 from airone.lib.multidb import db_readonly
 from airone.lib.plugin_dispatch import PluginOverrideMixin
+from airone.lib.text import normalize_search_text
 from airone.lib.types import AttrType, is_sortable_attr_type
 from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity, EntityAttr
@@ -832,18 +833,25 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
         entity_attr = self._resolve_entity_attr()
 
         conditions = {"is_active": True}
+        conditions_q = Q()
         if keyword:
-            conditions["name__icontains"] = keyword
+            normalized_keyword = normalize_search_text(keyword)
+            conditions_q = Q()
 
         # TODO support natural sort?
         if entity_attr.type & AttrType.OBJECT:
             from isolation.models import IsolationParent
 
-            qs = Entry.objects.filter(**conditions, schema__in=entity_attr.referral.all()).order_by(
-                "name"
-            )
+            qs = Entry.objects.filter(
+                conditions_q, **conditions, schema__in=entity_attr.referral.all()
+            ).order_by("name")
             isolated_ids = IsolationParent.get_isolated_entry_ids(qs, entity_attr.parent_entity)
-            qs = qs.exclude(id__in=isolated_ids)[0 : CONFIG.MAX_LIST_REFERRALS]
+            qs = qs.exclude(id__in=isolated_ids)
+            if keyword:
+                qs = [
+                    entry for entry in qs if normalized_keyword in normalize_search_text(entry.name)
+                ]
+            qs = qs[0 : CONFIG.MAX_LIST_REFERRALS]
             # Bounded prefetch to resolve display_label without N+1 when
             # display_attr is configured on the caller-side EntityAttr.
             if entity_attr.display_attr:

@@ -9,6 +9,8 @@ import { FC, useCallback, useEffect, useState } from "react";
 
 import { aironeApiClient } from "../../../repository/AironeApiClient";
 
+import { fuzzyMatch } from "services/StringUtil";
+
 // Accept any object that carries at least id / name — display_label is optional
 // and callers may not always provide it (e.g. Trigger/Isolation flows build
 // their own picker payload).
@@ -175,6 +177,11 @@ export const ReferralsAutocomplete: FC<Props> = ({
       inputValue={inputValue}
       getOptionLabel={(option) =>
         resolvedLabels[option.id] ?? labelOf(option) ?? "-NOT SET-"
+      }
+      filterOptions={(options, state) =>
+        options.filter((option) =>
+          fuzzyMatch(labelOf(option) ?? "", state.inputValue),
+        )
       }
       isOptionEqualToValue={(option, value) => option.id === value.id}
       onChange={(_e, value, reason) => _handleChange(value, reason)}

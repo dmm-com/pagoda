@@ -44,6 +44,7 @@ import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { aclPath } from "routes/Routes";
 import { AttributeTypes } from "services/Constants";
+import { fuzzyMatch } from "services/StringUtil";
 
 const StyledBox = styled(Box)(({ theme }) => ({
   margin: theme.spacing(1),
@@ -278,6 +279,11 @@ export const AttributeField: FC<Props> = ({
                   options={referralEntities}
                   getOptionLabel={(option: { id: number; name: string }) =>
                     option.name
+                  }
+                  filterOptions={(options, state) =>
+                    options.filter((option) =>
+                      fuzzyMatch(option.name, state.inputValue),
+                    )
                   }
                   isOptionEqualToValue={(
                     option: { id: number; name: string },
