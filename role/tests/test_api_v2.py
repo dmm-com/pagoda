@@ -334,9 +334,7 @@ class ViewTest(AironeViewTest):
             "  admin_users: []\n  admin_groups: []\n"
         )
 
-        resp = self.client.post(
-            "/role/api/v2/import", payload, content_type="application/yaml"
-        )
+        resp = self.client.post("/role/api/v2/import", payload, content_type="application/yaml")
 
         self.assertEqual(resp.status_code, 400)
         self.assertContains(resp, "role id 31000 does not exist", status_code=400)
@@ -349,9 +347,7 @@ class ViewTest(AironeViewTest):
             "  admin_users: []\n  admin_groups: []\n"
         )
 
-        resp = self.client.post(
-            "/role/api/v2/import", payload, content_type="application/yaml"
-        )
+        resp = self.client.post("/role/api/v2/import", payload, content_type="application/yaml")
 
         self.assertEqual(resp.status_code, 400)
         self.assertContains(resp, "specified object is not found", status_code=400)

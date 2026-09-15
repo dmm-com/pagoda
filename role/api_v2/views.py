@@ -98,19 +98,13 @@ class RoleImportAPI(generics.GenericAPIView[Any]):
         try:
             task_result = job.run()
         except Exception as exc:
-            return Response(
-                {"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
         if isinstance(task_result, tuple) and task_result:
             task_status = task_result[0]
             if task_status in (JobStatus.ERROR, JobStatus.WARNING):
                 return Response(
-                    {
-                        "detail": task_result[1]
-                        if len(task_result) > 1
-                        else "Role import failed"
-                    },
+                    {"detail": task_result[1] if len(task_result) > 1 else "Role import failed"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
         # The generated TypeScript client expects the 200 response to be a
