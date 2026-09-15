@@ -107,9 +107,7 @@ class RoleImportAPI(generics.GenericAPIView[Any]):
                     {"detail": task_result[1] if len(task_result) > 1 else "Role import failed"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-        # The generated TypeScript client expects the 200 response to be a
-        # RoleImportExportChild array, as defined in OpenAPI.  The import is
-        # asynchronous, so there is no completed role payload to return here.
+
         return Response([], status=status.HTTP_200_OK)
 
 

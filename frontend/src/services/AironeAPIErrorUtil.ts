@@ -96,8 +96,6 @@ export const toReportableNonFieldErrors = async (
       .join(", ");
   }
 
-  // Validation errors can be returned under a field name (for example,
-  // {"roles": [{"message": "role id 31000 does not exist"}]}).
   const fieldErrors = Object.values(jsonError as Record<string, unknown>)
     .flatMap((details) => (Array.isArray(details) ? details : []))
     .filter(
