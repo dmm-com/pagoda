@@ -996,7 +996,9 @@ class AironeApiClient {
           referralName: referralName,
           includeReferrals: referralIncludeModelIds,
           excludeReferrals: referralExcludeModelIds,
-        },
+        } as unknown as Parameters<
+          typeof this.entry.entryApiV2AdvancedSearchResultExportCreate
+        >[0]["advancedSearchResultExport"],
       },
       {
         headers: {
