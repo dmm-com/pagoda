@@ -1911,10 +1911,10 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer):
     has_referral = serializers.BooleanField(required=False)
     referral_name = serializers.CharField(required=False, allow_blank=True)
     include_referrals = serializers.ListField(
-        child=serializers.IntegerField(), required=False, default=[]
+        child=serializers.IntegerField(), required=False
     )
     exclude_referrals = serializers.ListField(
-        child=serializers.IntegerField(), required=False, default=[]
+        child=serializers.IntegerField(), required=False
     )
     is_all_entities = serializers.BooleanField(default=False)
     export_style = serializers.CharField()
