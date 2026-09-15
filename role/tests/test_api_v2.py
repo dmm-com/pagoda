@@ -339,7 +339,7 @@ class ViewTest(AironeViewTest):
         )
 
         self.assertEqual(resp.status_code, 400)
-        self.assertContains(resp, "role id 31000 does not exist")
+        self.assertContains(resp, "role id 31000 does not exist", status_code=400)
         self.assertFalse(Job.objects.filter(operation=JobOperation.IMPORT_ROLE_V2).exists())
 
     def test_import_rejects_missing_member_before_creating_job(self):
@@ -354,7 +354,7 @@ class ViewTest(AironeViewTest):
         )
 
         self.assertEqual(resp.status_code, 400)
-        self.assertContains(resp, "specified object is not found")
+        self.assertContains(resp, "specified object is not found", status_code=400)
         self.assertFalse(Job.objects.filter(operation=JobOperation.IMPORT_ROLE_V2).exists())
 
     def test_export(self):

@@ -143,12 +143,13 @@ class RoleImportExportChildSerializer(serializers.ModelSerializer[Role]):
 
     def validate(self, role: OrderedDict[str, Any]) -> OrderedDict[str, Any]:
         errors: dict[str, list[str]] = {}
-        for key, model, field in [
+        model_fields: list[tuple[str, Any, str]] = [
             ("users", User, "username"),
             ("admin_users", User, "username"),
             ("groups", Group, "name"),
             ("admin_groups", Group, "name"),
-        ]:
+        ]
+        for key, model, field in model_fields:
             missing = [
                 name
                 for name in role.get(key, [])
@@ -199,13 +200,16 @@ class RoleImportSerializer(serializers.ListSerializer[Role]):
             name = role_data["name"]
             names[name] = names.get(name, 0) + 1
             role_id = role_data.get("id")
+            role_id = cast(int, role_id) if role_id is not None else None
             role = Role.objects.filter(id=role_id).first() if role_id is not None else None
 
             if role_id is not None and role is None:
                 errors.append(f"role id {role_id} does not exist")
                 continue
 
-            conflicting = Role.objects.filter(name=name).exclude(id=role_id)
+            conflicting = Role.objects.filter(name=name)
+            if role_id is not None:
+                conflicting = conflicting.exclude(id=role_id)
             if conflicting.exists():
                 errors.append(f"roles[{index}]: role name '{name}' is already used")
             if role_id is None and not Role.objects.filter(name=name).exists():
