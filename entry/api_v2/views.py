@@ -828,7 +828,11 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
                 context["display_attr_name"] = entity_attr.display_attr
         return context
 
-    def get_queryset(self) -> QuerySet[Entry] | QuerySet[Group] | QuerySet[Role]:
+    def get_queryset(
+        self,
+    ) -> (
+        QuerySet[Entry] | QuerySet[Group] | QuerySet[Role] | list[Entry] | list[Group] | list[Role]
+    ):
         keyword = self.request.query_params.get("keyword", None)
         entity_attr = self._resolve_entity_attr()
 
@@ -842,16 +846,11 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
         if entity_attr.type & AttrType.OBJECT:
             from isolation.models import IsolationParent
 
-            qs: Any = Entry.objects.filter(
+            qs = Entry.objects.filter(
                 conditions_q, **conditions, schema__in=entity_attr.referral.all()
             ).order_by("name")
             isolated_ids = IsolationParent.get_isolated_entry_ids(qs, entity_attr.parent_entity)
             qs = qs.exclude(id__in=isolated_ids)
-            if keyword:
-                qs = [
-                    entry for entry in qs if normalized_keyword in normalize_search_text(entry.name)
-                ]
-            qs = qs[0 : CONFIG.MAX_LIST_REFERRALS]
             # Bounded prefetch to resolve display_label without N+1 when
             # display_attr is configured on the caller-side EntityAttr.
             if entity_attr.display_attr:
@@ -872,9 +871,18 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
                     to_attr="_display_attr_list",
                 )
                 qs = qs.prefetch_related(display_attr_prefetch)
-            return qs
+            entries: list[Entry] = list(qs)
+            if keyword:
+                entries = [
+                    entry
+                    for entry in entries
+                    if normalized_keyword in normalize_search_text(entry.name)
+                ]
+            return entries[: CONFIG.MAX_LIST_REFERRALS]
         elif entity_attr.type & AttrType.GROUP:
-            groups: Any = Group.objects.filter(**conditions).order_by("name")
+            groups: list[Group] = cast(
+                list[Group], list(Group.objects.filter(**conditions).order_by("name"))
+            )
             if keyword:
                 groups = [
                     group
@@ -883,7 +891,7 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
                 ]
             return groups[0 : CONFIG.MAX_LIST_REFERRALS]
         elif entity_attr.type & AttrType.ROLE:
-            roles: Any = Role.objects.filter(**conditions).order_by("name")
+            roles = list(Role.objects.filter(**conditions).order_by("name"))
             if keyword:
                 roles = [
                     role for role in roles if normalized_keyword in normalize_search_text(role.name)
