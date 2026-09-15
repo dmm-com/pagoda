@@ -1,9 +1,11 @@
 from collections import OrderedDict
 from typing import Any, cast
 
+from django.conf import settings
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from acl.models import ACLBase
 from airone.lib.drf import RequiredParameterError
 from group.models import Group
 from role.models import Role
@@ -118,6 +120,7 @@ class RoleCreateUpdateSerializer(serializers.ModelSerializer[Role]):
 
 
 class RoleImportExportChildSerializer(serializers.ModelSerializer[Role]):
+    id = serializers.IntegerField(required=False)
     name = serializers.CharField()
     users = serializers.ListField(child=serializers.CharField())
     groups = serializers.ListField(child=serializers.CharField())
@@ -137,6 +140,33 @@ class RoleImportExportChildSerializer(serializers.ModelSerializer[Role]):
             "admin_groups",
             "permissions",
         ]
+
+    def validate(self, role: OrderedDict[str, Any]) -> OrderedDict[str, Any]:
+        errors: dict[str, list[str]] = {}
+        for key, model, field in [
+            ("users", User, "username"),
+            ("admin_users", User, "username"),
+            ("groups", Group, "name"),
+            ("admin_groups", Group, "name"),
+        ]:
+            missing = [
+                name
+                for name in role.get(key, [])
+                if not model.objects.filter(**{field: name, "is_active": True}).exists()
+            ]
+            if missing:
+                errors[key] = ["specified object is not found: " + ", ".join(missing)]
+        invalid = [
+            str(permission.get("obj_id"))
+            for permission in role.get("permissions", [])
+            if permission.get("permission") not in {"readable", "writable", "full"}
+            or not ACLBase.objects.filter(id=permission.get("obj_id")).exists()
+        ]
+        if invalid:
+            errors["permissions"] = ["invalid permission object: " + ", ".join(invalid)]
+        if errors:
+            raise serializers.ValidationError(errors)
+        return role
 
     def to_representation(self, instance: Role) -> dict[str, Any]:
         def _get_permission_data(permission_obj: Any) -> dict[str, Any]:
@@ -159,3 +189,36 @@ class RoleImportExportChildSerializer(serializers.ModelSerializer[Role]):
 
 class RoleImportSerializer(serializers.ListSerializer[Role]):
     child = RoleImportExportChildSerializer()
+
+    def validate(self, roles: list[OrderedDict[str, Any]]) -> list[OrderedDict[str, Any]]:
+        errors: list[str] = []
+        names: dict[str, int] = {}
+        new_role_count = 0
+
+        for index, role_data in enumerate(roles):
+            name = role_data["name"]
+            names[name] = names.get(name, 0) + 1
+            role_id = role_data.get("id")
+            role = Role.objects.filter(id=role_id).first() if role_id is not None else None
+
+            if role_id is not None and role is None:
+                errors.append(f"role id {role_id} does not exist")
+                continue
+
+            conflicting = Role.objects.filter(name=name).exclude(id=role_id)
+            if conflicting.exists():
+                errors.append(f"roles[{index}]: role name '{name}' is already used")
+            if role_id is None and not Role.objects.filter(name=name).exists():
+                new_role_count += 1
+
+        duplicate_names = [name for name, count in names.items() if count > 1]
+        if duplicate_names:
+            errors.append("duplicate role names: " + ", ".join(duplicate_names))
+
+        max_roles = settings.MAX_ROLES
+        if max_roles and Role.objects.count() + new_role_count > max_roles:
+            errors.append("The number of roles is over the limit")
+
+        if errors:
+            raise serializers.ValidationError({"roles": errors})
+        return roles
