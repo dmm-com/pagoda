@@ -842,7 +842,7 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
         if entity_attr.type & AttrType.OBJECT:
             from isolation.models import IsolationParent
 
-            qs = Entry.objects.filter(
+            qs: Any = Entry.objects.filter(
                 conditions_q, **conditions, schema__in=entity_attr.referral.all()
             ).order_by("name")
             isolated_ids = IsolationParent.get_isolated_entry_ids(qs, entity_attr.parent_entity)
@@ -874,11 +874,21 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
                 qs = qs.prefetch_related(display_attr_prefetch)
             return qs
         elif entity_attr.type & AttrType.GROUP:
-            return Group.objects.filter(**conditions).order_by("name")[
-                0 : CONFIG.MAX_LIST_REFERRALS
-            ]
+            groups: Any = Group.objects.filter(**conditions).order_by("name")
+            if keyword:
+                groups = [
+                    group
+                    for group in groups
+                    if normalized_keyword in normalize_search_text(group.name)
+                ]
+            return groups[0 : CONFIG.MAX_LIST_REFERRALS]
         elif entity_attr.type & AttrType.ROLE:
-            return Role.objects.filter(**conditions).order_by("name")[0 : CONFIG.MAX_LIST_REFERRALS]
+            roles: Any = Role.objects.filter(**conditions).order_by("name")
+            if keyword:
+                roles = [
+                    role for role in roles if normalized_keyword in normalize_search_text(role.name)
+                ]
+            return roles[0 : CONFIG.MAX_LIST_REFERRALS]
         else:
             raise IncorrectTypeError(f"unsupported attr type: {entity_attr.type}")
 
