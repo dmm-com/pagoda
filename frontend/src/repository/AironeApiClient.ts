@@ -979,6 +979,9 @@ class AironeApiClient {
     isAllEntities: boolean,
     format: "yaml" | "csv",
     hintEntry?: EntryHint,
+    referralName?: string,
+    referralIncludeModelIds: number[] = [],
+    referralExcludeModelIds: number[] = [],
   ): Promise<void> {
     await this.entry.entryApiV2AdvancedSearchResultExportCreate(
       {
@@ -990,6 +993,9 @@ class AironeApiClient {
           isAllEntities: isAllEntities,
           exportStyle: format,
           hintEntry: hintEntry,
+          referralName: referralName,
+          includeReferrals: referralIncludeModelIds,
+          excludeReferrals: referralExcludeModelIds,
         },
       },
       {

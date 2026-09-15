@@ -1909,7 +1909,13 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer):
     attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
     join_attrs = AdvancedSearchJoinAttrInfoSerializer(many=True, required=False)
     has_referral = serializers.BooleanField(required=False)
-    referral_name = serializers.CharField(required=False)
+    referral_name = serializers.CharField(required=False, allow_blank=True)
+    include_referrals = serializers.ListField(
+        child=serializers.IntegerField(), required=False, default=[]
+    )
+    exclude_referrals = serializers.ListField(
+        child=serializers.IntegerField(), required=False, default=[]
+    )
     is_all_entities = serializers.BooleanField(default=False)
     export_style = serializers.CharField()
     hint_entry = EntryHintSerializer(required=False)
