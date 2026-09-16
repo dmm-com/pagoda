@@ -197,7 +197,8 @@ describe("GroupAttributeValueField", () => {
       { wrapper: TestWrapper },
     );
     const input = screen.getByRole("combobox");
-    fireEvent.change(input, { target: { value: "admin" } });
+    input.focus();
+    fireEvent.input(input, { target: { value: "admin" } });
     await waitFor(() => expect(input).toHaveValue("admin"));
     await waitFor(() => expect(spy).toHaveBeenCalledWith(1, "admin"));
   });

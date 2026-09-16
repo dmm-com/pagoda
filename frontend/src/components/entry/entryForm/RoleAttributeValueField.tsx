@@ -16,6 +16,7 @@ import { aironeApiClient } from "../../../repository/AironeApiClient";
 import { Schema } from "./EntryFormSchema";
 
 import { getStagedErrorStyle } from "utils/styleUtils";
+import { fuzzyMatch } from "services/StringUtil";
 
 const StyledTypography = styled(Typography)(() => ({
   color: "rgba(0, 0, 0, 0.6)",
@@ -89,22 +90,17 @@ export const RoleAttributeValueField: FC<Props> = ({
             <Autocomplete<RoleOption, boolean>
               fullWidth
               multiple={multiple}
+              selectOnFocus
+              clearOnBlur={false}
               loading={loading}
               options={options}
-              inputValue={
-                inputValue ||
-                (multiple
-                  ? ""
-                  : ((field.value as RoleOption | null)?.name ?? ""))
-              }
+              filterOptions={(options, state) => options.filter((option) => fuzzyMatch(option.name, state.inputValue))}
               value={field.value ?? (multiple ? [] : null)}
               getOptionLabel={(option) => option.name}
               isOptionEqualToValue={(option, value) => option.id === value.id}
               onChange={(_, value) => handleChange(value)}
-              onInputChange={(_, value, reason) => {
-                if (reason === "input" || reason === "clear") {
-                  setInputValue(value);
-                }
+              onInputChange={(_, value) => {
+                setInputValue(value);
               }}
               renderInput={(params) => (
                 <TextField
