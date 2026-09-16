@@ -1,4 +1,4 @@
-import json
+from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
@@ -13,6 +13,7 @@ from airone.lib.elasticsearch import (
     AdvancedSearchResults,
     AttrHint,
     EntryHint,
+    SimpleSearchResults,
     execute_query,
     make_attr_sort_clauses,
     make_query,
@@ -28,6 +29,7 @@ from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import EntryCreateSerializer, EntryUpdateSerializer
 from entry.models import Attribute, AttributeValue, Entry
 from job.models import Job, JobOperation, JobStatus
+from job.params import ImportEntryParams
 from trigger.models import TriggerCondition
 from user.models import User
 
@@ -239,7 +241,7 @@ class AdvancedSearchService:
         exclude_entity_names: list[str] = [],
         limit: int = CONFIG.MAX_LIST_ENTRIES,
         offset: int = 0,
-    ) -> dict[str, Any]:
+    ) -> SimpleSearchResults:
         """Method called from simple search.
         Returns the count and values of entries with hint_attr_value.
 
@@ -482,7 +484,7 @@ class AdvancedSearchService:
 
     @classmethod
     def get_all_es_docs(kls) -> dict[str, Any]:
-        return ESS().search(body={"query": {"match_all": {}}})
+        return ESS().search_entries({"query": {"match_all": {}}})
 
     @classmethod
     def update_documents(kls, entity: Entity, is_update: bool = False) -> None:
@@ -495,7 +497,7 @@ class AdvancedSearchService:
                 }
             }
         }
-        res = es.search(body=query)
+        res = es.search_entries(query)
 
         results_from_es = [x["_source"] for x in res["hits"]["hits"]]
         entry_ids_from_es = [int(x["_id"]) for x in res["hits"]["hits"]]
@@ -529,7 +531,7 @@ class AdvancedSearchService:
         exists: bool = True
         while exists:
             exists = False
-            register_docs = []
+            register_docs: list[Mapping[str, Any]] = []
             for entry in entry_list[start_pos : start_pos + 1000]:
                 exists = True
                 es_doc = entry.get_es_document(entity_attrs=entity_attrs)
@@ -548,7 +550,7 @@ class AdvancedSearchService:
                     register_docs.append(es_doc)
 
             if register_docs:
-                es.bulk(body=register_docs)
+                es.bulk_entries(register_docs)
             start_pos = start_pos + 1000
 
         # delete
@@ -559,11 +561,11 @@ class AdvancedSearchService:
             if not is_update:
                 Logger.warning("Delete elasticsearch document (entry_id: %s)" % entry.id)
             try:
-                es.delete(id=entry_id)
+                es.delete_entry(entry_id)
             except NotFoundError:
                 pass
 
-        es.indices.refresh()
+        es.refresh_index()
 
 
 class EntryImportPreviewService:
@@ -864,7 +866,7 @@ def _load_preview_baselines(job: Job) -> dict[str, dict[str, Any]] | None:
     a file long enough to be truncated records no values for the rows it could
     not list, and those rows import the way they always have.
     """
-    preview_job_id = json.loads(job.params).get("preview_job_id")
+    preview_job_id = job.get_typed_params(ImportEntryParams).preview_job_id
     if not preview_job_id:
         return None
 

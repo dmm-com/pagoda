@@ -4,8 +4,9 @@ from typing import IO, Any
 
 import yaml
 from django.conf import settings
+from pydantic import ValidationError as PydanticValidationError
 from rest_framework import serializers
-from rest_framework.exceptions import APIException, ParseError, ValidationError
+from rest_framework.exceptions import APIException, ErrorDetail, ParseError, ValidationError
 from rest_framework.parsers import BaseParser
 from rest_framework.renderers import BaseRenderer
 from rest_framework.response import Response
@@ -112,7 +113,38 @@ class FileIsNotExistsError(ValidationError):
     default_code = "AE-280000"
 
 
+class InvalidJobParameterError(ValidationError):
+    """A job payload did not satisfy its operation parameter contract."""
+
+    default_code = "AE-121000"
+
+
+def _as_drf_validation_error(exc: PydanticValidationError) -> InvalidJobParameterError:
+    """Translate pydantic field errors into the AirOne API error shape.
+
+    Job parameter contracts (``job/params.py``) raise pydantic errors that the
+    default DRF handler does not understand, which would turn a bad request
+    into an HTTP 500.  Surface them as a 400 with the offending field path and
+    an AirOne error code instead.
+    """
+
+    details: dict[str, list[ErrorDetail]] = {}
+    for error in exc.errors():
+        location = ".".join(str(part) for part in error.get("loc", ())) or "__root__"
+        # A missing field keeps the "required parameter" code; every other
+        # contract violation is reported as an incorrect type or value.
+        code = "AE-113000" if error.get("type") == "missing" else "AE-121000"
+        details.setdefault(location, []).append(
+            ErrorDetail(error.get("msg", "Invalid value"), code=code)
+        )
+    return InvalidJobParameterError(details)
+
+
 def custom_exception_handler(exc: Exception, context: dict[str, Any]) -> Response | None:
+    # Pydantic contract violations are client errors, not server errors.
+    if isinstance(exc, PydanticValidationError):
+        exc = _as_drf_validation_error(exc)
+
     def _convert_error_code(detail: Any) -> Any:
         if isinstance(detail, list):
             return [_convert_error_code(item) for item in detail]

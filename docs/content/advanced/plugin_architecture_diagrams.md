@@ -511,7 +511,7 @@ sequenceDiagram
     API->>Registry: get_operation_id("plugin-id", "task_name")
     Registry-->>API: operation_id (e.g., 5001)
 
-    API->>Job: _create_new_job(user, operation_id, params)
+    API->>Job: new_custom_job(user, operation_id, params)
     Job->>Job: Set status = PREPARING
     Job-->>API: Job instance
 

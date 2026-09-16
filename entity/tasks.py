@@ -1,376 +1,62 @@
 from __future__ import annotations
 
-import json
-from typing import Any, Optional, Self
+from typing import Any
 
 from celery import Task
-from pydantic import BaseModel, Field, ValidationError, field_validator, model_validator
 
 from airone.celery import app
 from airone.lib import custom_view
 from airone.lib.job import may_schedule_until_job_is_ready, register_job_task
-from airone.lib.log import Logger
 from airone.lib.types import AttrType
 from entity.api_v2.serializers import EntityCreateSerializer, EntityUpdateSerializer
 from entity.models import Entity, EntityAttr
 from job.models import Job, JobOperation, JobStatus
+from job.params import (
+    CreateEntityParams,
+    CreateEntityV2Params,
+    EditEntityAttrV2Params,
+    EditEntityParams,
+    EditEntityV2Params,
+    EditWebhookParams,
+    EmptyParams,
+    EntityAttrParams,
+    EntityAttrV2Params,
+    ImportEntityPreviewParams,
+    IsolationActionParams,
+    IsolationConditionParams,
+    IsolationRuleParams,
+    WebhookHeaderParams,
+    WebhookParams,
+)
 from user.models import History, User
 
-# ============================================================================
-# Pydantic Models for Job Parameters
-# ============================================================================
+CreateEntityAttr = EntityAttrParams
+EditEntityAttr = EntityAttrParams
+CreateEntityV2Attr = EntityAttrV2Params
+EditEntityV2Attr = EditEntityAttrV2Params
+CreateEntityV2Webhook = WebhookParams
+EditEntityV2Webhook = EditWebhookParams
+IsolationActionParam = IsolationActionParams
+IsolationConditionParam = IsolationConditionParams
+IsolationRuleParam = IsolationRuleParams
+WebhookHeader = WebhookHeaderParams
 
-
-class CreateEntityAttr(BaseModel):
-    """Attribute definition for CREATE_ENTITY (V1) task."""
-
-    name: str = Field(..., max_length=200)
-    type: int
-    is_mandatory: bool
-    is_delete_in_chain: bool
-    row_index: str
-    ref_ids: list[int] = Field(default_factory=list)
-
-    @field_validator("type", mode="before")
-    @classmethod
-    def validate_type(cls, v: int | str) -> int:
-        """Convert string type to int if needed."""
-        if isinstance(v, str):
-            try:
-                return int(v)
-            except ValueError:
-                raise ValueError(f"Invalid type value: {v}")
-        return v
-
-
-class CreateEntityParams(BaseModel):
-    """Parameters for CREATE_ENTITY (V1) task."""
-
-    attrs: list[CreateEntityAttr]
-
-
-class EditEntityAttr(BaseModel):
-    """Attribute definition for EDIT_ENTITY (V1) task."""
-
-    id: Optional[int] = None
-    name: str = Field(..., max_length=200)
-    type: int
-    is_mandatory: bool
-    is_delete_in_chain: bool
-    row_index: str
-    ref_ids: list[int] = Field(default_factory=list)
-    deleted: Optional[bool] = None
-
-    @field_validator("type", mode="before")
-    @classmethod
-    def validate_type(cls, v: int | str) -> int:
-        """Convert string type to int if needed."""
-        if isinstance(v, str):
-            try:
-                return int(v)
-            except ValueError:
-                raise ValueError(f"Invalid type value: {v}")
-        return v
-
-
-class EditEntityParams(BaseModel):
-    """Parameters for EDIT_ENTITY (V1) task."""
-
-    name: str = Field(..., max_length=200)
-    note: str
-    attrs: list[EditEntityAttr]
-
-
-class WebhookHeader(BaseModel):
-    """Webhook HTTP header definition."""
-
-    header_key: str
-    header_value: str
-
-
-class CreateEntityV2Webhook(BaseModel):
-    """Webhook definition for CREATE_ENTITY_V2 task."""
-
-    url: str = Field(default="", max_length=200)
-    label: str = ""
-    is_enabled: bool = False
-    headers: list[WebhookHeader] = Field(default_factory=list)
-
-
-class CreateEntityV2Attr(BaseModel):
-    """Attribute definition for CREATE_ENTITY_V2 task."""
-
-    name: str = Field(..., max_length=200)
-    type: int
-    index: Optional[int] = None
-    is_mandatory: bool = False
-    is_delete_in_chain: bool = False
-    is_summarized: bool = False
-    referral: list[int] = Field(default_factory=list)
-    note: str = ""
-    default_value: Any = None
-    choices: Optional[list[dict[str, str]]] = None
-    name_order: Optional[int] = 0  # for internal use only
-    name_prefix: Optional[str] = ""  # for internal use only
-    name_postfix: Optional[str] = ""  # for internal use only
-    display_attr: str = ""
-
-    @model_validator(mode="after")
-    def validate_choices_shape(self) -> Self:
-        """Reuse the EntityAttr authoritative choices validator so the Celery
-        path applies the same invariants (non-empty, unique value, unique label,
-        non-empty strings) as the synchronous serializer path."""
-        if self.choices is None:
-            if self.type in (AttrType.SELECT, AttrType.MULTI_SELECT):
-                raise ValueError("SELECT type requires a non-empty choices list")
-            return self
-        if self.type not in (AttrType.SELECT, AttrType.MULTI_SELECT):
-            self.choices = None
-            return self
-        from entity.models import EntityAttr
-
-        EntityAttr.validate_choices(self.choices)
-        return self
-
-    @model_validator(mode="after")
-    def validate_default_value_for_type(self) -> Self:
-        """Validate that default_value is compatible with the attribute type."""
-        if self.default_value is None:
-            return self
-
-        supported_types = [
-            AttrType.STRING,
-            AttrType.TEXT,
-            AttrType.BOOLEAN,
-            AttrType.NUMBER,
-            AttrType.OBJECT,
-            AttrType.ARRAY_OBJECT,
-        ]
-
-        # Clear default_value for unsupported types (don't raise error)
-        if self.type not in supported_types:
-            Logger.warning(
-                f"default_value is not supported for type {self.type}. "
-                f"Clearing default_value. Supported types: {supported_types}"
-            )
-            self.default_value = None
-            return self
-
-        # Type-specific validation - clear if invalid type
-        is_valid = True
-        if self.type in [AttrType.STRING, AttrType.TEXT]:
-            if not isinstance(self.default_value, str):
-                is_valid = False
-        elif self.type == AttrType.BOOLEAN:
-            if not isinstance(self.default_value, bool):
-                is_valid = False
-        elif self.type == AttrType.NUMBER:
-            if not isinstance(self.default_value, (int, float)) or isinstance(
-                self.default_value, bool
-            ):
-                is_valid = False
-        elif self.type == AttrType.OBJECT:
-            if (
-                not isinstance(self.default_value, int)
-                or isinstance(self.default_value, bool)
-                or self.default_value <= 0
-            ):
-                is_valid = False
-        elif self.type == AttrType.ARRAY_OBJECT:
-            if (
-                not isinstance(self.default_value, list)
-                or not all(
-                    isinstance(item, int) and not isinstance(item, bool) and item > 0
-                    for item in self.default_value
-                )
-                or len(self.default_value) != len(set(self.default_value))
-            ):
-                is_valid = False
-            elif not self.default_value:
-                self.default_value = None
-
-        if not is_valid:
-            Logger.warning(
-                f"default_value type mismatch for attribute type {self.type}. "
-                f"Clearing default_value. Got: {type(self.default_value)}"
-            )
-            self.default_value = None
-
-        return self
-
-
-class CreateEntityV2Params(BaseModel):
-    """Parameters for CREATE_ENTITY_V2 task."""
-
-    name: str = Field(..., max_length=200)
-    note: str = ""
-    item_name_pattern: str = ""
-    is_toplevel: bool = False
-    attrs: list[CreateEntityV2Attr] = Field(default_factory=list)
-    webhooks: list[CreateEntityV2Webhook] = Field(default_factory=list)
-
-
-class EditEntityV2Webhook(BaseModel):
-    """Webhook definition for EDIT_ENTITY_V2 task."""
-
-    id: Optional[int] = None
-    url: Optional[str] = Field(None, max_length=200)
-    label: str = ""
-    is_enabled: bool = False
-    headers: list[WebhookHeader] = Field(default_factory=list)
-    is_deleted: bool = False
-
-
-class EditEntityV2Attr(BaseModel):
-    """Attribute definition for EDIT_ENTITY_V2 task."""
-
-    id: Optional[int] = None
-    name: Optional[str] = Field(None, max_length=200)
-    type: Optional[int] = None
-    index: Optional[int] = None
-    is_mandatory: Optional[bool] = None
-    is_delete_in_chain: Optional[bool] = None
-    is_summarized: Optional[bool] = None
-    referral: Optional[list[int]] = None
-    note: Optional[str] = None
-    default_value: Any = None
-    choices: Optional[list[dict[str, str]]] = None
-    is_deleted: bool = False
-    name_order: Optional[int] = 0  # for internal use only
-    name_prefix: Optional[str] = ""  # for internal use only
-    name_postfix: Optional[str] = ""  # for internal use only
-    display_attr: Optional[str] = None
-
-    @model_validator(mode="after")
-    def validate_choices_shape(self) -> Self:
-        """Reuse EntityAttr.validate_choices when the payload provides choices."""
-        if self.choices is None:
-            return self
-        if self.type is not None and self.type not in (
-            AttrType.SELECT,
-            AttrType.MULTI_SELECT,
-        ):
-            self.choices = None
-            return self
-        from entity.models import EntityAttr
-
-        EntityAttr.validate_choices(self.choices)
-        return self
-
-    @model_validator(mode="after")
-    def validate_attr_fields(self) -> Self:
-        """Validate that required fields are present based on operation type."""
-        if self.id is None:
-            if self.name is None or self.type is None:
-                raise ValueError("name and type are required for new attribute creation")
-        return self
-
-    @model_validator(mode="after")
-    def validate_default_value_for_type(self) -> Self:
-        """Validate default_value compatibility with attribute type."""
-        if self.default_value is None or self.type is None:
-            return self
-
-        supported_types = [
-            AttrType.STRING,
-            AttrType.TEXT,
-            AttrType.BOOLEAN,
-            AttrType.NUMBER,
-            AttrType.OBJECT,
-            AttrType.ARRAY_OBJECT,
-        ]
-
-        # Clear default_value for unsupported types (don't raise error)
-        if self.type not in supported_types:
-            Logger.warning(
-                f"default_value is not supported for type {self.type}. "
-                f"Clearing default_value. Supported types: {supported_types}"
-            )
-            self.default_value = None
-            return self
-
-        # Type-specific validation - clear if invalid type
-        is_valid = True
-        if self.type in [AttrType.STRING, AttrType.TEXT]:
-            if not isinstance(self.default_value, str):
-                is_valid = False
-        elif self.type == AttrType.BOOLEAN:
-            if not isinstance(self.default_value, bool):
-                is_valid = False
-        elif self.type == AttrType.NUMBER:
-            if not isinstance(self.default_value, (int, float)) or isinstance(
-                self.default_value, bool
-            ):
-                is_valid = False
-        elif self.type == AttrType.OBJECT:
-            if (
-                not isinstance(self.default_value, int)
-                or isinstance(self.default_value, bool)
-                or self.default_value <= 0
-            ):
-                is_valid = False
-        elif self.type == AttrType.ARRAY_OBJECT:
-            if (
-                not isinstance(self.default_value, list)
-                or not all(
-                    isinstance(item, int) and not isinstance(item, bool) and item > 0
-                    for item in self.default_value
-                )
-                or len(self.default_value) != len(set(self.default_value))
-            ):
-                is_valid = False
-            elif not self.default_value:
-                self.default_value = None
-
-        if not is_valid:
-            Logger.warning(
-                f"default_value type mismatch for attribute type {self.type}. "
-                f"Clearing default_value. Got: {type(self.default_value)}"
-            )
-            self.default_value = None
-
-        return self
-
-
-class IsolationConditionParam(BaseModel):
-    """Condition definition for an isolation rule."""
-
-    attr_id: int
-    str_cond: str = ""
-    ref_cond_id: Optional[int] = None
-    bool_cond: bool = False
-    is_unmatch: bool = False
-
-
-class IsolationActionParam(BaseModel):
-    """Action definition for an isolation rule."""
-
-    is_prevent_all: bool = False
-    prevent_from_id: Optional[int] = None
-
-
-class IsolationRuleParam(BaseModel):
-    """Isolation rule definition for EDIT_ENTITY_V2 task."""
-
-    id: Optional[int] = None
-    is_deleted: bool = False
-    conditions: list[IsolationConditionParam] = Field(default_factory=list)
-    action: IsolationActionParam = Field(default_factory=IsolationActionParam)
-
-
-class EditEntityV2Params(BaseModel):
-    """Parameters for EDIT_ENTITY_V2 task."""
-
-    id: Optional[int] = None
-    name: Optional[str] = Field(None, max_length=200)
-    note: Optional[str] = None
-    item_name_pattern: Optional[str] = None
-    is_toplevel: Optional[bool] = None
-    attrs: list[EditEntityV2Attr] = Field(default_factory=list)
-    webhooks: list[EditEntityV2Webhook] = Field(default_factory=list)
-    isolation_rules: list[IsolationRuleParam] = Field(default_factory=list)
-    delete_chain_exclude_entities: list[int] = Field(default_factory=list)
-
+__all__ = [
+    "CreateEntityAttr",
+    "CreateEntityParams",
+    "CreateEntityV2Attr",
+    "CreateEntityV2Params",
+    "CreateEntityV2Webhook",
+    "EditEntityAttr",
+    "EditEntityParams",
+    "EditEntityV2Attr",
+    "EditEntityV2Params",
+    "EditEntityV2Webhook",
+    "IsolationActionParam",
+    "IsolationConditionParam",
+    "IsolationRuleParam",
+    "WebhookHeader",
+]
 
 # ============================================================================
 # Task Functions
@@ -393,12 +79,7 @@ def create_entity(self: Task[Any, Any], job: Job) -> JobStatus:
     # for history record
     entity._history_user = user
 
-    # Validate and parse job parameters using Pydantic
-    try:
-        params = CreateEntityParams.model_validate_json(job.params)
-    except ValidationError as e:
-        Logger.error(f"Invalid parameters for CREATE_ENTITY job {job.id}: {e}")
-        return JobStatus.ERROR
+    params = job.get_typed_params(CreateEntityParams)
 
     # register history to modify Entity
     history = user.seth_entity_add(entity)
@@ -444,12 +125,7 @@ def edit_entity(self: Task[Any, Any], job: Job) -> JobStatus:
     # for history record
     entity._history_user = user
 
-    # Validate and parse job parameters using Pydantic
-    try:
-        params = EditEntityParams.model_validate_json(job.params)
-    except ValidationError as e:
-        Logger.error(f"Invalid parameters for EDIT_ENTITY job {job.id}: {e}")
-        return JobStatus.ERROR
+    params = job.get_typed_params(EditEntityParams)
 
     # register history to modify Entity
     history = user.seth_entity_mod(entity)
@@ -547,6 +223,7 @@ def edit_entity(self: Task[Any, Any], job: Job) -> JobStatus:
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def delete_entity(self: Task[Any, Any], job: Job) -> JobStatus:
+    job.get_typed_params(EmptyParams)
     if job.target is None:
         return JobStatus.CANCELED
     user = User.objects.filter(id=job.user.id).first()
@@ -581,21 +258,23 @@ def create_entity_v2(self: Task[Any, Any], job: Job) -> JobStatus:
     if not entity:
         return JobStatus.ERROR
 
-    # Validate and parse job parameters using Pydantic
-    try:
-        params = CreateEntityV2Params.model_validate_json(job.params)
-    except ValidationError as e:
-        Logger.error(f"Invalid parameters for CREATE_ENTITY_V2 job {job.id}: {e}")
+    params = job.get_typed_params(CreateEntityV2Params)
+
+    params_dict = params.model_dump(mode="json", by_alias=True, exclude_unset=True)
+
+    # The request path has already created the Entity, so validating its name again
+    # would report that very instance as a duplicate. Validate the remaining payload
+    # as a partial update while retaining the create-specific nested validators.
+    remaining_data = {key: value for key, value in params_dict.items() if key != "name"}
+    serializer = EntityCreateSerializer(
+        instance=entity,
+        data=remaining_data,
+        partial=True,
+        context={"_user": job.user},
+    )
+    if not serializer.is_valid():
         return JobStatus.ERROR
-
-    # Convert Pydantic model to dict for serializer
-    # (EntityCreateSerializer expects dict input)
-    # Use exclude_none=True to avoid passing None values that may violate DB constraints
-    params_dict = params.model_dump(exclude_none=True)
-
-    # pass to validate the params because the entity should be already created
-    serializer = EntityCreateSerializer(data=params_dict, context={"_user": job.user})
-    serializer.create_remaining(entity, serializer.initial_data)
+    serializer.create_remaining(entity, serializer.validated_data)
 
     # update job status and save it
     return JobStatus.DONE
@@ -611,12 +290,7 @@ def edit_entity_v2(self: Task[Any, Any], job: Job) -> JobStatus:
     if not entity:
         return JobStatus.ERROR
 
-    # Validate and parse job parameters using Pydantic
-    try:
-        params = EditEntityV2Params.model_validate_json(job.params)
-    except ValidationError as e:
-        Logger.error(f"Invalid parameters for EDIT_ENTITY_V2 job {job.id}: {e}")
-        return JobStatus.ERROR
+    params = job.get_typed_params(EditEntityV2Params)
 
     # Convert Pydantic model to dict for serializer
     # (EntityUpdateSerializer expects dict input)
@@ -626,7 +300,7 @@ def edit_entity_v2(self: Task[Any, Any], job: Job) -> JobStatus:
     # default_value: null to remove an EntityAttr's default value; dropping
     # that null made it impossible to clear a default once set, because
     # update_or_create keeps the stored value for absent fields.
-    params_dict = params.model_dump(exclude_unset=True)
+    params_dict = params.model_dump(mode="json", by_alias=True, exclude_unset=True)
 
     serializer = EntityUpdateSerializer(
         instance=entity, data=params_dict, context={"_user": job.user}
@@ -643,6 +317,7 @@ def edit_entity_v2(self: Task[Any, Any], job: Job) -> JobStatus:
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def delete_entity_v2(self: Task[Any, Any], job: Job) -> JobStatus:
+    job.get_typed_params(EmptyParams)
     if job.target is None:
         return JobStatus.ERROR
     entity: Entity | None = Entity.objects.filter(id=job.target.id, is_active=True).first()
@@ -679,8 +354,10 @@ def import_entities_preview_v2(self: Task[Any, Any], job: Job) -> JobStatus:
     """
     from entity.api_v2.serializers import EntityImportExportRootSerializer
 
+    params = job.get_typed_params(ImportEntityPreviewParams)
     serializer = EntityImportExportRootSerializer(
-        data=json.loads(job.params), context={"request": _JobRequest(job.user)}
+        data=params.model_dump(mode="json", by_alias=True, exclude_unset=True),
+        context={"request": _JobRequest(job.user)},
     )
     if not serializer.is_valid():
         return JobStatus.ERROR
