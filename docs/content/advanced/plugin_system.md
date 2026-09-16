@@ -589,6 +589,11 @@ Create a configuration file defining task offsets and metadata:
 # my_plugin/config.py
 import enum
 from airone.lib.plugin_task import PluginTaskConfig
+from pydantic import BaseModel, ConfigDict
+
+class TaskAParams(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+    input_data: str | None = None
 
 class MyPluginOperation(int, enum.Enum):
     """Operation offsets for my-plugin tasks"""
@@ -604,6 +609,7 @@ PLUGIN_TASK_CONFIG = PluginTaskConfig(
         "task_a": (MyPluginOperation.TASK_A, "task_a"),
         "task_b": (MyPluginOperation.TASK_B, "task_b"),
     },
+    parameter_models={"task_a": TaskAParams},
     # Optional: specify task behavior
     hidden_operations=["task_b"],      # Hide from UI
     cancelable_operations=["task_a"],  # Allow user cancellation
@@ -620,7 +626,7 @@ import logging
 from airone.celery import app
 from airone.lib.plugin_task import register_plugin_job_task
 from job.models import Job, JobStatus
-from my_plugin.config import MyPluginOperation
+from my_plugin.config import MyPluginOperation, TaskAParams
 
 logger = logging.getLogger(__name__)
 
@@ -649,8 +655,8 @@ def task_a(self, job_id: int):
 
     try:
         # Your long-running task logic here
-        params = job.params  # Access job parameters
-        logger.info(f"Processing job {job_id} with params: {params}")
+        params = job.get_typed_params(TaskAParams)
+        logger.info(f"Processing job {job_id} with input: {params.input_data}")
 
         # Example: process data
         import time
@@ -669,6 +675,7 @@ def task_a(self, job_id: int):
 
 - **Double Decorator**: Use both `@register_plugin_job_task(offset)` and `@app.task(bind=True)`
 - **Status Checks**: Always check `is_canceled()` and `proceed_if_ready()`
+- **Typed Parameters**: Register `parameter_models` and consume them with `get_typed_params()`
 - **Status Updates**: Update job status to PROCESSING, DONE, or ERROR
 - **Error Handling**: Catch exceptions and update status to ERROR
 
@@ -720,7 +727,7 @@ class TaskView(PluginAPIViewMixin):
             )
 
             # Create new job
-            job = Job._create_new_job(
+            job = Job.new_custom_job(
                 user=request.user,
                 target=None,  # Optional: ACL object for permission checks
                 operation=operation_id,
@@ -753,7 +760,7 @@ Jobs follow a standard lifecycle with automatic state transitions:
 ```
 API Request
     ↓
-Job._create_new_job()
+Job.new_custom_job()
     ↓ (status = PREPARING)
     ↓
 job.run()
@@ -830,17 +837,19 @@ except Exception as e:
 
 ```python
 # Good: Descriptive job text
-job = Job._create_new_job(
+job = Job.new_custom_job(
     user=request.user,
     operation=operation_id,
     text=f"Processing {entity_name} export ({len(entries)} entries)",
+    params={},
 )
 
 # Bad: Generic text
-job = Job._create_new_job(
+job = Job.new_custom_job(
     user=request.user,
     operation=operation_id,
     text="Processing",
+    params={},
 )
 ```
 

@@ -1,4 +1,3 @@
-import json
 from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
@@ -28,6 +27,7 @@ from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import EntryCreateSerializer, EntryUpdateSerializer
 from entry.models import Attribute, AttributeValue, Entry
 from job.models import Job, JobOperation, JobStatus
+from job.params import ImportEntryParams
 from trigger.models import TriggerCondition
 from user.models import User
 
@@ -864,7 +864,7 @@ def _load_preview_baselines(job: Job) -> dict[str, dict[str, Any]] | None:
     a file long enough to be truncated records no values for the rows it could
     not list, and those rows import the way they always have.
     """
-    preview_job_id = json.loads(job.params).get("preview_job_id")
+    preview_job_id = job.get_typed_params(ImportEntryParams).preview_job_id
     if not preview_job_id:
         return None
 
