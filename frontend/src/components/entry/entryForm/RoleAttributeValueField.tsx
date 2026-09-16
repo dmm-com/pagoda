@@ -15,8 +15,8 @@ import { aironeApiClient } from "../../../repository/AironeApiClient";
 
 import { Schema } from "./EntryFormSchema";
 
-import { getStagedErrorStyle } from "utils/styleUtils";
 import { fuzzyMatch } from "services/StringUtil";
+import { getStagedErrorStyle } from "utils/styleUtils";
 
 const StyledTypography = styled(Typography)(() => ({
   color: "rgba(0, 0, 0, 0.6)",
@@ -94,7 +94,11 @@ export const RoleAttributeValueField: FC<Props> = ({
               clearOnBlur={false}
               loading={loading}
               options={options}
-              filterOptions={(options, state) => options.filter((option) => fuzzyMatch(option.name, state.inputValue))}
+              filterOptions={(options, state) =>
+                options.filter((option) =>
+                  fuzzyMatch(option.name, state.inputValue),
+                )
+              }
               value={field.value ?? (multiple ? [] : null)}
               getOptionLabel={(option) => option.name}
               isOptionEqualToValue={(option, value) => option.id === value.id}
