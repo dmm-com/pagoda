@@ -8,10 +8,12 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   act,
+  fireEvent,
   screen,
   render,
   renderHook,
   within,
+  waitFor,
 } from "@testing-library/react";
 import { useForm } from "react-hook-form";
 
@@ -178,5 +180,25 @@ describe("GroupAttributeValueField", () => {
       { id: 1, name: "group1" },
       { id: 2, name: "group2" },
     ]);
+  });
+  test("searches groups with entered text", async () => {
+    const spy = vi
+      .spyOn(aironeApiClient, "getGroups")
+      .mockResolvedValue(Promise.resolve(groups));
+    const { result } = renderHook(() =>
+      useForm<Schema>({ resolver: zodResolver(schema), defaultValues }),
+    );
+    render(
+      <GroupAttributeValueField
+        attrId={0}
+        control={result.current.control}
+        setValue={result.current.setValue}
+      />,
+      { wrapper: TestWrapper },
+    );
+    const input = screen.getByRole("combobox");
+    fireEvent.change(input, { target: { value: "admin" } });
+    await waitFor(() => expect(input).toHaveValue("admin"));
+    await waitFor(() => expect(spy).toHaveBeenCalledWith(1, "admin"));
   });
 });

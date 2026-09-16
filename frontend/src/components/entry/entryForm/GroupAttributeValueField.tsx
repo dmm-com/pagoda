@@ -95,11 +95,21 @@ export const GroupAttributeValueField: FC<Props> = ({
               multiple={multiple}
               loading={loading}
               options={options}
+              inputValue={
+                inputValue ||
+                (multiple
+                  ? ""
+                  : ((field.value as GroupOption | null)?.name ?? ""))
+              }
               value={field.value ?? (multiple ? [] : null)}
               getOptionLabel={(option) => option.name}
               isOptionEqualToValue={(option, value) => option.id === value.id}
               onChange={(_, value) => handleChange(value)}
-              onInputChange={(_, value) => setInputValue(value)}
+              onInputChange={(_, value, reason) => {
+                if (reason === "input" || reason === "clear") {
+                  setInputValue(value);
+                }
+              }}
               renderInput={(params) => (
                 <TextField
                   {...params}
