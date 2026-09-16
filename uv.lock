@@ -89,7 +89,7 @@ requires-dist = [
     { name = "djangorestframework", specifier = "==3.17.2" },
     { name = "djangorestframework-stubs", extras = ["compatible-mypy"], marker = "extra == 'dev'", specifier = ">=3.15.0" },
     { name = "drf-spectacular", specifier = "==0.29.0" },
-    { name = "elasticsearch", specifier = "==8.17.0" },
+    { name = "elasticsearch", specifier = "==8.19.3" },
     { name = "flower", marker = "extra == 'dev'", specifier = "==1.2.0" },
     { name = "gunicorn", specifier = "==23.0.0" },
     { name = "lxml", specifier = "==6.1.0" },
@@ -800,14 +800,16 @@ wheels = [
 
 [[package]]
 name = "elasticsearch"
-version = "8.17.0"
+version = "8.19.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "elastic-transport" },
+    { name = "python-dateutil" },
+    { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/38/57/f61579940df4771971aede5b355f64c758f56d8cc9bd4407d669c2f0dd2f/elasticsearch-8.17.0.tar.gz", hash = "sha256:c1069bf2204ba8fab29ff00b2ce6b37324b2cc6ff593283b97df43426ec13053", size = 460268, upload-time = "2024-12-16T06:30:00.731Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6b/79/365e306017a9fcfbbefab1a3b588d2404bea8806b36766ff0f886509a20e/elasticsearch-8.19.3.tar.gz", hash = "sha256:e84dd618a220cac25b962790085045dd27ac72e01c0a5d81bd29a2d47a71f03f", size = 800298, upload-time = "2025-12-23T12:56:00.72Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1e/82/832ff4bdb53429af0025f5032c8b4f3ba18915e08ce16fc55aa09e900e26/elasticsearch-8.17.0-py3-none-any.whl", hash = "sha256:15965240fe297279f0e68b260936d9ced9606aa7ef8910b9b56727f96ef00d5b", size = 571182, upload-time = "2024-12-16T06:29:53.828Z" },
+    { url = "https://files.pythonhosted.org/packages/56/0f/ac126833c385b06166d41c486e4911f58ad7791fd1a53dd6e0b8d16ff214/elasticsearch-8.19.3-py3-none-any.whl", hash = "sha256:fe1db2555811192e8a1be78b01234d0a49d32b185ea7eeeb6f059331dee32838", size = 952820, upload-time = "2025-12-23T12:55:56.796Z" },
 ]
 
 [[package]]
