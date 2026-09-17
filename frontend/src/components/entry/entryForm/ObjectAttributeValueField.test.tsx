@@ -125,7 +125,7 @@ describe("ObjectAttributeValueField", () => {
     );
 
     vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue(
-      Promise.resolve(entries),
+      Promise.resolve({ results: entries, hasRestrictedItems: false }),
     );
 
     await act(async () => {
@@ -179,7 +179,7 @@ describe("ObjectAttributeValueField", () => {
     );
 
     vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue(
-      Promise.resolve(entries),
+      Promise.resolve({ results: entries, hasRestrictedItems: false }),
     );
 
     await act(async () => {
@@ -244,7 +244,7 @@ describe("ObjectAttributeValueField", () => {
     );
 
     vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue(
-      Promise.resolve(entries),
+      Promise.resolve({ results: entries, hasRestrictedItems: false }),
     );
 
     await act(async () => {
@@ -293,7 +293,7 @@ describe("ObjectAttributeValueField", () => {
     );
 
     vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue(
-      Promise.resolve(entries),
+      Promise.resolve({ results: entries, hasRestrictedItems: false }),
     );
 
     await act(async () => {
@@ -351,7 +351,7 @@ describe("ObjectAttributeValueField", () => {
     );
 
     vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue(
-      Promise.resolve(entries),
+      Promise.resolve({ results: entries, hasRestrictedItems: false }),
     );
 
     await act(async () => {

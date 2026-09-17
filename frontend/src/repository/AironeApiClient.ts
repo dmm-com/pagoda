@@ -875,11 +875,15 @@ class AironeApiClient {
   async getEntryAttrReferrals(
     attrId: number,
     keyword?: string,
-  ): Promise<Array<GetEntryAttrReferral>> {
-    return await this.entry.entryApiV2AttrReferralsList({
+  ): Promise<{
+    results: Array<GetEntryAttrReferral>;
+    hasRestrictedItems: boolean;
+  }> {
+    const response = await this.entry.entryApiV2AttrReferralsList({
       attrId: attrId,
       keyword: keyword,
     });
+    return response;
   }
 
   async createEntryAlias(entryId: number, name: string): Promise<EntryAlias> {

@@ -50,6 +50,14 @@ export const GroupAttributeValueField: FC<Props> = ({
     ["groupOptions", inputValue],
     async () => {
       const result = await aironeApiClient.getGroups(1, inputValue);
+      if ((result.results?.length ?? 0) === 0 && inputValue) {
+        return (
+          (await aironeApiClient.getGroups(1)).results?.map((g) => ({
+            id: g.id,
+            name: g.name,
+          })) ?? []
+        );
+      }
       return result.results?.map((g) => ({ id: g.id, name: g.name })) ?? [];
     },
     // revalidateOnFocus is disabled so a transient failure of a background
@@ -58,6 +66,11 @@ export const GroupAttributeValueField: FC<Props> = ({
   );
 
   const handleChange = (value: GroupOption | GroupOption[] | null) => {
+    if (!multiple && value != null && !Array.isArray(value)) {
+      setInputValue(value.name);
+    } else if (multiple) {
+      setInputValue("");
+    }
     if (multiple) {
       setValue(
         `attrs.${attrId}.value.asArrayGroup`,
@@ -104,16 +117,19 @@ export const GroupAttributeValueField: FC<Props> = ({
                 )
               }
               value={field.value ?? (multiple ? [] : null)}
-              getOptionLabel={(option) => option.name}
-              filterOptions={(options, state) =>
-                options.filter((option) =>
-                  fuzzyMatch(option.name, state.inputValue),
-                )
+              inputValue={
+                inputValue ||
+                (!multiple && field.value != null && !Array.isArray(field.value)
+                  ? field.value.name
+                  : "")
               }
+              getOptionLabel={(option) => option.name}
               isOptionEqualToValue={(option, value) => option.id === value.id}
               onChange={(_, value) => handleChange(value)}
-              onInputChange={(_, value) => {
-                setInputValue(value);
+              onInputChange={(_, value, reason) => {
+                if (reason === "input" || reason === "clear") {
+                  setInputValue(value);
+                }
               }}
               renderInput={(params) => (
                 <TextField

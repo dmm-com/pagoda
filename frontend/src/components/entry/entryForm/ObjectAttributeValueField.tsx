@@ -11,7 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { FC } from "react";
+import { FC, useState } from "react";
 import { Control, Controller, useFieldArray } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form";
 
@@ -67,6 +67,7 @@ export const ObjectAttributeValueField: FC<
     multiple?: boolean;
   }
 > = ({ multiple, attrId, control, setValue, isDisabled = false }) => {
+  const [hasRestrictedItems, setHasRestrictedItems] = useState(false);
   const handleChange = (
     value: GetEntryAttrReferral | GetEntryAttrReferral[] | null,
   ) => {
@@ -103,27 +104,33 @@ export const ObjectAttributeValueField: FC<
 
   return (
     <Box>
-      <StyledTypography variant="caption">アイテムを選択</StyledTypography>
       <StyledBox>
-        <Controller
-          name={
-            multiple
-              ? `attrs.${attrId}.value.asArrayObject`
-              : `attrs.${attrId}.value.asObject`
-          }
-          control={control}
-          render={({ field, fieldState: { error } }) => (
-            <ReferralsAutocomplete
-              attrId={attrId}
-              value={field.value ?? null}
-              handleChange={handleChange}
-              multiple={multiple}
-              error={error}
-              isDisabled={isDisabled}
-            />
-          )}
-        />
+        <StyledTypography variant="caption">アイテムを選択</StyledTypography>
+        {hasRestrictedItems && (
+          <StyledTypography variant="caption" sx={{ color: "error.main" }}>
+            （注: 権限によってアイテム表示が制限されています）
+          </StyledTypography>
+        )}
       </StyledBox>
+      <Controller
+        name={
+          multiple
+            ? `attrs.${attrId}.value.asArrayObject`
+            : `attrs.${attrId}.value.asObject`
+        }
+        control={control}
+        render={({ field, fieldState: { error } }) => (
+          <ReferralsAutocomplete
+            attrId={attrId}
+            value={field.value ?? null}
+            handleChange={handleChange}
+            multiple={multiple}
+            error={error}
+            isDisabled={isDisabled}
+            onRestrictedItemsChange={setHasRestrictedItems}
+          />
+        )}
+      />
     </Box>
   );
 };
@@ -144,6 +151,7 @@ export const NamedObjectAttributeValueField: FC<
   handleClickDeleteListItem,
   withBoolean,
 }) => {
+  const [hasRestrictedItems, setHasRestrictedItems] = useState(false);
   const handleChange = (
     value: GetEntryAttrReferral | GetEntryAttrReferral[] | null,
   ) => {
@@ -217,7 +225,14 @@ export const NamedObjectAttributeValueField: FC<
         </BooleanBox>
       )}
       <Box flexGrow={1}>
-        <StyledTypography variant="caption">アイテムを選択</StyledTypography>
+        <Box display="flex" alignItems="center" gap={1}>
+          <StyledTypography variant="caption">アイテムを選択</StyledTypography>
+          {hasRestrictedItems && (
+            <StyledTypography variant="caption" sx={{ color: "error.main" }}>
+              （注: 権限によってアイテム表示が制限されています）
+            </StyledTypography>
+          )}
+        </Box>
         <Controller
           name={
             index != null
@@ -231,6 +246,7 @@ export const NamedObjectAttributeValueField: FC<
               value={field.value ?? null}
               handleChange={handleChange}
               error={error}
+              onRestrictedItemsChange={setHasRestrictedItems}
             />
           )}
         />
