@@ -10,7 +10,7 @@ from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from acl.api_v2.serializers import ACLHistorySerializer, ACLSerializer
+from acl.api_v2.serializers import ACLHistorySerializer, ACLSerializer, history_cache_key
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType, ACLType
 from entity.models import Entity, EntityAttr
@@ -128,23 +128,23 @@ class ACLHistoryAPI(generics.ListAPIView[ACLBase]):
                 current = histories[i]
                 if i + 1 < len(histories):
                     # Prevent key conflicts by including type information
-                    cache_key = f"permission_{current.history_id}"
-                    prev_record_cache[cache_key] = histories[i + 1]
+                    prev_record_cache[history_cache_key(current)] = histories[i + 1]
 
         # Build prev_record relationships for ACL history
+        # Group by historical model too, because acl_history mixes
+        # HistoricalEntity and HistoricalEntityAttr records
         acl_grouped_histories = defaultdict(list)
         for ah in acl_history:
-            acl_grouped_histories[ah.aclbase_ptr_id].append(ah)
+            acl_grouped_histories[(ah.__class__.__name__, ah.aclbase_ptr_id)].append(ah)
 
-        for acl_id, histories in acl_grouped_histories.items():
+        for group_key, histories in acl_grouped_histories.items():
             # Sort in chronological order (same as queryset order)
             histories.sort(key=lambda x: (x.history_date, x.history_id), reverse=True)
             for i in range(len(histories)):
                 current = histories[i]
                 if i + 1 < len(histories):
                     # Prevent key conflicts by including type information
-                    cache_key = f"acl_{current.history_id}"
-                    prev_record_cache[cache_key] = histories[i + 1]
+                    prev_record_cache[history_cache_key(current)] = histories[i + 1]
 
         # 5. Pass optimized cache data to serializer for processing
         serializer = ACLHistorySerializer(
