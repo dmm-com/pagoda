@@ -90,8 +90,15 @@ export const RoleAttributeValueField: FC<Props> = ({
             <Autocomplete<RoleOption, boolean>
               fullWidth
               multiple={multiple}
+              selectOnFocus
+              clearOnBlur={false}
               loading={loading}
               options={options}
+              filterOptions={(options, state) =>
+                options.filter((option) =>
+                  fuzzyMatch(option.name, state.inputValue),
+                )
+              }
               value={field.value ?? (multiple ? [] : null)}
               getOptionLabel={(option) => option.name}
               filterOptions={(options, state) =>
@@ -101,7 +108,9 @@ export const RoleAttributeValueField: FC<Props> = ({
               }
               isOptionEqualToValue={(option, value) => option.id === value.id}
               onChange={(_, value) => handleChange(value)}
-              onInputChange={(_, value) => setInputValue(value)}
+              onInputChange={(_, value) => {
+                setInputValue(value);
+              }}
               renderInput={(params) => (
                 <TextField
                   {...params}
