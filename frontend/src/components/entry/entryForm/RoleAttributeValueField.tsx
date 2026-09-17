@@ -101,11 +101,6 @@ export const RoleAttributeValueField: FC<Props> = ({
               }
               value={field.value ?? (multiple ? [] : null)}
               getOptionLabel={(option) => option.name}
-              filterOptions={(options, state) =>
-                options.filter((option) =>
-                  fuzzyMatch(option.name, state.inputValue),
-                )
-              }
               isOptionEqualToValue={(option, value) => option.id === value.id}
               onChange={(_, value) => handleChange(value)}
               onInputChange={(_, value) => {
