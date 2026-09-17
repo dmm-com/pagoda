@@ -50,6 +50,14 @@ export const GroupAttributeValueField: FC<Props> = ({
     ["groupOptions", inputValue],
     async () => {
       const result = await aironeApiClient.getGroups(1, inputValue);
+      if ((result.results?.length ?? 0) === 0 && inputValue) {
+        return (
+          (await aironeApiClient.getGroups(1)).results?.map((g) => ({
+            id: g.id,
+            name: g.name,
+          })) ?? []
+        );
+      }
       return result.results?.map((g) => ({ id: g.id, name: g.name })) ?? [];
     },
     // revalidateOnFocus is disabled so a transient failure of a background

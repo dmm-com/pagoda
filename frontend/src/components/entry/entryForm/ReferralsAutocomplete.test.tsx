@@ -72,6 +72,29 @@ describe("ReferralsAutocomplete", () => {
     expect(fetchSpy).toHaveBeenCalledTimes(1);
   });
 
+  test("filters referral items with fuzzy matching", async () => {
+    const fuzzyOptions: GetEntryAttrReferral[] = [
+      { id: 3, name: "ＦｏｏＢａｒ", displayLabel: null },
+      { id: 4, name: "別のアイテム", displayLabel: null },
+    ];
+    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue({
+      results: fuzzyOptions,
+      hasRestrictedItems: false,
+    });
+    render(<Harness />, { wrapper: TestWrapper });
+
+    const input = screen.getByRole("combobox");
+    fireEvent.change(input, { target: { value: "foobar" } });
+    const listbox = await screen.findByRole("listbox");
+
+    expect(
+      within(listbox).getByRole("option", { name: "ＦｏｏＢａｒ" }),
+    ).toBeInTheDocument();
+    expect(
+      within(listbox).queryByRole("option", { name: "別のアイテム" }),
+    ).not.toBeInTheDocument();
+  });
+
   test("stores a selected option and restores its label after blur", async () => {
     const fetchSpy = vi
       .spyOn(aironeApiClient, "getEntryAttrReferrals")

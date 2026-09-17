@@ -8,6 +8,7 @@ import {
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 
 import { aironeApiClient } from "../../../repository/AironeApiClient";
+import { fuzzyMatch } from "../../../services/StringUtil";
 
 // Accept any object that carries at least id / name — display_label is optional
 // and callers may not always provide it (e.g. Trigger/Isolation flows build
@@ -188,6 +189,11 @@ export const ReferralsAutocomplete: FC<Props> = ({
         disabled={isDisabled}
         loading={loading}
         options={options}
+        filterOptions={(availableOptions, state) =>
+          availableOptions.filter((option) =>
+            fuzzyMatch(labelOf(option) ?? "", state.inputValue),
+          )
+        }
         // MUI Autocomplete's value must be structurally compatible with the
         // options type; ReferralOption is a subset of GetEntryAttrReferral
         // (displayLabel is optional here but nullable-required on the API).

@@ -50,6 +50,12 @@ export const RoleAttributeValueField: FC<Props> = ({
     ["roleOptions", inputValue],
     async () => {
       const roles = await aironeApiClient.getRoles(inputValue);
+      if (roles.length === 0 && inputValue) {
+        return (await aironeApiClient.getRoles()).map((r) => ({
+          id: r.id,
+          name: r.name,
+        }));
+      }
       return roles.map((r) => ({ id: r.id, name: r.name }));
     },
     // revalidateOnFocus is disabled so a transient failure of a background
