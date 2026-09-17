@@ -24,6 +24,7 @@ import { Schema } from "./EntityFormSchema";
 
 import { ReferralsAutocomplete } from "components/entry/entryForm/ReferralsAutocomplete";
 import { BaseAttributeTypes } from "services/Constants";
+import { fuzzyMatch } from "services/StringUtil";
 
 // Attribute types supported in isolation conditions (same as trigger conditions)
 const ISOLATION_SUPPORTED_TYPES = [
@@ -346,6 +347,11 @@ const IsolationRuleRow: FC<RuleRowProps> = ({
             <Autocomplete
               options={referralEntities}
               getOptionLabel={(opt) => opt.name}
+              filterOptions={(options, state) =>
+                options.filter((option) =>
+                  fuzzyMatch(option.name, state.inputValue),
+                )
+              }
               isOptionEqualToValue={(opt, val) => opt.id === val.id}
               value={field.value ?? null}
               onChange={(_e, val) => field.onChange(val)}

@@ -15,6 +15,7 @@ import { aironeApiClient } from "../../../repository/AironeApiClient";
 
 import { Schema } from "./EntryFormSchema";
 
+import { fuzzyMatch } from "services/StringUtil";
 import { getStagedErrorStyle } from "utils/styleUtils";
 
 const StyledTypography = styled(Typography)(() => ({
@@ -97,6 +98,11 @@ export const GroupAttributeValueField: FC<Props> = ({
               options={options}
               value={field.value ?? (multiple ? [] : null)}
               getOptionLabel={(option) => option.name}
+              filterOptions={(options, state) =>
+                options.filter((option) =>
+                  fuzzyMatch(option.name, state.inputValue),
+                )
+              }
               isOptionEqualToValue={(option, value) => option.id === value.id}
               onChange={(_, value) => handleChange(value)}
               onInputChange={(_, value) => setInputValue(value)}

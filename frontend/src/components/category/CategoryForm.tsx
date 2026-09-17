@@ -22,6 +22,7 @@ import {
 } from "components/common/Table";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { fuzzyMatch } from "services/StringUtil";
 
 const StyledBox = styled(Box)(({ theme }) => ({
   width: theme.breakpoints.values.lg,
@@ -121,6 +122,11 @@ export const CategoryForm: FC<Props> = ({ control, setValue }) => {
                       }
                       disabled={entitiesLoading}
                       getOptionLabel={(option) => option.name}
+                      filterOptions={(options, state) =>
+                        options.filter((option) =>
+                          fuzzyMatch(option.name, state.inputValue),
+                        )
+                      }
                       isOptionEqualToValue={(option, value) =>
                         option.id === value.id
                       }

@@ -166,6 +166,11 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                         {...field}
                         options={adminGroups ?? []}
                         getOptionLabel={(option: RoleGroup) => option.name}
+                        filterOptions={(options, state) =>
+                          options.filter((option) =>
+                            fuzzyMatch(option.name, state.inputValue),
+                          )
+                        }
                         isOptionEqualToValue={(option, value) =>
                           option.id === value.id
                         }
@@ -238,6 +243,11 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                         {...field}
                         options={groups ?? []}
                         getOptionLabel={(option: RoleGroup) => option.name}
+                        filterOptions={(options, state) =>
+                          options.filter((option) =>
+                            fuzzyMatch(option.name, state.inputValue),
+                          )
+                        }
                         isOptionEqualToValue={(option, value) =>
                           option.id === value.id
                         }

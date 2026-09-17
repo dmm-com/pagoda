@@ -22,6 +22,7 @@ import {
   HeaderTableRow,
   StyledTableRow,
 } from "components/common/Table";
+import { fuzzyMatch } from "services/StringUtil";
 
 interface Props {
   control: Control<Schema>;
@@ -205,6 +206,11 @@ export const BasicFields: FC<Props> = ({
                     options={referralEntities ?? []}
                     getOptionLabel={(option: { id: number; name: string }) =>
                       option.name
+                    }
+                    filterOptions={(options, state) =>
+                      options.filter((option) =>
+                        fuzzyMatch(option.name, state.inputValue),
+                      )
                     }
                     isOptionEqualToValue={(
                       option: { id: number; name: string },
