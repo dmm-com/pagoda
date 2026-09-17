@@ -1,6 +1,8 @@
 import json
 from unittest import mock
 
+from django.db import connection
+
 from acl.models import ACLBase
 from airone.lib.acl import ACLType
 from airone.lib.test import AironeViewTest
@@ -653,3 +655,72 @@ class ViewTest(AironeViewTest):
                 },
             ],
         )
+
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
+    def test_list_history_with_conflicting_history_id(self):
+        """history_id is only unique within each historical table.
+
+        This means a HistoricalEntity record and a HistoricalEntityAttr record can
+        share the same history_id, and the prev_record cache must not mix them up.
+        """
+        self.initialization_for_retrieve_test()
+
+        param = {
+            "name": "test",
+            "attrs": [
+                {
+                    "name": "string",
+                    "type": AttrType.STRING,
+                }
+            ],
+        }
+        self.client.post("/entity/api/v2/", json.dumps(param), "application/json")
+
+        entity = Entity.objects.get(name="test", is_active=True)
+        entity_attr: EntityAttr = entity.attrs.get(name="string", is_active=True)
+
+        # make more than one history record for both the Entity and its EntityAttr
+        for is_public in [False, True]:
+            entity.is_public = is_public
+            entity.save()
+            entity_attr.is_public = is_public
+            entity_attr.save()
+
+        # Force the EntityAttr history_id values to collide with the Entity ones.
+        # They are shifted out of the way first so that the target values are free.
+        entity_history_ids = list(
+            Entity.history.filter(aclbase_ptr_id=entity.id)
+            .order_by("history_id")
+            .values_list("history_id", flat=True)
+        )
+        attr_table = EntityAttr.history.model._meta.db_table
+        offset = 100000
+        with connection.cursor() as cursor:
+            cursor.execute("UPDATE %s SET history_id = history_id + %d" % (attr_table, offset))
+            shifted_ids = list(
+                EntityAttr.history.filter(aclbase_ptr_id=entity_attr.id)
+                .order_by("history_id")
+                .values_list("history_id", flat=True)
+            )
+            for shifted_id, history_id in zip(shifted_ids, entity_history_ids, strict=True):
+                cursor.execute(
+                    "UPDATE %s SET history_id = %d WHERE history_id = %d"
+                    % (attr_table, history_id, shifted_id)
+                )
+
+        # verify the precondition this test depends on: the two historical models
+        # now really do share history_id values, and there is more than one record
+        # per model so that prev_record lookups happen at all
+        attr_history_ids = set(
+            EntityAttr.history.filter(aclbase_ptr_id=entity_attr.id).values_list(
+                "history_id", flat=True
+            )
+        )
+        self.assertGreater(len(entity_history_ids), 1)
+        self.assertEqual(attr_history_ids, set(entity_history_ids))
+
+        resp = self.client.get("/acl/api/v2/acls/%s/history" % entity.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(sorted(set(h["name"] for h in resp.json())), sorted(["string", "test"]))

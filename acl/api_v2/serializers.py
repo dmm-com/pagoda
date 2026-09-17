@@ -14,6 +14,17 @@ from role.models import HistoricalPermission, Role
 from user.models import User
 
 
+def history_cache_key(history: Any) -> str:
+    """Build a prev_record cache key that is unique across historical models.
+
+    ``history_id`` is only unique within a single historical table, so keys must
+    be qualified by the model. Otherwise HistoricalEntity and HistoricalEntityAttr
+    records that share a ``history_id`` overwrite each other in the cache and
+    diff_against() ends up being called with mismatched types.
+    """
+    return "%s_%s" % (history.__class__.__name__, history.history_id)
+
+
 class ACLParentType(TypedDict):
     id: int
     name: str
@@ -289,8 +300,7 @@ class ACLHistorySerializer(serializers.Serializer[Any]):
         if history.__class__.__name__ == "HistoricalHistoricalPermission":
             # Use cached prev_record to avoid DB queries
             prev_record_cache = self.context.get("prev_record_cache", {})
-            cache_key = f"permission_{history.history_id}"
-            prev_record = prev_record_cache.get(cache_key)
+            prev_record = prev_record_cache.get(history_cache_key(history))
 
             if prev_record:
                 delta = history.diff_against(prev_record, excluded_fields=["status"])
@@ -321,11 +331,12 @@ class ACLHistorySerializer(serializers.Serializer[Any]):
         else:
             # For regular historical records, use cached prev_record if available
             prev_record_cache = self.context.get("prev_record_cache", {})
-            cache_key = f"acl_{history.history_id}"
-            prev_record = prev_record_cache.get(cache_key)
+            prev_record = prev_record_cache.get(history_cache_key(history))
 
-            # Fallback to original method if not in cache
-            if prev_record is None:
+            # Fallback to original method if not in cache, or if the cached entry
+            # belongs to another historical model (diff_against() requires the
+            # same type)
+            if prev_record is None or prev_record.__class__ is not history.__class__:
                 prev_record = history.prev_record
 
             if prev_record:

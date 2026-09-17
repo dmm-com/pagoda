@@ -1,4 +1,5 @@
-import { FC, useCallback } from "react";
+import { useSnackbar } from "notistack";
+import { FC, useCallback, useEffect } from "react";
 
 import { AironeModal } from "../common/AironeModal";
 
@@ -14,6 +15,17 @@ export const RoleImportModal: FC<Props> = ({
   openImportModal,
   closeImportModal,
 }) => {
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (sessionStorage.getItem("role-import-success") === "1") {
+      sessionStorage.removeItem("role-import-success");
+      enqueueSnackbar("ロールのインポートを受け付けました。", {
+        variant: "success",
+      });
+    }
+  }, [enqueueSnackbar]);
+
   const handleImport = useCallback(async (data: string | ArrayBuffer) => {
     await aironeApiClient.importRoles(data);
   }, []);

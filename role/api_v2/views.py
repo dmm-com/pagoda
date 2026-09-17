@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from airone.lib.drf import YAMLParser, YAMLRenderer
 from group.models import Group
-from job.models import Job
+from job.models import Job, JobStatus
 from role.api_v2.serializers import (
     RoleCreateUpdateSerializer,
     RoleImportExportChildSerializer,
@@ -92,17 +92,23 @@ class RoleImportAPI(generics.GenericAPIView[Any]):
         serializer = RoleImportSerializer(data=import_datas)
         serializer.is_valid(raise_exception=True)
 
-        job_ids: list[int] = []
-        error_list: list[str] = []
-
         job = Job.new_role_import_v2(
             user, text="Preparing to import role data", params=import_datas
         )
-        job.run()
-        job_ids.append(job.id)
-        return Response(
-            {"result": {"job_ids": job_ids, "error": error_list}}, status=status.HTTP_200_OK
-        )
+        try:
+            task_result = job.run()
+        except Exception as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+        if isinstance(task_result, tuple) and task_result:
+            task_status = task_result[0]
+            if task_status in (JobStatus.ERROR, JobStatus.WARNING):
+                return Response(
+                    {"detail": task_result[1] if len(task_result) > 1 else "Role import failed"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        return Response([], status=status.HTTP_200_OK)
 
 
 class RoleExportAPI(generics.ListAPIView[Role]):

@@ -20,5 +20,7 @@ test("text should includes substring keyword with fuzzy conversions", () => {
   // Half-width Katakana, full-width uppercase, and half-width uppercase.
   expect(fuzzyMatch("ﾊﾝｶｸ-ＢＩＧ-LARGE", "ハンカク-big")).toBe(true);
   expect(fuzzyMatch("ﾊﾝｶｸ-ＢＩＧ-LARGE", "ﾊﾝｶｸ")).toBe(true);
+  expect(fuzzyMatch("ﾊﾝｶｸ-ＢＩＧ-LARGE", "ハンカク-big")).toBe(true);
+  expect(fuzzyMatch("ﾊﾝｶｸ-ＢＩＧ-LARGE", "ハンカク-big-large")).toBe(true);
   expect(fuzzyMatch("unrelated text", "test")).toBe(false);
 });
