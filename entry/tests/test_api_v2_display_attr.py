@@ -180,7 +180,7 @@ class DisplayAttrTest(AironeViewTest):
         entity_attr = entity.attrs.get(name="ref")
         resp = self.client.get(f"/entry/api/v2/{entity_attr.id}/attr_referrals/")
         self.assertEqual(resp.status_code, 200)
-        data = resp.json()
+        data = resp.json()["results"]
         target = next(r for r in data if r["id"] == self.ref_entry.id)
         self.assertEqual(target["display_label"], "tokyo")
 
@@ -188,7 +188,7 @@ class DisplayAttrTest(AironeViewTest):
         entity = self._make_referring_entity(AttrType.OBJECT, "")
         entity_attr = entity.attrs.get(name="ref")
         resp = self.client.get(f"/entry/api/v2/{entity_attr.id}/attr_referrals/")
-        data = resp.json()
+        data = resp.json()["results"]
         target = next(r for r in data if r["id"] == self.ref_entry.id)
         self.assertIsNone(target["display_label"])
 

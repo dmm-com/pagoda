@@ -1,10 +1,12 @@
 import enum
 import re
+from collections.abc import Callable, Mapping, Sequence
 from datetime import datetime
 from typing import Any, NotRequired
 
 from django.conf import settings
 from elasticsearch import Elasticsearch
+from elasticsearch.dsl.query import Bool, Exists, Ids, Match, Nested, Query, Range, Regexp, Term
 from pydantic import BaseModel
 from typing_extensions import TypedDict
 
@@ -88,12 +90,60 @@ class AttributeDocument(TypedDict):
     is_readable: bool
 
 
+class IdNameDocument(TypedDict):
+    id: int
+    name: str
+
+
+class ReferralDocument(IdNameDocument):
+    schema: IdNameDocument
+
+
 class EntryDocument(TypedDict):
-    entity: dict[str, str | int]
+    entity: IdNameDocument
     name: str
     attr: list[AttributeDocument]
-    referrals: list[dict[str, str | int | dict[str, str | int]]]
+    referrals: list[ReferralDocument]
     is_readable: bool
+
+
+class SimpleSearchResultRecord(TypedDict):
+    id: str
+    name: str
+    schema: IdNameDocument
+    attr: NotRequired[str]
+
+
+class SimpleSearchResults(TypedDict):
+    ret_count: int
+    ret_values: list[SimpleSearchResultRecord]
+
+
+@enum.unique
+class EntryIndexField(enum.StrEnum):
+    NAME = "name"
+    NAME_KEYWORD = "name.keyword"
+    ENTITY_ID = "entity.id"
+    ENTITY_NAME = "entity.name"
+    REFERRAL_NAME = "referrals.name"
+    REFERRAL_ENTITY_ID = "referrals.schema.id"
+    ATTR_NAME = "attr.name"
+    ATTR_VALUE = "attr.value"
+    ATTR_VALUE_KEYWORD = "attr.value.keyword"
+    ATTR_DATE_VALUE = "attr.date_value"
+
+
+@enum.unique
+class EntryIndexPath(enum.StrEnum):
+    ENTITY = "entity"
+    REFERRALS = "referrals"
+    REFERRAL_ENTITY = "referrals.schema"
+    ATTR = "attr"
+
+
+def _field_query(query_type: Callable[..., Query], field: EntryIndexField, value: object) -> Query:
+    """Construct a field query while keeping dynamic DSL keys in one place."""
+    return query_type(**{str(field): value})
 
 
 class ESS(Elasticsearch):
@@ -106,29 +156,41 @@ class ESS(Elasticsearch):
             return super().__new__(InMemoryESS)
         return super().__new__(cls)
 
-    def __init__(self, index: str | None = None, **kwargs: Any) -> None:
+    def __init__(self, index: str | None = None, *, request_timeout: float | None = None) -> None:
         self.additional_config = False
 
         self._index: str = index if index else settings.ES_CONFIG["INDEX_NAME"]
 
-        if ("timeout" not in kwargs) and (settings.ES_CONFIG["TIMEOUT"] is not None):
-            kwargs["timeout"] = settings.ES_CONFIG["TIMEOUT"]
+        if request_timeout is None:
+            request_timeout = settings.ES_CONFIG["TIMEOUT"]
 
-        super(ESS, self).__init__(settings.ES_CONFIG["URL"], **kwargs)
+        super().__init__(settings.ES_CONFIG["URL"], request_timeout=request_timeout)
 
-    def bulk(self, **kwargs: Any) -> Any:
-        return super(ESS, self).bulk(index=self._index, **kwargs)
+    def bulk_entries(self, operations: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+        """Apply bulk operations to the configured entry index."""
+        return dict(self.bulk(index=self._index, operations=operations))
 
-    def delete(self, **kwargs: Any) -> Any:
-        return super(ESS, self).delete(index=self._index, **kwargs)
+    def delete_entry(self, entry_id: int) -> dict[str, Any]:
+        """Delete one entry document from the configured index."""
+        return dict(self.delete(index=self._index, id=str(entry_id)))
 
-    def refresh(self, **kwargs: Any) -> Any:
-        return self.indices.refresh(index=self._index, **kwargs)
+    def refresh_index(self) -> dict[str, Any]:
+        """Make recent writes searchable in the configured index."""
+        return dict(self.indices.refresh(index=self._index))
 
-    def index(self, **kwargs: Any) -> Any:
-        return super(ESS, self).index(index=self._index, **kwargs)
+    def index_entry(self, entry_id: int, document: EntryDocument) -> dict[str, Any]:
+        """Index one Pagoda entry document."""
+        return dict(self.index(index=self._index, id=str(entry_id), document=document))
 
-    def search(self, **kwargs: Any) -> dict[str, Any]:  # type: ignore[override]
+    def search_entries(
+        self,
+        body: Mapping[str, Any],
+        *,
+        size: int | None = None,
+        offset: int | None = None,
+        track_total_hits: bool | int | None = None,
+    ) -> dict[str, Any]:
+        """Search the configured entry index with Pagoda's result-window policy."""
         # expand max_result_window parameter which indicates numbers to return at one searching
         if not self.additional_config:
             self.additional_config = True
@@ -142,10 +204,47 @@ class ESS(Elasticsearch):
                 },
             )
 
-        if "size" not in kwargs:
-            kwargs["size"] = settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"]
+        if size is None:
+            size = settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"]
 
-        return dict(super(ESS, self).search(index=self._index, **kwargs))
+        if offset is None and track_total_hits is None:
+            return dict(
+                self.search(
+                    index=self._index,
+                    body=dict(body),
+                    size=size,
+                )
+            )
+
+        if offset is None:
+            return dict(
+                self.search(
+                    index=self._index,
+                    body=dict(body),
+                    size=size,
+                    track_total_hits=track_total_hits,
+                )
+            )
+
+        if track_total_hits is None:
+            return dict(
+                self.search(
+                    index=self._index,
+                    body=dict(body),
+                    size=size,
+                    from_=offset,
+                )
+            )
+
+        return dict(
+            self.search(
+                index=self._index,
+                body=dict(body),
+                size=size,
+                from_=offset,
+                track_total_hits=track_total_hits,
+            )
+        )
 
     def recreate_index(self) -> None:
         self.indices.delete(index=self._index, ignore_unavailable=True)
@@ -287,17 +386,24 @@ class InMemoryESS(ESS):
         self.indices = self._engine.indices  # type: ignore[assignment]
 
     def bulk(self, **kwargs: Any) -> Any:
-        return self._engine.bulk(index=self._index, **kwargs)
+        if "operations" in kwargs:
+            kwargs["body"] = list(kwargs.pop("operations"))
+        kwargs.setdefault("index", self._index)
+        return self._engine.bulk(**kwargs)
 
     def delete(self, **kwargs: Any) -> Any:
-        return self._engine.delete(index=self._index, **kwargs)
+        kwargs.setdefault("index", self._index)
+        return self._engine.delete(**kwargs)
 
     def delete_by_query(self, **kwargs: Any) -> Any:
         kwargs.setdefault("index", self._index)
         return self._engine.delete_by_query(**kwargs)
 
     def index(self, **kwargs: Any) -> Any:
-        return self._engine.index(index=self._index, **kwargs)
+        if "document" in kwargs:
+            kwargs["body"] = dict(kwargs.pop("document"))
+        kwargs.setdefault("index", self._index)
+        return self._engine.index(**kwargs)
 
     def refresh(self, **kwargs: Any) -> Any:
         return self._engine.indices.refresh(index=self._index)
@@ -312,7 +418,8 @@ class InMemoryESS(ESS):
     def search(self, **kwargs: Any) -> dict[str, Any]:  # type: ignore[override]
         if "size" not in kwargs:
             kwargs["size"] = settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"]
-        return self._engine.search(index=self._index, **kwargs)
+        kwargs.setdefault("index", self._index)
+        return self._engine.search(**kwargs)
 
 
 def make_query(
@@ -387,24 +494,19 @@ def make_query(
                         ["^" + x + "$" for x in keyword_list]
                     )
 
-    # Making a query to send ElasticSearch by the specified parameters
-    query: dict[str, Any] = {
-        "query": {
-            "bool": {
-                "filter": [],
-                "should": [],
-            }
-        }
-    }
+    filters: list[Query] = []
 
     # set condition to get results that only have specified entity
-    query["query"]["bool"]["filter"].append(
-        {"nested": {"path": "entity", "query": {"term": {"entity.id": hint_entity.id}}}}
+    filters.append(
+        Nested(
+            path=EntryIndexPath.ENTITY.value,
+            query=_field_query(Term, EntryIndexField.ENTITY_ID, hint_entity.id),
+        )
     )
 
     # Restrict results to specific entry IDs when provided
     if entry_ids:
-        query["query"]["bool"]["filter"].append({"ids": {"values": [str(i) for i in entry_ids]}})
+        filters.append(Ids(values=[str(i) for i in entry_ids]))
 
     # Included in query if refinement is entered for 'Name' in advanced search
     if hint_entry is not None and hint_entry.keyword is not None:
@@ -415,60 +517,59 @@ def make_query(
                 # Don't perform any filter
                 pass
             case EntryFilterKey.TEXT_CONTAINED:
-                query["query"]["bool"]["filter"].append(item_name_query)
+                filters.append(item_name_query)
             case EntryFilterKey.TEXT_NOT_CONTAINED:
-                query["query"]["bool"]["filter"].append({"bool": {"must_not": [item_name_query]}})
+                filters.append(Bool(must_not=[item_name_query]))
             case _:
                 # NOTE: Unsupported filter key
                 pass
     elif entry_name:
-        query["query"]["bool"]["filter"].append(_make_entry_name_query(entry_name))
+        filters.append(_make_entry_name_query(entry_name))
 
     if hint_referral:
-        query["query"]["bool"]["filter"].append(_make_referral_query(hint_referral))
+        filters.append(_make_referral_query(hint_referral))
 
     # These are filter results from Elasticsearch by referred item's Models
     if exclude_referrals:
-        query["query"]["bool"]["filter"].append(_make_query_exclude_referrals(exclude_referrals))
+        filters.append(_make_query_exclude_referrals(exclude_referrals))
 
     if include_referrals:
-        query["query"]["bool"]["filter"].append(_make_query_include_referrals(include_referrals))
+        filters.append(_make_query_include_referrals(include_referrals))
 
     if hint_referral_entity_id:
-        query["query"]["bool"]["filter"].append(
-            _make_referral_entity_query(hint_referral_entity_id)
-        )
+        filters.append(_make_referral_entity_query(hint_referral_entity_id))
 
     # Determine attributes for existence check
-    attr_existence_should_clauses: list[dict[str, Any]] = []
+    attr_existence_should_clauses: list[Query] = []
     if allow_missing_attributes:
         # For APIv2: Only attributes with specified keywords are subject to existence check
         for hint in hint_attrs:
             if hint.name and hint.keyword:
-                attr_existence_should_clauses.append({"term": {"attr.name": hint.name}})
+                attr_existence_should_clauses.append(
+                    _field_query(Term, EntryIndexField.ATTR_NAME, hint.name)
+                )
     else:
         for hint in hint_attrs:
             if hint.name:
-                attr_existence_should_clauses.append({"term": {"attr.name": hint.name}})
+                attr_existence_should_clauses.append(
+                    _field_query(Term, EntryIndexField.ATTR_NAME, hint.name)
+                )
 
     # Add attribute existence check condition (commonized)
     if attr_existence_should_clauses:
-        nested_query_bool_part: dict[str, Any] = {"should": attr_existence_should_clauses}
-
-        # Add minimum_should_match only for APIv2
-        if allow_missing_attributes:
-            nested_query_bool_part["minimum_should_match"] = 1
-
-        query["query"]["bool"]["filter"].append(
-            {
-                "nested": {
-                    "path": "attr",
-                    "query": {"bool": nested_query_bool_part},
-                }
-            }
+        existence_query = (
+            Bool(should=attr_existence_should_clauses, minimum_should_match=1)
+            if allow_missing_attributes
+            else Bool(should=attr_existence_should_clauses)
+        )
+        filters.append(
+            Nested(
+                path=EntryIndexPath.ATTR.value,
+                query=existence_query,
+            )
         )
 
-    attr_query: dict[str, dict[str, Any]] = {}
+    attr_query: dict[str, Query] = {}
 
     # filter attribute by keywords
     for hint in [hint for hint in hint_attrs if hint.name and hint.keyword]:
@@ -476,11 +577,9 @@ def make_query(
 
     # Build queries along keywords
     if attr_query:
-        query["query"]["bool"]["filter"].append(
-            _build_queries_along_keywords(hint_attrs, attr_query)
-        )
+        filters.append(_build_queries_along_keywords(hint_attrs, attr_query))
 
-    return query
+    return {"query": Bool(filter=filters).to_dict()}
 
 
 def make_query_for_simple(
@@ -501,60 +600,68 @@ def make_query_for_simple(
         dict[str, Any]: The created search query is returned.
 
     """
-    query: dict[str, Any] = {
-        "query": {"bool": {"must": []}},
-        "_source": ["name", "entity"],
-        "sort": [{"_score": {"order": "desc"}, "name.keyword": {"order": "asc"}}],
-        "from": offset,
-    }
+    must: list[Query] = []
+    must_not: list[Query] = []
 
-    hint_query: dict[str, Any] = {"bool": {"should": [{"match": {"name": hint_string}}]}}
-    hint_query["bool"]["should"].append(_make_entry_name_query(hint_string))
-    hint_query["bool"]["should"].append(_make_attr_query_for_simple(hint_string))
-    query["query"]["bool"]["must"].append(hint_query)
+    hint_query = Bool(
+        should=[
+            _field_query(Match, EntryIndexField.NAME, hint_string),
+            _make_entry_name_query(hint_string),
+            _make_attr_query_for_simple(hint_string),
+        ]
+    )
+    must.append(hint_query)
 
     if hint_entity_name:
-        query["query"]["bool"]["must"].append(
-            {
-                "nested": {
-                    "path": "entity",
-                    "query": {"term": {"entity.name": hint_entity_name}},
-                }
-            }
+        must.append(
+            Nested(
+                path=EntryIndexPath.ENTITY.value,
+                query=_field_query(Term, EntryIndexField.ENTITY_NAME, hint_entity_name),
+            )
         )
 
     if exclude_entity_names:
-        query["query"]["bool"]["must_not"] = [
-            {
-                "nested": {
-                    "path": "entity",
-                    "query": {"term": {"entity.name": exclude_entity_name}},
-                }
-            }
+        must_not.extend(
+            Nested(
+                path=EntryIndexPath.ENTITY.value,
+                query=_field_query(Term, EntryIndexField.ENTITY_NAME, exclude_entity_name),
+            )
             for exclude_entity_name in exclude_entity_names
-        ]
+        )
 
-    return query
+    return {
+        "query": Bool(must=must, must_not=must_not).to_dict(),
+        "_source": ["name", "entity"],
+        "sort": [
+            {
+                "_score": {"order": "desc"},
+                EntryIndexField.NAME_KEYWORD.value: {"order": "asc"},
+            }
+        ],
+        "from": offset,
+    }
 
 
 def _make_aggs_query(hint_attr_name: str) -> dict[str, Any]:
+    filter_query = Bool(
+        must=[_field_query(Term, EntryIndexField.ATTR_NAME, hint_attr_name)],
+        must_not=[_field_query(Term, EntryIndexField.ATTR_VALUE_KEYWORD, "")],
+    )
     return {
         "aggs": {
             "attr_aggs": {
                 "nested": {
-                    "path": "attr",
+                    "path": EntryIndexPath.ATTR.value,
                 },
                 "aggs": {
                     "attr_name_aggs": {
-                        "filter": {
-                            "bool": {
-                                "must": [{"term": {"attr.name": hint_attr_name}}],
-                                "must_not": [{"term": {"attr.value.keyword": ""}}],
-                            }
-                        },
+                        "filter": filter_query.to_dict(),
                         "aggs": {
                             "attr_value_aggs": {
-                                "terms": {"field": "attr.value.keyword", "min_doc_count": 2}
+                                "terms": {
+                                    "field": EntryIndexField.ATTR_VALUE_KEYWORD.value,
+                                    "min_doc_count": 2,
+                                }
                             }
                         },
                     }
@@ -631,7 +738,7 @@ def _get_hint_keyword_val(keyword: str) -> str:
     return keyword
 
 
-def _make_entry_name_query(entry_name: str) -> dict[str, Any]:
+def _make_entry_name_query(entry_name: str) -> Query:
     """Create a search query for the entry name.
 
     Divides the search string with OR.
@@ -643,119 +750,107 @@ def _make_entry_name_query(entry_name: str) -> dict[str, Any]:
         entry_name (str): Search string for entry name
 
     Returns:
-        dict[str, Any]: Entry name search query
+        Query: Entry name search query
 
     """
-    entry_name_or_query: dict[str, Any] = {"bool": {"should": []}}
+    entry_name_or_queries: list[Query] = []
 
     # Split and process keywords with 'or'
     for keyword_divided_or in entry_name.split(CONFIG.OR_SEARCH_CHARACTER):
-        entry_name_and_query: dict[str, Any] = {"bool": {"must": []}}
+        entry_name_and_queries: list[Query] = []
 
         # Keyword divided by 'or' is processed by dividing by 'and'
         for keyword in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
             name_val = _get_hint_keyword_val(keyword)
             if name_val:
                 # When normal conditions are specified
-                entry_name_and_query["bool"]["must"].append(
-                    {"regexp": {"name": _get_regex_pattern(name_val)}}
+                entry_name_and_queries.append(
+                    _field_query(Regexp, EntryIndexField.NAME, _get_regex_pattern(name_val))
                 )
             else:
                 # When blank is specified in the condition
-                entry_name_and_query["bool"]["must"].append({"match": {"name": ""}})
-        entry_name_or_query["bool"]["should"].append(entry_name_and_query)
+                entry_name_and_queries.append(_field_query(Match, EntryIndexField.NAME, ""))
+        entry_name_or_queries.append(Bool(must=entry_name_and_queries))
 
-    return entry_name_or_query
-
-
-def _make_query_specific_referred_items(model_id: int) -> dict[str, Any]:
-    return {
-        "nested": {
-            "path": "referrals.schema",
-            "query": {"term": {"referrals.schema.id": model_id}},
-        }
-    }
+    return Bool(should=entry_name_or_queries)
 
 
-def _make_query_include_referrals(include_referrals: list[int]) -> dict[str, Any]:
-    return {
-        "bool": {
-            "should": [
-                _make_query_specific_referred_items(model_id) for model_id in include_referrals
-            ]
-        }
-    }
+def _make_query_specific_referred_items(model_id: int) -> Query:
+    return Nested(
+        path=EntryIndexPath.REFERRAL_ENTITY.value,
+        query=_field_query(Term, EntryIndexField.REFERRAL_ENTITY_ID, model_id),
+    )
 
 
-def _make_query_exclude_referrals(exclude_referrals: list[int]) -> dict[str, Any]:
-    return {
-        "bool": {
-            "must_not": [
-                _make_query_specific_referred_items(model_id) for model_id in exclude_referrals
-            ]
-        }
-    }
+def _make_query_include_referrals(include_referrals: list[int]) -> Query:
+    return Bool(
+        should=[_make_query_specific_referred_items(model_id) for model_id in include_referrals]
+    )
 
 
-def _make_referral_query(referral_name: str) -> dict[str, Any]:
-    referral_or_query: dict[str, Any] = {"bool": {"should": []}}
+def _make_query_exclude_referrals(exclude_referrals: list[int]) -> Query:
+    return Bool(
+        must_not=[_make_query_specific_referred_items(model_id) for model_id in exclude_referrals]
+    )
+
+
+def _make_referral_query(referral_name: str) -> Query:
+    referral_or_queries: list[Query] = []
 
     # Split and process keywords with 'or'
     for keyword_divided_or in referral_name.split(CONFIG.OR_SEARCH_CHARACTER):
-        referral_and_query: dict[str, Any] = {
-            "bool": {
-                "must": [],
-                "must_not": [],
-            }
-        }
+        must: list[Query] = []
+        must_not: list[Query] = []
 
         # Keyword divided by 'or' is processed by dividing by 'and'
         for keyword in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
             name_val = _get_hint_keyword_val(keyword)
             if name_val == CONFIG.EXSIT_CHARACTER:
                 # When existed referral is specified in the condition
-                referral_and_query["bool"]["must"].append(
-                    {"nested": {"path": "referrals", "query": {"exists": {"field": "referrals"}}}}
+                must.append(
+                    Nested(
+                        path=EntryIndexPath.REFERRALS.value,
+                        query=Exists(field=EntryIndexPath.REFERRALS.value),
+                    )
                 )
             elif name_val:
                 # When normal conditions are specified
-                referral_and_query["bool"]["must"].append(
-                    {
-                        "nested": {
-                            "path": "referrals",
-                            "query": {"regexp": {"referrals.name": _get_regex_pattern(name_val)}},
-                        }
-                    }
+                must.append(
+                    Nested(
+                        path=EntryIndexPath.REFERRALS.value,
+                        query=_field_query(
+                            Regexp,
+                            EntryIndexField.REFERRAL_NAME,
+                            _get_regex_pattern(name_val),
+                        ),
+                    )
                 )
             else:
                 # When blank is specified in the condition
-                referral_and_query["bool"]["must_not"].append(
-                    {"nested": {"path": "referrals", "query": {"exists": {"field": "referrals"}}}}
+                must_not.append(
+                    Nested(
+                        path=EntryIndexPath.REFERRALS.value,
+                        query=Exists(field=EntryIndexPath.REFERRALS.value),
+                    )
                 )
 
-        referral_or_query["bool"]["should"].append(referral_and_query)
+        referral_or_queries.append(Bool(must=must, must_not=must_not))
 
-    return referral_or_query
-
-
-def _make_referral_entity_query(referral_entity_id: int) -> dict[str, Any]:
-    referral_or_query: dict[str, Any] = {
-        "bool": {
-            "should": [
-                {
-                    "nested": {
-                        "path": "referrals.schema",
-                        "query": {"match": {"referrals.schema.id": referral_entity_id}},
-                    }
-                }
-            ]
-        }
-    }
-
-    return referral_or_query
+    return Bool(should=referral_or_queries)
 
 
-def _make_attr_query_for_simple(hint_string: str) -> dict[str, Any]:
+def _make_referral_entity_query(referral_entity_id: int) -> Query:
+    return Bool(
+        should=[
+            Nested(
+                path=EntryIndexPath.REFERRAL_ENTITY.value,
+                query=_field_query(Match, EntryIndexField.REFERRAL_ENTITY_ID, referral_entity_id),
+            )
+        ]
+    )
+
+
+def _make_attr_query_for_simple(hint_string: str) -> Query:
     """Create a search query for the AttributeValue in simple search.
 
     Divides the search string with OR.
@@ -766,49 +861,50 @@ def _make_attr_query_for_simple(hint_string: str) -> dict[str, Any]:
         hint_string (str): Search string for AttributeValue
 
     Returns:
-        dict[str, str]: AttributeValue search query
+        Query: AttributeValue search query
 
     """
 
-    attr_query: dict[str, Any] = {
-        "bool": {"filter": {"nested": {"path": "attr", "inner_hits": {"_source": ["attr.name"]}}}}
-    }
-
-    attr_or_query: dict[str, Any] = {"bool": {"should": []}}
+    attr_or_queries: list[Query] = []
     for keyword_divided_or in hint_string.split(CONFIG.OR_SEARCH_CHARACTER):
         if not keyword_divided_or:
             continue
 
-        attr_and_query: dict[str, Any] = {"bool": {"filter": []}}
+        attr_and_queries: list[Query] = []
         for keyword_divided_and in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
             if not keyword_divided_and:
                 continue
 
-            attr_and_query["bool"]["filter"].append(
-                {"regexp": {"attr.value": _get_regex_pattern(keyword_divided_and)}}
+            attr_and_queries.append(
+                _field_query(
+                    Regexp,
+                    EntryIndexField.ATTR_VALUE,
+                    _get_regex_pattern(keyword_divided_and),
+                )
             )
-        attr_or_query["bool"]["should"].append(attr_and_query)
+        attr_or_queries.append(Bool(filter=attr_and_queries))
 
-    attr_query["bool"]["filter"]["nested"]["query"] = attr_or_query
+    return Bool(
+        filter=Nested(
+            path=EntryIndexPath.ATTR.value,
+            query=Bool(should=attr_or_queries),
+            inner_hits={"_source": [EntryIndexField.ATTR_NAME.value]},
+        )
+    )
 
-    return attr_query
 
-
-def _parse_or_search(hint: AttrHint) -> dict[str, dict[str, Any]]:
+def _parse_or_search(hint: AttrHint) -> dict[str, Query]:
     """Performs keyword analysis processing.
 
     The search keyword is separated by OR and passed to the next process.
 
     Args:
         hint (AttrHint): Dictionary of attribute names and search keywords to be processed
-        attr_query (dict[str, str]): Search query being created
-
     Returns:
-        dict[str, str]: Add the analysis result to 'attr_query' for the keywords separated
-            by 'OR' and return.
+        dict[str, Query]: Queries keyed by the smallest separated keyword.
 
     """
-    attr_query: dict[str, dict[str, Any]] = {}
+    attr_query: dict[str, Query] = {}
     duplicate_keys: list[str] = []
 
     # Split and process keywords with 'or'
@@ -823,7 +919,7 @@ def _parse_and_search(
     hint: AttrHint,
     keyword_divided_or: str,
     duplicate_keys: list[str],
-) -> dict[str, dict[str, Any]]:
+) -> dict[str, Query]:
     """Analyze the keywords separated by `OR`
 
     Keywords separated by OR are separated by AND.
@@ -845,17 +941,15 @@ def _parse_and_search(
     Args:
         hint (AttrHint): Dictionary of attribute names and search keywords to be processed
         keyword_divided_or (str): Character string with search keywords separated by OR
-        attr_query (dict[str, str]): Search query being created
         duplicate_keys (list(str)): Holds a list of the smallest character strings
             that separate search keywords with AND and OR.
             If the target string is already included in the list, processing is skipped.
 
     Returns:
-        dict[str, dict]: The analysis result is added to 'attr_query' for the keywords separated
-            by 'AND' and returned.
+        dict[str, Query]: Queries for keywords separated by 'AND'.
 
     """
-    attr_query: dict[str, dict[str, Any]] = {}
+    attr_query: dict[str, Query] = {}
 
     # Keyword divided by 'or' is processed by dividing by 'and'
     for keyword in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
@@ -874,8 +968,8 @@ def _parse_and_search(
 
 def _build_queries_along_keywords(
     hint_attrs: list[AttrHint],
-    attr_query: dict[str, dict[str, Any]],
-) -> dict[str, Any]:
+    attr_query: dict[str, Query],
+) -> Query:
     """Build queries along search terms.
 
     Do the following:
@@ -896,62 +990,45 @@ def _build_queries_along_keywords(
 
     Args:
         hint_attrs (list(AttrHint)): A list of search strings and attribute sets
-        attr_query (dict[str, dict]): A query that summarizes attributes
+        attr_query (dict[str, Query]): A query that summarizes attributes
             by the smallest unit of a search keyword
 
     Returns:
-        dict[str, dict]: Assemble and return the attribute value part of the search query.
+        Query: The assembled attribute value query.
 
     """
 
     # Get the keyword.
     hints = [x for x in hint_attrs if x.keyword]
-    res_query: dict[str, Any] = {}
+    result_queries: list[Query] = []
 
     for hint in hints:
-        and_query: dict[str, Any] = {}
-        or_query: dict[str, Any] = {}
+        or_queries: list[Query] = []
 
         # Split keyword by 'or'
         for keyword_divided_or in (hint.keyword or "").split(CONFIG.OR_SEARCH_CHARACTER):
+            keyword_query: Query
             if CONFIG.AND_SEARCH_CHARACTER in keyword_divided_or:
-                # If 'AND' is included in the keyword divided by 'OR', add it to 'filter'
-                for keyword in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
-                    if keyword_divided_or not in and_query:
-                        and_query[keyword_divided_or] = {"bool": {"filter": []}}
-
-                    and_query[keyword_divided_or]["bool"]["filter"].append(
+                keyword_query = Bool(
+                    filter=[
                         attr_query[keyword + "_" + hint.name]
-                    )
-
+                        for keyword in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER)
+                    ]
+                )
             else:
-                and_query[keyword_divided_or] = attr_query[keyword_divided_or + "_" + hint.name]
+                keyword_query = attr_query[keyword_divided_or + "_" + hint.name]
+            or_queries.append(keyword_query)
 
-            if CONFIG.OR_SEARCH_CHARACTER in (hint.keyword or ""):
-                # If the keyword contains 'or', concatenate with 'should'
-                if not or_query:
-                    or_query = {"bool": {"should": []}}
+        result_queries.append(
+            Bool(should=or_queries)
+            if CONFIG.OR_SEARCH_CHARACTER in (hint.keyword or "")
+            else or_queries[0]
+        )
 
-                or_query["bool"]["should"].append(and_query[keyword_divided_or])
-
-            else:
-                or_query = and_query[keyword_divided_or]
-
-        if len(hints) > 1:
-            # If conditions are specified for multiple attributes in advanced search,
-            # connect with 'filter'
-            if not res_query:
-                res_query = {"bool": {"filter": []}}
-
-            res_query["bool"]["filter"].append(or_query)
-
-        else:
-            res_query = or_query
-
-    return res_query
+    return Bool(filter=result_queries) if len(hints) > 1 else result_queries[0]
 
 
-def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> dict[str, Any]:
+def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> Query:
     """creates an attribute filter from keywords.
 
     For the attribute set in the name of hint, create a filter for filtering search keywords.
@@ -977,78 +1054,82 @@ def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> dict[str, Any]:
             String of the smallest unit in which search keyword is separated by `AND` and `OR`
 
     Returns:
-        dict[str, str]: Created attribute filter
+        Query: Created attribute filter
 
     """
-    cond_attr: list[dict[str, Any]] = [{"term": {"attr.name": hint.name}}]
+    cond_attr: list[Query] = [_field_query(Term, EntryIndexField.ATTR_NAME, hint.name)]
 
     date_results = _is_date(keyword)
     if date_results:
-        date_cond = {
-            "range": {"attr.date_value": {"format": "yyyy-MM-dd"}},
-        }
+        date_params: dict[str, str] = {"format": "yyyy-MM-dd"}
         for range_check, date_obj in date_results:
             match range_check:
                 case "<":
                     # search of before date user specified
-                    date_cond["range"]["attr.date_value"]["lt"] = date_obj.strftime("%Y-%m-%d")
+                    date_params["lt"] = date_obj.strftime("%Y-%m-%d")
                 case ">":
                     # search of after date user specified
-                    date_cond["range"]["attr.date_value"]["gt"] = date_obj.strftime("%Y-%m-%d")
+                    date_params["gt"] = date_obj.strftime("%Y-%m-%d")
                 case "~":
                     # search of date range user specified
                     start_date, end_date = date_obj
-                    date_cond["range"]["attr.date_value"]["gte"] = start_date.strftime("%Y-%m-%d")
-                    date_cond["range"]["attr.date_value"]["lte"] = end_date.strftime("%Y-%m-%d")
+                    date_params["gte"] = start_date.strftime("%Y-%m-%d")
+                    date_params["lte"] = end_date.strftime("%Y-%m-%d")
                 case _:
                     # search of exact day
-                    date_cond["range"]["attr.date_value"]["gte"] = date_obj.strftime("%Y-%m-%d")
-                    date_cond["range"]["attr.date_value"]["lte"] = date_obj.strftime("%Y-%m-%d")
+                    date_params["gte"] = date_obj.strftime("%Y-%m-%d")
+                    date_params["lte"] = date_obj.strftime("%Y-%m-%d")
 
-        str_cond = {"regexp": {"attr.value": _get_regex_pattern(keyword)}}
+        date_cond = _field_query(Range, EntryIndexField.ATTR_DATE_VALUE, date_params)
+        str_cond = _field_query(Regexp, EntryIndexField.ATTR_VALUE, _get_regex_pattern(keyword))
 
         if hint.filter_key == FilterKey.TEXT_NOT_CONTAINED:
-            cond_attr.append({"bool": {"must_not": [date_cond, str_cond]}})
+            cond_attr.append(Bool(must_not=[date_cond, str_cond]))
         else:
-            cond_attr.append({"bool": {"should": [date_cond, str_cond]}})
+            cond_attr.append(Bool(should=[date_cond, str_cond]))
 
     else:
         hint_keyword_val = _get_hint_keyword_val(keyword)
-        cond_val = [{"match": {"attr.value": hint_keyword_val}}]
+        cond_val: list[Query] = [_field_query(Match, EntryIndexField.ATTR_VALUE, hint_keyword_val)]
 
         # This is an exceptional bypass processing to be able to search Entries
         # that has substantial Attribute.
         if hint_keyword_val == CONFIG.EXSIT_CHARACTER:
             cond_attr.append(
-                {
-                    "bool": {
-                        "should": [
-                            # This query get results that have any substantial values
-                            {"regexp": {"attr.value": ".+"}},
-                            # This query get results that have date value
-                            {"exists": {"field": "attr.date_value"}},
-                        ]
-                    }
-                }
+                Bool(
+                    should=[
+                        _field_query(Regexp, EntryIndexField.ATTR_VALUE, ".+"),
+                        Exists(field=EntryIndexField.ATTR_DATE_VALUE.value),
+                    ]
+                )
             )
 
         elif hint_keyword_val:
             if hint.exact_match is None:
-                cond_val.append({"regexp": {"attr.value": _get_regex_pattern(hint_keyword_val)}})
+                cond_val.append(
+                    _field_query(
+                        Regexp,
+                        EntryIndexField.ATTR_VALUE,
+                        _get_regex_pattern(hint_keyword_val),
+                    )
+                )
 
             if hint.filter_key == FilterKey.TEXT_NOT_CONTAINED:
-                cond_attr.append({"bool": {"must_not": cond_val}})
+                cond_attr.append(Bool(must_not=cond_val))
             else:
-                cond_attr.append({"bool": {"should": cond_val}})
+                cond_attr.append(Bool(should=cond_val))
 
         else:
-            cond_val_tmp = [
-                {"bool": {"must_not": {"exists": {"field": "attr.date_value"}}}},
-                {"bool": {"should": cond_val}},
-            ]
-            cond_attr.append({"bool": {"must": cond_val_tmp}})
+            cond_attr.append(
+                Bool(
+                    must=[
+                        Bool(must_not=Exists(field=EntryIndexField.ATTR_DATE_VALUE.value)),
+                        Bool(should=cond_val),
+                    ]
+                )
+            )
 
-    return {"nested": {"path": "attr", "query": {"bool": {"filter": cond_attr}}}}
+    return Nested(path=EntryIndexPath.ATTR.value, query=Bool(filter=cond_attr))
 
 
 # Sentinel value for sorting by entry name in Advanced Search.
@@ -1069,24 +1150,24 @@ def make_attr_sort_clauses(
         raise ValueError(f"unsupported sort order: {order}")
 
     if target_attrname == ENTRY_NAME_SORT_TARGET:
-        return [{"name.keyword": {"order": order}}]
+        return [{EntryIndexField.NAME_KEYWORD.value: {"order": order}}]
 
     if attr_type is not None and attr_type & (AttrType.DATE | AttrType.DATETIME):
-        sort_field = "attr.date_value"
+        sort_field = EntryIndexField.ATTR_DATE_VALUE.value
     else:
-        sort_field = "attr.value.keyword"
+        sort_field = EntryIndexField.ATTR_VALUE_KEYWORD.value
 
     return [
         {
             sort_field: {
                 "order": order,
                 "nested": {
-                    "path": "attr",
-                    "filter": {"term": {"attr.name": target_attrname}},
+                    "path": EntryIndexPath.ATTR.value,
+                    "filter": {"term": {EntryIndexField.ATTR_NAME.value: target_attrname}},
                 },
             }
         },
-        {"name.keyword": "asc"},
+        {EntryIndexField.NAME_KEYWORD.value: "asc"},
     ]
 
 
@@ -1116,17 +1197,16 @@ def execute_query(
     if sort is not None:
         query = {**query, "sort": sort}
     elif "sort" not in query:
-        query = {**query, "sort": [{"name.keyword": "asc"}]}
-    kwargs = {
-        "size": min(size, 500000) if size else settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
-        "body": query,
-        "track_total_hits": True,
-    }
-    if offset is not None:
-        kwargs["from_"] = offset
+        query = {**query, "sort": [{EntryIndexField.NAME_KEYWORD.value: "asc"}]}
+    result_size = min(size, 500000) if size else settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"]
 
     try:
-        res = ESS().search(**kwargs)
+        res = ESS().search_entries(
+            query,
+            size=result_size,
+            offset=offset,
+            track_total_hits=True,
+        )
     except Exception as e:
         raise (e)
 
@@ -1380,14 +1460,14 @@ def make_search_results(
     return results
 
 
-def make_search_results_for_simple(res: dict[str, Any]) -> dict[str, str]:
-    result = {
+def make_search_results_for_simple(res: dict[str, Any]) -> SimpleSearchResults:
+    result: SimpleSearchResults = {
         "ret_count": res["hits"]["total"]["value"],
         "ret_values": [],
     }
 
     for resp_entry in res["hits"]["hits"]:
-        ret_value = {
+        ret_value: SimpleSearchResultRecord = {
             "id": resp_entry["_id"],
             "name": resp_entry["_source"]["name"],
             "schema": resp_entry["_source"]["entity"],

@@ -2663,15 +2663,15 @@ class Entry(ACLBase):
         if not es:
             es = ESS()
 
-        es.index(id=self.id, body=self.get_es_document())
-        es.refresh()
+        es.index_entry(self.id, self.get_es_document())
+        es.refresh_index()
 
         if recursive_call_stack:
             return
 
         # It's also needed to update es-document for Entries that this Entry refers to
-        search_result = es.search(
-            body={
+        search_result = es.search_entries(
+            {
                 "query": {
                     "nested": {
                         "path": "referrals",
@@ -2716,10 +2716,10 @@ class Entry(ACLBase):
             es = ESS()
 
         try:
-            es.delete(id=self.id)
+            es.delete_entry(self.id)
         except NotFoundError:
             pass
-        es.refresh()
+        es.refresh_index()
 
     def get_value_history(
         self, user: User, count: int = CONFIG.MAX_HISTORY_COUNT, index: int = 0

@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 from django.db.models import OuterRef, Prefetch, Q, QuerySet, Subquery
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import OpenApiParameter, extend_schema
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import generics, status, viewsets
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.pagination import LimitOffsetPagination
@@ -63,6 +63,7 @@ from entry.api_v2.serializers import (
     EntrySelfHistorySerializer,
     EntryUpdateSerializer,
     ExportTaskParams,
+    GetEntryAttrReferralListSerializer,
     GetEntryAttrReferralSerializer,
     ItemRollbackSerializer,
     _make_display_attr_prefetch,
@@ -797,6 +798,7 @@ class EntryExportAPI(generics.GenericAPIView):
     parameters=[
         OpenApiParameter("keyword", OpenApiTypes.STR, OpenApiParameter.QUERY),
     ],
+    responses=OpenApiResponse(response=GetEntryAttrReferralListSerializer(many=False)),
 )
 class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
     serializer_class = GetEntryAttrReferralSerializer
@@ -842,8 +844,16 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
         if entity_attr.type & AttrType.OBJECT:
             from isolation.models import IsolationParent
 
+            user = cast("User", self.request.user)
+            referral_models = list(entity_attr.referral.all())
+            readable_model_ids = {
+                model.id
+                for model in referral_models
+                if user.has_permission(model, ACLType.Readable)
+            }
+            self._has_restricted_items = len(readable_model_ids) != len(referral_models)
             qs = Entry.objects.filter(
-                conditions_q, **conditions, schema__in=entity_attr.referral.all()
+                conditions_q, **conditions, schema_id__in=readable_model_ids
             ).order_by("name")
             isolated_ids = IsolationParent.get_isolated_entry_ids(qs, entity_attr.parent_entity)
             qs = qs.exclude(id__in=isolated_ids)
@@ -874,7 +884,7 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
                     for entry in entries
                     if normalized_keyword in normalize_search_text(entry.name)
                 ]
-            return cast(QuerySet[Any], entries[: CONFIG.MAX_LIST_REFERRALS])
+            return cast(QuerySet[Any], self._filter_readable(entries, Entry))
         elif entity_attr.type & AttrType.GROUP:
             groups: list[Group] = cast(
                 list[Group], list(Group.objects.filter(**conditions).order_by("name"))
@@ -885,16 +895,38 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
                     for group in groups
                     if normalized_keyword in normalize_search_text(group.name)
                 ]
-            return cast(QuerySet[Any], groups[0 : CONFIG.MAX_LIST_REFERRALS])
+            return cast(QuerySet[Any], self._filter_readable(groups, Group))
         elif entity_attr.type & AttrType.ROLE:
             roles = list(Role.objects.filter(**conditions).order_by("name"))
             if keyword:
                 roles = [
                     role for role in roles if normalized_keyword in normalize_search_text(role.name)
                 ]
-            return cast(QuerySet[Any], roles[0 : CONFIG.MAX_LIST_REFERRALS])
+            return cast(QuerySet[Any], self._filter_readable(roles, Role))
         else:
             raise IncorrectTypeError(f"unsupported attr type: {entity_attr.type}")
+
+    def _filter_readable(self, objects: list[Any], model: type[Any]) -> list[Any]:
+        if model is not Entry:
+            self._has_restricted_items = getattr(self, "_has_restricted_items", False)
+            return objects[: CONFIG.MAX_LIST_REFERRALS]
+        user = cast("User", self.request.user)
+        readable = [obj for obj in objects if user.has_permission(obj, ACLType.Readable)]
+        item_restricted = len(readable) != len(objects)
+        self._has_restricted_items = (
+            getattr(self, "_has_restricted_items", False) or item_restricted
+        )
+        return readable[: CONFIG.MAX_LIST_REFERRALS]
+
+    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(
+            {
+                "has_restricted_items": getattr(self, "_has_restricted_items", False),
+                "results": serializer.data,
+            }
+        )
 
 
 class EntryImportAPI(generics.GenericAPIView):

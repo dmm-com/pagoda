@@ -36,11 +36,15 @@ export const BasicFields: FC<Props> = ({
   setValue,
 }) => {
   const currItemNameType = useWatch({ control, name: "itemNameType" });
-  const attrs = useWatch({ control, name: "attrs" });
+  const attrs = useWatch({
+    control,
+    name: "attrs",
+    defaultValue: [],
+  });
 
   const autoNamePreview = useMemo(() => {
     if (currItemNameType !== "AT") return "";
-    return attrs
+    return (attrs ?? [])
       .filter((attr) => Number(attr.nameOrder) > 0)
       .sort((a, b) => Number(a.nameOrder) - Number(b.nameOrder))
       .map((attr) => `${attr.namePrefix}${attr.name}${attr.namePostfix}`)
