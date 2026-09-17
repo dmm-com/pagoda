@@ -9,8 +9,6 @@ import { FC, useCallback, useEffect, useRef, useState } from "react";
 
 import { aironeApiClient } from "../../../repository/AironeApiClient";
 
-import { fuzzyMatch } from "services/StringUtil";
-
 // Accept any object that carries at least id / name — display_label is optional
 // and callers may not always provide it (e.g. Trigger/Isolation flows build
 // their own picker payload).

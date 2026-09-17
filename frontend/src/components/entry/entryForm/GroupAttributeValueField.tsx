@@ -58,6 +58,11 @@ export const GroupAttributeValueField: FC<Props> = ({
   );
 
   const handleChange = (value: GroupOption | GroupOption[] | null) => {
+    if (!multiple && value != null && !Array.isArray(value)) {
+      setInputValue(value.name);
+    } else if (multiple) {
+      setInputValue("");
+    }
     if (multiple) {
       setValue(
         `attrs.${attrId}.value.asArrayGroup`,
@@ -104,11 +109,19 @@ export const GroupAttributeValueField: FC<Props> = ({
                 )
               }
               value={field.value ?? (multiple ? [] : null)}
+              inputValue={
+                inputValue ||
+                (!multiple && field.value != null && !Array.isArray(field.value)
+                  ? field.value.name
+                  : "")
+              }
               getOptionLabel={(option) => option.name}
               isOptionEqualToValue={(option, value) => option.id === value.id}
               onChange={(_, value) => handleChange(value)}
-              onInputChange={(_, value) => {
-                setInputValue(value);
+              onInputChange={(_, value, reason) => {
+                if (reason === "input" || reason === "clear") {
+                  setInputValue(value);
+                }
               }}
               renderInput={(params) => (
                 <TextField

@@ -16,11 +16,11 @@ import { schema, Schema } from "./EntryFormSchema";
 const server = setupServer(
   // getEntryAttrReferrals
   http.get("http://localhost/entry/api/v2/4/attr_referrals/", () => {
-    return HttpResponse.json({ has_restricted_items: false, results: [] });
+    return HttpResponse.json([]);
   }),
   // getEntryAttrReferrals
   http.get("http://localhost/entry/api/v2/5/attr_referrals/", () => {
-    return HttpResponse.json({ has_restricted_items: false, results: [] });
+    return HttpResponse.json([]);
   }),
   // getEntryAttrReferrals
   http.get("http://localhost/entry/api/v2/9/attr_referrals/", () => {
@@ -36,7 +36,7 @@ const server = setupServer(
   }),
   // getRoles
   http.get("http://localhost/role/api/v2/", () => {
-    return HttpResponse.json({ has_restricted_items: false, results: [] });
+    return HttpResponse.json([]);
   }),
 );
 
