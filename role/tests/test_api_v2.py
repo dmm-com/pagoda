@@ -327,6 +327,32 @@ class ViewTest(AironeViewTest):
         permission = role.permissions.first()
         self.assertEqual(permission, entity.full)
 
+    def test_import_rejects_missing_role_id_before_creating_job(self):
+        self.admin_login()
+        payload = (
+            "- id: 31000\n  name: missing\n  users: []\n  groups: []\n"
+            "  admin_users: []\n  admin_groups: []\n"
+        )
+
+        resp = self.client.post("/role/api/v2/import", payload, content_type="application/yaml")
+
+        self.assertEqual(resp.status_code, 400)
+        self.assertContains(resp, "role id 31000 does not exist", status_code=400)
+        self.assertFalse(Job.objects.filter(operation=JobOperation.IMPORT_ROLE_V2).exists())
+
+    def test_import_rejects_missing_member_before_creating_job(self):
+        self.admin_login()
+        payload = (
+            "- name: invalid\n  users: [missing-user]\n  groups: []\n"
+            "  admin_users: []\n  admin_groups: []\n"
+        )
+
+        resp = self.client.post("/role/api/v2/import", payload, content_type="application/yaml")
+
+        self.assertEqual(resp.status_code, 400)
+        self.assertContains(resp, "specified object is not found", status_code=400)
+        self.assertFalse(Job.objects.filter(operation=JobOperation.IMPORT_ROLE_V2).exists())
+
     def test_export(self):
         admin = self.admin_login()
 

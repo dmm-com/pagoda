@@ -8,7 +8,6 @@ import {
 import Encoding from "encoding-japanese";
 import { useSnackbar } from "notistack";
 import { ChangeEvent, FC, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router";
 
 import {
   isResponseError,
@@ -60,7 +59,6 @@ export const ImportForm: FC<Props> = ({
   handleCancel,
   handlePreview,
 }) => {
-  const navigate = useNavigate();
   const [file, setFile] = useState<File>();
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [preview, setPreview] = useState<ImportPreview>();
@@ -210,7 +208,8 @@ export const ImportForm: FC<Props> = ({
     setProcessing(true);
     try {
       await handleImport(await readFileAsText(file), previewJobIds.current);
-      navigate(0);
+      sessionStorage.setItem("role-import-success", "1");
+      window.location.reload();
     } catch (e) {
       await reportError(e, "ファイルのアップロードに失敗しました");
     } finally {

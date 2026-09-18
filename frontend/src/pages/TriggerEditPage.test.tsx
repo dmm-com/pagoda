@@ -1,7 +1,13 @@
 /**
  */
 
-import { act, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { createMemoryRouter, RouterProvider } from "react-router";
@@ -113,5 +119,23 @@ describe("EditTriggerPage", () => {
     });
 
     expect(result).toMatchSnapshot();
+  });
+  test("filters model candidates regardless of width and case", async () => {
+    const router = createMemoryRouter(
+      [{ path: editTriggerPath(":triggerId"), element: <TriggerEditPage /> }],
+      { initialEntries: ["/ui/triggers/1"] },
+    );
+    render(<RouterProvider router={router} />, {
+      wrapper: TestWrapperWithoutRoutes,
+    });
+    await waitFor(() => {
+      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getAllByRole("combobox")[0], {
+      target: { value: "ＡＡ" },
+    });
+
+    expect(await screen.findByText("aaaaa")).toBeInTheDocument();
   });
 });

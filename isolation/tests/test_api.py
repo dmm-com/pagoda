@@ -165,7 +165,7 @@ class IsolationAPITest(AironeViewTest):
         resp = self.client.get(f"/entry/api/v2/{consumer_attr.id}/attr_referrals/")
         self.assertEqual(resp.status_code, 200)
 
-        result_ids = [item["id"] for item in resp.json()]
+        result_ids = [item["id"] for item in resp.json()["results"]]
         self.assertIn(entry_ok.id, result_ids)
         self.assertNotIn(entry_ng.id, result_ids)
 
@@ -192,7 +192,7 @@ class IsolationAPITest(AironeViewTest):
         resp = self.client.get(f"/entry/api/v2/{consumer_attr.id}/attr_referrals/")
         self.assertEqual(resp.status_code, 200)
 
-        result_ids = [item["id"] for item in resp.json()]
+        result_ids = [item["id"] for item in resp.json()["results"]]
         # The rule targets entity_unrelated, so it should not affect consumer's referral list
         self.assertIn(entry_ng.id, result_ids)
 

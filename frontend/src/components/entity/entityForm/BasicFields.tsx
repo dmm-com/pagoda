@@ -22,6 +22,7 @@ import {
   HeaderTableRow,
   StyledTableRow,
 } from "components/common/Table";
+import { fuzzyMatch } from "services/StringUtil";
 
 interface Props {
   control: Control<Schema>;
@@ -35,11 +36,15 @@ export const BasicFields: FC<Props> = ({
   setValue,
 }) => {
   const currItemNameType = useWatch({ control, name: "itemNameType" });
-  const attrs = useWatch({ control, name: "attrs" });
+  const attrs = useWatch({
+    control,
+    name: "attrs",
+    defaultValue: [],
+  });
 
   const autoNamePreview = useMemo(() => {
     if (currItemNameType !== "AT") return "";
-    return attrs
+    return (attrs ?? [])
       .filter((attr) => Number(attr.nameOrder) > 0)
       .sort((a, b) => Number(a.nameOrder) - Number(b.nameOrder))
       .map((attr) => `${attr.namePrefix}${attr.name}${attr.namePostfix}`)
@@ -201,6 +206,11 @@ export const BasicFields: FC<Props> = ({
                     options={referralEntities ?? []}
                     getOptionLabel={(option: { id: number; name: string }) =>
                       option.name
+                    }
+                    filterOptions={(options, state) =>
+                      options.filter((option) =>
+                        fuzzyMatch(option.name, state.inputValue),
+                      )
                     }
                     isOptionEqualToValue={(
                       option: { id: number; name: string },

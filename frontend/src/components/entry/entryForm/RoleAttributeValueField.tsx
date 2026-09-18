@@ -15,6 +15,7 @@ import { aironeApiClient } from "../../../repository/AironeApiClient";
 
 import { Schema } from "./EntryFormSchema";
 
+import { fuzzyMatch } from "services/StringUtil";
 import { getStagedErrorStyle } from "utils/styleUtils";
 
 const StyledTypography = styled(Typography)(() => ({
@@ -49,6 +50,12 @@ export const RoleAttributeValueField: FC<Props> = ({
     ["roleOptions", inputValue],
     async () => {
       const roles = await aironeApiClient.getRoles(inputValue);
+      if (roles.length === 0 && inputValue) {
+        return (await aironeApiClient.getRoles()).map((r) => ({
+          id: r.id,
+          name: r.name,
+        }));
+      }
       return roles.map((r) => ({ id: r.id, name: r.name }));
     },
     // revalidateOnFocus is disabled so a transient failure of a background
@@ -57,6 +64,11 @@ export const RoleAttributeValueField: FC<Props> = ({
   );
 
   const handleChange = (value: RoleOption | RoleOption[] | null) => {
+    if (!multiple && value != null && !Array.isArray(value)) {
+      setInputValue(value.name);
+    } else if (multiple) {
+      setInputValue("");
+    }
     if (multiple) {
       setValue(
         `attrs.${attrId}.value.asArrayRole`,
@@ -89,13 +101,30 @@ export const RoleAttributeValueField: FC<Props> = ({
             <Autocomplete<RoleOption, boolean>
               fullWidth
               multiple={multiple}
+              selectOnFocus
+              clearOnBlur={false}
               loading={loading}
               options={options}
+              filterOptions={(options, state) =>
+                options.filter((option) =>
+                  fuzzyMatch(option.name, state.inputValue),
+                )
+              }
               value={field.value ?? (multiple ? [] : null)}
+              inputValue={
+                inputValue ||
+                (!multiple && field.value != null && !Array.isArray(field.value)
+                  ? field.value.name
+                  : "")
+              }
               getOptionLabel={(option) => option.name}
               isOptionEqualToValue={(option, value) => option.id === value.id}
               onChange={(_, value) => handleChange(value)}
-              onInputChange={(_, value) => setInputValue(value)}
+              onInputChange={(_, value, reason) => {
+                if (reason === "input" || reason === "clear") {
+                  setInputValue(value);
+                }
+              }}
               renderInput={(params) => (
                 <TextField
                   {...params}

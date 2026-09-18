@@ -8,10 +8,12 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   act,
+  fireEvent,
   screen,
   render,
   renderHook,
   within,
+  waitFor,
 } from "@testing-library/react";
 import { useForm } from "react-hook-form";
 
@@ -188,5 +190,25 @@ describe("RoleAttributeValueField", () => {
       { id: 1, name: "role1" },
       { id: 2, name: "role2" },
     ]);
+  });
+  test("searches roles with entered text", async () => {
+    const spy = aironeApiClient.getRoles as vi.Mock;
+    spy.mockResolvedValue(roles);
+    const { result } = renderHook(() =>
+      useForm<Schema>({ resolver: zodResolver(schema), defaultValues }),
+    );
+    render(
+      <RoleAttributeValueField
+        attrId={0}
+        control={result.current.control}
+        setValue={result.current.setValue}
+      />,
+      { wrapper: TestWrapper },
+    );
+    const input = screen.getByRole("combobox");
+    input.focus();
+    fireEvent.input(input, { target: { value: "admin" } });
+    await waitFor(() => expect(input).toHaveValue("admin"));
+    await waitFor(() => expect(spy).toHaveBeenCalledWith("admin"));
   });
 });

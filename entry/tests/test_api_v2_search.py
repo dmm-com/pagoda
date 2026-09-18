@@ -338,8 +338,11 @@ class ViewTest(BaseViewTest):
             self.assertEqual(resp.status_code, 200)
 
             # This expects results has all role information.
+            self.assertIn("has_restricted_items", resp.json())
+            self.assertIn("results", resp.json())
+            self.assertFalse(resp.json()["has_restricted_items"])
             self.assertEqual(
-                sorted(resp.json(), key=lambda x: x["id"]),
+                sorted(resp.json()["results"], key=lambda x: x["id"]),
                 sorted(
                     [{"id": r.id, "name": r.name} for r in Role.objects.filter(is_active=True)],
                     key=lambda x: x["id"],
@@ -369,7 +372,7 @@ class ViewTest(BaseViewTest):
 
             # This expects results has all groups information.
             self.assertEqual(
-                sorted(resp.json(), key=lambda x: x["id"]),
+                sorted(resp.json()["results"], key=lambda x: x["id"]),
                 sorted(
                     [{"id": g.id, "name": g.name} for g in Group.objects.all()],
                     key=lambda x: x["id"],
@@ -384,7 +387,7 @@ class ViewTest(BaseViewTest):
 
             # This expects results has only information of 'g-bar' because 'g-foo' is
             # not matched with keyword and 'g-baz' has already been deleted.
-            self.assertEqual(resp.json(), [{"id": groups[1].id, "name": groups[1].name}])
+            self.assertEqual(resp.json()["results"], [{"id": groups[1].id, "name": groups[1].name}])
 
     def test_get_attr_referrals_of_entry(self):
         admin = self.admin_login()
@@ -416,7 +419,7 @@ class ViewTest(BaseViewTest):
         # try to get entries without keyword
         resp = self.client.get("/entry/api/v2/%d/attr_referrals/" % attr.id)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.json()), CONFIG.MAX_LIST_REFERRALS)
+        self.assertEqual(len(resp.json()["results"]), CONFIG.MAX_LIST_REFERRALS)
 
         # specify invalid Attribute ID. The view falls back to an EntityAttr lookup,
         # so the id must exist in neither table; pick one past the current max to avoid
@@ -437,12 +440,12 @@ class ViewTest(BaseViewTest):
         self.assertEqual(resp["Content-Type"], "application/json")
 
         # This means e-1 and 'e-10' to 'e-19' are returned
-        self.assertEqual(len(resp.json()), 11)
+        self.assertEqual(len(resp.json()["results"]), 11)
 
         # speify valid Attribute ID and a unabailabe keyword
         resp = self.client.get("/entry/api/v2/%d/attr_referrals/" % attr.id, {"keyword": "hoge"})
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.json()), 0)
+        self.assertEqual(len(resp.json()["results"]), 0)
 
         # Add new data
         for index in [101, 111, 100, 110]:
@@ -454,12 +457,12 @@ class ViewTest(BaseViewTest):
         self.assertEqual(resp["Content-Type"], "application/json")
 
         # Check the number of return values
-        self.assertEqual(len(resp.json()), 15)
+        self.assertEqual(len(resp.json()["results"]), 15)
 
         # TODO support natural sort?
         # Check if it is sorted in the expected order
         # targets = [1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 100, 101, 110, 111]
-        # for i, res in enumerate(resp.json()):
+        # for i, res in enumerate(resp.json()["results"]):
         #     self.assertEqual(res["name"], "e-%s" % targets[i])
 
         # send request with keywords that hit more than MAX_LIST_REFERRALS
@@ -468,7 +471,7 @@ class ViewTest(BaseViewTest):
         resp = self.client.get("/entry/api/v2/%d/attr_referrals/" % attr.id, {"keyword": "e"})
         self.assertEqual(resp.status_code, 200)
 
-        self.assertEqual(resp.json()[0]["name"], "e")
+        self.assertEqual(resp.json()["results"][0]["name"], "e")
 
     def test_get_attr_referrals_with_entity_attr(self):
         """
@@ -501,7 +504,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(resp["Content-Type"], "application/json")
 
         # This means e-1 and 'e-10' to 'e-19' are returned
-        self.assertEqual(len(resp.json()), 11)
+        self.assertEqual(len(resp.json()["results"]), 11)
 
     def test_advanced_search(self):
         entry1: Entry = self.add_entry(

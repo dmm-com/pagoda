@@ -35,6 +35,7 @@ import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { topPath, triggersPath } from "routes/Routes";
+import { fuzzyMatch } from "services/StringUtil";
 
 const StyledFlexColumnBox = styled(Box)({
   display: "flex",
@@ -346,6 +347,11 @@ export const TriggerEditPage: FC = () => {
                 options={entities ?? []}
                 getOptionLabel={(option: { id: number; name: string }) =>
                   option.name
+                }
+                filterOptions={(options, state) =>
+                  options.filter((option) =>
+                    fuzzyMatch(option.name, state.inputValue),
+                  )
                 }
                 isOptionEqualToValue={(option, value) => option.id === value.id}
                 disabled={entitiesLoading}
