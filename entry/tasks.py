@@ -700,6 +700,18 @@ def import_entries(self: Task, job: Job) -> tuple[JobStatus, str, None] | None:
     return None
 
 
+def _get_validation_error_messages(detail: Any) -> list[str]:
+    if isinstance(detail, dict):
+        return [
+            message
+            for value in detail.values()
+            for message in _get_validation_error_messages(value)
+        ]
+    if isinstance(detail, (list, tuple)):
+        return [message for value in detail for message in _get_validation_error_messages(value)]
+    return [str(detail)]
+
+
 @register_job_task(JobOperation.IMPORT_ENTRY_V2)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
@@ -753,21 +765,27 @@ def import_entries_v2(self: Task, job: Job) -> tuple[JobStatus, str, None] | Non
             serializer.is_valid(raise_exception=True)
             serializer.save()
         except ValidationError as e:
-            err_msg.append(entry_data["name"])
+            messages = _get_validation_error_messages(e.detail)
+            err_msg.append("{}: {}".format(entry_data["name"], "; ".join(messages)))
             Logger.warning(
                 "failed to validate on entry import v2: entry=%s, error=%s"
                 % (entry_data["name"], e)
             )
 
+    success_count = total_count - len(err_msg) - len(stale)
     if err_msg or stale:
-        text = "Imported Entry count: %d" % total_count
-        if err_msg:
-            text += ", Failed import Entry: %s" % err_msg
-        if stale:
-            text += ", Changed by someone else since the preview: %s" % stale
-        return (JobStatus.WARNING, text, None)
+        messages = [
+            f"Successfully imported: {success_count}, Requested: {total_count}",
+            *(f"Failed import Entry: [{message}]" for message in err_msg),
+            *(f"Skipped stale Entry: [{name}]" for name in stale),
+        ]
+        return (JobStatus.WARNING, chr(10).join(messages[:6]), None)
     else:
-        return JobStatus.DONE, "Imported Entry count: %d" % total_count, None
+        return (
+            JobStatus.DONE,
+            f"Successfully imported: {success_count}, Requested: {total_count}",
+            None,
+        )
 
 
 @register_job_task(JobOperation.EXPORT_ENTRY)
