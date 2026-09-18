@@ -3968,6 +3968,10 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get("/entity/api/v2/export")
         self.assertEqual(resp.status_code, 200)
+        self.assertRegex(
+            resp["Content-Disposition"],
+            r'^attachment; filename="entity_\d{4}_\d{2}_\d{2}_\d{2}_\d{2}\.yaml"$',
+        )
 
         obj = yaml.load(resp.content, Loader=yaml.SafeLoader)
         self.assertTrue(isinstance(obj, dict))

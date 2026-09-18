@@ -85,7 +85,7 @@ class ViewTest(BaseViewTest):
         job = Job.objects.last()
         self.assertEqual(job.operation, JobOperation.EXPORT_ENTRY_V2)
         self.assertEqual(job.status, JobStatus.DONE)
-        self.assertEqual(job.text, "entry_ほげ.yaml")
+        self.assertRegex(job.text, r"^entry_ほげ_\d{4}_\d{2}_\d{2}_\d{2}_\d{2}\.yaml$")
 
         obj = yaml.load(job.get_cache(), Loader=yaml.SafeLoader)
 
@@ -165,7 +165,7 @@ class ViewTest(BaseViewTest):
 
         job = Job.objects.last()
         self.assertEqual(job.operation, JobOperation.EXPORT_ENTRY_V2)
-        self.assertEqual(job.text, "entry_ほげ.yaml")
+        self.assertRegex(job.text, r"^entry_ほげ_\d{4}_\d{2}_\d{2}_\d{2}_\d{2}\.yaml$")
         with self.assertRaises(OSError) as e:
             raise OSError
 
