@@ -2,6 +2,7 @@ import codecs
 import importlib
 import json
 import urllib.parse
+from datetime import datetime
 from io import StringIO
 from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, cast
 from urllib.parse import quote
@@ -271,3 +272,9 @@ def _is_valid(params: Dict[str, Any], meta_info: List[Dict[str, Any]]) -> bool:
                 return False
 
     return True
+
+
+def timestamped_filename(name: str) -> str:
+    timestamp = datetime.now().strftime("%Y_%m_%d_%H_%M")
+    stem, extension = name.rsplit(".", 1)
+    return f"{stem}_{timestamp}.{extension}"

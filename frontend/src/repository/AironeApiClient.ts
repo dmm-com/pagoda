@@ -428,7 +428,11 @@ class AironeApiClient {
   async exportEntities(filename: string): Promise<void> {
     const resp = await this.entity.entityApiV2ExportRetrieveRaw();
     const data = await resp.raw.text();
-    fileDownload(data, filename);
+    const contentDisposition = resp.raw.headers.get("content-disposition");
+    const downloadedFilename = contentDisposition?.match(
+      /filename="?([^";]+)"?/i,
+    )?.[1];
+    fileDownload(data, downloadedFilename ?? filename);
   }
 
   async getEntityAttrs(
@@ -686,7 +690,11 @@ class AironeApiClient {
   async exportGroups(filename: string): Promise<void> {
     const resp = await this.group.groupApiV2GroupsExportListRaw();
     const data = await resp.raw.text();
-    fileDownload(data, filename);
+    const contentDisposition = resp.raw.headers.get("content-disposition");
+    const downloadedFilename = contentDisposition?.match(
+      /filename="?([^";]+)"?/i,
+    )?.[1];
+    fileDownload(data, downloadedFilename ?? filename);
   }
 
   async getRoles(keyword?: string): Promise<Role[]> {
@@ -759,7 +767,11 @@ class AironeApiClient {
   async exportRoles(filename: string): Promise<void> {
     const resp = await this.role.roleApiV2ExportListRaw();
     const data = await resp.raw.text();
-    fileDownload(data, filename);
+    const contentDisposition = resp.raw.headers.get("content-disposition");
+    const downloadedFilename = contentDisposition?.match(
+      /filename="?([^";]+)"?/i,
+    )?.[1];
+    fileDownload(data, downloadedFilename ?? filename);
   }
 
   async getCategories(
@@ -1113,7 +1125,11 @@ class AironeApiClient {
   async exportUsers(filename: string): Promise<void> {
     const resp = await this.user.userApiV2ExportListRaw();
     const data = await resp.raw.text();
-    fileDownload(data, filename);
+    const contentDisposition = resp.raw.headers.get("content-disposition");
+    const downloadedFilename = contentDisposition?.match(
+      /filename="?([^";]+)"?/i,
+    )?.[1];
+    fileDownload(data, downloadedFilename ?? filename);
   }
 
   async updateUserPassword(

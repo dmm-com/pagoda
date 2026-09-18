@@ -8,6 +8,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from airone.lib.drf import YAMLParser, YAMLRenderer
+from airone.lib.http import timestamped_filename
 from group.models import Group
 from job.models import Job, JobStatus
 from role.api_v2.serializers import (
@@ -115,6 +116,14 @@ class RoleExportAPI(generics.ListAPIView[Role]):
     queryset = Role.objects.filter(is_active=True)
     serializer_class = RoleImportExportChildSerializer
     renderer_classes = [YAMLRenderer]
+
+    def finalize_response(
+        self, request: Request, response: Response, *args: Any, **kwargs: Any
+    ) -> Response:
+        response["Content-Disposition"] = 'attachment; filename="%s"' % timestamped_filename(
+            "role.yaml"
+        )
+        return super().finalize_response(request, response, *args, **kwargs)
 
     def get_queryset(self) -> QuerySet[Role]:
         return get_permitted_roles(

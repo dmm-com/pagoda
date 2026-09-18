@@ -8,7 +8,12 @@ from django.utils.encoding import smart_str
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLType
-from airone.lib.http import get_download_response, get_obj_with_check_perm, http_get
+from airone.lib.http import (
+    get_download_response,
+    get_obj_with_check_perm,
+    http_get,
+    timestamped_filename,
+)
 from airone.lib.test import AironeViewTest
 from entry.models import Entry
 
@@ -96,6 +101,11 @@ class ViewTest(AironeViewTest):
 
 
 class GetDownloadResponseTest(TestCase):
+    def test_timestamped_filename(self):
+        self.assertRegex(
+            timestamped_filename("entity.yaml"), r"^entity_\d{4}_\d{2}_\d{2}_\d{2}_\d{2}\.yaml$"
+        )
+
     def test_utf8_encoding(self):
         data = "テストデータ"
         filename = "testfile_utf8.txt"
