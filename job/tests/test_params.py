@@ -62,6 +62,20 @@ class JobParamsTest(SimpleTestCase):
         assert_core_registry_complete()
         self.assertEqual(set(CORE_JOB_PARAMS), {int(operation) for operation in JobOperation})
 
+    def test_search_export_accepts_referral_filters(self) -> None:
+        validate_job_params(
+            JobOperation.EXPORT_SEARCH_RESULT_V2,
+            {
+                "entities": [1],
+                "attrinfo": [],
+                "export_style": "csv",
+                "has_referral": True,
+                "referral_name": "target",
+                "include_referrals": [2, 3],
+                "exclude_referrals": [4],
+            },
+        )
+
     def test_every_core_contract_accepts_its_producer_shape(self) -> None:
         self.assertEqual(set(self.VALID_CORE_PARAMS), set(CORE_JOB_PARAMS))
         for operation, payload in self.VALID_CORE_PARAMS.items():

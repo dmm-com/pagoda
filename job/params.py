@@ -159,6 +159,8 @@ class SearchExportParams(JobParamsModel):
     export_style: Literal["yaml", "csv"]
     has_referral: bool = False
     referral_name: str | None = None
+    include_referrals: list[int] = Field(default_factory=list)
+    exclude_referrals: list[int] = Field(default_factory=list)
     entry_name: str | None = None
     hint_entry: dict[str, Any] | None = None
     join_attrs: list[JoinAttrParams] = Field(default_factory=list)

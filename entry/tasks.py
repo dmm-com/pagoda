@@ -1044,6 +1044,8 @@ def export_search_result_v2(self: Any, job: Job) -> tuple[JobStatus, str, ACLBas
         hint_referral_entity_id=None,
         offset=0,
         hint_entry=hint_entry,
+        exclude_referrals=params.get("exclude_referrals", []),
+        include_referrals=params.get("include_referrals", []),
     )
 
     # Apply join_attrs in the same way as AdvancedSearchAPI.post() in views.py
