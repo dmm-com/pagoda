@@ -30,6 +30,13 @@ import { Confirmable } from "../common/Confirmable";
 
 import { AironeLink } from "components/common";
 
+const JOB_TEXT_DISPLAY_LIMIT = 300;
+
+const getJobTextForDisplay = (text: string | null | undefined): string => {
+  if (!text || text.length <= JOB_TEXT_DISPLAY_LIMIT) return text ?? "";
+  return text.slice(0, JOB_TEXT_DISPLAY_LIMIT) + "...";
+};
+
 const StyledTableRow = styled(TableRow)(({}) => ({
   "&:nth-of-type(odd)": {
     backgroundColor: "white",
@@ -318,7 +325,7 @@ export const JobList: FC<Props> = ({ jobs, showUser }) => {
                   </Tooltip>
                 </Box>
               ) : (
-                <Typography>{job.text}</Typography>
+                <Typography>{getJobTextForDisplay(job.text)}</Typography>
               )}
             </TableCell>
           </StyledTableRow>
