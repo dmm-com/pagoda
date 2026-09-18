@@ -29,7 +29,7 @@ import {
   EntryRetrieve,
   EntrySearch,
   EntrySearchChain,
-  GetEntryAttrReferral,
+  GetEntryAttrReferralList,
   Group,
   GroupApi,
   GroupCreateUpdate,
@@ -875,7 +875,7 @@ class AironeApiClient {
   async getEntryAttrReferrals(
     attrId: number,
     keyword?: string,
-  ): Promise<Array<GetEntryAttrReferral>> {
+  ): Promise<GetEntryAttrReferralList> {
     return await this.entry.entryApiV2AttrReferralsList({
       attrId: attrId,
       keyword: keyword,
