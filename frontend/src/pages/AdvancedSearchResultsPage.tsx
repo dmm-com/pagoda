@@ -244,9 +244,6 @@ export const AdvancedSearchResultsPage: FC = () => {
         searchAllEntities,
         exportStyle,
         hintEntry,
-        referralName,
-        referralIncludeModelIds,
-        referralExcludeModelIds,
       );
       enqueueSnackbar(NotificationMessages.jobRegistered("エクスポート"), {
         variant: "info",
