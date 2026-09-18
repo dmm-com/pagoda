@@ -29,7 +29,7 @@ import {
   EntryRetrieve,
   EntrySearch,
   EntrySearchChain,
-  GetEntryAttrReferral,
+  GetEntryAttrReferralList,
   Group,
   GroupApi,
   GroupCreateUpdate,
@@ -875,15 +875,11 @@ class AironeApiClient {
   async getEntryAttrReferrals(
     attrId: number,
     keyword?: string,
-  ): Promise<{
-    results: Array<GetEntryAttrReferral>;
-    hasRestrictedItems: boolean;
-  }> {
-    const response = await this.entry.entryApiV2AttrReferralsList({
+  ): Promise<GetEntryAttrReferralList> {
+    return await this.entry.entryApiV2AttrReferralsList({
       attrId: attrId,
       keyword: keyword,
     });
-    return response;
   }
 
   async createEntryAlias(entryId: number, name: string): Promise<EntryAlias> {
@@ -983,6 +979,9 @@ class AironeApiClient {
     isAllEntities: boolean,
     format: "yaml" | "csv",
     hintEntry?: EntryHint,
+    referralName?: string,
+    referralIncludeModelIds: number[] = [],
+    referralExcludeModelIds: number[] = [],
   ): Promise<void> {
     await this.entry.entryApiV2AdvancedSearchResultExportCreate(
       {
@@ -994,7 +993,16 @@ class AironeApiClient {
           isAllEntities: isAllEntities,
           exportStyle: format,
           hintEntry: hintEntry,
-        },
+          referralName: referralName,
+          ...(referralIncludeModelIds.length > 0
+            ? { includeReferrals: referralIncludeModelIds }
+            : {}),
+          ...(referralExcludeModelIds.length > 0
+            ? { excludeReferrals: referralExcludeModelIds }
+            : {}),
+        } as unknown as Parameters<
+          typeof this.entry.entryApiV2AdvancedSearchResultExportCreate
+        >[0]["advancedSearchResultExport"],
       },
       {
         headers: {
