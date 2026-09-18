@@ -429,7 +429,9 @@ class AironeApiClient {
     const resp = await this.entity.entityApiV2ExportRetrieveRaw();
     const data = await resp.raw.text();
     const contentDisposition = resp.raw.headers.get("content-disposition");
-    const downloadedFilename = contentDisposition?.match(/filename="?([^";]+)"?/i)?.[1];
+    const downloadedFilename = contentDisposition?.match(
+      /filename="?([^";]+)"?/i,
+    )?.[1];
     fileDownload(data, downloadedFilename ?? filename);
   }
 
@@ -689,7 +691,9 @@ class AironeApiClient {
     const resp = await this.group.groupApiV2GroupsExportListRaw();
     const data = await resp.raw.text();
     const contentDisposition = resp.raw.headers.get("content-disposition");
-    const downloadedFilename = contentDisposition?.match(/filename="?([^";]+)"?/i)?.[1];
+    const downloadedFilename = contentDisposition?.match(
+      /filename="?([^";]+)"?/i,
+    )?.[1];
     fileDownload(data, downloadedFilename ?? filename);
   }
 
@@ -764,7 +768,9 @@ class AironeApiClient {
     const resp = await this.role.roleApiV2ExportListRaw();
     const data = await resp.raw.text();
     const contentDisposition = resp.raw.headers.get("content-disposition");
-    const downloadedFilename = contentDisposition?.match(/filename="?([^";]+)"?/i)?.[1];
+    const downloadedFilename = contentDisposition?.match(
+      /filename="?([^";]+)"?/i,
+    )?.[1];
     fileDownload(data, downloadedFilename ?? filename);
   }
 
@@ -1120,7 +1126,9 @@ class AironeApiClient {
     const resp = await this.user.userApiV2ExportListRaw();
     const data = await resp.raw.text();
     const contentDisposition = resp.raw.headers.get("content-disposition");
-    const downloadedFilename = contentDisposition?.match(/filename="?([^";]+)"?/i)?.[1];
+    const downloadedFilename = contentDisposition?.match(
+      /filename="?([^";]+)"?/i,
+    )?.[1];
     fileDownload(data, downloadedFilename ?? filename);
   }
 
