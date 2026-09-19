@@ -35,7 +35,17 @@
     }
   },
   "linter": {
-    "enabled": false
+    "enabled": false,
+    "rules": {
+      "complexity": {
+        "noExcessiveCognitiveComplexity": {
+          "level": "warn",
+          "options": {
+            "maxAllowedComplexity": 15
+          }
+        }
+      }
+    }
   },
   "assist": {
     "enabled": false
