@@ -58,8 +58,9 @@ class ElasticSearchTest(TestCase):
             ],
         }
 
-        with patch.object(elasticsearch.ESS, "bulk", return_value=response), patch.object(
-            elasticsearch.InMemoryESS, "bulk", return_value=response
+        with (
+            patch.object(elasticsearch.ESS, "bulk", return_value=response),
+            patch.object(elasticsearch.InMemoryESS, "bulk", return_value=response),
         ):
             with self.assertRaisesRegex(RuntimeError, r"failed for 1 item\(s\)"):
                 elasticsearch.ESS().bulk_entries([{"index": {"_id": "1"}}, {"name": "entry"}])
@@ -67,12 +68,11 @@ class ElasticSearchTest(TestCase):
     def test_bulk_entries_returns_none_when_all_items_succeed(self):
         response = {"errors": False, "items": [{"index": {"_id": "1", "status": 201}}]}
 
-        with patch.object(elasticsearch.ESS, "bulk", return_value=response), patch.object(
-            elasticsearch.InMemoryESS, "bulk", return_value=response
+        with (
+            patch.object(elasticsearch.ESS, "bulk", return_value=response),
+            patch.object(elasticsearch.InMemoryESS, "bulk", return_value=response),
         ):
-            result = elasticsearch.ESS().bulk_entries(
-                [{"index": {"_id": "1"}}, {"name": "entry"}]
-            )
+            result = elasticsearch.ESS().bulk_entries([{"index": {"_id": "1"}}, {"name": "entry"}])
 
         self.assertIsNone(result)
 
