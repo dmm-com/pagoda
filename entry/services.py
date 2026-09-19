@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from django.conf import settings
 from django.db.models import Prefetch
@@ -13,6 +13,8 @@ from airone.lib.elasticsearch import (
     AdvancedSearchResults,
     AttrHint,
     EntryHint,
+    EntrySearchResponse,
+    SimpleSearchResponse,
     SimpleSearchResults,
     execute_query,
     make_attr_sort_clauses,
@@ -186,7 +188,10 @@ class AdvancedSearchService:
             effective_limit = len(entry_ids) if entry_ids else limit
 
             # sending request to elasticsearch with making query
-            resp = execute_query(query, effective_limit, offset, sort=sort_clauses)
+            resp = cast(
+                EntrySearchResponse,
+                execute_query(query, effective_limit, offset, sort=sort_clauses),
+            )
 
             tmp_hint_attrs = [attr.model_copy(deep=True) for attr in hint_attrs]
             # Check for has permission to EntityAttr, when is_output_all flag
@@ -286,7 +291,7 @@ class AdvancedSearchService:
             hint_attr_value, hint_entity_name, exclude_entity_names, offset
         )
 
-        resp = execute_query(query, limit)
+        resp = cast(SimpleSearchResponse, execute_query(query, limit))
 
         return make_search_results_for_simple(resp)
 
@@ -483,8 +488,11 @@ class AdvancedSearchService:
         return resp
 
     @classmethod
-    def get_all_es_docs(kls) -> dict[str, Any]:
-        return ESS().search_entries({"query": {"match_all": {}}})
+    def get_all_es_docs(kls) -> EntrySearchResponse:
+        return cast(
+            EntrySearchResponse,
+            ESS().search_entries({"query": {"match_all": {}}}),
+        )
 
     @classmethod
     def update_documents(kls, entity: Entity, is_update: bool = False) -> None:
@@ -497,7 +505,7 @@ class AdvancedSearchService:
                 }
             }
         }
-        res = es.search_entries(query)
+        res = cast(EntrySearchResponse, es.search_entries(query))
 
         results_from_es = [x["_source"] for x in res["hits"]["hits"]]
         entry_ids_from_es = [int(x["_id"]) for x in res["hits"]["hits"]]
