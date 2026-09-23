@@ -77,4 +77,26 @@ describe("JobList", () => {
       screen.queryAllByRole("button", { name: "キャンセル" }),
     ).toHaveLength(3);
   });
+  test("should truncate long job text to 300 characters", () => {
+    const text = "a".repeat(301);
+    render(
+      <JobList
+        jobs={[
+          {
+            id: 1,
+            user: "test-user",
+            text,
+            status: JobStatuses.DONE,
+            operation: JobOperations.CREATE_ENTRY,
+            target: { id: 1, name: "test", schemaId: null, schemaName: null },
+            createdAt: new Date(),
+            passedTime: 0,
+          },
+        ]}
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByText("a".repeat(300) + "...")).toBeInTheDocument();
+  });
 });
