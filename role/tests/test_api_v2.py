@@ -372,6 +372,11 @@ class ViewTest(AironeViewTest):
         group.delete()
 
         resp = self.client.get("/role/api/v2/export")
+        self.assertEqual(resp.status_code, 200)
+        self.assertRegex(
+            resp["Content-Disposition"],
+            r'^attachment; filename="role_\d{4}_\d{2}_\d{2}_\d{2}_\d{2}\.yaml"$',
+        )
         data = yaml.safe_load(resp.content.decode("utf-8"))
 
         self.assertEqual(

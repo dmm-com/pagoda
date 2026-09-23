@@ -38,6 +38,7 @@ from airone.lib.elasticsearch import (
     EntryHint,
     FilterKey,
 )
+from airone.lib.http import timestamped_filename
 from airone.lib.multidb import db_readonly
 from airone.lib.plugin_dispatch import PluginOverrideMixin
 from airone.lib.text import normalize_search_text
@@ -784,7 +785,7 @@ class EntryExportAPI(generics.GenericAPIView):
         job = Job.new_export_v2(
             request.user,
             target=entity,
-            text="entry_%s.%s" % (entity.name, str(job_params.export_format)),
+            text=timestamped_filename("entry_%s.%s" % (entity.name, str(job_params.export_format))),
             params=job_params.model_dump(mode="json"),
         )
         job.run()
