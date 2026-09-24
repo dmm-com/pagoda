@@ -184,6 +184,7 @@ export const JobOperations = {
   CREATE_ENTRY_V2: 27,
   EDIT_ENTRY_V2: 28,
   DELETE_ENTRY_V2: 29,
+  IMPORT_ROLE_V2: 30,
   BULK_EDIT_ENTRY: 31,
 };
 

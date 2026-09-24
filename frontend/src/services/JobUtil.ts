@@ -64,6 +64,7 @@ export const jobOperationLabel = (jobOperation: number | undefined): string => {
       return "削除";
     case JobOperations.IMPORT_ENTRY:
     case JobOperations.IMPORT_ENTRY_V2:
+    case JobOperations.IMPORT_ROLE_V2:
       return "インポート";
     case JobOperations.EXPORT_ENTRY:
     case JobOperations.EXPORT_SEARCH_RESULT:
