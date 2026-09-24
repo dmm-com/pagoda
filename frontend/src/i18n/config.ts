@@ -15,7 +15,8 @@ export type TranslationKey =
   | "userSetting"
   | "logout"
   | "noRunningJobs"
-  | "jobs";
+  | "jobs"
+  | "openNavigationMenu";
 
 interface AironeResource {
   en: {
@@ -58,6 +59,7 @@ const resources = toResource({
       logout: "Logout",
       noRunningJobs: "No running jobs",
       jobs: "Jobs",
+      openNavigationMenu: "Open navigation menu",
     },
   },
   ja: {
@@ -76,6 +78,7 @@ const resources = toResource({
       logout: "ログアウト",
       noRunningJobs: "実行タスクなし",
       jobs: "ジョブ一覧",
+      openNavigationMenu: "ナビゲーションメニューを開く",
     },
   },
 });
