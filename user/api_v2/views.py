@@ -23,9 +23,9 @@ from rest_framework.serializers import BaseSerializer, Serializer
 from rest_framework.views import APIView
 
 from airone.exceptions.model import UnexpectedAttributeType
-from airone.lib.http import timestamped_filename
 from airone.lib.acl import ACLType
 from airone.lib.drf import YAMLParser, YAMLRenderer
+from airone.lib.http import timestamped_filename
 from airone.lib.text import normalize_search_text
 from airone.lib.types import AttrType
 from entry.models import AttributeValue, Entry
