@@ -52,6 +52,13 @@ class Common(Configuration):  # type: ignore[misc]
 
     ALLOWED_HOSTS = ["*"]
 
+    # https://github.com/adamchainz/django-cors-headers
+    # No origins are allowed by default; set AIRONE_CORS_ALLOWED_ORIGINS to a
+    # comma-separated list of origins (e.g. "https://example.com,https://foo.example.com")
+    # to enable cross-origin requests from those hosts.
+    CORS_ALLOWED_ORIGINS = env.list("AIRONE_CORS_ALLOWED_ORIGINS", default=[])
+    CORS_ALLOW_CREDENTIALS = env.bool("AIRONE_CORS_ALLOW_CREDENTIALS", False)
+
     # Application definition
 
     # Plugin system configuration
@@ -80,6 +87,7 @@ class Common(Configuration):  # type: ignore[misc]
         "rest_framework.authtoken",
         "drf_spectacular",
         "django_filters",
+        "corsheaders",
         "social_django",
         "simple_history",
         "storages",
@@ -105,6 +113,7 @@ class Common(Configuration):  # type: ignore[misc]
 
     MIDDLEWARE = [
         "django.middleware.security.SecurityMiddleware",
+        "corsheaders.middleware.CorsMiddleware",
         "whitenoise.middleware.WhiteNoiseMiddleware",
         "airone.middleware.log.LoggingRequestMiddleware",
         "django.contrib.sessions.middleware.SessionMiddleware",
