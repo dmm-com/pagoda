@@ -23,6 +23,7 @@ from rest_framework.serializers import BaseSerializer, Serializer
 from rest_framework.views import APIView
 
 from airone.exceptions.model import UnexpectedAttributeType
+from airone.lib.http import timestamped_filename
 from airone.lib.acl import ACLType
 from airone.lib.drf import YAMLParser, YAMLRenderer
 from airone.lib.text import normalize_search_text
@@ -547,6 +548,14 @@ class UserExportAPI(generics.ListAPIView[User]):
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserExportSerializer
     renderer_classes = [YAMLRenderer]
+
+    def finalize_response(
+        self, request: Request, response: Response, *args: Any, **kwargs: Any
+    ) -> Response:
+        response["Content-Disposition"] = 'attachment; filename="%s"' % timestamped_filename(
+            "user.yaml"
+        )
+        return super().finalize_response(request, response, *args, **kwargs)
 
 
 class UserPasswordAPI(generics.UpdateAPIView[User]):
