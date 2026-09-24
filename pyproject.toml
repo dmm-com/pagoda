@@ -135,6 +135,7 @@ override-dependencies = ["pagoda-plugin-sdk"]
 dev = [
     "celery-types>=0.22.0",
     "coverage>=7.3.0",
+    "complexipy==8.0.1",
     "django-debug-toolbar==4.4.6",
     "django-stubs[compatible-mypy]>=5.2.0",
     "djangorestframework-stubs[compatible-mypy]>=3.15.0",
@@ -156,3 +157,10 @@ plugins = [
     "pagoda-cross-entity-sample-plugin",
     "pagoda-echo-plugin",
 ]
+
+[tool.complexipy]
+paths = ["."]
+max-complexity-allowed = 15
+exclude = ["**/migrations/**", "apiclient/**"]
+sort = "desc"
+cache-dir = ".cache/complexipy"
