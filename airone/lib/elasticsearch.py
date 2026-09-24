@@ -2,7 +2,7 @@ import enum
 import re
 from collections.abc import Callable, Mapping, Sequence
 from datetime import datetime
-from typing import Any, NotRequired
+from typing import Any, Generic, Literal, NotRequired, TypeVar, cast
 
 from django.conf import settings
 from elasticsearch import Elasticsearch
@@ -119,6 +119,122 @@ class SimpleSearchResults(TypedDict):
     ret_values: list[SimpleSearchResultRecord]
 
 
+SearchSourceT = TypeVar("SearchSourceT")
+
+
+class SearchTotal(TypedDict):
+    value: int
+    relation: NotRequired[str]
+
+
+class SearchHit(TypedDict, Generic[SearchSourceT]):
+    _id: str
+    _source: SearchSourceT
+
+
+class SearchHits(TypedDict, Generic[SearchSourceT]):
+    total: SearchTotal
+    hits: list[SearchHit[SearchSourceT]]
+
+
+class SearchResponse(TypedDict, Generic[SearchSourceT]):
+    """The stable subset of an Elasticsearch search response Pagoda consumes."""
+
+    hits: SearchHits[SearchSourceT]
+
+
+EntrySearchResponse = SearchResponse[EntryDocument]
+RawSearchResponse = SearchResponse[dict[str, object]]
+
+
+class SimpleEntrySource(TypedDict):
+    name: str
+    entity: IdNameDocument
+
+
+class NameOnlySource(TypedDict):
+    name: str
+
+
+class InnerHitResult(TypedDict):
+    _source: NameOnlySource
+
+
+class InnerHitHits(TypedDict):
+    hits: list[InnerHitResult]
+
+
+class InnerHitResponse(TypedDict):
+    hits: InnerHitHits
+
+
+class SimpleSearchInnerHits(TypedDict):
+    attr: InnerHitResponse
+
+
+class SimpleSearchHit(SearchHit[SimpleEntrySource]):
+    inner_hits: SimpleSearchInnerHits
+
+
+class SimpleSearchHits(TypedDict):
+    total: SearchTotal
+    hits: list[SimpleSearchHit]
+
+
+class SimpleSearchResponse(TypedDict):
+    hits: SimpleSearchHits
+
+
+class ReferringEntryInnerHits(TypedDict):
+    referrals: InnerHitResponse
+
+
+class ReferringEntrySearchHit(SearchHit[EntryDocument]):
+    inner_hits: ReferringEntryInnerHits
+
+
+class ReferringEntrySearchHits(TypedDict):
+    total: SearchTotal
+    hits: list[ReferringEntrySearchHit]
+
+
+class ReferringEntrySearchResponse(TypedDict):
+    hits: ReferringEntrySearchHits
+
+
+class AggregationBucket(TypedDict):
+    key: str
+
+
+class BucketAggregation(TypedDict):
+    buckets: list[AggregationBucket]
+
+
+class AttributeNameAggregation(TypedDict):
+    attr_value_aggs: BucketAggregation
+
+
+class AttributeAggregation(TypedDict):
+    attr_name_aggs: AttributeNameAggregation
+
+
+class DuplicateValueAggregations(TypedDict):
+    attr_aggs: AttributeAggregation
+
+
+class DuplicateValueSearchResponse(TypedDict):
+    aggregations: DuplicateValueAggregations
+
+
+class BulkItemResult(TypedDict, total=False):
+    error: object
+
+
+class BulkResponse(TypedDict):
+    errors: bool
+    items: list[dict[str, BulkItemResult]]
+
+
 @enum.unique
 class EntryIndexField(enum.StrEnum):
     NAME = "name"
@@ -166,21 +282,30 @@ class ESS(Elasticsearch):
 
         super().__init__(settings.ES_CONFIG["URL"], request_timeout=request_timeout)
 
-    def bulk_entries(self, operations: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    def bulk_entries(self, operations: Sequence[Mapping[str, Any]]) -> None:
         """Apply bulk operations to the configured entry index."""
-        return dict(self.bulk(index=self._index, operations=operations))
+        response = cast(BulkResponse, dict(self.bulk(index=self._index, operations=operations)))
+        if response["errors"]:
+            failed_item_count = sum(
+                1
+                for item in response["items"]
+                if any("error" in result for result in item.values())
+            )
+            raise RuntimeError(
+                "Elasticsearch bulk operation failed for %d item(s)" % failed_item_count
+            )
 
-    def delete_entry(self, entry_id: int) -> dict[str, Any]:
+    def delete_entry(self, entry_id: int) -> None:
         """Delete one entry document from the configured index."""
-        return dict(self.delete(index=self._index, id=str(entry_id)))
+        self.delete(index=self._index, id=str(entry_id))
 
-    def refresh_index(self) -> dict[str, Any]:
+    def refresh_index(self) -> None:
         """Make recent writes searchable in the configured index."""
-        return dict(self.indices.refresh(index=self._index))
+        self.indices.refresh(index=self._index)
 
-    def index_entry(self, entry_id: int, document: EntryDocument) -> dict[str, Any]:
+    def index_entry(self, entry_id: int, document: EntryDocument) -> None:
         """Index one Pagoda entry document."""
-        return dict(self.index(index=self._index, id=str(entry_id), document=document))
+        self.index(index=self._index, id=str(entry_id), document=document)
 
     def search_entries(
         self,
@@ -188,8 +313,8 @@ class ESS(Elasticsearch):
         *,
         size: int | None = None,
         offset: int | None = None,
-        track_total_hits: bool | int | None = None,
-    ) -> dict[str, Any]:
+        track_total_hits: Literal[True] | None = None,
+    ) -> RawSearchResponse:
         """Search the configured entry index with Pagoda's result-window policy."""
         # expand max_result_window parameter which indicates numbers to return at one searching
         if not self.additional_config:
@@ -208,42 +333,54 @@ class ESS(Elasticsearch):
             size = settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"]
 
         if offset is None and track_total_hits is None:
-            return dict(
-                self.search(
-                    index=self._index,
-                    body=dict(body),
-                    size=size,
-                )
+            return cast(
+                RawSearchResponse,
+                dict(
+                    self.search(
+                        index=self._index,
+                        body=dict(body),
+                        size=size,
+                    )
+                ),
             )
 
         if offset is None:
-            return dict(
-                self.search(
-                    index=self._index,
-                    body=dict(body),
-                    size=size,
-                    track_total_hits=track_total_hits,
-                )
+            return cast(
+                RawSearchResponse,
+                dict(
+                    self.search(
+                        index=self._index,
+                        body=dict(body),
+                        size=size,
+                        track_total_hits=track_total_hits,
+                    )
+                ),
             )
 
         if track_total_hits is None:
-            return dict(
+            return cast(
+                RawSearchResponse,
+                dict(
+                    self.search(
+                        index=self._index,
+                        body=dict(body),
+                        size=size,
+                        from_=offset,
+                    )
+                ),
+            )
+
+        return cast(
+            RawSearchResponse,
+            dict(
                 self.search(
                     index=self._index,
                     body=dict(body),
                     size=size,
                     from_=offset,
+                    track_total_hits=track_total_hits,
                 )
-            )
-
-        return dict(
-            self.search(
-                index=self._index,
-                body=dict(body),
-                size=size,
-                from_=offset,
-                track_total_hits=track_total_hits,
-            )
+            ),
         )
 
     def recreate_index(self) -> None:
@@ -481,7 +618,7 @@ def make_query(
             case FilterKey.DUPLICATED:
                 aggs_query = _make_aggs_query(hint_attr.name)
                 # TODO Set to 1 for convenience
-                resp = execute_query(aggs_query, 1)
+                resp = cast(DuplicateValueSearchResponse, execute_query(aggs_query, 1))
                 keyword_infos = resp["aggregations"]["attr_aggs"]["attr_name_aggs"][
                     "attr_value_aggs"
                 ]["buckets"]
@@ -1176,7 +1313,7 @@ def execute_query(
     size: int | None = None,
     offset: int | None = None,
     sort: list[dict[str, Any]] | None = None,
-) -> dict[str, Any]:
+) -> RawSearchResponse:
     """Run a search query.
 
     Args:
@@ -1190,7 +1327,7 @@ def execute_query(
         Exception: If query execution fails, output error details.
 
     Returns:
-        dict[str, Any]: Search execution result
+        RawSearchResponse: Search execution result
 
     """
     # Include sort in body for compatibility with both ES7 and ES8 servers
@@ -1214,8 +1351,8 @@ def execute_query(
 
 
 def make_search_results(
-    user: User,
-    res: dict[str, Any],
+    user: User | None,
+    res: EntrySearchResponse,
     hint_attrs: list[AttrHint],
     hint_referral: str | None,
     limit: int,
@@ -1270,7 +1407,7 @@ def make_search_results(
     # Preserve the order returned by Elasticsearch so caller-specified sorts
     # (e.g. by attribute value) are not overridden here.
     entries_by_id = {e.id: e for e in hit_entries}
-    ordered_hits: list[tuple[Entry, dict[str, Any]]] = []
+    ordered_hits: list[tuple[Entry, EntryDocument]] = []
     for hit in res["hits"]["hits"]:
         if len(ordered_hits) >= limit:
             break
@@ -1288,7 +1425,9 @@ def make_search_results(
         )
 
         if hint_referral is not None:
-            record.referrals = entry_info.get("referrals", [])
+            record.referrals = cast(
+                list[AdvancedSearchResultRecordIdNamePair], entry_info.get("referrals", [])
+            )
 
         # Check for has permission to Entry. But it will be omitted when user is None.
         if (
@@ -1339,7 +1478,7 @@ def make_search_results(
                     )
                     continue
 
-                if not user.has_permission(attr, ACLType.Readable):
+                if user is not None and not user.has_permission(attr, ACLType.Readable):
                     ret_attrinfo["is_readable"] = False
                     continue
 
@@ -1460,7 +1599,7 @@ def make_search_results(
     return results
 
 
-def make_search_results_for_simple(res: dict[str, Any]) -> SimpleSearchResults:
+def make_search_results_for_simple(res: SimpleSearchResponse) -> SimpleSearchResults:
     result: SimpleSearchResults = {
         "ret_count": res["hits"]["total"]["value"],
         "ret_values": [],

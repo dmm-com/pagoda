@@ -10,6 +10,7 @@ from django.db import models
 from django.db.models import Prefetch, Q, QuerySet
 from elasticsearch import NotFoundError
 from simple_history.models import HistoricalRecords
+from typing_extensions import TypedDict
 
 from acl.models import ACLBase
 from airone.lib import auto_complement
@@ -19,6 +20,7 @@ from airone.lib.elasticsearch import (
     ESS,
     AttributeDocument,
     EntryDocument,
+    ReferringEntrySearchResponse,
 )
 from airone.lib.log import Logger
 from airone.lib.types import (
@@ -32,6 +34,11 @@ from role.models import Role
 from user.models import User
 
 from .settings import CONFIG
+
+
+class ReferringEntryInfo(TypedDict):
+    dst_entry_id: int
+    entry_name: str
 
 
 class AttributeValue(models.Model):
@@ -2670,19 +2677,22 @@ class Entry(ACLBase):
             return
 
         # It's also needed to update es-document for Entries that this Entry refers to
-        search_result = es.search_entries(
-            {
-                "query": {
-                    "nested": {
-                        "path": "referrals",
-                        "query": {"term": {"referrals.id": self.id}},
-                        "inner_hits": {},
+        search_result = cast(
+            ReferringEntrySearchResponse,
+            es.search_entries(
+                {
+                    "query": {
+                        "nested": {
+                            "path": "referrals",
+                            "query": {"term": {"referrals.id": self.id}},
+                            "inner_hits": {},
+                        }
                     }
                 }
-            }
+            ),
         )
 
-        refers_from_es = [
+        refers_from_es: list[ReferringEntryInfo] = [
             {
                 "dst_entry_id": int(x["_id"]),
                 "entry_name": x["inner_hits"]["referrals"]["hits"]["hits"][0]["_source"]["name"],
@@ -2690,7 +2700,7 @@ class Entry(ACLBase):
             for x in search_result["hits"]["hits"]
         ]
 
-        refers_from_db = [
+        refers_from_db: list[ReferringEntryInfo] = [
             {"dst_entry_id": e.id, "entry_name": self.name}
             for e in self.get_refers_objects()
             if e.id != self.id
@@ -2708,7 +2718,7 @@ class Entry(ACLBase):
         # db: esixts
         for refer in refers_from_db:
             if refer["dst_entry_id"] not in [x["dst_entry_id"] for x in refers_from_es]:
-                entry = Entry.objects.get(id=cast("int", refer["dst_entry_id"]))
+                entry = Entry.objects.get(id=refer["dst_entry_id"])
                 entry.register_es(es, recursive_call_stack + [self])
 
     def unregister_es(self, es: ESS | None = None) -> None:
