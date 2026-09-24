@@ -58,6 +58,10 @@ class Common(Configuration):  # type: ignore[misc]
     # to enable cross-origin requests from those hosts.
     CORS_ALLOWED_ORIGINS = env.list("AIRONE_CORS_ALLOWED_ORIGINS", default=[])
     CORS_ALLOW_CREDENTIALS = env.bool("AIRONE_CORS_ALLOW_CREDENTIALS", False)
+    CORS_ALLOW_METHODS = env.list(
+        "AIRONE_CORS_ALLOW_METHODS",
+        default=["DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT"],
+    )
 
     # Application definition
 
