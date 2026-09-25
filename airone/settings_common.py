@@ -544,6 +544,10 @@ class Common(Configuration):  # type: ignore[misc]
         ],
         "PAGE_SIZE": 30,
         "EXCEPTION_HANDLER": "airone.lib.drf.custom_exception_handler",
+        # DRF 3.18 switched ListSerializer errors from a positional list to an
+        # index-keyed dict. Keep the list shape that API clients (including the
+        # frontend's indexed-error handling) rely on. Removed in DRF 3.20.
+        "LIST_SERIALIZER_ERRORS_AS_DICT": False,
     }
 
     # Silence rest_framework.W001 warning
