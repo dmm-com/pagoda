@@ -5,7 +5,6 @@ build-backend = "hatchling.build"
 [tool.mypy]
 follow_imports = "normal"
 plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
-ignore_missing_imports = true
 explicit_package_bases = true
 # Include plugin/sdk so mypy resolves the editable-installed pagoda_plugin_sdk
 # package against its real (now py.typed) sources instead of treating it as Any.
@@ -15,24 +14,26 @@ mypy_path = [".", "plugin/sdk"]
 # plugin test trees from discovery (they are already ignored for errors).
 exclude = ['plugin/.*/tests/', 'plugin/examples/', 'virtualenv_old/']
 
-# Gradual type checking improvements
-check_untyped_defs = true
-warn_unused_ignores = true
-warn_unused_configs = true
-warn_redundant_casts = true
-strict_equality = true
+# Production code (including plugin/sdk and tools) is checked with the full
+# `strict` flag set, so flags added to `strict` by future mypy releases apply
+# automatically. Test and migration trees are exempted via the ignore_errors
+# overrides below.
+strict = true
 warn_unreachable = true
-no_implicit_reexport = true
-disallow_untyped_calls = true
-extra_checks = true
-disallow_untyped_decorators = true
-disallow_any_generics = true
-warn_return_any = true
-disallow_subclassing_any = true
-# Production code (including plugin/sdk and tools) must be fully annotated.
-# Test and migration trees are exempted via the ignore_errors overrides below.
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
+local_partial_types = true
+# Optional checks beyond `strict`:
+# - ignore-without-code: every `type: ignore` must name what it silences.
+# - possibly-undefined: names bound only on some branches.
+# - redundant-expr / truthy-bool: conditions that are statically constant,
+#   which usually means an annotation that omits `None`.
+# - deprecated: calls to APIs marked with @deprecated.
+enable_error_code = [
+    "ignore-without-code",
+    "possibly-undefined",
+    "redundant-expr",
+    "truthy-bool",
+    "deprecated",
+]
 
 [tool.django-stubs]
 django_settings_module = "airone.settings"
@@ -46,6 +47,25 @@ ignore_errors = true
 module = ["*.migrations.*"]
 ignore_errors = true
 
+# Third-party packages that ship neither inline types nor stubs. Listing them
+# explicitly (instead of a global ignore_missing_imports) keeps a typo or a
+# newly added untyped dependency from silently becoming Any.
+# custom_view is an optional, out-of-tree extension point.
+[[tool.mypy.overrides]]
+module = [
+    "configurations.*",
+    "custom_view.*",
+    "django_filters.*",
+    "environ.*",
+    "import_export.*",
+    "ldap.*",
+    "multidb.*",
+    "simple_history.*",
+    "social_django.*",
+    "tablib.*",
+]
+ignore_missing_imports = true
+
 # CI compares these diagnostics with the base revision using the current
 # configuration and toolchain. See tools/mypy_ratchet.py.
 
@@ -57,8 +77,16 @@ ignore_errors = true
 # The six rule sets after isort were chosen because the codebase already
 # satisfies them (10 violations in total, all addressed in the same change),
 # so they act purely as a guard against new occurrences rather than as a
-# backlog. Larger rule sets (B, SIM, S, DTZ, ...) are introduced separately.
-lint.select = ["E", "F", "I", "W", "ASYNC", "ICN", "LOG", "INP", "TID", "T20"]
+# backlog. Larger rule sets (SIM, S, DTZ, ...) are introduced separately.
+#
+# flake8-bugbear (B) catches bug-prone patterns such as mutable default
+# arguments and exceptions re-raised without their cause. pygrep-hooks (PGH)
+# rejects blanket `noqa` / `type: ignore`, and RUF100 rejects stale `noqa`, so
+# every suppression names a rule that still fires.
+lint.select = [
+    "E", "F", "I", "W", "ASYNC", "ICN", "LOG", "INP", "TID", "T20",
+    "B", "PGH", "RUF100",
+]
 line-length = 100
 extend-exclude = ["./*/migrations", "manage.py", "./node_modules"]
 
