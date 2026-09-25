@@ -25,12 +25,14 @@ import { PasswordResetConfirmModal } from "../components/user/PasswordResetConfi
 import { PasswordResetModal } from "../components/user/PasswordResetModal";
 import { aironeApiClient } from "../repository/AironeApiClient";
 
+import { useTranslation } from "hooks/useTranslation";
 import { ServerContext } from "services/ServerContext";
 
 export const LoginPage: FC = () => {
   const serverContext = ServerContext.getInstance();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const [showPassword, setShowPassword] = useState(false);
   const [isAlert, setIsAlert] = useState(false);
@@ -154,10 +156,10 @@ export const LoginPage: FC = () => {
                       }}
                     />
                   }
-                  label="以下の規約に合意する。"
+                  label={t("user.login.agreeTerms")}
                 />
                 <Link href={serverContext?.termsOfServiceUrl} target="_blank">
-                  Pagoda サービス規約
+                  {t("user.login.termsLinkLabel")}
                 </Link>
               </FormGroup>
               <FormHelperText>
@@ -168,7 +170,7 @@ export const LoginPage: FC = () => {
                       setShowAlertForTermsOfService(false);
                     }}
                   >
-                    ご利用には、サービス規約への合意が必要です。
+                    {t("user.login.termsRequired")}
                   </Alert>
                 )}
               </FormHelperText>
@@ -183,7 +185,7 @@ export const LoginPage: FC = () => {
                 setIsAlert(false);
               }}
             >
-              ユーザ名またはパスワードが違います。
+              {t("user.login.invalidCredentials")}
             </Alert>
           ) : (
             ""
@@ -241,7 +243,7 @@ export const LoginPage: FC = () => {
                   }}
                 />
                 <Typography fontSize="16px" ml={1} display="inline">
-                  SSO ログイン
+                  {t("user.login.ssoLogin")}
                 </Typography>
               </Link>
             )}
@@ -268,7 +270,7 @@ export const LoginPage: FC = () => {
                 display="inline"
                 sx={{ textDecoration: "line-through" }}
               >
-                パスワードリセット
+                {t("user.login.passwordReset")}
               </Typography>
             ) : (
               <Link
@@ -283,7 +285,7 @@ export const LoginPage: FC = () => {
                   }}
                 />
                 <Typography fontSize="16px" ml={1} display="inline">
-                  パスワードリセット
+                  {t("user.login.passwordReset")}
                 </Typography>
               </Link>
             )}

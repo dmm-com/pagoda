@@ -1,11 +1,12 @@
 /**
  */
 
-import { render, screen, fireEvent } from "@testing-library/react";
+import { act, render, screen, fireEvent } from "@testing-library/react";
 
 import { LoginPage } from "./LoginPage";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 
 // Mock ServerContext
 vi.mock("../services/ServerContext", () => ({
@@ -84,6 +85,16 @@ describe("LoginPage", () => {
       render(<LoginPage />, { wrapper: TestWrapper });
 
       expect(screen.queryByText("SSO ログイン")).not.toBeInTheDocument();
+    });
+
+    test("should render password reset link in English", async () => {
+      await act(async () => {
+        await i18n.changeLanguage("en");
+      });
+
+      render(<LoginPage />, { wrapper: TestWrapper });
+
+      expect(screen.getByText("Password reset")).toBeInTheDocument();
     });
   });
 

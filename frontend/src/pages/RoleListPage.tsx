@@ -10,11 +10,13 @@ import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { PageHeader } from "components/common/PageHeader";
 import { usePageTitle } from "hooks/usePageTitle";
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { newRolePath, topPath } from "routes/Routes";
 import { ServerContext, TITLE_TEMPLATES } from "services";
 
 export const RoleListPage: FC = () => {
+  const { t } = useTranslation();
   const [openImportModal, setOpenImportModal] = useState(false);
 
   const isReadonly = ServerContext.getInstance()?.user?.isReadonly ?? false;
@@ -31,17 +33,19 @@ export const RoleListPage: FC = () => {
         <Typography component={AironeLink} to={topPath()}>
           Top
         </Typography>
-        <Typography color="textPrimary">ロール管理</Typography>
+        <Typography color="textPrimary">
+          {t("role.listPage.pageTitle")}
+        </Typography>
       </AironeBreadcrumbs>
 
-      <PageHeader title="ロール管理">
+      <PageHeader title={t("role.listPage.pageTitle")}>
         <Button
           variant="contained"
           color="info"
           sx={{ margin: "0 4px" }}
           onClick={handleExport}
         >
-          エクスポート
+          {t("common.export")}
         </Button>
         <Button
           variant="contained"
@@ -50,7 +54,7 @@ export const RoleListPage: FC = () => {
           onClick={() => setOpenImportModal(true)}
           disabled={isReadonly}
         >
-          インポート
+          {t("common.import")}
         </Button>
         <RoleImportModal
           openImportModal={openImportModal}
@@ -64,7 +68,7 @@ export const RoleListPage: FC = () => {
           sx={{ height: "48px", borderRadius: "24px", ml: "16px" }}
           disabled={isReadonly}
         >
-          <AddIcon /> 新規ロールを作成
+          <AddIcon /> {t("role.listPage.createNew")}
         </Button>
       </PageHeader>
 
