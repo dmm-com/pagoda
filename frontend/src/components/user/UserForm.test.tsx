@@ -10,10 +10,9 @@ import { render, renderHook, screen } from "@testing-library/react";
 import { useForm } from "react-hook-form";
 
 import { TestWrapper } from "../../TestWrapper";
-import { schema } from "../entry/entryForm/EntryFormSchema";
 
 import { UserForm } from "./UserForm";
-import { Schema } from "./userForm/UserFormSchema";
+import { Schema, schema } from "./userForm/UserFormSchema";
 
 describe("UserForm", () => {
   Object.defineProperty(window, "django_context", {
@@ -42,6 +41,7 @@ describe("UserForm", () => {
     authenticateType: UserRetrieveAuthenticateTypeEnum.AUTH_TYPE_LOCAL,
     groups: [],
     roles: [],
+    coUsers: [],
   };
 
   const renderUserForm = (user: UserRetrieve, isCreateMode: boolean) => {

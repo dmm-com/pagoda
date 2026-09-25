@@ -39,8 +39,26 @@ describe("DefaultObjectValueField", () => {
       next: null,
       previous: null,
       results: [
-        { id: 101, name: "Primary server" },
-        { id: 102, name: "Secondary server" },
+        {
+          id: 101,
+          name: "Primary server",
+          schema: { id: 10, name: "Server", permission: 8 },
+          isActive: true,
+          deletedUser: null,
+          updatedTime: new Date("2024-01-01T00:00:00Z"),
+          aliases: [],
+          permission: 8,
+        },
+        {
+          id: 102,
+          name: "Secondary server",
+          schema: { id: 10, name: "Server", permission: 8 },
+          isActive: true,
+          deletedUser: null,
+          updatedTime: new Date("2024-01-01T00:00:00Z"),
+          aliases: [],
+          permission: 8,
+        },
       ],
     });
   });

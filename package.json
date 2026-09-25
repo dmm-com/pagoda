@@ -40,7 +40,7 @@
     "test:e2e:install": "playwright install chromium",
     "watch": "webpack build --entry ./frontend/src/App.tsx --watch --mode development",
     "watch:custom": "webpack build --watch --entry ./frontend/src/customview/CustomApp.tsx --mode development",
-    "typecheck": "tsc --noEmit --project tsconfig.json",
+    "typecheck": "tsc --noEmit --project tsconfig.json && tsc --noEmit --project tsconfig.test.json",
     "lint": "eslint frontend e2e && biome format frontend e2e && knip",
     "fix": "eslint --fix frontend e2e ; biome format --write frontend e2e ; knip --fix",
     "debt:complexity:frontend": "biome lint --javascript-linter-enabled=true --only=complexity/noExcessiveCognitiveComplexity --max-diagnostics=none frontend/src e2e",

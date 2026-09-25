@@ -124,9 +124,10 @@ describe("ObjectAttributeValueField", () => {
       }),
     );
 
-    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue(
-      Promise.resolve({ results: entries, hasRestrictedItems: false }),
-    );
+    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue({
+      results: entries,
+      hasRestrictedItems: false,
+    });
 
     await act(async () => {
       render(
@@ -178,9 +179,10 @@ describe("ObjectAttributeValueField", () => {
       }),
     );
 
-    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue(
-      Promise.resolve({ results: entries, hasRestrictedItems: false }),
-    );
+    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue({
+      results: entries,
+      hasRestrictedItems: false,
+    });
 
     await act(async () => {
       render(
@@ -243,9 +245,10 @@ describe("ObjectAttributeValueField", () => {
       }),
     );
 
-    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue(
-      Promise.resolve({ results: entries, hasRestrictedItems: false }),
-    );
+    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue({
+      results: entries,
+      hasRestrictedItems: false,
+    });
 
     await act(async () => {
       render(
@@ -292,9 +295,10 @@ describe("ObjectAttributeValueField", () => {
       }),
     );
 
-    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue(
-      Promise.resolve({ results: entries, hasRestrictedItems: false }),
-    );
+    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue({
+      results: entries,
+      hasRestrictedItems: false,
+    });
 
     await act(async () => {
       render(
@@ -350,9 +354,10 @@ describe("ObjectAttributeValueField", () => {
       }),
     );
 
-    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue(
-      Promise.resolve({ results: entries, hasRestrictedItems: false }),
-    );
+    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue({
+      results: entries,
+      hasRestrictedItems: false,
+    });
 
     await act(async () => {
       render(

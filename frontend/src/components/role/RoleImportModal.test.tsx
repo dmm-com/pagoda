@@ -5,6 +5,8 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 import { RoleImportModal } from "./RoleImportModal";
 
+import type { Mock } from "vitest";
+
 import { TestWrapper } from "TestWrapper";
 import { aironeApiClient } from "repository/AironeApiClient";
 
@@ -66,7 +68,7 @@ describe("RoleImportModal", () => {
   });
 
   test("should successfully import file", async () => {
-    (aironeApiClient.importRoles as vi.Mock).mockResolvedValue(undefined);
+    (aironeApiClient.importRoles as Mock).mockResolvedValue(undefined);
 
     render(<RoleImportModal {...defaultProps} />, { wrapper: TestWrapper });
 

@@ -11,10 +11,8 @@ import {
 } from "@testing-library/react";
 import { useForm } from "react-hook-form";
 
-import { schema } from "../../entry/entryForm/EntryFormSchema";
-
 import { AttributesFields, getReorderIndices } from "./AttributesFields";
-import { Schema } from "./EntityFormSchema";
+import { Schema, schema } from "./EntityFormSchema";
 
 import { TestWrapper } from "TestWrapper";
 import { AttributeTypes } from "services/Constants";

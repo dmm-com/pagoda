@@ -11,6 +11,8 @@ import { useLocation, useNavigate } from "react-router";
 
 import { SearchResultsTableHead } from "./SearchResultsTableHead";
 
+import type { Mock } from "vitest";
+
 import { TestWrapper } from "TestWrapper";
 
 // Mock react-router hooks
@@ -92,8 +94,8 @@ describe("SearchResultsTableHead", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useNavigate as vi.Mock).mockReturnValue(mockNavigate);
-    (useLocation as vi.Mock).mockReturnValue(mockLocation);
+    (useNavigate as Mock).mockReturnValue(mockNavigate);
+    (useLocation as Mock).mockReturnValue(mockLocation);
   });
 
   test("should render without crashing", () => {

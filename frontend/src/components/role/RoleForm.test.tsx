@@ -12,10 +12,9 @@ import {
 import { useForm } from "react-hook-form";
 
 import { TestWrapper } from "../../TestWrapper";
-import { schema } from "../entry/entryForm/EntryFormSchema";
 
 import { RoleForm } from "./RoleForm";
-import { Schema } from "./roleForm/RoleFormSchema";
+import { Schema, schema } from "./roleForm/RoleFormSchema";
 
 import { aironeApiClient } from "repository/AironeApiClient";
 
@@ -48,12 +47,14 @@ describe("RoleForm", () => {
       }),
     );
 
-    vi.spyOn(aironeApiClient, "getUsers").mockResolvedValue(
-      Promise.resolve([]),
-    );
-    vi.spyOn(aironeApiClient, "getGroups").mockResolvedValue(
-      Promise.resolve([]),
-    );
+    vi.spyOn(aironeApiClient, "getUsers").mockResolvedValue({
+      count: 0,
+      results: [],
+    });
+    vi.spyOn(aironeApiClient, "getGroups").mockResolvedValue({
+      count: 0,
+      results: [],
+    });
 
     await act(async () => {
       render(<RoleForm control={control} setValue={setValue} />, {

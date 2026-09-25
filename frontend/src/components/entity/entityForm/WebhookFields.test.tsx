@@ -11,9 +11,7 @@ import {
 } from "@testing-library/react";
 import { useForm } from "react-hook-form";
 
-import { schema } from "../../entry/entryForm/EntryFormSchema";
-
-import { Schema } from "./EntityFormSchema";
+import { Schema, schema } from "./EntityFormSchema";
 import { WebhookFields } from "./WebhookFields";
 
 import { TestWrapper } from "TestWrapper";

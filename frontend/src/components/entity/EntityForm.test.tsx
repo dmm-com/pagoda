@@ -5,9 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { render, renderHook, screen } from "@testing-library/react";
 import { useForm } from "react-hook-form";
 
-import { schema } from "../entry/entryForm/EntryFormSchema";
-
-import { Schema } from "./entityForm/EntityFormSchema";
+import { Schema, schema } from "./entityForm/EntityFormSchema";
 
 import { TestWrapper } from "TestWrapper";
 import { EntityForm } from "components/entity/EntityForm";

@@ -7,6 +7,8 @@ import { createMemoryRouter, RouterProvider } from "react-router";
 
 import { UserList } from "./UserList";
 
+import type { Mock } from "vitest";
+
 import { TestWrapper, TestWrapperWithoutRoutes } from "TestWrapper";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { ServerContext } from "services/ServerContext";
@@ -54,11 +56,11 @@ describe("UserList", () => {
   };
 
   beforeEach(() => {
-    (aironeApiClient.getUsers as vi.Mock).mockResolvedValue(mockUsers);
+    (aironeApiClient.getUsers as Mock).mockResolvedValue(mockUsers);
   });
 
   test("should render users", async () => {
-    (ServerContext.getInstance as vi.Mock).mockReturnValue({
+    (ServerContext.getInstance as Mock).mockReturnValue({
       user: { username: "user1", isSuperuser: false },
     });
 
@@ -71,7 +73,7 @@ describe("UserList", () => {
   });
 
   test("superuser sees menu for all users", async () => {
-    (ServerContext.getInstance as vi.Mock).mockReturnValue({
+    (ServerContext.getInstance as Mock).mockReturnValue({
       user: { username: "admin", isSuperuser: true },
     });
 
@@ -84,7 +86,7 @@ describe("UserList", () => {
   });
 
   test("normal user sees menu only for themselves", async () => {
-    (ServerContext.getInstance as vi.Mock).mockReturnValue({
+    (ServerContext.getInstance as Mock).mockReturnValue({
       user: { username: "user1", isSuperuser: false },
     });
 
@@ -97,7 +99,7 @@ describe("UserList", () => {
   });
 
   test("normal user can use readonly user creation button", async () => {
-    (ServerContext.getInstance as vi.Mock).mockReturnValue({
+    (ServerContext.getInstance as Mock).mockReturnValue({
       user: { username: "user1", isSuperuser: false },
     });
 
@@ -112,7 +114,7 @@ describe("UserList", () => {
   });
 
   test("superuser can use register button", async () => {
-    (ServerContext.getInstance as vi.Mock).mockReturnValue({
+    (ServerContext.getInstance as Mock).mockReturnValue({
       user: { username: "admin", isSuperuser: true },
     });
 
@@ -127,7 +129,7 @@ describe("UserList", () => {
   });
 
   test("should navigate to create page", async () => {
-    (ServerContext.getInstance as vi.Mock).mockReturnValue({
+    (ServerContext.getInstance as Mock).mockReturnValue({
       user: { username: "admin", isSuperuser: true },
     });
 
@@ -152,7 +154,7 @@ describe("UserList", () => {
   });
 
   test("should navigate to user detail page", async () => {
-    (ServerContext.getInstance as vi.Mock).mockReturnValue({
+    (ServerContext.getInstance as Mock).mockReturnValue({
       user: { username: "admin", isSuperuser: true },
     });
 

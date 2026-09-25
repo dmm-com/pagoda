@@ -94,9 +94,7 @@ describe("GroupAttributeValueField", () => {
       }),
     );
 
-    vi.spyOn(aironeApiClient, "getGroups").mockResolvedValue(
-      Promise.resolve(groups),
-    );
+    vi.spyOn(aironeApiClient, "getGroups").mockResolvedValue(groups);
 
     await act(async () => {
       render(
@@ -144,9 +142,7 @@ describe("GroupAttributeValueField", () => {
       }),
     );
 
-    vi.spyOn(aironeApiClient, "getGroups").mockResolvedValue(
-      Promise.resolve(groups),
-    );
+    vi.spyOn(aironeApiClient, "getGroups").mockResolvedValue(groups);
 
     await act(async () => {
       render(
@@ -184,7 +180,7 @@ describe("GroupAttributeValueField", () => {
   test("searches groups with entered text", async () => {
     const spy = vi
       .spyOn(aironeApiClient, "getGroups")
-      .mockResolvedValue(Promise.resolve(groups));
+      .mockResolvedValue(groups);
     const { result } = renderHook(() =>
       useForm<Schema>({ resolver: zodResolver(schema), defaultValues }),
     );
