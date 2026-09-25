@@ -546,7 +546,7 @@ class ModelOperationsTest(BaseModelTest):
         cloned_attrv = cloned_attr.values.last()
 
         self.assertEqual(orig_attrv.data_array.count(), cloned_attrv.data_array.count())
-        for v1, v2 in zip(orig_attrv.data_array.all(), cloned_attrv.data_array.all()):
+        for v1, v2 in zip(orig_attrv.data_array.all(), cloned_attrv.data_array.all(), strict=True):
             self.assertNotEqual(v1, v2)
             self.assertEqual(v1.value, v2.value)
 
@@ -571,7 +571,7 @@ class ModelOperationsTest(BaseModelTest):
         cloned_attrv = cloned_attr.values.last()
 
         self.assertEqual(orig_attrv.data_array.count(), cloned_attrv.data_array.count())
-        for v1, v2 in zip(orig_attrv.data_array.all(), cloned_attrv.data_array.all()):
+        for v1, v2 in zip(orig_attrv.data_array.all(), cloned_attrv.data_array.all(), strict=True):
             self.assertNotEqual(v1, v2)
             # For number values, we need to handle float comparison properly
             orig_val = v1.get_value()

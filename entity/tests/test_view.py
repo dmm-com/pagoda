@@ -1417,7 +1417,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(reverse("entity:dashboard", args=[entity.id]))
         self.assertEqual(resp.status_code, 200)
 
-        for ret_attr, ret_info in resp.context["summarized_data"].items():
+        for _ret_attr, ret_info in resp.context["summarized_data"].items():
             self.assertEqual(len(ret_info["referral_count"]), CONFIG.DASHBOARD_NUM_ITEMS - 1)
             self.assertEqual(ret_info["no_referral_count"], 0)
 

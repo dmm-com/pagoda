@@ -15,7 +15,7 @@ class AirOneLogTest(AironeViewTest):
 
         for status_code, level in [(200, "INFO"), (400, "WARNING"), (500, "ERROR")]:
 
-            def get_response(request):
+            def get_response(request, status_code=status_code):
                 return Mock(status_code=status_code)
 
             with self.assertLogs("airone") as log:

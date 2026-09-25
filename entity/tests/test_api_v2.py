@@ -3990,10 +3990,10 @@ class ViewTest(AironeViewTest):
             "test_entity1": ["foo", "bar", "fuga"],
             "test_entity2": ["bar", "hoge", "fuga"],
         }
-        for i, (entity_name, attrnames) in enumerate(entity_info.items()):
+        for _i, (entity_name, attrnames) in enumerate(entity_info.items()):
             entity = Entity.objects.create(name=entity_name, created_user=user)
 
-            for j, attrname in enumerate(attrnames):
+            for _j, attrname in enumerate(attrnames):
                 is_object = attrname == "bar"
                 attrtype = AttrType.OBJECT if is_object else AttrType.STRING
 

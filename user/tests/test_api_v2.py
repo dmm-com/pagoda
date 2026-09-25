@@ -936,7 +936,7 @@ class RecentActivityAPITest(ViewTest):
             self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
         # destroy castles by each daimyos
-        for daimyo_name, castle_name, location_name in [
+        for daimyo_name, castle_name, _location_name in [
             ("MatsunagaHisahide", "TsutuiCastle", "Nara"),
             ("OdaNobunaga", "IchijodaniCastle", "Fukui"),
             ("ToyotomiHideyoshi", "BichuTakamatsuCastle", "Okayama"),

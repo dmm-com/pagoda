@@ -1586,7 +1586,7 @@ class ModelElasticsearchTest(BaseModelTest):
         entry.register_es()
 
         # search entries with empty_search_character
-        for attr_name, info in attr_info.items():
+        for attr_name, _info in attr_info.items():
             ret = AdvancedSearchService.search_entries(
                 user,
                 [entity.id],
@@ -1602,7 +1602,7 @@ class ModelElasticsearchTest(BaseModelTest):
             CONFIG.EMPTY_SEARCH_CHARACTER + CONFIG.EMPTY_SEARCH_CHARACTER
         )
 
-        for attr_name, info in attr_info.items():
+        for attr_name, _info in attr_info.items():
             ret = AdvancedSearchService.search_entries(
                 user,
                 [entity.id],

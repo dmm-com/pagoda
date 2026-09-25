@@ -124,7 +124,7 @@ class ViewTest(AironeViewTest):
         admin = self.admin_login()
 
         # create Entities & Entries
-        for entity_name in ["Entity1", "Entity2"]:
+        for _entity_name in ["Entity1", "Entity2"]:
             entity = Entity.objects.create(name="Entity", created_user=admin)
             for index in range(0, 10):
                 name = "e-%s" % index
@@ -660,7 +660,7 @@ class ViewTest(AironeViewTest):
             self.assertTrue(all([x["attr_id"] == attr.id for x in attr_value_history]))
 
             # check order of former value and previous value
-            for index, history_value in enumerate(attr_value_history):
+            for _index, history_value in enumerate(attr_value_history):
                 if (
                     attr.schema.type & AttrType._ARRAY
                     and not history_value["curr"]["value"]

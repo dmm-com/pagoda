@@ -252,7 +252,7 @@ class AdvancedSearchServiceTest(AironeTestCase):
         self.assertEqual(ret.ret_values[0].entry["name"], "e-5")
 
         # search entries with keyword for Role Attribute
-        for role_attrname in ["role", "arr_role"]:
+        for _role_attrname in ["role", "arr_role"]:
             # call AdvancedSearchService.search_entries with invalid keyword
             self.assertEqual(
                 AdvancedSearchService.search_entries(
@@ -1034,6 +1034,37 @@ class AdvancedSearchServiceTest(AironeTestCase):
 
         res = AdvancedSearchService.search_entries(self._user, [self._entity.id])
         self.assertEqual(res.ret_count, 1)
+
+    def test_update_documents_delete_when_no_active_entries(self):
+        """
+        Regression test: the "delete" loop in update_documents used to log with
+        a leftover `entry` variable from the earlier "Update" loop
+        (`entry.id` instead of `entry_id`). When there are no active entries
+        for the entity (so the Update loop body never runs and `entry` is
+        never bound in this call), that would raise NameError instead of
+        simply logging the stale entry_id.
+        """
+        entity = Entity.objects.create(name="entity-for-delete-log", created_user=self._user)
+        entry = Entry.objects.create(
+            name="entry-to-be-removed", created_user=self._user, schema=entity
+        )
+        entry.complement_attrs(self._user)
+
+        # register the entry's document into Elasticsearch
+        AdvancedSearchService.update_documents(entity)
+
+        # make the entity have no active entries while the ES index still has
+        # a stale document referring to the now-inactive entry
+        entry.is_active = False
+        entry.save()
+
+        with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
+            AdvancedSearchService.update_documents(entity)
+
+        self.assertEqual(
+            warning_log.output,
+            ["WARNING:airone:Delete elasticsearch document (entry_id: %s)" % entry.id],
+        )
 
     def test_search_entries_allow_missing_attributes(self):
         # 1. Setup Entities

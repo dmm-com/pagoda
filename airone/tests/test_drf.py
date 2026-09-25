@@ -1,9 +1,10 @@
 from django.test import SimpleTestCase
 from pydantic import ValidationError as PydanticValidationError
+from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
-from airone.lib.drf import custom_exception_handler
+from airone.lib.drf import custom_exception_handler, get_bound_parent
 from job.params import EntityAttrV2Params, ExportEntryParams
 
 
@@ -51,3 +52,18 @@ class PydanticValidationErrorHandlerTest(SimpleTestCase):
         assert response is not None
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data[0]["code"], "AE-121000")
+
+
+class GetBoundParentTest(SimpleTestCase):
+    def test_returns_none_for_unbound_field(self):
+        field: serializers.Field = serializers.CharField()
+
+        self.assertIsNone(get_bound_parent(field))
+
+    def test_returns_parent_serializer_once_bound(self):
+        class SomeSerializer(serializers.Serializer):
+            x = serializers.CharField()
+
+        instance = SomeSerializer()
+
+        self.assertIs(get_bound_parent(instance.fields["x"]), instance)

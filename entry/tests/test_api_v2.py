@@ -2217,7 +2217,7 @@ class ItemRollbackAPITest(BaseViewTest):
 
         # update item_tgt multiple times and rollback
         t0 = datetime.datetime.now(tz=datetime.timezone.utc)
-        for i, value in enumerate(["first", "second", "third"]):
+        for _i, value in enumerate(["first", "second", "third"]):
             # update target item
             params = {
                 "name": "entry",

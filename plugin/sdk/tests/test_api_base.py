@@ -35,12 +35,12 @@ except ImportError:
     class Request:  # type: ignore[no-redef]
         pass
 
-    class Response:  # type: ignore
+    class Response:
         def __init__(self, data=None, status=200):
             self.data = data
             self.status_code = status
 
-    class APIRequestFactory:  # type: ignore
+    class APIRequestFactory:
         pass
 
 
