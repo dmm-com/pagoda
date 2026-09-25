@@ -92,7 +92,7 @@ export function fileDownload(data: string, filename: string): void {
 // see https://docs.djangoproject.com/en/3.2/ref/csrf/
 export function getCsrfToken(): string {
   const match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]*)/);
-  return match ? decodeURIComponent(match[1]) : "";
+  return match?.[1] ? decodeURIComponent(match[1]) : "";
 }
 
 /**

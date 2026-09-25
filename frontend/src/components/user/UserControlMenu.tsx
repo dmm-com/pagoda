@@ -15,7 +15,7 @@ import { aironeApiClient } from "repository/AironeApiClient";
 
 interface UserControlProps {
   user: UserList;
-  anchorElem: HTMLButtonElement | null;
+  anchorElem: HTMLButtonElement | null | undefined;
   handleClose: (userId: number) => void;
   onClickEditPassword: (userId: number) => void;
   setToggle?: () => void;

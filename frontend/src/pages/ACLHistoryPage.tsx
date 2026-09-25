@@ -97,6 +97,9 @@ const ACLHistoryContent: FC<{ objectId: number }> = ({ objectId }) => {
             />
           );
         }
+        return null;
+      default:
+        return null;
     }
   };
 

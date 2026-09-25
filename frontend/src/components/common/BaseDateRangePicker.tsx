@@ -70,9 +70,11 @@ export const BaseDateRangePicker: FC<BaseDateRangePickerProps> = ({
         date.getTime() - date.getTimezoneOffset() * 60000,
       ).toISOString();
     } else {
-      return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-        .toISOString()
-        .split("T")[0];
+      return (
+        new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+          .toISOString()
+          .split("T")[0] ?? ""
+      );
     }
   };
 

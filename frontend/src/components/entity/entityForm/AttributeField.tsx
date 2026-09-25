@@ -43,7 +43,7 @@ import { Schema } from "./EntityFormSchema";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { aclPath } from "routes/Routes";
-import { AttributeTypes } from "services/Constants";
+import { AttributeTypeKey, AttributeTypes } from "services/Constants";
 import { fuzzyMatch } from "services/StringUtil";
 
 const StyledBox = styled(Box)(({ theme }) => ({
@@ -75,7 +75,7 @@ const DISPLAY_ATTR_ALLOWED_TYPES: ReadonlySet<number> = new Set([
 ]);
 
 // Define the custom display order for attribute types
-const ATTRIBUTE_TYPE_ORDER = [
+const ATTRIBUTE_TYPE_ORDER: AttributeTypeKey[] = [
   "string",
   "array_string",
   "object",
