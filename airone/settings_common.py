@@ -103,6 +103,8 @@ class Common(Configuration):  # type: ignore[misc]
             INSTALLED_APPS.insert(job_index, plugin_module)
             job_index += 1  # Keep job at the same relative position
 
+    IFRAME_ALLOWED_ORIGINS = env.list("AIRONE_IFRAME_ALLOWED_ORIGINS", default=[])
+
     MIDDLEWARE = [
         "django.middleware.security.SecurityMiddleware",
         "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -112,6 +114,8 @@ class Common(Configuration):  # type: ignore[misc]
         "django.middleware.csrf.CsrfViewMiddleware",
         "django.contrib.auth.middleware.AuthenticationMiddleware",
         "django.contrib.messages.middleware.MessageMiddleware",
+        # Responses run in reverse order: adjust framing after the default protection.
+        "airone.middleware.iframe.IframePolicyMiddleware",
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
         "social_django.middleware.SocialAuthExceptionMiddleware",
         "airone.lib.multidb.AironePinningRouterMiddleware",
