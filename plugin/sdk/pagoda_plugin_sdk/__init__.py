@@ -33,7 +33,7 @@ def _lazy_import_mixins() -> Any:
                 "to use PluginAPIViewMixin. "
                 "Please install Django and djangorestframework, "
                 "or import this mixin directly when Django is configured."
-            )
+            ) from e
         raise
 
 
@@ -61,7 +61,7 @@ def _lazy_import_api() -> Any:
                 "Django and Django REST Framework are required to use API components. "
                 "Please install Django and djangorestframework, "
                 "or import these components directly when Django is configured."
-            )
+            ) from e
         raise
 
 
@@ -95,7 +95,7 @@ def _lazy_import_tasks() -> Any:
                 "Task components require the host application to be installed. "
                 "These components are only available when the plugin is running "
                 "within the AirOne environment."
-            )
+            ) from e
         raise
 
 
@@ -134,7 +134,7 @@ def _lazy_import_override() -> Any:
             raise ImportError(
                 "Override components require Django REST Framework. "
                 "Please install djangorestframework or import directly when configured."
-            )
+            ) from e
         raise
 
 
