@@ -24,7 +24,12 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from airone.lib import custom_view, drf
 from airone.lib.acl import ACLType, get_permission_level
-from airone.lib.drf import DuplicatedObjectExistsError, ObjectNotExistsError, RequiredParameterError
+from airone.lib.drf import (
+    DuplicatedObjectExistsError,
+    ObjectNotExistsError,
+    RequiredParameterError,
+    get_bound_parent,
+)
 from airone.lib.log import Logger
 from airone.lib.types import AttrType, AttrTypeValue
 from entity.admin import EntityAttrResource, EntityResource
@@ -232,8 +237,10 @@ class WebhookCreateUpdateSerializer(serializers.ModelSerializer[Webhook]):
     def validate_id(self, id: Optional[int]) -> Optional[int]:
         # Used as a nested serializer under a list -> parent serializer;
         # both parents must be present with an Entity instance bound.
-        assert self.parent is not None and self.parent.parent is not None
-        entity = self.parent.parent.instance
+        parent = get_bound_parent(self)
+        grandparent = get_bound_parent(parent) if parent is not None else None
+        assert grandparent is not None
+        entity = grandparent.instance
         assert isinstance(entity, Entity)
         if id is not None and not entity.webhooks.filter(id=id).exists():
             raise ObjectNotExistsError("Invalid id(%s) object does not exist" % id)
@@ -388,7 +395,7 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer[EntityAttr]):
                     errors.append(f"{field}: {msg}")
                 else:
                     errors.append(msg)
-            raise ValidationError("; ".join(errors))
+            raise ValidationError("; ".join(errors)) from e
 
         # Additional validation for referral field (after Pydantic validation)
         if "type" in attr:
@@ -456,12 +463,9 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer[EntityAttr]):
 
     def validate_id(self, id: int) -> int:
         # Handle case when serializer is used directly (e.g., in tests)
-        if (
-            self.parent is None
-            or not hasattr(self.parent, "parent")
-            or self.parent.parent is None
-            or not hasattr(self.parent.parent, "instance")
-        ):
+        parent = get_bound_parent(self)
+        grandparent = get_bound_parent(parent) if parent is not None else None
+        if grandparent is None or not hasattr(grandparent, "instance"):
             # When used directly, try to get the entity from the EntityAttr
             entity_attr: EntityAttr | None = EntityAttr.objects.filter(
                 id=id, is_active=True
@@ -471,8 +475,7 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer[EntityAttr]):
             return id
 
         # Normal case when used as nested serializer
-        assert self.parent is not None and self.parent.parent is not None
-        entity = self.parent.parent.instance
+        entity = grandparent.instance
         assert isinstance(entity, Entity)
         nested_entity_attr: Optional[EntityAttr] = entity.attrs.filter(
             id=id, is_active=True
@@ -796,7 +799,7 @@ class EntitySerializer(serializers.ModelSerializer[Entity]):
         try:
             re.compile(item_name_pattern)
         except Exception:
-            raise ValidationError("Invalid regex pattern")
+            raise ValidationError("Invalid regex pattern") from None
 
         return item_name_pattern
 
@@ -931,7 +934,9 @@ class EntitySerializer(serializers.ModelSerializer[Entity]):
 
             # Capture previous choices to detect SELECT label changes that require
             # ES reindex of existing entries (labels are physically materialised in ES).
-            prev_choices: list[dict[str, Any]] | None = None
+            # `choices` is a JSONField; its stored shape isn't statically
+            # guaranteed to be list[dict], hence the isinstance filter below.
+            prev_choices: list[Any] | None = None
             if attr_id and "choices" in attr_data:
                 prev_choices = EntityAttr.objects.get(id=attr_id).choices
 

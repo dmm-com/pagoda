@@ -53,7 +53,7 @@ else:
     CUSTOM_PARALLELIZABLE_OPERATIONS = []
     CUSTOM_TASKS = {}
 
-    class JobOperationCustom(BaseIntEnum):  # type: ignore
+    class JobOperationCustom(BaseIntEnum):  # type: ignore[no-redef]
         pass
 
 

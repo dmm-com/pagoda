@@ -235,8 +235,8 @@ class PostEntrySerializer(serializers.Serializer[dict[str, Any]]):
             if isinstance(value, str):
                 try:
                     datetime.fromisoformat(value)
-                except ValueError:
-                    raise ValueError("Incorrect data format, should be ISO8601 format")
+                except ValueError as e:
+                    raise ValueError("Incorrect data format, should be ISO8601 format") from e
                 return datetime.fromisoformat(value)
             else:
                 return None

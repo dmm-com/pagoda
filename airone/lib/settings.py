@@ -3,7 +3,9 @@ from typing import Any
 
 
 class Settings(object):
-    def __init__(self, conf: dict[str, Any] = {}) -> None:
+    def __init__(self, conf: dict[str, Any] | None = None) -> None:
+        if conf is None:
+            conf = {}
         self.conf = conf
 
     def __getattr__(self, key: str) -> Any:

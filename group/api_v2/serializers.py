@@ -28,7 +28,8 @@ class GroupSerializer(serializers.ModelSerializer[Group]):
 
     @extend_schema_field(GroupMemberSerializer(many=True))
     def get_members(self, obj: Group) -> list[GroupMemberType]:
-        users = cast(list[User], getattr(obj, "active_members"))
+        # active_members is attached by Prefetch(to_attr=...), so it is invisible to the checker.
+        users = cast(list[User], getattr(obj, "active_members"))  # noqa: B009
         return [
             {
                 "id": u.id,

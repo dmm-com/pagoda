@@ -88,6 +88,7 @@ class PluginRegistry:
 
         registered_count = 0
         for handler_info in hook_handlers:
+            hook_name: str | None = None
             try:
                 hook_name = handler_info["hook_name"]
                 entity = handler_info.get("entity")
@@ -131,11 +132,11 @@ class PluginRegistry:
         # Split into module path and function name
         try:
             module_path, func_name = handler_path.rsplit(".", 1)
-        except ValueError:
+        except ValueError as e:
             raise ImportError(
                 f"Invalid handler path '{handler_path}'. "
                 f"Expected format: 'module.path.function_name'"
-            )
+            ) from e
 
         # Import the module
         module = importlib.import_module(module_path)

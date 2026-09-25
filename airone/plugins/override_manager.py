@@ -41,10 +41,10 @@ class OperationType(StrEnum):
         """Convert string to OperationType."""
         try:
             return cls(value.lower())
-        except ValueError:
+        except ValueError as e:
             raise ValueError(
                 f"Invalid operation type: {value}. Valid types: {[op.value for op in cls]}"
-            )
+            ) from e
 
 
 @dataclass(slots=True)

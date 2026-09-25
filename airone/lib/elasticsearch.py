@@ -567,8 +567,8 @@ def make_query(
     hint_referral_entity_id: int | None = None,
     hint_entry: EntryHint | None = None,
     allow_missing_attributes: bool = False,
-    exclude_referrals: list[int] = [],
-    include_referrals: list[int] = [],
+    exclude_referrals: list[int] | None = None,
+    include_referrals: list[int] | None = None,
     entry_ids: list[int] | None = None,
 ) -> dict[str, Any]:
     """Create a search query for Elasticsearch.

@@ -87,9 +87,7 @@ def index(request: HttpRequest, obj_id: int) -> HttpResponse:
 )
 def set(request: HttpRequest, recv_data: dict[str, Any]) -> JsonResponse | HttpResponse:
     user = cast(User, request.user)
-    acl_obj = getattr(_get_acl_model(recv_data["object_type"]), "objects").get(
-        id=recv_data["object_id"]
-    )
+    acl_obj = _get_acl_model(recv_data["object_type"]).objects.get(id=recv_data["object_id"])
 
     # This checks that user currently has permission to change it
     if not user.has_permission(acl_obj, ACLType.Full):

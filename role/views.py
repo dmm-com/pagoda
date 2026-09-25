@@ -56,7 +56,7 @@ def initialize_role_context() -> dict[str, Any]:
                 "name": g.name,
                 "type": "group",
             }
-            for g in Group.objects.filter(is_active=True).order_by("name")  # type: ignore[misc]
+            for g in Group.objects.filter(is_active=True).order_by("name")
         }
 
     return context

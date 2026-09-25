@@ -12,7 +12,7 @@ from django.contrib.auth.models import AbstractBaseUser, AbstractUser, Anonymous
 User = get_user_model()
 
 
-def get_current_user_info(user: AbstractBaseUser | AnonymousUser) -> Dict[str, Any]:
+def get_current_user_info(user: AbstractBaseUser | AnonymousUser | None) -> Dict[str, Any]:
     """Get current user information
 
     Provides safe access to user information for plugins.
@@ -23,7 +23,7 @@ def get_current_user_info(user: AbstractBaseUser | AnonymousUser) -> Dict[str, A
     Returns:
         Dictionary containing user information
     """
-    if not user or not user.is_authenticated:
+    if user is None or not user.is_authenticated:
         return {
             "username": "anonymous",
             "is_authenticated": False,
@@ -41,12 +41,13 @@ def get_current_user_info(user: AbstractBaseUser | AnonymousUser) -> Dict[str, A
         "is_authenticated": True,
         "is_staff": auth_user.is_staff,
         "is_superuser": auth_user.is_superuser,
-        "date_joined": auth_user.date_joined.isoformat() if auth_user.date_joined else None,
+        # date_joined has a non-nullable DB default, so it is always set.
+        "date_joined": auth_user.date_joined.isoformat(),
         "last_login": auth_user.last_login.isoformat() if auth_user.last_login else None,
     }
 
 
-def check_user_permission(user: AbstractBaseUser | AnonymousUser, permission: str) -> bool:
+def check_user_permission(user: AbstractBaseUser | AnonymousUser | None, permission: str) -> bool:
     """Check if user has specific permission
 
     Args:
@@ -56,13 +57,13 @@ def check_user_permission(user: AbstractBaseUser | AnonymousUser, permission: st
     Returns:
         True if user has permission, False otherwise
     """
-    if not user or not user.is_authenticated:
+    if user is None or not user.is_authenticated:
         return False
 
     return cast(AbstractUser, user).has_perm(permission)
 
 
-def get_user_groups(user: AbstractBaseUser | AnonymousUser) -> list[str]:
+def get_user_groups(user: AbstractBaseUser | AnonymousUser | None) -> list[str]:
     """Get user's group names
 
     Args:
@@ -71,7 +72,7 @@ def get_user_groups(user: AbstractBaseUser | AnonymousUser) -> list[str]:
     Returns:
         List of group names the user belongs to
     """
-    if not user or not user.is_authenticated:
+    if user is None or not user.is_authenticated:
         return []
 
     return list(cast(AbstractUser, user).groups.values_list("name", flat=True))

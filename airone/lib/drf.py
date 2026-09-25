@@ -46,7 +46,7 @@ class YAMLParser(BaseParser):
             loaded: dict[str, object] = yaml.safe_load(data)
             return loaded
         except (ValueError, yaml.parser.ParserError, yaml.scanner.ScannerError) as exc:
-            raise ParseError("YAML parse error - %s" % str(exc))
+            raise ParseError("YAML parse error - %s" % str(exc)) from exc
 
 
 class YAMLRenderer(BaseRenderer):
@@ -214,3 +214,16 @@ class AironeUserDefault(serializers.CurrentUserDefault):
 
         result: User = super().__call__(serializer_field)
         return result
+
+
+def get_bound_parent(
+    field: serializers.Field[Any, Any, Any, Any],
+) -> "serializers.BaseSerializer[Any] | None":
+    """Return the serializer ``field`` is bound to, or None before bind().
+
+    DRF assigns ``Field.parent = None`` in ``__init__`` and only sets the real parent
+    in ``bind()``, but the stubs declare the attribute as always present. Reading it
+    through this helper keeps the "not bound yet" case visible to the type checker.
+    """
+    parent: serializers.BaseSerializer[Any] | None = getattr(field, "parent", None)
+    return parent

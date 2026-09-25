@@ -100,7 +100,7 @@ def import_role_v2(self: Any, job: Job) -> tuple[JobStatus, str, None] | None:
             for name in getattr(role_data, key):
                 group_instance = Group.objects.filter(
                     name=name,
-                    is_active=True,  # type: ignore[misc]
+                    is_active=True,
                 ).first()
                 if not group_instance:
                     err_msg.append("specified group is not found (name: %s)" % name)

@@ -1,7 +1,7 @@
 import importlib
 import sys
 from datetime import datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from django.conf import settings
 from django.contrib.auth.models import Group as DjangoGroup
@@ -20,6 +20,15 @@ class Group(DjangoGroup):
     parent_group = models.ForeignKey(
         "Group", on_delete=models.DO_NOTHING, related_name="subordinates", null=True
     )
+
+    if TYPE_CHECKING:
+        # The manager is inherited from django.contrib.auth's Group, so the stubs type it
+        # as a manager of the parent model and reject lookups on fields defined here
+        # (e.g. is_active). Re-declare it for the checker only; at runtime Django already
+        # binds the inherited manager to this model. The stubs' GroupManager is not generic,
+        # so narrowing it is reported as an incompatible override; this single ignore
+        # replaces one at every query site.
+        objects: ClassVar[models.Manager["Group"]]  # type: ignore[assignment]
 
     def save(self, *args: Any, **kwargs: Any) -> None:
         """

@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Permission
 from django.db import models
 from django.db.models import Q, QuerySet
 from simple_history.models import HistoricalRecords
@@ -14,6 +14,7 @@ from airone.lib.types import AttrType
 
 if TYPE_CHECKING:
     from acl.models import ACLBase
+    from group.models import Group
     from user.models import User
 
 
@@ -28,7 +29,7 @@ class Role(models.Model):
     admin_groups = models.ManyToManyField("group.Group", related_name="admin_role", blank=True)
 
     @classmethod
-    def editable(kls, user: "User", admin_users: list["User"], admin_groups: list[Group]) -> bool:
+    def editable(kls, user: "User", admin_users: list["User"], admin_groups: list["Group"]) -> bool:
         # This checks whether spcified user is belonged to the specified
         # admin_users and admin_groups.
         if user.is_superuser:

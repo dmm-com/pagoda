@@ -569,7 +569,9 @@ def register_job_params(operation: int, contract: ParamsContract) -> None:
     """Register a parameter contract for a custom/plugin operation."""
 
     operation_id = int(operation)
-    if not isinstance(contract, type) or not issubclass(contract, BaseModel):
+    # Plugins call this without type checking, so validate the contract as an arbitrary object.
+    raw_contract: object = contract
+    if not isinstance(raw_contract, type) or not issubclass(raw_contract, BaseModel):
         raise TypeError("Job parameter contract must be a Pydantic model class")
     if operation_id in CORE_JOB_PARAMS:
         raise ValueError(f"Cannot replace core job parameter contract for operation {operation_id}")

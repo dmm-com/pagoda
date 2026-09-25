@@ -619,7 +619,9 @@ class TriggerAction(models.Model):
         elif attr_type == AttrType.OBJECT:
             return value.ref_cond.id if isinstance(value.ref_cond, Entry) else None
 
-    def run(self, user: "User", entry: Entry, call_stacks: list[int] = []) -> None:
+    def run(self, user: "User", entry: Entry, call_stacks: list[int] | None = None) -> None:
+        if call_stacks is None:
+            call_stacks = []
         # When self.id contains in call_stacks, it means that this action is already invoked.
         # This prevents infinite loop.
         if self.id in call_stacks:
@@ -636,9 +638,8 @@ class TriggerAction(models.Model):
         serializer = EntryUpdateSerializer(
             instance=entry, data=setting_data, context={"request": DRFRequest(user)}
         )
-        if serializer:
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
 
 class TriggerActionValue(models.Model):
