@@ -1,5 +1,6 @@
 import { SnackbarKey, useSnackbar } from "notistack";
 
+import { translate } from "i18n/config";
 import { NotificationMessages } from "services/NotificationMessages";
 
 interface formNotification {
@@ -19,7 +20,9 @@ export const useFormNotification = (
 ): formNotification => {
   const { enqueueSnackbar } = useSnackbar();
 
-  const operationName = willCreate ? "作成" : "更新";
+  const operationName = willCreate
+    ? translate("common.create")
+    : translate("common.update");
 
   return {
     enqueueSubmitResult: (finished: boolean, additionalMessage?: string) => {

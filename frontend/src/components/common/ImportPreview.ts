@@ -5,6 +5,8 @@
  * preview components stay independent from the generated API client types.
  */
 
+import { translate } from "../../i18n/config";
+
 export type ImportPreviewAction =
   | "create"
   | "update"
@@ -56,18 +58,34 @@ export interface ImportPreview {
   truncated: boolean;
 }
 
-export const ImportPreviewActionLabel: Record<ImportPreviewAction, string> = {
-  create: "新規作成",
-  update: "更新",
-  unchanged: "変更なし",
-  skip: "スキップ",
-  error: "エラー",
+export const importPreviewActionLabel = (
+  action: ImportPreviewAction,
+): string => {
+  switch (action) {
+    case "create":
+      return translate("importPreview.action.create");
+    case "update":
+      return translate("importPreview.action.update");
+    case "unchanged":
+      return translate("importPreview.action.unchanged");
+    case "skip":
+      return translate("importPreview.action.skip");
+    case "error":
+      return translate("importPreview.action.error");
+  }
 };
 
-export const ImportPreviewSkipReasonLabel: Record<string, string> = {
-  spoofing: "作成者が自分ではないため作成できません",
-  permission_denied: "更新権限がありません",
-  disallow_update: "変更できない項目を変更しようとしています",
+export const importPreviewSkipReasonLabel = (reason: string): string => {
+  switch (reason) {
+    case "spoofing":
+      return translate("importPreview.skipReason.spoofing");
+    case "permission_denied":
+      return translate("importPreview.skipReason.permissionDenied");
+    case "disallow_update":
+      return translate("importPreview.skipReason.disallowUpdate");
+    default:
+      return reason;
+  }
 };
 
 export const isImportPreviewNoop = (preview: ImportPreview): boolean =>

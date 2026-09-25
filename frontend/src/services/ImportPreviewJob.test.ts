@@ -6,6 +6,7 @@ import {
   waitForImportPreviews,
 } from "./ImportPreviewJob";
 
+import i18n from "i18n/config";
 import { JobStatuses } from "services/Constants";
 
 const mockGetJob = vi.fn();
@@ -129,5 +130,39 @@ describe("waitForImportPreview", () => {
       waitForImportPreview(7, { isAbandoned: () => true }),
     ).rejects.toThrow(ImportPreviewFailure);
     expect(mockGetJob).not.toHaveBeenCalled();
+  });
+
+  describe("English", () => {
+    afterEach(async () => {
+      await i18n.changeLanguage("ja");
+    });
+
+    test.each([
+      [JobStatuses.ERROR, "Failed to preview changes"],
+      [JobStatuses.TIMEOUT, "Timed out previewing changes"],
+      [JobStatuses.CANCELED, "Cancelled previewing changes"],
+    ])("should fail on job status %i in English", async (status, message) => {
+      await i18n.changeLanguage("en");
+      mockGetJob.mockResolvedValue({ status, text: "" });
+
+      await expect(waitForImportPreview(7)).rejects.toThrow(
+        new ImportPreviewFailure(message),
+      );
+      expect(mockGetImportPreview).not.toHaveBeenCalled();
+    });
+
+    test("should report a cancelled preview in English", async () => {
+      await i18n.changeLanguage("en");
+      mockGetJob.mockResolvedValue({
+        status: JobStatuses.PROCESSING,
+        text: "",
+      });
+
+      await expect(
+        waitForImportPreview(7, { isAbandoned: () => true }),
+      ).rejects.toThrow(
+        new ImportPreviewFailure("Cancelled previewing changes"),
+      );
+    });
   });
 });

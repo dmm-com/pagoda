@@ -19,6 +19,7 @@ import { useSnackbar } from "notistack";
 import { FC, useState } from "react";
 import { useNavigate } from "react-router";
 
+import { useTranslation } from "../../hooks/useTranslation";
 import { aironeApiClient } from "../../repository/AironeApiClient";
 import { entityEntriesPath, entryDetailsPath } from "../../routes/Routes";
 import { JobOperations, JobStatuses } from "../../services/Constants";
@@ -121,6 +122,7 @@ interface Props {
 }
 
 export const JobList: FC<Props> = ({ jobs, showUser }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -135,7 +137,7 @@ export const JobList: FC<Props> = ({ jobs, showUser }) => {
         navigate(0);
       })
       .catch(() => {
-        enqueueSnackbar("キャンセルに失敗しました。", { variant: "error" });
+        enqueueSnackbar(t("job.list.cancelFailed"), { variant: "error" });
       });
   };
 
@@ -145,28 +147,28 @@ export const JobList: FC<Props> = ({ jobs, showUser }) => {
         <AironeTableHeadRow>
           {showUser && (
             <AironeTableHeadCell sx={{ width: "120px" }}>
-              実行ユーザー
+              {t("job.list.userColumn")}
             </AironeTableHeadCell>
           )}
           <AironeTableHeadCell sx={{ width: "160px" }}>
-            対象モデル
+            {t("job.list.targetEntityColumn")}
           </AironeTableHeadCell>
           <AironeTableHeadCell sx={{ width: "160px" }}>
-            対象アイテム
+            {t("job.list.targetEntryColumn")}
           </AironeTableHeadCell>
           <AironeTableHeadCell sx={{ width: "120px" }}>
-            状況
+            {t("job.list.statusColumn")}
           </AironeTableHeadCell>
           <AironeTableHeadCell sx={{ width: "100px" }}>
-            操作
+            {t("job.list.operationColumn")}
           </AironeTableHeadCell>
           <AironeTableHeadCell sx={{ width: "80px" }}>
-            実行時間
+            {t("job.list.executionTimeColumn")}
           </AironeTableHeadCell>
           <AironeTableHeadCell sx={{ width: "160px" }}>
-            実行日時
+            {t("job.list.executionDatetimeColumn")}
           </AironeTableHeadCell>
-          <AironeTableHeadCell>備考</AironeTableHeadCell>
+          <AironeTableHeadCell>{t("job.list.noteColumn")}</AironeTableHeadCell>
         </AironeTableHeadRow>
       </TableHead>
       <TableBody>
@@ -275,10 +277,10 @@ export const JobList: FC<Props> = ({ jobs, showUser }) => {
                           sx={{ my: "4px" }}
                           onClick={handleOpen}
                         >
-                          キャンセル
+                          {t("common.cancel")}
                         </Button>
                       )}
-                      dialogTitle="本当にキャンセルしますか？"
+                      dialogTitle={t("job.list.confirmCancelTitle")}
                       onClickYes={() => handleCancel(job.id)}
                     />
                   )}

@@ -2,12 +2,13 @@
  */
 
 import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { renderHook, act } from "@testing-library/react";
+import { renderHook, act, screen } from "@testing-library/react";
 import { SnackbarProvider } from "notistack";
 import { FC, ReactNode } from "react";
 
 import { useJobCompletionNotification } from "./useJobCompletionNotification";
 
+import i18n from "i18n/config";
 import { JobOperations, JobStatuses } from "services/Constants";
 
 const wrapper: FC<{ children: ReactNode }> = ({ children }) => (
@@ -248,5 +249,44 @@ describe("useJobCompletionNotification", () => {
       localStorage.getItem("job__notified_ids") ?? "[]",
     );
     expect(stored).toContain(42);
+  });
+
+  describe("English messages", () => {
+    afterEach(async () => {
+      await i18n.changeLanguage("ja");
+    });
+
+    test("should show English toast when a job completes", async () => {
+      await act(async () => {
+        await i18n.changeLanguage("en");
+      });
+
+      const initialJobs = [
+        makeJob({
+          id: 100,
+          status: JobStatuses.PROCESSING,
+          target: { id: 1, name: "MyEntity", schemaId: null, schemaName: null },
+        }),
+      ];
+
+      const { rerender } = renderHook(
+        ({ recentJobs }) => useJobCompletionNotification(recentJobs),
+        { wrapper, initialProps: { recentJobs: initialJobs } },
+      );
+
+      const completedJobs = [
+        makeJob({
+          id: 100,
+          status: JobStatuses.DONE,
+          target: { id: 1, name: "MyEntity", schemaId: null, schemaName: null },
+        }),
+      ];
+
+      act(() => {
+        rerender({ recentJobs: completedJobs });
+      });
+
+      expect(await screen.findByText("MyEntity completed")).toBeInTheDocument();
+    });
   });
 });

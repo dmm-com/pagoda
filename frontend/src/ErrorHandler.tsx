@@ -11,6 +11,7 @@ import { FC, ReactNode, useCallback, useEffect, useState } from "react";
 import { ErrorBoundary, FallbackProps } from "react-error-boundary";
 
 import { useError } from "./hooks/useError";
+import { useTranslation } from "./hooks/useTranslation";
 import { ForbiddenErrorPage } from "./pages/ForbiddenErrorPage";
 import { NonTermsServiceAgreementPage } from "./pages/NonTermsServiceAgreement";
 import { NotFoundErrorPage } from "./pages/NotFoundErrorPage";
@@ -46,6 +47,7 @@ interface GenericErrorProps {
 
 const GenericError: FC<GenericErrorProps> = ({ children }) => {
   const [open, setOpen] = useState(true);
+  const { t } = useTranslation();
 
   const handleGoToTop = useCallback(() => {
     window.location.href = topPath();
@@ -57,18 +59,16 @@ const GenericError: FC<GenericErrorProps> = ({ children }) => {
 
   return (
     <Dialog open={open} onClose={() => setOpen(false)}>
-      <DialogTitle>エラーが発生しました</DialogTitle>
+      <DialogTitle>{t("errorHandler.title")}</DialogTitle>
       <DialogContent>
         <ErrorDescription>
-          <Typography>
-            不明なエラーが発生しました。トップページに戻って操作し直してください
-          </Typography>
-          <Typography>
-            エラーが繰り返し発生する場合は管理者にお問い合わせください
-          </Typography>
+          <Typography>{t("errorHandler.unknownError")}</Typography>
+          <Typography>{t("errorHandler.contactAdmin")}</Typography>
         </ErrorDescription>
         <ErrorDetails>
-          <Typography variant="body2">エラー詳細: {children}</Typography>
+          <Typography variant="body2">
+            {t("errorHandler.detail")}: {children}
+          </Typography>
         </ErrorDetails>
         <Buttons>
           <Button
@@ -77,7 +77,7 @@ const GenericError: FC<GenericErrorProps> = ({ children }) => {
             onClick={handleGoToTop}
             sx={{ mx: 1 }}
           >
-            トップページに戻る
+            {t("errorHandler.backToTop")}
           </Button>
           <Button
             variant="outlined"
@@ -85,7 +85,7 @@ const GenericError: FC<GenericErrorProps> = ({ children }) => {
             onClick={handleReload}
             sx={{ mx: 1 }}
           >
-            リロードする
+            {t("errorHandler.reload")}
           </Button>
         </Buttons>
       </DialogContent>

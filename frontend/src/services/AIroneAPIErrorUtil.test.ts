@@ -6,8 +6,11 @@ import {
   isAironeApiRootError,
   isResponseError,
   toError,
+  toReportableNonFieldErrors,
 } from "./AironeAPIErrorUtil";
 import { ForbiddenError, NotFoundError, UnknownError } from "./Exceptions";
+
+import i18n from "i18n/config";
 
 test("isAironeApiRootError should recognize an error is a root-level(same as ErrorDetail) or not", () => {
   expect(
@@ -76,4 +79,36 @@ test("isResponseError should recognize an error is a ResponseError or not", () =
   expect(isResponseError(new ResponseError(new Response()))).toBeTruthy();
 
   expect(isResponseError(new Error("others"))).toBeFalsy();
+});
+
+describe("toReportableNonFieldErrors", () => {
+  afterEach(async () => {
+    await i18n.changeLanguage("ja");
+  });
+
+  test("translates a known error code to Japanese", async () => {
+    const response = new Response(
+      JSON.stringify({ code: "AE-210000", message: "dummy" }),
+      { status: 400 },
+    );
+    const error = new ResponseError(response);
+
+    expect(await toReportableNonFieldErrors(error)).toBe(
+      "操作に必要な権限が不足しています",
+    );
+  });
+
+  test("translates a known error code to English", async () => {
+    await i18n.changeLanguage("en");
+
+    const response = new Response(
+      JSON.stringify({ code: "AE-210000", message: "dummy" }),
+      { status: 400 },
+    );
+    const error = new ResponseError(response);
+
+    expect(await toReportableNonFieldErrors(error)).toBe(
+      "You do not have permission for this operation",
+    );
+  });
 });
