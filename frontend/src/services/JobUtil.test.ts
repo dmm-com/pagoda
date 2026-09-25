@@ -49,6 +49,10 @@ describe("JobUtil", () => {
       expect(jobStatusLabel(JobStatuses.CANCELED)).toBe("キャンセル");
     });
 
+    test("should return '警告' for WARNING status", () => {
+      expect(jobStatusLabel(JobStatuses.WARNING)).toBe("警告");
+    });
+
     test("should return '不明' for undefined status", () => {
       expect(jobStatusLabel(undefined)).toBe("不明");
     });

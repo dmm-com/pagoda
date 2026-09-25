@@ -21,6 +21,8 @@ export const jobStatusLabel = (jobStatus: number | undefined): string => {
       return "処理中";
     case JobStatuses.CANCELED:
       return "キャンセル";
+    case JobStatuses.WARNING:
+      return "警告";
     default:
       return "不明";
   }
