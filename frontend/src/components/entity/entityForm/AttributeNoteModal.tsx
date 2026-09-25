@@ -6,6 +6,8 @@ import { AironeModal } from "../../common/AironeModal";
 
 import { Schema } from "./EntityFormSchema";
 
+import { useTranslation } from "hooks/useTranslation";
+
 interface Props {
   index: number;
   handleCloseModal: () => void;
@@ -17,10 +19,12 @@ export const AttributeNoteModal: FC<Props> = ({
   handleCloseModal,
   control,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <AironeModal
-      title={"属性説明"}
-      caption={"必要に応じてご入力ください"}
+      title={t("entity.form.attrDescriptionMenuTitle")}
+      caption={t("entity.form.attrNoteModalCaption")}
       open={index >= 0}
       onClose={handleCloseModal}
     >
@@ -31,7 +35,7 @@ export const AttributeNoteModal: FC<Props> = ({
         render={({ field }) => (
           <TextField
             {...field}
-            placeholder="説明"
+            placeholder={t("entity.form.attrNotePlaceholder")}
             variant="standard"
             fullWidth
           />
@@ -40,7 +44,7 @@ export const AttributeNoteModal: FC<Props> = ({
 
       <Box display="flex" justifyContent="flex-end">
         <Button onClick={handleCloseModal}>
-          <Typography align="right">閉じる</Typography>
+          <Typography align="right">{t("common.close")}</Typography>
         </Button>
       </Box>
     </AironeModal>

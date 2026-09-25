@@ -17,6 +17,7 @@ import { BasicFields } from "./BasicFields";
 import { Schema } from "./EntityFormSchema";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 
 describe("BasicFields", () => {
   const defaultValues: Schema = {
@@ -65,5 +66,31 @@ describe("BasicFields", () => {
     expect(getValues("name")).toEqual("entity name");
     expect(getValues("note")).toEqual("note");
     expect(getValues("isToplevel")).toBeTruthy();
+  });
+
+  test("should render in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    const {
+      result: {
+        current: { control, setValue },
+      },
+    } = renderHook(() =>
+      useForm<Schema>({
+        resolver: zodResolver(schema),
+        mode: "onBlur",
+        defaultValues,
+      }),
+    );
+
+    render(<BasicFields control={control} setValue={setValue} />, {
+      wrapper: TestWrapper,
+    });
+
+    expect(screen.getByText("Basic information")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Entity name")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Notes")).toBeInTheDocument();
   });
 });

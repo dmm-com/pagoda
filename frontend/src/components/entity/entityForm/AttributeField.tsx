@@ -41,6 +41,7 @@ import { DefaultObjectValueField } from "./DefaultObjectValueField";
 import { Schema } from "./EntityFormSchema";
 
 import { usePagodaSWR } from "hooks/usePagodaSWR";
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { aclPath } from "routes/Routes";
 import { AttributeTypes } from "services/Constants";
@@ -126,6 +127,7 @@ export const AttributeField: FC<Props> = ({
   attrId,
   index,
 }) => {
+  const { t } = useTranslation();
   const attrType = useWatch({
     control,
     name: `attrs.${index ?? -1}.type`,
@@ -202,13 +204,15 @@ export const AttributeField: FC<Props> = ({
       {/* Drag handle to reorder attributes (pointer & keyboard) */}
       <TableCell>
         <Box display="flex" alignItems="center" justifyContent="center">
-          <Tooltip title="ドラッグして並び替え">
+          <Tooltip title={t("entity.form.dragReorderTooltip")}>
             {/* span keeps the tooltip working while the button is disabled */}
             <span>
               <IconButton
                 ref={dragHandleProps?.setActivatorNodeRef}
                 disabled={!isWritable || dragHandleProps == null}
-                aria-label={`${index + 1} 番目の属性をドラッグして並び替え`}
+                aria-label={t("entity.form.dragReorderAriaLabel", {
+                  index: index + 1,
+                })}
                 data-testid="attr-drag-handle"
                 sx={{
                   cursor: dragHandleProps?.isDragging ? "grabbing" : "grab",
@@ -236,7 +240,7 @@ export const AttributeField: FC<Props> = ({
               id="attr-name"
               required
               disabled={!isWritable}
-              placeholder="属性名"
+              placeholder={t("entity.form.attrNameHeader")}
               error={error != null}
               helperText={error?.message}
               size="small"
@@ -258,7 +262,9 @@ export const AttributeField: FC<Props> = ({
                 {...field}
                 id="attr_type"
                 inputProps={{
-                  "aria-label": `${attrName || "未命名属性"}の属性型`,
+                  "aria-label": t("entity.form.attrTypeAriaLabel", {
+                    name: attrName || t("entity.form.unnamedAttribute"),
+                  }),
                 }}
                 size="small"
                 fullWidth
@@ -293,7 +299,7 @@ export const AttributeField: FC<Props> = ({
                     <TextField
                       {...params}
                       variant="outlined"
-                      placeholder="モデルを選択"
+                      placeholder={t("entity.form.selectEntityPlaceholder")}
                       disabled={!isWritable}
                     />
                   )}
@@ -333,14 +339,14 @@ export const AttributeField: FC<Props> = ({
                   loading={displayAttrLoading}
                   noOptionsText={
                     referralIds.length === 0
-                      ? "参照先モデルを先に選択"
-                      : "該当する属性がありません"
+                      ? t("entity.form.selectEntityFirstOption")
+                      : t("entity.form.noMatchingAttrOption")
                   }
                   renderInput={(params) => (
                     <TextField
                       {...params}
                       id="display_attr"
-                      placeholder="表示ラベルに使う属性名 (任意)"
+                      placeholder={t("entity.form.displayAttrPlaceholder")}
                       inputProps={{
                         ...params.inputProps,
                         "data-1p-ignore": true,
@@ -377,7 +383,9 @@ export const AttributeField: FC<Props> = ({
                   referralEntityIds={referralIds}
                   multiple={attrType === AttributeTypes.array_object.type}
                   disabled={!isWritable || referralIds.length === 0}
-                  ariaLabel={`${index + 1} 番目の属性のデフォルト値`}
+                  ariaLabel={t("entity.form.defaultValueAriaLabel", {
+                    index: index + 1,
+                  })}
                   onChange={field.onChange}
                 />
               );
@@ -399,7 +407,9 @@ export const AttributeField: FC<Props> = ({
                   onChange={(e) => field.onChange(e.target.checked)}
                   disabled={!isWritable}
                   inputProps={{
-                    "aria-label": `${index + 1} 番目の属性のデフォルト値`,
+                    "aria-label": t("entity.form.defaultValueAriaLabel", {
+                      index: index + 1,
+                    }),
                   }}
                 />
               );
@@ -412,7 +422,7 @@ export const AttributeField: FC<Props> = ({
                   {...field}
                   type="number"
                   value={field.value ?? ""}
-                  placeholder="デフォルト値"
+                  placeholder={t("entity.form.defaultValueHeader")}
                   size="small"
                   fullWidth
                   disabled={!isWritable}
@@ -427,8 +437,8 @@ export const AttributeField: FC<Props> = ({
                 value={field.value ?? ""}
                 placeholder={
                   isDefaultValueSupported
-                    ? "デフォルト値"
-                    : "この型では未サポート"
+                    ? t("entity.form.defaultValueHeader")
+                    : t("entity.form.defaultValueUnsupported")
                 }
                 size="small"
                 fullWidth
@@ -442,7 +452,9 @@ export const AttributeField: FC<Props> = ({
       {/* Delete target Attribute */}
       <TableCell>
         <IconButton
-          aria-label={`${index + 1} 番目の属性を削除`}
+          aria-label={t("entity.form.deleteAttrAriaLabel", {
+            index: index + 1,
+          })}
           onClick={() => handleDeleteAttribute(index)}
           disabled={!isWritable}
         >
@@ -453,7 +465,9 @@ export const AttributeField: FC<Props> = ({
       {/* Add another Attribute button */}
       <TableCell>
         <IconButton
-          aria-label={`${index + 1} 番目の後に属性を追加`}
+          aria-label={t("entity.form.appendAttrAriaLabel", {
+            index: index + 1,
+          })}
           onClick={() => handleAppendAttribute(index ?? 0)}
         >
           <AddIcon />
@@ -462,9 +476,11 @@ export const AttributeField: FC<Props> = ({
 
       {/* Icon other settings */}
       <TableCell>
-        <Tooltip title="詳細">
+        <Tooltip title={t("common.details")}>
           <IconButton
-            aria-label={`${index + 1} 番目の属性の詳細メニューを開く`}
+            aria-label={t("entity.form.attrMenuAriaLabel", {
+              index: index + 1,
+            })}
             onClick={(e) => {
               setAttrMenuElem(e.currentTarget);
             }}
@@ -485,7 +501,10 @@ export const AttributeField: FC<Props> = ({
               <ListItemIcon>
                 <EditNoteIcon />
               </ListItemIcon>
-              <ListItemText primary="属性説明" secondary="属性の説明文を設定" />
+              <ListItemText
+                primary={t("entity.form.attrDescriptionMenuTitle")}
+                secondary={t("entity.form.attrDescriptionMenuSubtitle")}
+              />
             </ListItemButton>
 
             {/* Open modal for setting Attribute auto-naming configuration */}
@@ -497,8 +516,8 @@ export const AttributeField: FC<Props> = ({
                 <BadgeIcon />
               </ListItemIcon>
               <ListItemText
-                primary="自動命名"
-                secondary="属性値からアイテム名を自動設定"
+                primary={t("entity.form.autoNameMenuTitle")}
+                secondary={t("entity.form.autoNameMenuSubtitle")}
               />
             </ListItemButton>
 
@@ -511,7 +530,10 @@ export const AttributeField: FC<Props> = ({
               <ListItemIcon>
                 <GroupIcon />
               </ListItemIcon>
-              <ListItemText primary="ACL設定" secondary="属性の権限を設定" />
+              <ListItemText
+                primary={t("entity.form.aclMenuTitle")}
+                secondary={t("entity.form.aclMenuSubtitle")}
+              />
             </ListItemButton>
 
             <Divider />
@@ -527,7 +549,9 @@ export const AttributeField: FC<Props> = ({
                     <Checkbox
                       id="mandatory"
                       inputProps={{
-                        "aria-label": `${index + 1} 番目の属性を必須にする`,
+                        "aria-label": t("entity.form.mandatoryAriaLabel", {
+                          index: index + 1,
+                        }),
                       }}
                       disabled={!isWritable}
                       checked={field.value}
@@ -537,8 +561,8 @@ export const AttributeField: FC<Props> = ({
                 />
               </ListItemIcon>
               <ListItemText
-                primary="必須設定"
-                secondary="属性値の設定を必須化"
+                primary={t("entity.form.mandatoryMenuTitle")}
+                secondary={t("entity.form.mandatoryMenuSubtitle")}
               />
             </ListItem>
 
@@ -553,7 +577,9 @@ export const AttributeField: FC<Props> = ({
                     <Checkbox
                       id="delete_in_chain"
                       inputProps={{
-                        "aria-label": `${index + 1} 番目の属性を関連削除に連動する`,
+                        "aria-label": t("entity.form.deleteInChainAriaLabel", {
+                          index: index + 1,
+                        }),
                       }}
                       disabled={!isWritable}
                       checked={field.value}
@@ -563,8 +589,8 @@ export const AttributeField: FC<Props> = ({
                 />
               </ListItemIcon>
               <ListItemText
-                primary="関連削除"
-                secondary="参照アイテムの削除に連動"
+                primary={t("entity.form.deleteInChainMenuTitle")}
+                secondary={t("entity.form.deleteInChainMenuSubtitle")}
               />
             </ListItem>
           </List>
@@ -595,7 +621,7 @@ export const AttributeField: FC<Props> = ({
       <TableCell />
       <TableCell>
         <IconButton
-          aria-label="属性を追加"
+          aria-label={t("entity.form.addAttrAriaLabel")}
           onClick={() => handleAppendAttribute(index ?? 0)}
         >
           <AddIcon />

@@ -1,12 +1,13 @@
 /**
  */
-import { render, screen, fireEvent } from "@testing-library/react";
+import { act, render, screen, fireEvent } from "@testing-library/react";
 import { useForm } from "react-hook-form";
 
 import { Schema } from "./EntityFormSchema";
 import { WebhookHeadersModal } from "./WebhookHeadersModal";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 
 type WebhookHeader = { headerKey: string; headerValue: string };
 
@@ -112,5 +113,14 @@ describe("WebhookHeadersModal", () => {
   test("should not render modal when idx < 0", () => {
     render(<TestModal idx={-1} />, { wrapper: TestWrapper });
     expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  test("should render in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    render(<TestModal />, { wrapper: TestWrapper });
+    expect(screen.getByText("Close")).toBeInTheDocument();
   });
 });
