@@ -56,8 +56,8 @@ class AdvancedSearchService:
         offset: int = 0,
         hint_entry: EntryHint | None = None,
         allow_missing_attributes: bool = False,
-        exclude_referrals: list[int] = [],
-        include_referrals: list[int] = [],
+        exclude_referrals: list[int] | None = None,
+        include_referrals: list[int] | None = None,
         entry_ids: list[int] | None = None,
         retrieve_all: bool = False,
         sort_target_attrname: str | None = None,
@@ -120,6 +120,10 @@ class AdvancedSearchService:
         """
         if not hint_attrs:
             hint_attrs = []
+        if exclude_referrals is None:
+            exclude_referrals = []
+        if include_referrals is None:
+            include_referrals = []
 
         sort_clauses: list[dict[str, Any]] | None = None
         if sort_target_attrname:
@@ -243,7 +247,7 @@ class AdvancedSearchService:
         kls,
         hint_attr_value: str,
         hint_entity_name: str | None = None,
-        exclude_entity_names: list[str] = [],
+        exclude_entity_names: list[str] | None = None,
         limit: int = CONFIG.MAX_LIST_ENTRIES,
         offset: int = 0,
     ) -> SimpleSearchResults:
@@ -280,6 +284,9 @@ class AdvancedSearchService:
             }
 
         """
+        if exclude_entity_names is None:
+            exclude_entity_names = []
+
         # by elasticsearch limit, from + size must be less than or equal to max_result_window
         if offset + limit > settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"]:
             return {
@@ -567,7 +574,7 @@ class AdvancedSearchService:
         )
         for entry_id in set(entry_ids_from_es) - set(entry_ids_from_db):
             if not is_update:
-                Logger.warning("Delete elasticsearch document (entry_id: %s)" % entry.id)
+                Logger.warning("Delete elasticsearch document (entry_id: %s)" % entry_id)
             try:
                 es.delete_entry(entry_id)
             except NotFoundError:
@@ -668,7 +675,7 @@ def _unresolved_referrals(raw_value: Any, converted_value: Any) -> list[str]:
         case (list(), list()) if len(raw_value) == len(converted_value):
             return [
                 name
-                for raw, converted in zip(raw_value, converted_value)
+                for raw, converted in zip(raw_value, converted_value, strict=True)
                 for name in _unresolved_referrals(raw, converted)
             ]
         case (dict(), dict()):
@@ -908,4 +915,4 @@ def _is_stale(
         return True
 
     current = _latest_value_ids(entry, [int(x["id"]) for x in entry_data.get("attrs", [])])
-    return current != baseline["values"]
+    return bool(current != baseline["values"])

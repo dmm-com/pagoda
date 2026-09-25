@@ -1,10 +1,9 @@
 import json
 import re
 from datetime import date, datetime
-from typing import Any
+from typing import Any, cast
 from zoneinfo import ZoneInfo
 
-from django.db import models
 from django.db.models import Q, QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.http.response import JsonResponse
@@ -21,6 +20,7 @@ from entry.settings import CONFIG
 from entry.utils import get_sort_order
 from group.models import Group
 from role.models import Role
+from user.models import User
 
 
 @http_get
@@ -36,8 +36,9 @@ def get_referrals(request: HttpRequest, entry_id: str) -> HttpResponse:
     total_count = len(entries)
 
     # filters the result by keyword
-    if "keyword" in request.GET:
-        entries = [x for x in entries if request.GET.get("keyword") in x.name]
+    keyword = request.GET.get("keyword", "")
+    if keyword:
+        entries = [x for x in entries if keyword in x.name]
 
     # serialize data for each entries to convert json format
     entries_data = [
@@ -93,6 +94,7 @@ def search_entries(
         if cond["type"] == "text":
             return re.match(r".*%s" % cond["value"], attrv.value)
         else:
+            assert attrv.referral is not None  # cond type "entry" implies a referral is set
             return int(cond["value"]) == attrv.referral.id
 
     def _is_match_attrs(attrs: QuerySet[Attribute], cond: dict[str, Any]) -> bool:
@@ -197,8 +199,12 @@ def get_attr_referrals(request: HttpRequest, attr_id: str) -> HttpResponse:
     """
 
     def _get_referral_objects(
-        attr: EntityAttr, model: type[models.Model], query_params: dict[str, Any] = {}
+        attr: EntityAttr,
+        model: type[Entry] | type[Group] | type[Role],
+        query_params: dict[str, Any] | None = None,
     ) -> list[dict[str, Any]]:
+        if query_params is None:
+            query_params = {}
         query_name = Q()
 
         keyword = request.GET.get("keyword")
@@ -278,7 +284,12 @@ def get_entry_history(request: HttpRequest, entry_id: str) -> HttpResponse:
 
         raise TypeError("Type %s not serializable" % type(obj))
 
-    history = entry.get_value_history(request.user, count=params["count"], index=params["index"])
+    user = cast(User, request.user)
+    count = params["count"]
+    index = params["index"]
+    assert isinstance(count, int)  # guaranteed by the isinstance check above
+    assert isinstance(index, int)  # guaranteed by the isinstance check above
+    history = entry.get_value_history(user, count=count, index=index)
 
     return JsonResponse(
         {
@@ -292,9 +303,18 @@ def get_entry_info(request: HttpRequest, entry_id: str) -> HttpResponse:
     """
     This returns latest attribute values corresponding to specified entry-id
     """
+    user = cast(User, request.user)
     entry = Entry.objects.filter(id=entry_id).first()
     if not entry:
         return HttpResponse("There is no entry which is specified by entry_id", status=400)
+
+    def _serialize_attr(x: Attribute) -> dict[str, Any]:
+        latest_value = x.get_latest_value()
+        assert latest_value is not None
+        return dict(
+            {"id": x.id, "name": x.schema.name, "index": x.schema.index},
+            **latest_value.get_value(with_metainfo=True, is_active=False),
+        )
 
     return JsonResponse(
         {
@@ -305,12 +325,9 @@ def get_entry_info(request: HttpRequest, entry_id: str) -> HttpResponse:
             },
             "attrs": sorted(
                 [
-                    dict(
-                        {"id": x.id, "name": x.schema.name, "index": x.schema.index},
-                        **x.get_latest_value().get_value(with_metainfo=True, is_active=False),
-                    )
+                    _serialize_attr(x)
                     for x in entry.attrs.all()
-                    if request.user.has_permission(x, ACLType.Readable) and x.schema.is_active
+                    if user.has_permission(x, ACLType.Readable) and x.schema.is_active
                 ],
                 key=lambda x: x["index"],
             ),
@@ -322,6 +339,7 @@ def get_entry_info(request: HttpRequest, entry_id: str) -> HttpResponse:
 def create_entry_attr(
     request: HttpRequest, entry_id: str, recv_data: dict[str, Any]
 ) -> HttpResponse:
+    user = cast(User, request.user)
     entry = Entry.objects.filter(id=entry_id).first()
     entity_attr = EntityAttr.objects.filter(id=recv_data["entity_attr_id"], is_active=True).first()
 
@@ -335,6 +353,6 @@ def create_entry_attr(
 
     attr = entry.attrs.filter(schema=entity_attr, is_active=True).first()
     if not attr:
-        attr = entry.add_attribute_from_base(entity_attr, request.user)
+        attr = entry.add_attribute_from_base(entity_attr, user)
 
     return JsonResponse({"id": attr.id})

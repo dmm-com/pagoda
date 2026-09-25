@@ -437,11 +437,11 @@ class AttributeValue(models.Model):
                 obj = instance
             case str():
                 if val.isdigit():
-                    obj = model.objects.filter(id=val, is_active=True).first()  # type: ignore[misc, assignment]
+                    obj = model.objects.filter(id=val, is_active=True).first()
                 else:
-                    obj = model.objects.filter(name=val, is_active=True).first()  # type: ignore[misc, assignment]
+                    obj = model.objects.filter(name=val, is_active=True).first()
             case int():
-                obj = model.objects.filter(id=val, is_active=True).first()  # type: ignore[misc, assignment]
+                obj = model.objects.filter(id=val, is_active=True).first()
 
         # when value is invalid value (e.g. False, empty string) set 0
         # not to cause ValueError exception at other retrieval processing.
@@ -497,8 +497,8 @@ class AttributeValue(models.Model):
                         raise Exception("value(%s) is isolated entry" % value)
 
                 return True
-            except (ValueError, TypeError):
-                raise Exception("value(%s) is not int" % value)
+            except (ValueError, TypeError) as e:
+                raise Exception("value(%s) is not int" % value) from e
 
         def _is_validate_attr(t: int, value: Any) -> bool:
             match t:
@@ -544,8 +544,8 @@ class AttributeValue(models.Model):
                             if len(value.encode("utf-8")) > AttributeValue.MAXIMUM_VALUE_SIZE:
                                 raise ExceedLimitError("value is exceeded the limit")
                             return True
-                        except ValueError:
-                            raise Exception("value(%s) is not a valid number string" % value)
+                        except ValueError as e:
+                            raise Exception("value(%s) is not a valid number string" % value) from e
                         except ExceedLimitError as e:
                             raise e
                     raise Exception("value(%s) is not a valid number type or format" % value)
@@ -575,14 +575,14 @@ class AttributeValue(models.Model):
                             value
                             and not Group.objects.filter(
                                 id=value,
-                                is_active=True,  # type: ignore[misc]
+                                is_active=True,
                             ).exists()
                         ):
                             raise Exception("value(%s) is not group id" % value)
                         if is_mandatory and not value:
                             return False
-                    except (ValueError, TypeError):
-                        raise Exception("value(%s) is not int" % value)
+                    except (ValueError, TypeError) as e:
+                        raise Exception("value(%s) is not int" % value) from e
 
                 case AttrType.BOOLEAN:
                     if not isinstance(value, bool):
@@ -594,8 +594,8 @@ class AttributeValue(models.Model):
                             datetime.strptime(value, "%Y-%m-%d").date()
                         elif is_mandatory:
                             return False
-                    except (ValueError, TypeError):
-                        raise Exception("value(%s) is not format(YYYY-MM-DD)" % value)
+                    except (ValueError, TypeError) as e:
+                        raise Exception("value(%s) is not format(YYYY-MM-DD)" % value) from e
 
                 case AttrType.ROLE:
                     try:
@@ -613,8 +613,8 @@ class AttributeValue(models.Model):
 
                         if is_mandatory and not value:
                             return False
-                    except (ValueError, TypeError):
-                        raise Exception("value(%s) is not int" % value)
+                    except (ValueError, TypeError) as e:
+                        raise Exception("value(%s) is not int" % value) from e
 
                 case AttrType.DATETIME:
                     try:
@@ -622,8 +622,8 @@ class AttributeValue(models.Model):
                             datetime.fromisoformat(value)
                         elif is_mandatory:
                             return False
-                    except (ValueError, TypeError):
-                        raise Exception("value(%s) is not ISO8601 format" % value)
+                    except (ValueError, TypeError) as e:
+                        raise Exception("value(%s) is not ISO8601 format" % value) from e
 
             return True
 
@@ -991,8 +991,8 @@ class Attribute(ACLBase):
 
         return False
 
-    def get_values(self, where_extra: list[str] = []) -> QuerySet[AttributeValue]:
-        where_cond = [] + where_extra
+    def get_values(self, where_extra: list[str] | None = None) -> QuerySet[AttributeValue]:
+        where_cond = [] + (where_extra or [])
 
         if self.is_array():
             where_cond.append("status & %d > 0" % AttributeValue.STATUS_DATA_ARRAY_PARENT)
@@ -1268,8 +1268,10 @@ class Attribute(ACLBase):
             attr_type: int,
             val: Any,
             attrv: AttributeValue | None = None,
-            params: dict[str, Any] = {},
+            params: dict[str, Any] | None = None,
         ) -> AttributeValue | None:
+            if params is None:
+                params = {}
             if not attrv:
                 attrv = AttributeValue(**params)
 
@@ -1317,9 +1319,9 @@ class Attribute(ACLBase):
                         case Group() if val.is_active:
                             group_ref = val
                         case int():
-                            group_ref = Group.objects.filter(id=val, is_active=True).first()  # type: ignore[misc, assignment]
+                            group_ref = Group.objects.filter(id=val, is_active=True).first()
                         case str() if val.isdigit():
-                            group_ref = Group.objects.filter(id=val, is_active=True).first()  # type: ignore[misc, assignment]
+                            group_ref = Group.objects.filter(id=val, is_active=True).first()
                         case _:
                             return None
                     if group_ref:
@@ -1917,6 +1919,10 @@ class Entry(ACLBase):
 
     history = HistoricalRecords(excluded_fields=["status", "updated_time"])
 
+    # HistoricalRecords sets `_history_user` dynamically to pick up the acting user
+    # for each save; declare it here so callers can assign without a type: ignore.
+    _history_user: User | None
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.objtype = ACLObjType.Entry
@@ -1960,8 +1966,10 @@ class Entry(ACLBase):
 
         return self.name
 
-    def save_autoname(self, past_path: list[int] = []) -> None:
+    def save_autoname(self, past_path: list[int] | None = None) -> None:
         """This method saves auto-generated name according to the Entity settings"""
+        if past_path is None:
+            past_path = []
         autoname = self.autoname
         if self.name != autoname:
             # check duplication
@@ -2066,7 +2074,7 @@ class Entry(ACLBase):
         return Entry.objects.filter(id__in=entry_ids)
 
     def get_referred_objects(
-        self, filter_entities: list[str] = [], exclude_entities: list[str] = []
+        self, filter_entities: list[str] | None = None, exclude_entities: list[str] | None = None
     ) -> QuerySet["Entry"]:
         return Entry.get_referred_entries([self.id], filter_entities, exclude_entities)
 
@@ -2353,12 +2361,16 @@ class Entry(ACLBase):
             self.unregister_es()
 
     # implementation for Entry
-    def check_duplication_entry_at_restoring(self, entry_chain: list["Entry"] = []) -> bool:
+    def check_duplication_entry_at_restoring(
+        self, entry_chain: list["Entry"] | None = None
+    ) -> bool:
         """This method returns true when this Entry has referral that is
            same name with other entry at restoring Entry.
         - case True: there is an Entry(at least) that is same name with same Entity.
         - case False: there is no Entry that is same name with same Entity.
         """
+        if entry_chain is None:
+            entry_chain = []
         for attr in self.attrs.filter(is_active=False):
             if attr.check_duplication_entry_at_restoring(entry_chain):
                 return True
@@ -2405,7 +2417,7 @@ class Entry(ACLBase):
         cloned_entry = Entry(**params)
 
         # for history record
-        cloned_entry._history_user = user  # type: ignore[attr-defined]
+        cloned_entry._history_user = user
 
         cloned_entry.save()
 
@@ -2654,7 +2666,9 @@ class Entry(ACLBase):
 
         return document
 
-    def register_es(self, es: ESS | None = None, recursive_call_stack: list["Entry"] = []) -> None:
+    def register_es(
+        self, es: ESS | None = None, recursive_call_stack: list["Entry"] | None = None
+    ) -> None:
         """
         Arguments
           * recursive_call_stack:
@@ -2669,6 +2683,8 @@ class Entry(ACLBase):
         """
         if not es:
             es = ESS()
+        if recursive_call_stack is None:
+            recursive_call_stack = []
 
         es.index_entry(self.id, self.get_es_document())
         es.refresh_index()
@@ -2810,12 +2826,19 @@ class Entry(ACLBase):
 
     @classmethod
     def get_referred_entries(
-        kls, id_list: list[int], filter_entities: list[str] = [], exclude_entities: list[str] = []
+        kls,
+        id_list: list[int],
+        filter_entities: list[str] | None = None,
+        exclude_entities: list[str] | None = None,
     ) -> QuerySet["Entry"]:
         """
         This returns objects that refer Entries, which is specifeied in the kd_list,
         in the AttributeValue.
         """
+        if filter_entities is None:
+            filter_entities = []
+        if exclude_entities is None:
+            exclude_entities = []
         ids = AttributeValue.objects.filter(
             Q(referral__in=id_list, is_latest=True)
             | Q(referral__in=id_list, parent_attrv__is_latest=True),
@@ -3139,7 +3162,7 @@ class ItemWalker:
     def prefetch_attr_refs(
         kls,
         attrnames: Iterable[str],
-        nested_prefetch: list[Any] = [],
+        nested_prefetch: list[Any] | None = None,
         is_intermediate: bool = True,
     ) -> "Prefetch[Any, Any, Any]":
         """
@@ -3149,6 +3172,8 @@ class ItemWalker:
         Making nested Prefetch structure by using this method, you can get
         referral items with less query count for backend database.
         """
+        if nested_prefetch is None:
+            nested_prefetch = []
         prefetch_co_values = Prefetch(
             lookup="data_array",
             queryset=AttributeValue.objects.exclude(referral__is_active=False)
@@ -3179,11 +3204,13 @@ class ItemWalker:
 
     @classmethod
     def create_prefetch(
-        kls, step_map: dict[str, Any] = {}, is_last: bool = False
+        kls, step_map: dict[str, Any] | None = None, is_last: bool = False
     ) -> "Prefetch[Any, Any, Any]":
+        if step_map is None:
+            step_map = {}
         # check attr_routes has nested attribute steps
         related_prefetches = []
-        for step_attrname, co_steps in step_map.items():
+        for _step_attrname, co_steps in step_map.items():
             if co_steps:
                 related_prefetches.append(ItemWalker.create_prefetch(co_steps))
 
@@ -3194,7 +3221,9 @@ class ItemWalker:
             is_intermediate=not is_last,
         )
 
-    def __init__(self, base_item_ids: list[int], step_map: dict[str, Any] = {}) -> None:
+    def __init__(self, base_item_ids: list[int], step_map: dict[str, Any] | None = None) -> None:
+        if step_map is None:
+            step_map = {}
         prefetch = ItemWalker.create_prefetch(step_map, is_last=True)
 
         self.base_items = Entry.objects.prefetch_related(prefetch).filter(id__in=base_item_ids)
