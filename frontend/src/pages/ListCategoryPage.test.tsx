@@ -7,6 +7,7 @@ import { setupServer } from "msw/node";
 import { createMemoryRouter, RouterProvider } from "react-router";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
+import i18n from "i18n/config";
 import { ListCategoryPage } from "pages/ListCategoryPage";
 import { listCategoryPath } from "routes/Routes";
 import { ACLType } from "services/ACLUtil";
@@ -95,4 +96,34 @@ test("should match snapshot", async () => {
   });
 
   expect(result).toMatchSnapshot();
+});
+
+test("renders in English", async () => {
+  await act(async () => {
+    await i18n.changeLanguage("en");
+  });
+
+  const router = createMemoryRouter(
+    [
+      {
+        path: listCategoryPath(),
+        element: <ListCategoryPage />,
+      },
+    ],
+    {
+      initialEntries: [listCategoryPath()],
+    },
+  );
+  await act(async () => {
+    render(<RouterProvider router={router} />, {
+      wrapper: TestWrapperWithoutRoutes,
+    });
+  });
+  await waitFor(() => {
+    expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+  });
+
+  expect(
+    screen.getByRole("heading", { name: "Category list" }),
+  ).toBeInTheDocument();
 });

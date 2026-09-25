@@ -17,7 +17,9 @@ import { SubmitButton } from "components/common/SubmitButton";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { usePrompt } from "hooks/usePrompt";
+import { useTranslation } from "hooks/useTranslation";
 import { useTypedParams } from "hooks/useTypedParams";
+import { translate } from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 import {
   editEntityPath,
@@ -28,6 +30,7 @@ import {
 } from "routes/Routes";
 
 const ACLEditContent: FC<{ objectId: number }> = ({ objectId }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -62,10 +65,7 @@ const ACLEditContent: FC<{ objectId: number }> = ({ objectId }) => {
     resetOptions: { keepDirtyValues: true },
   });
 
-  usePrompt(
-    isDirty && !isSubmitSuccessful,
-    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
-  );
+  usePrompt(isDirty && !isSubmitSuccessful, t("acl.form.confirmLeave"));
 
   // Fetch the parent/self entity or entry that the breadcrumbs and
   // cancel-navigation need, depending on the ACL object type.
@@ -104,27 +104,31 @@ const ACLEditContent: FC<{ objectId: number }> = ({ objectId }) => {
               Top
             </Typography>
             <Typography component={AironeLink} to={listCategoryPath()}>
-              カテゴリ一覧
+              {t("acl.breadcrumb.categoryList")}
             </Typography>
             <Typography color="textPrimary">{acl.name}</Typography>
-            <Typography color="textPrimary">ACL設定</Typography>
+            <Typography color="textPrimary">{t("acl.page.title")}</Typography>
           </AironeBreadcrumbs>
         );
       case ACLObjtypeEnum.Entity:
         return entity != null ? (
-          <EntityBreadcrumbs entity={entity} title="ACL設定" />
+          <EntityBreadcrumbs entity={entity} title={t("acl.page.title")} />
         ) : (
           <Box />
         );
       case ACLObjtypeEnum.EntityAttr:
         return entity != null ? (
-          <EntityBreadcrumbs entity={entity} attr={acl.name} title="ACL設定" />
+          <EntityBreadcrumbs
+            entity={entity}
+            attr={acl.name}
+            title={t("acl.page.title")}
+          />
         ) : (
           <Box />
         );
       case ACLObjtypeEnum.Entry:
         return entry != null ? (
-          <EntryBreadcrumbs entry={entry} title="ACL設定" />
+          <EntryBreadcrumbs entry={entry} title={t("acl.page.title")} />
         ) : (
           <Box />
         );
@@ -182,7 +186,9 @@ const ACLEditContent: FC<{ objectId: number }> = ({ objectId }) => {
         aclForm.defaultPermission,
       );
 
-      enqueueSnackbar("ACL設定の更新が成功しました", { variant: "success" });
+      enqueueSnackbar(translate("acl.form.updateSuccess"), {
+        variant: "success",
+      });
     },
     [objectId, enqueueSnackbar],
   );
@@ -203,9 +209,9 @@ const ACLEditContent: FC<{ objectId: number }> = ({ objectId }) => {
     <>
       {breadcrumbs}
 
-      <PageHeader title={acl.name} description="ACL設定">
+      <PageHeader title={acl.name} description={t("acl.page.title")}>
         <SubmitButton
-          name="保存"
+          name={t("common.save")}
           disabled={isSubmitting || isSubmitSuccessful}
           isSubmitting={isSubmitting}
           handleSubmit={handleSubmit(

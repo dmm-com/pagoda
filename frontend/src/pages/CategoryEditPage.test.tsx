@@ -7,6 +7,7 @@ import { setupServer } from "msw/node";
 import { createMemoryRouter, RouterProvider } from "react-router";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
+import i18n from "i18n/config";
 import { CategoryEditPage } from "pages/CategoryEditPage";
 import { editCategoryPath } from "routes/Routes";
 import { ACLType } from "services/ACLUtil";
@@ -105,4 +106,33 @@ test("should match snapshot", async () => {
   });
 
   expect(result).toMatchSnapshot();
+});
+
+test("renders in English", async () => {
+  await act(async () => {
+    await i18n.changeLanguage("en");
+  });
+
+  const router = createMemoryRouter(
+    [
+      {
+        path: editCategoryPath(":categoryId"),
+        element: <CategoryEditPage />,
+      },
+    ],
+    {
+      initialEntries: [editCategoryPath(1)],
+    },
+  );
+  await act(async () => {
+    render(<RouterProvider router={router} />, {
+      wrapper: TestWrapperWithoutRoutes,
+    });
+  });
+  await waitFor(() => {
+    expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+  });
+
+  expect(screen.getAllByText("Edit category").length).toBeGreaterThan(0);
+  expect(screen.getByText("Category name")).toBeInTheDocument();
 });

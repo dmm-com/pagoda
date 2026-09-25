@@ -1,12 +1,16 @@
 import { CategoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { z } from "zod";
 
+import { translate } from "i18n/config";
 import { schemaForType } from "services/ZodSchemaUtil";
 
 export const schema = schemaForType<CategoryList>()(
   z.object({
     id: z.number().default(0),
-    name: z.string().min(1, { message: "カテゴリ名は必須です" }).default(""),
+    name: z
+      .string()
+      .min(1, { message: translate("category.form.nameRequired") })
+      .default(""),
     note: z.string().optional(),
     models: z
       .array(

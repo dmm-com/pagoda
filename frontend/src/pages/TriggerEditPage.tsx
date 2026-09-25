@@ -32,6 +32,7 @@ import { Schema, schema } from "components/trigger/TriggerFormSchema";
 import { useFormNotification } from "hooks/useFormNotification";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { usePrompt } from "hooks/usePrompt";
+import { useTranslation } from "hooks/useTranslation";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { topPath, triggersPath } from "routes/Routes";
@@ -66,13 +67,17 @@ const StyledTableBody = styled(TableBody)({
 });
 
 export const TriggerEditPage: FC = () => {
+  const { t } = useTranslation();
   const { triggerId } = useTypedParams<{ triggerId?: number }>({
     allowEmpty: true,
   });
   const willCreate = triggerId === undefined;
 
   const navigate = useNavigate();
-  const { enqueueSubmitResult } = useFormNotification("トリガー", willCreate);
+  const { enqueueSubmitResult } = useFormNotification(
+    t("common.target.trigger"),
+    willCreate,
+  );
 
   const { data: actionTrigger } = usePagodaSWR(
     triggerId !== undefined ? ["trigger", triggerId] : null,
@@ -96,10 +101,7 @@ export const TriggerEditPage: FC = () => {
     },
   });
 
-  usePrompt(
-    isDirty && !isSubmitSuccessful,
-    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
-  );
+  usePrompt(isDirty && !isSubmitSuccessful, t("trigger.form.confirmLeave"));
 
   const { data: entities, isLoading: entitiesLoading } = usePagodaSWR(
     ["entities"],
@@ -314,19 +316,21 @@ export const TriggerEditPage: FC = () => {
           Top
         </Typography>
         <Typography component={AironeLink} to={triggersPath()}>
-          トリガー管理
+          {t("trigger.list.title")}
         </Typography>
         <Typography color="textPrimary">
-          {triggerId ? "編集" : "作成"}
+          {triggerId ? t("common.edit") : t("common.create")}
         </Typography>
       </AironeBreadcrumbs>
 
       <PageHeader
-        title={triggerId && entity ? entity.name : "新規トリガーの作成"}
-        description={triggerId ? entity && "トリガー編集" : ""}
+        title={
+          triggerId && entity ? entity.name : t("trigger.edit.createTitle")
+        }
+        description={triggerId ? entity && t("trigger.edit.editTitle") : ""}
       >
         <SubmitButton
-          name="保存"
+          name={t("common.save")}
           disabled={!isDirty || !isValid || isSubmitting || isSubmitSuccessful}
           isSubmitting={isSubmitting}
           handleSubmit={handleSubmit(handleSubmitOnValid)}
@@ -336,7 +340,7 @@ export const TriggerEditPage: FC = () => {
 
       <Container>
         <StyledFlexColumnBox>
-          <Typography variant="h4">設定対象のモデル</Typography>
+          <Typography variant="h4">{t("trigger.edit.targetEntity")}</Typography>
 
           <Controller
             name={`entity`}
@@ -373,7 +377,7 @@ export const TriggerEditPage: FC = () => {
                   <TextField
                     {...params}
                     variant="outlined"
-                    placeholder="モデルを選択"
+                    placeholder={t("trigger.edit.entityPlaceholder")}
                   />
                 )}
                 fullWidth
@@ -387,16 +391,24 @@ export const TriggerEditPage: FC = () => {
           <>
             <StyledFlexColumnBox>
               <Typography variant="h4" align="center" my="32px">
-                条件
+                {t("trigger.edit.conditionsHeading")}
               </Typography>
               <Table data-testid="conditions">
                 <TableHead>
                   <HeaderTableRow>
-                    <HeaderTableCell width="400px">属性名</HeaderTableCell>
+                    <HeaderTableCell width="400px">
+                      {t("trigger.edit.columnAttrName")}
+                    </HeaderTableCell>
                     <HeaderTableCell width="100px">NOT</HeaderTableCell>
-                    <HeaderTableCell width="300px">値</HeaderTableCell>
-                    <HeaderTableCell width="100px">削除</HeaderTableCell>
-                    <HeaderTableCell width="100px">追加</HeaderTableCell>
+                    <HeaderTableCell width="300px">
+                      {t("trigger.edit.columnValue")}
+                    </HeaderTableCell>
+                    <HeaderTableCell width="100px">
+                      {t("common.delete")}
+                    </HeaderTableCell>
+                    <HeaderTableCell width="100px">
+                      {t("trigger.edit.columnAdd")}
+                    </HeaderTableCell>
                   </HeaderTableRow>
                 </TableHead>
                 <StyledTableBody>
@@ -407,15 +419,23 @@ export const TriggerEditPage: FC = () => {
 
             <StyledFlexColumnBox>
               <Typography variant="h4" align="center" my="32px">
-                アクション
+                {t("trigger.edit.actionsHeading")}
               </Typography>
               <Table data-testid="actions">
                 <TableHead>
                   <HeaderTableRow>
-                    <HeaderTableCell width="400px">属性名</HeaderTableCell>
-                    <HeaderTableCell width="400px">値</HeaderTableCell>
-                    <HeaderTableCell width="100px">削除</HeaderTableCell>
-                    <HeaderTableCell width="100px">追加</HeaderTableCell>
+                    <HeaderTableCell width="400px">
+                      {t("trigger.edit.columnAttrName")}
+                    </HeaderTableCell>
+                    <HeaderTableCell width="400px">
+                      {t("trigger.edit.columnValue")}
+                    </HeaderTableCell>
+                    <HeaderTableCell width="100px">
+                      {t("common.delete")}
+                    </HeaderTableCell>
+                    <HeaderTableCell width="100px">
+                      {t("trigger.edit.columnAdd")}
+                    </HeaderTableCell>
                   </HeaderTableRow>
                 </TableHead>
                 <StyledTableBody>
