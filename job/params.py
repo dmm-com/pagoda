@@ -69,6 +69,7 @@ class LegacyCreateAttributeValue(JobParamsModel):
     type: str | int | None = None
     value: list[LegacyIndexedValue]
     referral_key: list[LegacyIndexedValue] = Field(default_factory=list)
+    prohibit: list[LegacyIndexedValue] = Field(default_factory=list)
 
 
 class LegacyEditAttributeValue(LegacyCreateAttributeValue):
