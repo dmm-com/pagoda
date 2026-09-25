@@ -151,6 +151,7 @@ export const JobStatuses = {
   TIMEOUT: 4,
   PROCESSING: 5,
   CANCELED: 6,
+  WARNING: 7,
 };
 
 // TODO manage it in the API side

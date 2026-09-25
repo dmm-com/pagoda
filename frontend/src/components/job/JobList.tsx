@@ -266,6 +266,7 @@ export const JobList: FC<Props> = ({ jobs, showUser }) => {
                     JobStatuses.DONE,
                     JobStatuses.ERROR,
                     JobStatuses.CANCELED,
+                    JobStatuses.WARNING,
                   ].includes(job.status ?? 0) && (
                     <Confirmable
                       componentGenerator={(handleOpen) => (
