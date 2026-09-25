@@ -15,8 +15,8 @@ import { EntityControlMenu } from "components/entity/EntityControlMenu";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryImportModal } from "components/entry/EntryImportModal";
+import { useIdParams } from "hooks/useIdParams";
 import { useTranslation } from "hooks/useTranslation";
-import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 const MenuBox = styled(Box)(({}) => ({
@@ -138,7 +138,7 @@ const ACLHistoryContent: FC<{ objectId: number }> = ({ objectId }) => {
 };
 
 export const ACLHistoryPage: FC = () => {
-  const { objectId } = useTypedParams<{ objectId: number }>();
+  const { objectId } = useIdParams({ required: ["objectId"] });
 
   preload(
     ["acl", objectId],

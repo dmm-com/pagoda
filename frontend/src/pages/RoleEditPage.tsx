@@ -13,11 +13,11 @@ import { SubmitButton } from "components/common/SubmitButton";
 import { RoleForm } from "components/role/RoleForm";
 import { Schema, schema } from "components/role/roleForm/RoleFormSchema";
 import { useFormNotification } from "hooks/useFormNotification";
+import { useIdParams } from "hooks/useIdParams";
 import { usePageTitle } from "hooks/usePageTitle";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { usePrompt } from "hooks/usePrompt";
 import { useTranslation } from "hooks/useTranslation";
-import { useTypedParams } from "hooks/useTypedParams";
 import { translate } from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { rolesPath, topPath } from "routes/Routes";
@@ -29,7 +29,7 @@ import {
 import { ForbiddenError } from "services/Exceptions";
 
 export const RoleEditPage: FC = () => {
-  const { roleId } = useTypedParams<{ roleId?: number }>({ allowEmpty: true });
+  const { roleId } = useIdParams({ optional: ["roleId"] });
   const willCreate = roleId == null;
 
   const navigate = useNavigate();
@@ -41,7 +41,7 @@ export const RoleEditPage: FC = () => {
 
   const { data: role, isLoading: roleLoading } = usePagodaSWR(
     roleId != null ? ["role", roleId] : null,
-    () => aironeApiClient.getRole(roleId!),
+    roleId != null ? () => aironeApiClient.getRole(roleId) : null,
   );
 
   // Fill schema-required defaults for optional API fields.

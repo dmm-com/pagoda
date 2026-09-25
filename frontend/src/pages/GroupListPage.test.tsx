@@ -49,7 +49,12 @@ describe("GroupListPage", () => {
     Object.defineProperty(window, "django_context", {
       value: {
         user: {
+          id: 1,
+          username: "admin",
           isSuperuser: true,
+          isReadonly: false,
+          parentUser: null,
+          email: "admin@example.com",
         },
       },
       writable: false,

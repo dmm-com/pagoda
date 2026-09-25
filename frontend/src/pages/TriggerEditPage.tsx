@@ -30,10 +30,10 @@ import { Actions } from "components/trigger/Actions";
 import { Conditions } from "components/trigger/Conditions";
 import { Schema, schema } from "components/trigger/TriggerFormSchema";
 import { useFormNotification } from "hooks/useFormNotification";
+import { useIdParams } from "hooks/useIdParams";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { usePrompt } from "hooks/usePrompt";
 import { useTranslation } from "hooks/useTranslation";
-import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { topPath, triggersPath } from "routes/Routes";
 import { fuzzyMatch } from "services/StringUtil";
@@ -68,9 +68,7 @@ const StyledTableBody = styled(TableBody)({
 
 export const TriggerEditPage: FC = () => {
   const { t } = useTranslation();
-  const { triggerId } = useTypedParams<{ triggerId?: number }>({
-    allowEmpty: true,
-  });
+  const { triggerId } = useIdParams({ optional: ["triggerId"] });
   const willCreate = triggerId === undefined;
 
   const navigate = useNavigate();
@@ -81,7 +79,9 @@ export const TriggerEditPage: FC = () => {
 
   const { data: actionTrigger } = usePagodaSWR(
     triggerId !== undefined ? ["trigger", triggerId] : null,
-    () => aironeApiClient.getTrigger(triggerId!),
+    triggerId !== undefined
+      ? () => aironeApiClient.getTrigger(triggerId)
+      : null,
   );
 
   const {
@@ -247,8 +247,7 @@ export const TriggerEditPage: FC = () => {
 
   const handleSubmitOnValid = useCallback(
     async (trigger: Schema) => {
-      const triggerCreateUpdate: TriggerParentUpdate = {
-        id: triggerId,
+      const triggerCreateUpdate: Omit<TriggerParentUpdate, "id"> = {
         entityId: trigger.entity.id,
         conditions: convertConditions2ServerFormat(trigger) ?? [],
         actions: convertActions2ServerFormat(trigger) ?? [],

@@ -8,10 +8,10 @@ import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntityControlMenu } from "components/entity/EntityControlMenu";
 import { EntryImportModal } from "components/entry/EntryImportModal";
 import { EntryList } from "components/entry/EntryList";
+import { useIdParams } from "hooks/useIdParams";
 import { usePageTitle } from "hooks/usePageTitle";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { useTranslation } from "hooks/useTranslation";
-import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { TITLE_TEMPLATES } from "services";
 import { canEdit } from "services/ACLUtil";
@@ -22,7 +22,7 @@ interface Props {
 
 const EntryListContent: FC<Props> = ({ canCreateEntry = true }) => {
   const { t } = useTranslation();
-  const { entityId } = useTypedParams<{ entityId: number }>();
+  const { entityId } = useIdParams({ required: ["entityId"] });
 
   const [entityAnchorEl, setEntityAnchorEl] =
     useState<HTMLButtonElement | null>(null);
