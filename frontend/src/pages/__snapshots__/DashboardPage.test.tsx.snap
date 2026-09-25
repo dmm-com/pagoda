@@ -12,10 +12,10 @@ exports[`DashboardPage > should match snapshot 1`] = `
           class="MuiContainer-root MuiContainer-maxWidthLg css-5c1adp-MuiContainer-root"
         >
           <div
-            class="MuiBox-root css-1abudc7"
+            class="MuiBox-root css-ap9k78"
           >
             <div
-              class="MuiBox-root css-1m3p9o7"
+              class="MuiBox-root css-dcn0fb"
             >
               <div
                 class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-14i0oaq-MuiFormControl-root-MuiTextField-root"
@@ -71,7 +71,7 @@ exports[`DashboardPage > should match snapshot 1`] = `
               </div>
             </div>
             <a
-              class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-1nhwi5v-MuiButtonBase-root-MuiButton-root"
+              class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-xt8cmj-MuiButtonBase-root-MuiButton-root"
               data-discover="true"
               href="/ui/categories/new"
               tabindex="0"
@@ -94,7 +94,7 @@ exports[`DashboardPage > should match snapshot 1`] = `
             class="MuiGrid2-root MuiGrid2-container MuiGrid2-direction-xs-row MuiGrid2-spacing-xs-3 css-ipzchf-MuiGrid2-root"
           >
             <div
-              class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
+              class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-12 MuiGrid2-grid-sm-6 MuiGrid2-grid-md-4 css-1sbb1tz-MuiGrid2-root"
             >
               <ul
                 class="MuiList-root MuiList-padding MuiList-subheader css-h1es49-MuiList-root"
@@ -166,7 +166,7 @@ exports[`DashboardPage > should match snapshot 1`] = `
               </ul>
             </div>
             <div
-              class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
+              class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-12 MuiGrid2-grid-sm-6 MuiGrid2-grid-md-4 css-1sbb1tz-MuiGrid2-root"
             >
               <ul
                 class="MuiList-root MuiList-padding MuiList-subheader css-h1es49-MuiList-root"
@@ -230,7 +230,7 @@ exports[`DashboardPage > should match snapshot 1`] = `
               </ul>
             </div>
             <div
-              class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
+              class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-12 MuiGrid2-grid-sm-6 MuiGrid2-grid-md-4 css-1sbb1tz-MuiGrid2-root"
             >
               <ul
                 class="MuiList-root MuiList-padding MuiList-subheader css-h1es49-MuiList-root"
@@ -397,10 +397,10 @@ exports[`DashboardPage > should match snapshot 1`] = `
         class="MuiContainer-root MuiContainer-maxWidthLg css-5c1adp-MuiContainer-root"
       >
         <div
-          class="MuiBox-root css-1abudc7"
+          class="MuiBox-root css-ap9k78"
         >
           <div
-            class="MuiBox-root css-1m3p9o7"
+            class="MuiBox-root css-dcn0fb"
           >
             <div
               class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-14i0oaq-MuiFormControl-root-MuiTextField-root"
@@ -456,7 +456,7 @@ exports[`DashboardPage > should match snapshot 1`] = `
             </div>
           </div>
           <a
-            class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-1nhwi5v-MuiButtonBase-root-MuiButton-root"
+            class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-xt8cmj-MuiButtonBase-root-MuiButton-root"
             data-discover="true"
             href="/ui/categories/new"
             tabindex="0"
@@ -479,7 +479,7 @@ exports[`DashboardPage > should match snapshot 1`] = `
           class="MuiGrid2-root MuiGrid2-container MuiGrid2-direction-xs-row MuiGrid2-spacing-xs-3 css-ipzchf-MuiGrid2-root"
         >
           <div
-            class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
+            class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-12 MuiGrid2-grid-sm-6 MuiGrid2-grid-md-4 css-1sbb1tz-MuiGrid2-root"
           >
             <ul
               class="MuiList-root MuiList-padding MuiList-subheader css-h1es49-MuiList-root"
@@ -551,7 +551,7 @@ exports[`DashboardPage > should match snapshot 1`] = `
             </ul>
           </div>
           <div
-            class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
+            class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-12 MuiGrid2-grid-sm-6 MuiGrid2-grid-md-4 css-1sbb1tz-MuiGrid2-root"
           >
             <ul
               class="MuiList-root MuiList-padding MuiList-subheader css-h1es49-MuiList-root"
@@ -615,7 +615,7 @@ exports[`DashboardPage > should match snapshot 1`] = `
             </ul>
           </div>
           <div
-            class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
+            class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-12 MuiGrid2-grid-sm-6 MuiGrid2-grid-md-4 css-1sbb1tz-MuiGrid2-root"
           >
             <ul
               class="MuiList-root MuiList-padding MuiList-subheader css-h1es49-MuiList-root"

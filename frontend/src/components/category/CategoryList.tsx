@@ -35,8 +35,14 @@ const CategoryListContent: FC = () => {
   return (
     <Container>
       {/* Show control menus to filter and create category */}
-      <Box display="flex" justifyContent="space-between" mb="16px">
-        <Box width="600px">
+      <Box
+        display="flex"
+        flexWrap="wrap"
+        justifyContent="space-between"
+        gap="16px"
+        mb="16px"
+      >
+        <Box width="600px" maxWidth="100%">
           <SearchBox
             placeholder="カテゴリを絞り込む"
             defaultValue={query}
@@ -53,7 +59,12 @@ const CategoryListContent: FC = () => {
           color="secondary"
           component={Link}
           to={newCategoryPath()}
-          sx={{ height: "48px", borderRadius: "24px" }}
+          sx={{
+            height: "48px",
+            borderRadius: "24px",
+            whiteSpace: "nowrap",
+            flexShrink: 0,
+          }}
           disabled={isReadonly}
         >
           <AddIcon /> 新規カテゴリを作成
@@ -63,7 +74,7 @@ const CategoryListContent: FC = () => {
       {/* Context of Category */}
       <Grid container spacing={3}>
         {categories.results.map((category) => (
-          <Grid size={4} key={category.id}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={category.id}>
             <List
               subheader={
                 <CategoryListHeader
