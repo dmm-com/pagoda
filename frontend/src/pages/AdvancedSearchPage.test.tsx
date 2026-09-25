@@ -17,6 +17,7 @@ import { SWRConfig } from "swr";
 
 import { AdvancedSearchPage } from "./AdvancedSearchPage";
 
+import i18n from "i18n/config";
 import { ACLType } from "services/ACLUtil";
 
 const entities: PaginatedEntityListList = {
@@ -287,5 +288,15 @@ describe("AdvancedSearchPage", () => {
         "&has_referral=false" +
         '&attrinfo=[{"name"%3A"str"%2C"filterKey"%3A0%2C"keyword"%3A""}]',
     );
+  });
+
+  test("renders in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+    expect(screen.getByPlaceholderText("Select models")).toBeInTheDocument();
+    expect(screen.getByText("Target models to search")).toBeInTheDocument();
+    expect(screen.getByText("Attributes")).toBeInTheDocument();
+    expect(screen.getByText("Search")).toBeInTheDocument();
   });
 });

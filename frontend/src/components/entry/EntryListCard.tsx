@@ -14,6 +14,7 @@ import { Link } from "react-router";
 
 import { ClipboardCopyButton } from "components/common/ClipboardCopyButton";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
+import { useTranslation } from "hooks/useTranslation";
 import { entryDetailsPath } from "routes/Routes";
 
 const StyledCard = styled(Card)(({}) => ({
@@ -43,6 +44,7 @@ interface Props {
 }
 
 export const EntryListCard: FC<Props> = ({ entityId, entry, setToggle }) => {
+  const { t } = useTranslation();
   const [anchorElem, setAnchorElem] = useState<HTMLButtonElement | null>(null);
 
   return (
@@ -62,7 +64,7 @@ export const EntryListCard: FC<Props> = ({ entityId, entry, setToggle }) => {
           <>
             <ClipboardCopyButton name={entry.name} />
 
-            <Tooltip title="アイテムの操作">
+            <Tooltip title={t("entry.listCard.operationsTooltip")}>
               <IconButton onClick={(e) => setAnchorElem(e.currentTarget)}>
                 <MoreVertIcon fontSize="small" />
               </IconButton>

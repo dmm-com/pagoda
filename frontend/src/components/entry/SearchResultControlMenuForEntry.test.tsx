@@ -5,11 +5,12 @@ import {
   EntryHint,
   EntryHintFilterKeyEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 
 import { SearchResultControlMenuForEntry } from "./SearchResultControlMenuForEntry";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 
 describe("SearchResultControlMenuForEntry", () => {
   const defaultProps = {
@@ -49,5 +50,22 @@ describe("SearchResultControlMenuForEntry", () => {
     );
 
     expect(container.querySelectorAll('[role="menuitem"]')).toHaveLength(0);
+  });
+
+  test("renders in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+    const anchorElem = document.createElement("button");
+    render(
+      <SearchResultControlMenuForEntry
+        {...defaultProps}
+        anchorElem={anchorElem}
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByText("Filter conditions")).toBeInTheDocument();
+    expect(screen.getByText("Clear")).toBeInTheDocument();
   });
 });

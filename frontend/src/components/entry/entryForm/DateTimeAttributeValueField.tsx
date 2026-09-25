@@ -9,6 +9,7 @@ import { UseFormSetValue } from "react-hook-form";
 
 import { Schema } from "./EntryFormSchema";
 
+import { useTranslation } from "hooks/useTranslation";
 import { getStagedErrorStyle } from "utils/styleUtils";
 
 const StyledBox = styled(Box)(({}) => ({
@@ -34,9 +35,13 @@ export const DateTimeAttributeValueField: FC<Props> = ({
   setValue,
   isDisabled = false,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <StyledBox>
-      <StyledTypography variant="caption">日時を選択</StyledTypography>
+      <StyledTypography variant="caption">
+        {t("entryForm.dateTimeField.selectDateTime")}
+      </StyledTypography>
       <Controller
         name={`attrs.${attrId}.value.asString`}
         control={control}

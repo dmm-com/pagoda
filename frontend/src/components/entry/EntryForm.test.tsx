@@ -21,6 +21,7 @@ import { Schema, schema } from "./entryForm/EntryFormSchema";
 
 import { TestWrapper } from "TestWrapper";
 import { EntryForm } from "components/entry/EntryForm";
+import i18n from "i18n/config";
 import { ACLType } from "services/ACLUtil";
 
 describe("EntryForm", () => {
@@ -668,5 +669,33 @@ describe("EntryForm", () => {
       // The field should no longer be marked as invalid
       expect(stringField).toHaveAttribute("aria-invalid", "false");
     });
+  });
+
+  test("renders in english", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    const Wrapper: FC = () => {
+      const { control, setValue } = useForm<Schema>({
+        defaultValues: entryInfo,
+      });
+      return (
+        <EntryForm
+          entity={mockEntity}
+          control={control}
+          setValue={setValue}
+          skipItemName={false}
+        />
+      );
+    };
+
+    render(<Wrapper />, { wrapper: TestWrapper });
+
+    expect(screen.getByText("Item")).toBeInTheDocument();
+    expect(screen.getByText("Content")).toBeInTheDocument();
+    expect(screen.getAllByText("Entry name").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Required").length).toBeGreaterThan(0);
+    expect(screen.getByLabelText("Entry name")).toBeInTheDocument();
   });
 });

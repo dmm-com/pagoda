@@ -17,6 +17,7 @@ import { EntityControlMenu } from "components/entity/EntityControlMenu";
 import { AliasEntryList } from "components/entry/AliasEntryList";
 import { EntryImportModal } from "components/entry/EntryImportModal";
 import { useFormNotification, usePage } from "hooks";
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 import {
   EntryListParam,
@@ -30,7 +31,11 @@ const ListAliasEntryContent: FC = () => {
     entityId: number;
   }>();
 
-  const { enqueueSubmitResult } = useFormNotification("エイリアス", true);
+  const { t } = useTranslation();
+  const { enqueueSubmitResult } = useFormNotification(
+    t("common.target.alias"),
+    true,
+  );
   const { enqueueSnackbar } = useSnackbar();
   const { page, query, changePage, changeQuery } = usePage();
 
@@ -82,8 +87,16 @@ const ListAliasEntryContent: FC = () => {
         if (e instanceof Error && isResponseError(e)) {
           extractAPIException(
             e,
-            (message) => enqueueSubmitResult(false, `詳細: "${message}"`),
-            (name, message) => enqueueSubmitResult(false, `詳細: "${message}"`),
+            (message) =>
+              enqueueSubmitResult(
+                false,
+                t("entry.alias.detailMessage", { message }),
+              ),
+            (name, message) =>
+              enqueueSubmitResult(
+                false,
+                t("entry.alias.detailMessage", { message }),
+              ),
           );
         } else {
           enqueueSubmitResult(false);
@@ -103,12 +116,12 @@ const ListAliasEntryContent: FC = () => {
             };
           }),
         );
-        enqueueSnackbar("エイリアスの削除が完了しました。", {
+        enqueueSnackbar(t("entry.alias.deleteSuccess"), {
           variant: "success",
         });
       })
       .catch(() => {
-        enqueueSnackbar("エイリアスの削除が失敗しました。", {
+        enqueueSnackbar(t("entry.alias.deleteFailure"), {
           variant: "error",
         });
       });
@@ -116,9 +129,15 @@ const ListAliasEntryContent: FC = () => {
 
   return (
     <>
-      <EntityBreadcrumbs entity={entity} title="エイリアス設定" />
+      <EntityBreadcrumbs
+        entity={entity}
+        title={t("entry.alias.settingsTitle")}
+      />
 
-      <PageHeader title={entity.name} description="エイリアス設定">
+      <PageHeader
+        title={entity.name}
+        description={t("entry.alias.settingsTitle")}
+      >
         <Box width="50px">
           <IconButton
             id="entity_menu"
@@ -141,7 +160,7 @@ const ListAliasEntryContent: FC = () => {
       <Container>
         <Box width="600px" mb="16px">
           <SearchBox
-            placeholder="アイテムを絞り込む"
+            placeholder={t("entry.list.searchPlaceholder")}
             onKeyPress={(e) => {
               e.key === "Enter" &&
                 handleChangeQuery(

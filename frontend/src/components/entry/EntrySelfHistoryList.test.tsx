@@ -5,6 +5,7 @@ import { act, render, screen, within } from "@testing-library/react";
 
 import { TestWrapper } from "TestWrapper";
 import { EntrySelfHistoryList } from "components/entry/EntrySelfHistoryList";
+import i18n from "i18n/config";
 
 // Mock the API client
 vi.mock("repository/AironeApiClient");
@@ -179,5 +180,26 @@ describe("EntrySelfHistoryList", () => {
 
     // Should render PaginationFooter
     expect(screen.getByRole("navigation")).toBeInTheDocument();
+  });
+
+  test("renders in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    await act(async () => {
+      render(<EntrySelfHistoryList {...mockProps} />, {
+        wrapper: TestWrapper,
+      });
+    });
+
+    expect(screen.getByText("Operation")).toBeInTheDocument();
+    expect(screen.getByText("Entry name before change")).toBeInTheDocument();
+    expect(screen.getByText("Entry name after change")).toBeInTheDocument();
+    expect(screen.getByText("Executed at")).toBeInTheDocument();
+    expect(screen.getByText("Executed by")).toBeInTheDocument();
+    expect(screen.getByText("Restore")).toBeInTheDocument();
+    expect(screen.getAllByText("Update")).toHaveLength(2);
+    expect(screen.getByText("Create")).toBeInTheDocument();
   });
 });

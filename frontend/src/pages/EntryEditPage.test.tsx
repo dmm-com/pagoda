@@ -16,6 +16,7 @@ import { EntryDetailsPage } from "./EntryDetailsPage";
 import { EntryEditPage } from "./EntryEditPage";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
+import i18n from "i18n/config";
 import { entryDetailsPath, entryEditPath, newEntryPath } from "routes/Routes";
 
 const mockEntity = {
@@ -288,6 +289,34 @@ describe("EntryEditPage", () => {
       fireEvent.change(nameInput, { target: { value: "modified entry" } });
 
       expect(screen.getByDisplayValue("modified entry")).toBeInTheDocument();
+    });
+  });
+
+  describe("english rendering", () => {
+    test("should render edit description and save/cancel buttons in english", async () => {
+      await act(async () => {
+        await i18n.changeLanguage("en");
+      });
+
+      await renderEditPage();
+
+      expect(screen.getByText("Edit entry")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Save/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /Cancel/i }),
+      ).toBeInTheDocument();
+    });
+
+    test("should render new entry title in english for create mode", async () => {
+      await act(async () => {
+        await i18n.changeLanguage("en");
+      });
+
+      await renderEditPage("/ui/entities/2/entries/new");
+
+      await waitFor(() => {
+        expect(screen.getByText("Create a new entry")).toBeInTheDocument();
+      });
     });
   });
 });

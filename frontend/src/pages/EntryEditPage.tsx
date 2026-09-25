@@ -18,6 +18,7 @@ import { useFormNotification } from "hooks/useFormNotification";
 import { usePageTitle } from "hooks/usePageTitle";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { usePrompt } from "hooks/usePrompt";
+import { useTranslation } from "hooks/useTranslation";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { entityEntriesPath, entryDetailsPath } from "routes/Routes";
@@ -49,8 +50,12 @@ export const EntryEditPage: FC<Props> = ({
 
   const willCreate = entryId == null;
 
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const { enqueueSubmitResult } = useFormNotification("アイテム", willCreate);
+  const { enqueueSubmitResult } = useFormNotification(
+    t("common.target.entry"),
+    willCreate,
+  );
 
   const [initialized, setInitialized] = useState(false);
 
@@ -69,7 +74,7 @@ export const EntryEditPage: FC<Props> = ({
 
   usePrompt(
     isDirty && !isSubmitSuccessful,
-    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
+    t("entryForm.editPage.leaveConfirm"),
   );
 
   const { data: entity, isLoading: entityLoading } = usePagodaSWR(
@@ -118,10 +123,12 @@ export const EntryEditPage: FC<Props> = ({
 
   usePageTitle(
     entityLoading || (entryId && entryLoading)
-      ? "読み込み中..."
+      ? t("entryForm.editPage.loading")
       : TITLE_TEMPLATES.entryEdit,
     {
-      prefix: entry?.name ?? (entryId == null ? "新規作成" : undefined),
+      prefix:
+        entry?.name ??
+        (entryId == null ? t("entryForm.editPage.newEntry") : undefined),
     },
   );
 
@@ -140,7 +147,11 @@ export const EntryEditPage: FC<Props> = ({
       if (e instanceof Error && isResponseError(e)) {
         await extractAPIException<Schema>(
           e,
-          (message) => enqueueSubmitResult(false, `詳細: "${message}"`),
+          (message) =>
+            enqueueSubmitResult(
+              false,
+              t("entryForm.editPage.errorDetail", { message }),
+            ),
           (name, message) => {
             setError(name, { type: "custom", message: message });
             enqueueSubmitResult(false);
@@ -182,17 +193,27 @@ export const EntryEditPage: FC<Props> = ({
   return (
     <Box>
       {entry ? (
-        <EntryBreadcrumbs entry={entry} title="編集" />
+        <EntryBreadcrumbs
+          entry={entry}
+          title={t("entryForm.editPage.editBreadcrumb")}
+        />
       ) : (
-        <EntityBreadcrumbs entity={entity} title="作成" />
+        <EntityBreadcrumbs
+          entity={entity}
+          title={t("entryForm.editPage.createBreadcrumb")}
+        />
       )}
 
       <PageHeader
-        title={entry != null ? entry.name : "新規アイテムの作成"}
-        description={entry != null ? "アイテム編集" : undefined}
+        title={
+          entry != null ? entry.name : t("entryForm.editPage.newEntryTitle")
+        }
+        description={
+          entry != null ? t("entryForm.editPage.editDescription") : undefined
+        }
       >
         <SubmitButton
-          name="保存"
+          name={t("common.save")}
           disabled={!isDirty || !isValid || isSubmitting || isSubmitSuccessful}
           isSubmitting={isSubmitting}
           handleSubmit={handleSubmit(handleSubmitOnValid, (errors) => {

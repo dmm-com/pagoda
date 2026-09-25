@@ -7,6 +7,7 @@ import { setupServer } from "msw/node";
 import { createMemoryRouter, RouterProvider } from "react-router";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
+import i18n from "i18n/config";
 import { AliasEntryListPage } from "pages/AliasEntryListPage";
 
 const server = setupServer(
@@ -109,5 +110,33 @@ describe("AliasEntryListPage", () => {
     // Verify page title is displayed
     const titleElement = screen.getByRole("heading", { name: "Entity1" });
     expect(titleElement).toBeInTheDocument();
+  });
+
+  it("renders in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    const router = createMemoryRouter(
+      [
+        {
+          path: "/ui/entities/:entityId/alias",
+          element: <AliasEntryListPage />,
+        },
+      ],
+      {
+        initialEntries: ["/ui/entities/1/alias"],
+      },
+    );
+
+    await act(async () => {
+      render(
+        <TestWrapperWithoutRoutes>
+          <RouterProvider router={router} />
+        </TestWrapperWithoutRoutes>,
+      );
+    });
+
+    expect(screen.getAllByText("Alias settings").length).toBeGreaterThan(0);
   });
 });

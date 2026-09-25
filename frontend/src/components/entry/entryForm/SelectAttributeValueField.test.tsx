@@ -2,7 +2,7 @@
  */
 
 import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { FC } from "react";
 import { useForm } from "react-hook-form";
 
@@ -13,6 +13,7 @@ import {
 } from "./SelectAttributeValueField";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 
 const choices = [
   { value: "first", label: "First choice" },
@@ -112,6 +113,23 @@ describe("SelectAttributeValueField", () => {
       "true",
     );
   });
+
+  test("renders aria-label and empty option in english", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    render(<FieldHarness />, { wrapper: TestWrapper });
+
+    expect(
+      screen.getByLabelText("Selection value for attribute 1"),
+    ).toBeInTheDocument();
+
+    fireEvent.mouseDown(screen.getByRole("combobox"));
+    expect(
+      screen.getByRole("option", { name: "Not selected" }),
+    ).toBeInTheDocument();
+  });
 });
 
 describe("MultiSelectAttributeValueField", () => {
@@ -132,5 +150,17 @@ describe("MultiSelectAttributeValueField", () => {
     expect(screen.getByTestId("value")).toHaveTextContent(
       '"asMultiSelect":[{"value":"second","label":"Second choice"},{"value":"removed","label":"Removed choice"},{"value":"first","label":"First choice"}]',
     );
+  });
+
+  test("renders placeholder in english", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    render(<FieldHarness multiple />, { wrapper: TestWrapper });
+
+    expect(
+      screen.getByPlaceholderText("Please select an option"),
+    ).toBeInTheDocument();
   });
 });

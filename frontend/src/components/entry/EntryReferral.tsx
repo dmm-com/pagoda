@@ -20,6 +20,7 @@ import { normalizeToMatch } from "../../services/StringUtil";
 
 import { Loading } from "components/common/Loading";
 import { SearchBox } from "components/common/SearchBox";
+import { useTranslation } from "hooks/useTranslation";
 import { entryDetailsPath } from "routes/Routes";
 
 const ReferralCount = styled(Typography)(({}) => ({
@@ -40,6 +41,7 @@ interface Props {
 }
 
 const EntryReferralContent: FC<Props> = ({ entryId }) => {
+  const { t } = useTranslation();
   const { page, changePage } = usePage();
   const [keywordQuery, setKeywordQuery] = useState("");
 
@@ -66,10 +68,10 @@ const EntryReferralContent: FC<Props> = ({ entryId }) => {
     <Box>
       <Box px="16px">
         <ReferralCount id="ref_count">
-          {"関連づけられたアイテム(計" + count + ")"}
+          {t("entry.referral.countLabel", { count: count ?? 0 })}
         </ReferralCount>
         <SearchBox
-          placeholder="アイテムを絞り込む"
+          placeholder={t("entry.list.searchPlaceholder")}
           onKeyPress={(e) => {
             if (e.key === "Enter") {
               changePage(1);

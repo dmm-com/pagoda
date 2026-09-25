@@ -15,6 +15,7 @@ import { aironeApiClient } from "../../../repository/AironeApiClient";
 
 import { Schema } from "./EntryFormSchema";
 
+import { useTranslation } from "hooks/useTranslation";
 import { fuzzyMatch } from "services/StringUtil";
 import { getStagedErrorStyle } from "utils/styleUtils";
 
@@ -44,6 +45,7 @@ export const RoleAttributeValueField: FC<Props> = ({
   setValue,
   isDisabled = false,
 }) => {
+  const { t } = useTranslation();
   const [inputValue, setInputValue] = useState("");
 
   const { data: options = [], isLoading: loading } = usePagodaSWR(
@@ -88,7 +90,9 @@ export const RoleAttributeValueField: FC<Props> = ({
 
   return (
     <Box>
-      <StyledTypography variant="caption">ロールを選択</StyledTypography>
+      <StyledTypography variant="caption">
+        {t("entryForm.roleField.selectRole")}
+      </StyledTypography>
       <StyledBox>
         <Controller
           name={
