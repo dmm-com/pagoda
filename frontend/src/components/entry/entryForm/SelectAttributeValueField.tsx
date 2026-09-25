@@ -13,6 +13,8 @@ import { Control, Controller } from "react-hook-form";
 
 import { Schema } from "./EntryFormSchema";
 
+import { useTranslation } from "hooks/useTranslation";
+
 const StyledBox = styled(Box)(({}) => ({
   display: "flex",
   width: "100%",
@@ -42,6 +44,7 @@ export const SelectAttributeValueField: FC<CommonProps> = ({
   choices,
   isDisabled = false,
 }) => {
+  const { t } = useTranslation();
   const usable = useMemo(() => usableChoices(choices), [choices]);
   const menuItems = useMemo(
     () =>
@@ -66,7 +69,11 @@ export const SelectAttributeValueField: FC<CommonProps> = ({
           return (
             <FormControl fullWidth error={error != null} variant="standard">
               <Select
-                inputProps={{ "aria-label": `属性 ${attrId} の選択値` }}
+                inputProps={{
+                  "aria-label": t("entryForm.selectField.ariaLabel", {
+                    attrId,
+                  }),
+                }}
                 value={currentValue}
                 onChange={(e) => {
                   const v = e.target.value as string;
@@ -79,7 +86,7 @@ export const SelectAttributeValueField: FC<CommonProps> = ({
                 disabled={isDisabled}
               >
                 <MenuItem value="">
-                  <em>未選択</em>
+                  <em>{t("entryForm.selectField.notSelected")}</em>
                 </MenuItem>
                 {menuItems}
               </Select>
@@ -97,6 +104,7 @@ export const MultiSelectAttributeValueField: FC<CommonProps> = ({
   choices,
   isDisabled = false,
 }) => {
+  const { t } = useTranslation();
   const usable = useMemo(() => usableChoices(choices), [choices]);
   return (
     <StyledBox>
@@ -140,7 +148,7 @@ export const MultiSelectAttributeValueField: FC<CommonProps> = ({
                 <TextField
                   {...params}
                   variant="standard"
-                  placeholder="選択肢を選んでください"
+                  placeholder={t("entryForm.selectField.placeholder")}
                   error={error != null}
                   helperText={error?.message}
                 />

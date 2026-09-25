@@ -10,10 +10,12 @@ import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntityControlMenu } from "components/entity/EntityControlMenu";
 import { EntryImportModal } from "components/entry/EntryImportModal";
 import { RestorableEntryList } from "components/entry/RestorableEntryList";
+import { useTranslation } from "hooks/useTranslation";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 const EntryRestoreContent: FC<{ entityId: number }> = ({ entityId }) => {
+  const { t } = useTranslation();
   const [entityAnchorEl, setEntityAnchorEl] =
     useState<HTMLButtonElement | null>(null);
   const [openImportModal, setOpenImportModal] = useState(false);
@@ -26,9 +28,12 @@ const EntryRestoreContent: FC<{ entityId: number }> = ({ entityId }) => {
 
   return (
     <>
-      <EntityBreadcrumbs entity={entity} title="復旧" />
+      <EntityBreadcrumbs entity={entity} title={t("common.restore")} />
 
-      <PageHeader title={entity.name} description="削除アイテムの復旧">
+      <PageHeader
+        title={entity.name}
+        description={t("entry.restorePage.description")}
+      >
         <Box width="50px">
           <IconButton
             id="entity_menu"

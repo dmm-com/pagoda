@@ -22,6 +22,8 @@ import { Control, Controller, useFieldArray } from "react-hook-form";
 import { Schema } from "./EntityFormSchema";
 import { WebhookHeadersModal } from "./WebhookHeadersModal";
 
+import { useTranslation } from "hooks/useTranslation";
+
 const HeaderTableRow = styled(TableRow)(({}) => ({
   backgroundColor: "#455A64",
 }));
@@ -43,6 +45,7 @@ interface Props {
 }
 
 export const WebhookFields: FC<Props> = ({ control }) => {
+  const { t } = useTranslation();
   const { fields, insert, remove } = useFieldArray({
     control,
     name: "webhooks",
@@ -80,11 +83,19 @@ export const WebhookFields: FC<Props> = ({ control }) => {
           <HeaderTableRow>
             <HeaderTableCell width="50px" />
             <HeaderTableCell width="400px">URL</HeaderTableCell>
-            <HeaderTableCell width="350px">ラベル</HeaderTableCell>
+            <HeaderTableCell width="350px">
+              {t("entity.form.webhookLabel")}
+            </HeaderTableCell>
             <HeaderTableCell width="100px">Header</HeaderTableCell>
-            <HeaderTableCell width="100px">有効</HeaderTableCell>
-            <HeaderTableCell width="100px">削除</HeaderTableCell>
-            <HeaderTableCell width="100px">追加</HeaderTableCell>
+            <HeaderTableCell width="100px">
+              {t("entity.form.webhookEnabledHeader")}
+            </HeaderTableCell>
+            <HeaderTableCell width="100px">
+              {t("common.delete")}
+            </HeaderTableCell>
+            <HeaderTableCell width="100px">
+              {t("entity.form.addHeader")}
+            </HeaderTableCell>
           </HeaderTableRow>
         </TableHead>
         <TableBody>
@@ -107,7 +118,9 @@ export const WebhookFields: FC<Props> = ({ control }) => {
                               color="error"
                               titleAccess={
                                 field.verificationErrorDetails
-                                  ? `エラーのため webhook が有効になっていません。詳細: ${field.verificationErrorDetails}`
+                                  ? t("entity.form.webhookVerificationError", {
+                                      detail: field.verificationErrorDetails,
+                                    })
                                   : undefined
                               }
                             />
@@ -143,7 +156,7 @@ export const WebhookFields: FC<Props> = ({ control }) => {
                   render={({ field, fieldState: { error } }) => (
                     <TextField
                       {...field}
-                      placeholder="ラベル"
+                      placeholder={t("entity.form.webhookLabel")}
                       error={error != null}
                       helperText={error?.message}
                       size="small"

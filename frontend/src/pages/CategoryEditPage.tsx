@@ -17,7 +17,9 @@ import { SubmitButton } from "components/common/SubmitButton";
 import { useFormNotification } from "hooks/useFormNotification";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { usePrompt } from "hooks/usePrompt";
+import { useTranslation } from "hooks/useTranslation";
 import { useTypedParams } from "hooks/useTypedParams";
+import { translate } from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { listCategoryPath, topPath } from "routes/Routes";
 import {
@@ -26,13 +28,17 @@ import {
 } from "services/AironeAPIErrorUtil";
 
 export const CategoryEditPage: FC = () => {
+  const { t } = useTranslation();
   const { categoryId } = useTypedParams<{ categoryId?: number }>({
     allowEmpty: true,
   });
   const willCreate = categoryId == null;
 
   const navigate = useNavigate();
-  const { enqueueSubmitResult } = useFormNotification("カテゴリ", willCreate);
+  const { enqueueSubmitResult } = useFormNotification(
+    t("common.target.category"),
+    willCreate,
+  );
 
   const { data: category, isLoading: categoryLoading } = usePagodaSWR(
     categoryId != null ? ["category", categoryId] : null,
@@ -63,10 +69,7 @@ export const CategoryEditPage: FC = () => {
     resetOptions: { keepDirtyValues: true },
   });
 
-  usePrompt(
-    isDirty && !isSubmitSuccessful,
-    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
-  );
+  usePrompt(isDirty && !isSubmitSuccessful, t("category.form.confirmLeave"));
 
   useEffect(() => {
     isSubmitSuccessful && navigate(listCategoryPath());
@@ -87,7 +90,11 @@ export const CategoryEditPage: FC = () => {
         if (e instanceof Error && isResponseError(e)) {
           await extractAPIException<Schema>(
             e,
-            (message) => enqueueSubmitResult(false, `詳細: "${message}"`),
+            (message) =>
+              enqueueSubmitResult(
+                false,
+                translate("category.edit.errorDetail", { message }),
+              ),
             (name, message) => {
               setError(name, { type: "custom", message: message });
               enqueueSubmitResult(false);
@@ -116,17 +123,23 @@ export const CategoryEditPage: FC = () => {
           Top
         </Typography>
         <Typography component={AironeLink} to={listCategoryPath()}>
-          カテゴリ一覧
+          {t("category.list.title")}
         </Typography>
-        <Typography color="textPrimary">カテゴリ編集</Typography>
+        <Typography color="textPrimary">
+          {t("category.edit.breadcrumb")}
+        </Typography>
       </AironeBreadcrumbs>
 
       <PageHeader
-        title={category != null ? category.name : "新規カテゴリの作成"}
-        description={category != null ? "カテゴリ編集" : undefined}
+        title={
+          category != null ? category.name : t("category.edit.createTitle")
+        }
+        description={
+          category != null ? t("category.edit.breadcrumb") : undefined
+        }
       >
         <SubmitButton
-          name="保存"
+          name={t("common.save")}
           disabled={
             !isDirty || !isValid || isSubmitting || isSubmitSuccessful
             //category?. === false

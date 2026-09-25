@@ -6,6 +6,7 @@ import { FC } from "react";
 import { AironeLink } from "components/common";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { FlexBox } from "components/common/FlexBox";
+import { useTranslation } from "hooks/useTranslation";
 import { entitiesPath, entityEntriesPath, topPath } from "routes/Routes";
 
 interface Props {
@@ -15,13 +16,15 @@ interface Props {
 }
 
 export const EntityBreadcrumbs: FC<Props> = ({ entity, attr, title }) => {
+  const { t } = useTranslation();
+
   return (
     <AironeBreadcrumbs>
       <Typography component={AironeLink} to={topPath()}>
         Top
       </Typography>
       <Typography component={AironeLink} to={entitiesPath()}>
-        モデル一覧
+        {t("entity.list.pageTitle")}
       </Typography>
       {entity && (
         <FlexBox>

@@ -6,6 +6,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 
 import { TestWrapper } from "TestWrapper";
 import { CopyForm } from "components/entry/CopyForm";
+import i18n from "i18n/config";
 import { ACLType } from "services/ACLUtil";
 
 describe("CopyForm", () => {
@@ -43,5 +44,25 @@ describe("CopyForm", () => {
     });
 
     expect(setEntries).toHaveBeenCalledWith("entry1\nentry2");
+  });
+
+  test("renders in english", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    render(
+      <CopyForm entries="entry1" setEntries={vi.fn()} templateEntry={entry} />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(
+      screen.getByPlaceholderText("Name of entry to copy"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Create a new entry with the same attributes as entry0001 for each line entered",
+      ),
+    ).toBeInTheDocument();
   });
 });

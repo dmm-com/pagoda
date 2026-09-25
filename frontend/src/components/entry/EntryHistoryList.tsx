@@ -19,6 +19,8 @@ import { AttributeValue } from "./AttributeValue";
 
 import { Confirmable } from "components/common/Confirmable";
 import { PaginationFooter } from "components/common/PaginationFooter";
+import { useTranslation } from "hooks/useTranslation";
+import { translate } from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { showEntryHistoryPath, topPath } from "routes/Routes";
 import { EntryHistoryListParam } from "services/Constants";
@@ -75,6 +77,7 @@ export const EntryHistoryList: FC<Props> = ({
   page,
   changePage,
 }) => {
+  const { t } = useTranslation();
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
@@ -82,13 +85,13 @@ export const EntryHistoryList: FC<Props> = ({
     async (prevAttrValueId: number) => {
       try {
         await aironeApiClient.restoreEntryHistory(prevAttrValueId);
-        enqueueSnackbar(`変更の復旧が完了しました`, {
+        enqueueSnackbar(translate("entry.history.restoreSuccess"), {
           variant: "success",
         });
         navigate(topPath(), { replace: true });
         navigate(showEntryHistoryPath(entityId, entryId), { replace: true });
       } catch (e) {
-        enqueueSnackbar(`変更の復旧が失敗しました`, {
+        enqueueSnackbar(translate("entry.history.restoreFailure"), {
           variant: "error",
         });
       }
@@ -101,12 +104,24 @@ export const EntryHistoryList: FC<Props> = ({
       <Table id="table_history_list">
         <TableHead>
           <HeaderTableRow>
-            <HeaderTableCell width="140px">項目</HeaderTableCell>
-            <HeaderTableCell width="300px">変更前</HeaderTableCell>
-            <HeaderTableCell width="300px">変更後</HeaderTableCell>
-            <HeaderTableCell width="80px">実行日時</HeaderTableCell>
-            <HeaderTableCell width="100px">実行者</HeaderTableCell>
-            <HeaderTableCell width="40px">復旧</HeaderTableCell>
+            <HeaderTableCell width="140px">
+              {t("entry.common.itemHeader")}
+            </HeaderTableCell>
+            <HeaderTableCell width="300px">
+              {t("entry.history.beforeHeader")}
+            </HeaderTableCell>
+            <HeaderTableCell width="300px">
+              {t("entry.history.afterHeader")}
+            </HeaderTableCell>
+            <HeaderTableCell width="80px">
+              {t("entry.history.executedAtHeader")}
+            </HeaderTableCell>
+            <HeaderTableCell width="100px">
+              {t("entry.history.executedByHeader")}
+            </HeaderTableCell>
+            <HeaderTableCell width="40px">
+              {t("common.restore")}
+            </HeaderTableCell>
           </HeaderTableRow>
         </TableHead>
 
@@ -147,7 +162,7 @@ export const EntryHistoryList: FC<Props> = ({
                       <RestoreIcon />
                     </IconButton>
                   )}
-                  dialogTitle={`変更前の値に復旧しますか？`}
+                  dialogTitle={t("entry.history.confirmRestoreValue")}
                   onClickYes={() => {
                     if (history.prevId != null) handleRestore(history.prevId);
                   }}

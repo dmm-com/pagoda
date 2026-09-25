@@ -9,6 +9,7 @@ import { act, render, screen, within } from "@testing-library/react";
 
 import { TestWrapper } from "TestWrapper";
 import { EntryHistoryList } from "components/entry/EntryHistoryList";
+import i18n from "i18n/config";
 
 describe("EntryHistoryList", () => {
   const histories: PaginatedEntryHistoryAttributeValueList = {
@@ -70,5 +71,33 @@ describe("EntryHistoryList", () => {
     expect(within(bodyRowGroup).queryAllByRole("row")).toHaveLength(2);
     expect(within(bodyRowGroup).queryAllByText("value1")).toHaveLength(2);
     expect(within(bodyRowGroup).queryByText("value2")).toBeInTheDocument();
+  });
+
+  test("renders in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    await act(async () => {
+      render(
+        <EntryHistoryList
+          entityId={2}
+          entryId={1}
+          histories={histories}
+          page={1}
+          changePage={() => {
+            /* do nothing */
+          }}
+        />,
+        { wrapper: TestWrapper },
+      );
+    });
+
+    expect(screen.getByText("Item")).toBeInTheDocument();
+    expect(screen.getByText("Before change")).toBeInTheDocument();
+    expect(screen.getByText("After change")).toBeInTheDocument();
+    expect(screen.getByText("Executed at")).toBeInTheDocument();
+    expect(screen.getByText("Executed by")).toBeInTheDocument();
+    expect(screen.getByText("Restore")).toBeInTheDocument();
   });
 });

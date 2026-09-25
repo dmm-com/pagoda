@@ -1,96 +1,55 @@
-import i18n, { Resource } from "i18next";
+import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
-export type TranslationKey =
-  | "categories"
-  | "entities"
-  | "advancedSearch"
-  | "management"
-  | "manageUsers"
-  | "manageGroups"
-  | "manageRoles"
-  | "manageTriggers"
-  | "previousVersion"
-  | "currentUser"
-  | "userSetting"
-  | "logout"
-  | "noRunningJobs"
-  | "jobs";
+import { en, ja, TranslationKey } from "./locales";
 
-interface AironeResource {
-  en: {
-    translation: Record<TranslationKey, string>;
-  };
-  ja: {
-    translation: Record<TranslationKey, string>;
-  };
+export type { TranslationKey };
+
+export const supportedLanguages = ["ja", "en"] as const;
+export type SupportedLanguage = (typeof supportedLanguages)[number];
+
+export type TranslationOptions = Record<string, string | number>;
+
+export const resources = {
+  ja: { translation: ja },
+  en: { translation: en },
+};
+
+export function detectLanguage(
+  languages: readonly string[] | undefined,
+): SupportedLanguage | undefined {
+  return (languages ?? [])
+    .map((l) => l.slice(0, 2))
+    .find((l): l is SupportedLanguage =>
+      (supportedLanguages as readonly string[]).includes(l),
+    );
 }
 
-function toResource(resource: AironeResource): Resource {
-  return {
-    en: {
-      translation: {
-        ...resource.en.translation,
-      },
-    },
-    ja: {
-      translation: {
-        ...resource.ja.translation,
-      },
-    },
-  };
-}
-
-const resources = toResource({
-  en: {
-    translation: {
-      categories: "Categories",
-      entities: "Entities",
-      advancedSearch: "Advanced Search",
-      management: "Management",
-      manageUsers: "Manage users",
-      manageGroups: "Manage groups",
-      manageRoles: "Manage roles",
-      manageTriggers: "Manage triggers",
-      previousVersion: "Previous version",
-      currentUser: "is current user",
-      userSetting: "User setting",
-      logout: "Logout",
-      noRunningJobs: "No running jobs",
-      jobs: "Jobs",
-    },
-  },
-  ja: {
-    translation: {
-      categories: "カテゴリ一覧",
-      entities: "モデル一覧",
-      advancedSearch: "高度な検索",
-      management: "管理機能",
-      manageUsers: "ユーザ管理",
-      manageGroups: "グループ管理",
-      manageRoles: "ロール管理",
-      manageTriggers: "トリガー管理",
-      previousVersion: "旧デザイン",
-      currentUser: "としてログイン",
-      userSetting: "ユーザ設定",
-      logout: "ログアウト",
-      noRunningJobs: "実行タスクなし",
-      jobs: "ジョブ一覧",
-    },
-  },
-});
-
-const primaryLanguage = window.navigator.languages
-  .map((l) => l.slice(0, 2))
-  .filter((l) => l === "ja" || l === "en")[0];
+const primaryLanguage = detectLanguage(
+  typeof window !== "undefined" ? window.navigator.languages : undefined,
+);
 
 i18n.use(initReactI18next).init({
   resources,
   lng: primaryLanguage,
   fallbackLng: "ja",
+  // Keys are flat strings such as "entry.form.name"; dots are not nesting.
+  keySeparator: false,
   interpolation: {
     escapeValue: false,
   },
 });
+
+/**
+ * Translates a key outside of React components (services, schemas, etc).
+ * Inside components, prefer the useTranslation hook so the view re-renders
+ * on language change.
+ */
+export function translate(
+  key: TranslationKey,
+  options?: TranslationOptions,
+): string {
+  return i18n.t(key, options);
+}
 
 export default i18n;

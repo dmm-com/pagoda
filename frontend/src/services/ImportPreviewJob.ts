@@ -2,6 +2,7 @@ import {
   ImportPreview,
   ImportPreviewAction,
 } from "components/common/ImportPreview";
+import { translate } from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { ImportPreviewParam, JobStatuses } from "services/Constants";
 
@@ -9,10 +10,17 @@ export class ImportPreviewFailure extends Error {}
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const statusMessage: Record<number, string> = {
-  [JobStatuses.ERROR]: "変更内容の確認に失敗しました",
-  [JobStatuses.TIMEOUT]: "変更内容の確認がタイムアウトしました",
-  [JobStatuses.CANCELED]: "変更内容の確認を中止しました",
+const statusMessage = (status: number): string | undefined => {
+  switch (status) {
+    case JobStatuses.ERROR:
+      return translate("importPreview.job.confirmFailed");
+    case JobStatuses.TIMEOUT:
+      return translate("importPreview.job.confirmTimedOut");
+    case JobStatuses.CANCELED:
+      return translate("importPreview.job.confirmCancelled");
+    default:
+      return undefined;
+  }
 };
 
 /**
@@ -107,7 +115,9 @@ export const waitForImportPreview = async (
   const { onProgress, isAbandoned } = options;
   for (;;) {
     if (isAbandoned?.()) {
-      throw new ImportPreviewFailure("変更内容の確認を中止しました");
+      throw new ImportPreviewFailure(
+        translate("importPreview.job.confirmCancelled"),
+      );
     }
 
     const job = await aironeApiClient.getJob(jobId);
@@ -117,8 +127,9 @@ export const waitForImportPreview = async (
         toQuery(options.page ?? {}),
       );
     }
-    if (job.status != null && job.status in statusMessage) {
-      throw new ImportPreviewFailure(statusMessage[job.status]);
+    const message = job.status != null ? statusMessage(job.status) : undefined;
+    if (message != null) {
+      throw new ImportPreviewFailure(message);
     }
 
     onProgress?.(job.text ?? "");

@@ -4,6 +4,8 @@ import { Chip, Stack, TextField } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { FC, useState } from "react";
 
+import { useTranslation } from "hooks/useTranslation";
+
 const StyledTextField = styled(TextField)({
   background: "#F4F4F4",
   "& fieldset": {
@@ -22,6 +24,7 @@ export const AliasEntryList: FC<Props> = ({
   handleCreate,
   handleDelete,
 }) => {
+  const { t } = useTranslation();
   const [isEdit, setIsEdit] = useState(false);
 
   return (
@@ -36,7 +39,7 @@ export const AliasEntryList: FC<Props> = ({
       {isEdit ? (
         <StyledTextField
           size="small"
-          placeholder="エイリアスを追加"
+          placeholder={t("entry.alias.addPlaceholder")}
           onKeyDown={(e) => {
             e.key === "Enter" &&
               handleCreate(entry.id, e.target as HTMLInputElement);

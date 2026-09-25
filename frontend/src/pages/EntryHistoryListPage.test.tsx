@@ -11,6 +11,7 @@ import { showEntryHistoryPath } from "../routes/Routes";
 import { EntryHistoryListPage } from "./EntryHistoryListPage";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
+import i18n from "i18n/config";
 
 const server = setupServer(
   // getEntry
@@ -68,6 +69,38 @@ test("should match snapshot", async () => {
   });
 
   expect(result).toMatchSnapshot();
+
+  vi.clearAllMocks();
+});
+
+test("renders in English", async () => {
+  await act(async () => {
+    await i18n.changeLanguage("en");
+  });
+
+  const router = createMemoryRouter(
+    [
+      {
+        path: showEntryHistoryPath(":entityId", ":entryId"),
+        element: <EntryHistoryListPage />,
+      },
+    ],
+    {
+      initialEntries: [showEntryHistoryPath(2, 1)],
+    },
+  );
+  await act(async () => {
+    render(<RouterProvider router={router} />, {
+      wrapper: TestWrapperWithoutRoutes,
+    });
+  });
+  await waitFor(() => {
+    expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+  });
+
+  expect(screen.getAllByText("Change History").length).toBeGreaterThan(0);
+  expect(screen.getByText("Entry change history")).toBeInTheDocument();
+  expect(screen.getByText("Attribute change history")).toBeInTheDocument();
 
   vi.clearAllMocks();
 });

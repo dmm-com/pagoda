@@ -1,5 +1,6 @@
 import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
 
+import { translate } from "../i18n/config";
 import {
   LocalStorageKey,
   localStorageUtil,
@@ -10,19 +11,19 @@ import { JobOperations, JobStatuses } from "./Constants";
 export const jobStatusLabel = (jobStatus: number | undefined): string => {
   switch (jobStatus) {
     case JobStatuses.PREPARING:
-      return "処理前";
+      return translate("job.status.preparing");
     case JobStatuses.DONE:
-      return "完了";
+      return translate("job.status.done");
     case JobStatuses.ERROR:
-      return "失敗";
+      return translate("job.status.error");
     case JobStatuses.TIMEOUT:
-      return "タイムアウト";
+      return translate("job.status.timeout");
     case JobStatuses.PROCESSING:
-      return "処理中";
+      return translate("job.status.processing");
     case JobStatuses.CANCELED:
-      return "キャンセル";
+      return translate("job.status.canceled");
     default:
-      return "不明";
+      return translate("job.status.unknown");
   }
 };
 
@@ -51,34 +52,34 @@ export const jobOperationLabel = (jobOperation: number | undefined): string => {
     case JobOperations.CREATE_ENTITY:
     case JobOperations.CREATE_ENTITY_V2:
     case JobOperations.CREATE_ENTRY_V2:
-      return "作成";
+      return translate("job.operation.create");
     case JobOperations.EDIT_ENTRY:
     case JobOperations.EDIT_ENTITY:
     case JobOperations.EDIT_ENTITY_V2:
     case JobOperations.EDIT_ENTRY_V2:
-      return "編集";
+      return translate("job.operation.edit");
     case JobOperations.DELETE_ENTITY:
     case JobOperations.DELETE_ENTRY:
     case JobOperations.DELETE_ENTITY_V2:
     case JobOperations.DELETE_ENTRY_V2:
-      return "削除";
+      return translate("job.operation.delete");
     case JobOperations.IMPORT_ENTRY:
     case JobOperations.IMPORT_ENTRY_V2:
-      return "インポート";
+      return translate("job.operation.import");
     case JobOperations.EXPORT_ENTRY:
     case JobOperations.EXPORT_SEARCH_RESULT:
     case JobOperations.EXPORT_ENTRY_V2:
     case JobOperations.EXPORT_SEARCH_RESULT_V2:
-      return "エクスポート";
+      return translate("job.operation.export");
     case JobOperations.COPY_ENTRY:
     case JobOperations.DO_COPY_ENTRY:
-      return "コピー";
+      return translate("job.operation.copy");
     case JobOperations.RESTORE_ENTRY:
-      return "復旧";
+      return translate("job.operation.restore");
     case JobOperations.BULK_EDIT_ENTRY:
-      return "一括更新";
+      return translate("job.operation.bulkEdit");
     default:
-      return "不明";
+      return translate("job.operation.unknown");
   }
 };
 

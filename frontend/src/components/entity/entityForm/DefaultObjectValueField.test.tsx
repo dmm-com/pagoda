@@ -1,4 +1,5 @@
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -10,6 +11,7 @@ import { useState } from "react";
 import { DefaultObjectValueField } from "./DefaultObjectValueField";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 const Harness = ({ multiple = false }: { multiple?: boolean }) => {
@@ -69,5 +71,15 @@ describe("DefaultObjectValueField", () => {
     await waitFor(() =>
       expect(screen.getByTestId("value")).toHaveTextContent("[102,101]"),
     );
+  });
+
+  test("renders in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    render(<Harness />, { wrapper: TestWrapper });
+
+    expect(screen.getByPlaceholderText("Default entry")).toBeInTheDocument();
   });
 });

@@ -24,6 +24,7 @@ import {
 } from "react-hook-form";
 
 import { usePagodaSWR } from "../../hooks/usePagodaSWR";
+import { useTranslation } from "../../hooks/useTranslation";
 import { aironeApiClient } from "../../repository/AironeApiClient";
 
 import { Schema } from "./roleForm/RoleFormSchema";
@@ -36,6 +37,7 @@ interface Props {
 }
 
 export const RoleForm: FC<Props> = ({ control, setValue }) => {
+  const { t } = useTranslation();
   const [userKeyword, setUserKeyword] = useState("");
   const [adminUserKeyword, setAdminUserKeyword] = useState("");
   const [groupUserKeyword, setGroupUserKeyword] = useState("");
@@ -82,13 +84,17 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
         <Table className="table table-bordered" data-testid="basic">
           <TableHead>
             <TableRow sx={{ backgroundColor: "#455A64" }}>
-              <TableCell sx={{ color: "#FFFFFF" }}>項目</TableCell>
-              <TableCell sx={{ color: "#FFFFFF" }}>内容</TableCell>
+              <TableCell sx={{ color: "#FFFFFF" }}>
+                {t("role.form.columnItem")}
+              </TableCell>
+              <TableCell sx={{ color: "#FFFFFF" }}>
+                {t("role.form.columnContent")}
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             <TableRow>
-              <TableCell>ロール名</TableCell>
+              <TableCell>{t("role.form.name")}</TableCell>
               <TableCell>
                 <Controller
                   name="name"
@@ -99,7 +105,7 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                       {...field}
                       variant="standard"
                       required
-                      placeholder="ロール名"
+                      placeholder={t("role.form.namePlaceholder")}
                       error={error != null}
                       helperText={error?.message}
                       sx={{ width: "100%" }}
@@ -110,7 +116,7 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
               </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell>備考</TableCell>
+              <TableCell>{t("role.form.description")}</TableCell>
               <TableCell>
                 <Controller
                   name="description"
@@ -119,7 +125,7 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                   render={({ field }) => (
                     <TextField
                       variant="standard"
-                      placeholder="備考"
+                      placeholder={t("role.form.descriptionPlaceholder")}
                       {...field}
                       sx={{ width: "100%" }}
                     />
@@ -134,28 +140,32 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
       <Box mt="64px">
         <Box my="32px">
           <Typography variant="h4" align="center" my="16px">
-            ユーザ/グループを登録
+            {t("role.form.registerSectionTitle")}
           </Typography>
           <Typography variant="h6" align="center" my="16px">
-            ロール管理するグループまたはユーザを登録してください。
+            {t("role.form.registerSectionHelp")}
           </Typography>
         </Box>
 
         <Box my="64px">
           <Typography align="left" my="8px">
-            グループ登録
+            {t("role.form.groupRegisterTitle")}
           </Typography>
           <Table data-testid="group">
             <TableHead>
               <TableRow sx={{ backgroundColor: "#455A64" }}>
-                <TableCell sx={{ color: "#FFFFFF" }}>項目</TableCell>
-                <TableCell sx={{ color: "#FFFFFF" }}>内容</TableCell>
+                <TableCell sx={{ color: "#FFFFFF" }}>
+                  {t("role.form.columnItem")}
+                </TableCell>
+                <TableCell sx={{ color: "#FFFFFF" }}>
+                  {t("role.form.columnContent")}
+                </TableCell>
                 <TableCell />
               </TableRow>
             </TableHead>
             <TableBody>
               <TableRow>
-                <TableCell>管理者</TableCell>
+                <TableCell>{t("role.form.admin")}</TableCell>
                 <TableCell>
                   <Controller
                     name="adminGroups"
@@ -232,7 +242,7 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>メンバー</TableCell>
+                <TableCell>{t("role.form.member")}</TableCell>
                 <TableCell>
                   <Controller
                     name="groups"
@@ -314,19 +324,23 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
 
         <Box my="64px">
           <Typography align="left" my="8px">
-            ユーザ登録
+            {t("role.form.userRegisterTitle")}
           </Typography>
           <Table data-testid="user">
             <TableHead>
               <TableRow sx={{ backgroundColor: "#455A64" }}>
-                <TableCell sx={{ color: "#FFFFFF" }}>項目</TableCell>
-                <TableCell sx={{ color: "#FFFFFF" }}>内容</TableCell>
+                <TableCell sx={{ color: "#FFFFFF" }}>
+                  {t("role.form.columnItem")}
+                </TableCell>
+                <TableCell sx={{ color: "#FFFFFF" }}>
+                  {t("role.form.columnContent")}
+                </TableCell>
                 <TableCell />
               </TableRow>
             </TableHead>
             <TableBody>
               <TableRow>
-                <TableCell>管理者</TableCell>
+                <TableCell>{t("role.form.admin")}</TableCell>
                 <TableCell>
                   <Controller
                     name="adminUsers"
@@ -403,7 +417,7 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>メンバー</TableCell>
+                <TableCell>{t("role.form.member")}</TableCell>
                 <TableCell>
                   <Controller
                     name="users"

@@ -1,6 +1,7 @@
 import { Autocomplete, CircularProgress, TextField } from "@mui/material";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 type EntryOption = { id: number; name: string };
@@ -22,6 +23,7 @@ export const DefaultObjectValueField: FC<Props> = ({
   ariaLabel,
   onChange,
 }) => {
+  const { t } = useTranslation();
   const [options, setOptions] = useState<EntryOption[]>([]);
   const [selected, setSelected] = useState<EntryOption[]>([]);
   const [loading, setLoading] = useState(false);
@@ -99,7 +101,7 @@ export const DefaultObjectValueField: FC<Props> = ({
     renderInput: (params: Parameters<typeof TextField>[0]) => (
       <TextField
         {...params}
-        placeholder="デフォルトのアイテム"
+        placeholder={t("entity.form.defaultObjectValuePlaceholder")}
         size="small"
         inputProps={{ ...params.inputProps, "aria-label": ariaLabel }}
         InputProps={{

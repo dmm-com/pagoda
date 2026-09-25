@@ -24,6 +24,7 @@ import {
 } from "./ObjectAttributeValueField";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 import "@testing-library/jest-dom";
@@ -434,5 +435,76 @@ describe("ObjectAttributeValueField", () => {
         _boolean: false,
       },
     ]);
+  });
+
+  test("renders caption in english", async () => {
+    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue(
+      Promise.resolve({ results: entries, hasRestrictedItems: false }),
+    );
+
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    const {
+      result: {
+        current: { control, setValue },
+      },
+    } = renderHook(() =>
+      useForm<Schema>({
+        resolver: zodResolver(schema),
+        mode: "onBlur",
+        defaultValues,
+      }),
+    );
+
+    await act(async () => {
+      render(
+        <ObjectAttributeValueField
+          attrId={0}
+          control={control}
+          setValue={setValue}
+        />,
+        { wrapper: TestWrapper },
+      );
+    });
+
+    expect(screen.getByText("Select an entry")).toBeInTheDocument();
+  });
+
+  test("renders disabled boolean caption in english", async () => {
+    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue(
+      Promise.resolve({ results: entries, hasRestrictedItems: false }),
+    );
+
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    const {
+      result: {
+        current: { control, setValue },
+      },
+    } = renderHook(() =>
+      useForm<Schema>({
+        resolver: zodResolver(schema),
+        mode: "onBlur",
+        defaultValues,
+      }),
+    );
+
+    await act(async () => {
+      render(
+        <ArrayNamedObjectAttributeValueField
+          attrId={3}
+          control={control}
+          setValue={setValue}
+          withBoolean
+        />,
+        { wrapper: TestWrapper },
+      );
+    });
+
+    expect(screen.getByText("Disabled")).toBeInTheDocument();
   });
 });

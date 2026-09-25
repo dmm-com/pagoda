@@ -13,6 +13,7 @@ import { FC } from "react";
 
 import { AironeTableHeadCell } from "components/common/AironeTableHeadCell";
 import { AironeTableHeadRow } from "components/common/AironeTableHeadRow";
+import { useTranslation } from "hooks/useTranslation";
 import { ACLType, ACLTypeLabels } from "services/ACLUtil";
 import { formatDateTime } from "services/DateUtil";
 
@@ -27,6 +28,8 @@ interface Props {
 }
 
 export const ACLHistoryList: FC<Props> = ({ histories }) => {
+  const { t } = useTranslation();
+
   return (
     <Box>
       <Table id="table_history_list">
@@ -35,13 +38,17 @@ export const ACLHistoryList: FC<Props> = ({ histories }) => {
             <AironeTableHeadCell width="200px"></AironeTableHeadCell>
             <AironeTableHeadCell width="540px">
               <Box display="flex">
-                <Typography width="180px">項目</Typography>
-                <Typography width="180px">変更前</Typography>
-                <Typography width="180px">変更後</Typography>
+                <Typography width="180px">{t("acl.history.item")}</Typography>
+                <Typography width="180px">{t("acl.history.before")}</Typography>
+                <Typography width="180px">{t("acl.history.after")}</Typography>
               </Box>
             </AironeTableHeadCell>
-            <AironeTableHeadCell width="140px">実行日時</AironeTableHeadCell>
-            <AironeTableHeadCell width="144px">実行者</AironeTableHeadCell>
+            <AironeTableHeadCell width="140px">
+              {t("acl.history.time")}
+            </AironeTableHeadCell>
+            <AironeTableHeadCell width="144px">
+              {t("acl.history.user")}
+            </AironeTableHeadCell>
           </AironeTableHeadRow>
         </TableHead>
 
@@ -59,18 +66,20 @@ export const ACLHistoryList: FC<Props> = ({ histories }) => {
                             case "is_public":
                               return (
                                 <>
-                                  <StyledTableCell>公開設定</StyledTableCell>
+                                  <StyledTableCell>
+                                    {t("acl.history.isPublicLabel")}
+                                  </StyledTableCell>
                                   <StyledTableCell>
                                     {(change.before as boolean | undefined)
                                       ? true
-                                        ? "公開"
-                                        : "限定公開"
+                                        ? t("acl.history.public")
+                                        : t("acl.history.limitedPublic")
                                       : "-"}
                                   </StyledTableCell>
                                   <StyledTableCell>
                                     {(change.after as boolean)
-                                      ? "公開"
-                                      : "限定公開"}
+                                      ? t("acl.history.public")
+                                      : t("acl.history.limitedPublic")}
                                   </StyledTableCell>
                                 </>
                               );
@@ -79,21 +88,21 @@ export const ACLHistoryList: FC<Props> = ({ histories }) => {
                                 <>
                                   <StyledTableCell>
                                     {change.target == "default_permission"
-                                      ? "デフォルト権限"
+                                      ? t("acl.history.defaultPermission")
                                       : change.target}
                                   </StyledTableCell>
                                   <StyledTableCell>
                                     {change.before != null
                                       ? (ACLTypeLabels[
                                           change.before as ACLType
-                                        ] ?? "不明")
+                                        ] ?? t("common.unknown"))
                                       : "-"}
                                   </StyledTableCell>
                                   <StyledTableCell>
                                     {change.after != null
                                       ? (ACLTypeLabels[
                                           change.after as ACLType
-                                        ] ?? "不明")
+                                        ] ?? t("common.unknown"))
                                       : "-"}
                                   </StyledTableCell>
                                 </>

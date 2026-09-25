@@ -11,15 +11,17 @@ import {
 } from "@mui/material";
 import { FC, useState } from "react";
 
+import { useTranslation } from "../../hooks/useTranslation";
+
 import { AironeTableHeadCell } from "./AironeTableHeadCell";
 import { AironeTableHeadRow } from "./AironeTableHeadRow";
 import {
   ImportPreview,
   ImportPreviewAction,
-  ImportPreviewActionLabel,
   ImportPreviewRow,
-  ImportPreviewSkipReasonLabel,
   ImportPreviewSummaryKey,
+  importPreviewActionLabel,
+  importPreviewSkipReasonLabel,
   isImportPreviewNoop,
 } from "./ImportPreview";
 
@@ -55,9 +57,7 @@ interface Props {
 
 const changeSummary = (row: ImportPreviewRow): string => {
   if (row.action === "skip" || row.action === "error") {
-    return row.reason != null
-      ? (ImportPreviewSkipReasonLabel[row.reason] ?? row.reason)
-      : "-";
+    return row.reason != null ? importPreviewSkipReasonLabel(row.reason) : "-";
   }
 
   const changes = row.changes
@@ -81,6 +81,7 @@ export const ImportPreviewResult: FC<Props> = ({
   onDownload,
   loading,
 }) => {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState<string>();
 
   const toggleAction = (action: ImportPreviewAction) =>
@@ -106,24 +107,27 @@ export const ImportPreviewResult: FC<Props> = ({
                 ? "filled"
                 : "outlined"
             }
-            label={`${ImportPreviewActionLabel[action]} ${preview.summary[ImportPreviewSummaryKey[action]]}`}
+            label={`${importPreviewActionLabel(action)} ${preview.summary[ImportPreviewSummaryKey[action]]}`}
             size="small"
             onClick={() => toggleAction(action)}
             data-testid={`import-preview-filter-${action}`}
           />
         ))}
-        <Chip label={`合計 ${preview.summary.total}`} size="small" />
+        <Chip
+          label={t("importPreview.total", { count: preview.summary.total })}
+          size="small"
+        />
       </Box>
 
       <Typography variant="caption" color="text.secondary" my="4px">
         {actions.length === 0
-          ? "操作を選ぶと、その行だけを表示します。"
-          : "選択中の操作の行だけを表示しています。もう一度押すと解除します。"}
+          ? t("importPreview.filterHintAll")
+          : t("importPreview.filterHintSelected")}
       </Typography>
 
       {isImportPreviewNoop(preview) && (
         <Typography variant="body2" my="4px">
-          このファイルをインポートしても変更は発生しません。
+          {t("importPreview.noopMessage")}
         </Typography>
       )}
 
@@ -132,15 +136,17 @@ export const ImportPreviewResult: FC<Props> = ({
           <TableHead>
             <AironeTableHeadRow>
               <AironeTableHeadCell sx={{ width: "100px" }}>
-                操作
+                {t("importPreview.columns.action")}
               </AironeTableHeadCell>
               <AironeTableHeadCell sx={{ width: "100px" }}>
-                種別
+                {t("importPreview.columns.kind")}
               </AironeTableHeadCell>
               <AironeTableHeadCell sx={{ width: "160px" }}>
-                名前
+                {t("importPreview.columns.name")}
               </AironeTableHeadCell>
-              <AironeTableHeadCell>変更内容</AironeTableHeadCell>
+              <AironeTableHeadCell>
+                {t("importPreview.columns.changes")}
+              </AironeTableHeadCell>
             </AironeTableHeadRow>
           </TableHead>
           <TableBody>
@@ -158,7 +164,7 @@ export const ImportPreviewResult: FC<Props> = ({
                   <TableCell>
                     <Chip
                       color={ActionColor[row.action]}
-                      label={ImportPreviewActionLabel[row.action]}
+                      label={importPreviewActionLabel(row.action)}
                       size="small"
                     />
                   </TableCell>
@@ -185,7 +191,7 @@ export const ImportPreviewResult: FC<Props> = ({
               <TableRow>
                 <TableCell colSpan={4}>
                   <Typography variant="body2">
-                    表示できる行がありません。
+                    {t("importPreview.noRows")}
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -202,7 +208,7 @@ export const ImportPreviewResult: FC<Props> = ({
             onClick={onLoadMore}
             data-testid="import-preview-load-more"
           >
-            {`さらに読み込む（残り ${remaining} 行）`}
+            {t("importPreview.loadMore", { remaining })}
           </Button>
         )}
         {onDownload && (
@@ -211,14 +217,16 @@ export const ImportPreviewResult: FC<Props> = ({
             onClick={onDownload}
             data-testid="import-preview-download"
           >
-            CSV でダウンロード
+            {t("importPreview.downloadCsv")}
           </Button>
         )}
       </Box>
 
       {preview.truncated && (
         <Typography variant="caption" my="4px">
-          {`行数が多いため一部の行は保持されていません。上のサマリは全 ${preview.summary.total} 行を集計しています。`}
+          {t("importPreview.truncatedNotice", {
+            total: preview.summary.total,
+          })}
         </Typography>
       )}
     </Box>

@@ -7,6 +7,7 @@ import { setupServer } from "msw/node";
 import { createMemoryRouter, RouterProvider } from "react-router";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
+import i18n from "i18n/config";
 import { EntityHistoryPage } from "pages/EntityHistoryPage";
 import { entityHistoryPath } from "routes/Routes";
 
@@ -84,4 +85,32 @@ test("should match snapshot", async () => {
   });
 
   expect(result).toMatchSnapshot();
+});
+
+test("should render change history header in English", async () => {
+  await act(async () => {
+    await i18n.changeLanguage("en");
+  });
+
+  const router = createMemoryRouter(
+    [
+      {
+        path: entityHistoryPath(":entityId"),
+        element: <EntityHistoryPage />,
+      },
+    ],
+    {
+      initialEntries: [entityHistoryPath(1)],
+    },
+  );
+  await act(async () => {
+    render(<RouterProvider router={router} />, {
+      wrapper: TestWrapperWithoutRoutes,
+    });
+  });
+  await waitFor(() => {
+    expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+  });
+
+  expect(screen.getAllByText("Change history").length).toBeGreaterThan(0);
 });

@@ -37,6 +37,7 @@ import { Confirmable } from "components/common/Confirmable";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { useAsync } from "hooks/useAsync";
+import { useTranslation } from "hooks/useTranslation";
 import { ServerContext } from "index";
 import { aironeApiClient } from "repository/AironeApiClient";
 import {
@@ -210,6 +211,7 @@ const TriggerAction: FC<{
 };
 
 export const TriggerListPage: FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [toggle, setToggle] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
@@ -223,14 +225,14 @@ export const TriggerListPage: FC = () => {
   const handleDelete = async (triggerId: number) => {
     try {
       await aironeApiClient.deleteTrigger(triggerId);
-      enqueueSnackbar(`トリガーの削除が完了しました`, {
+      enqueueSnackbar(t("trigger.list.deleteSuccess"), {
         variant: "success",
       });
       navigate(topPath(), { replace: true });
       navigate(triggersPath(), { replace: true });
       setToggle(!toggle);
     } catch (e) {
-      enqueueSnackbar("トリガーの削除が失敗しました", {
+      enqueueSnackbar(t("trigger.list.deleteFailed"), {
         variant: "error",
       });
     }
@@ -242,9 +244,9 @@ export const TriggerListPage: FC = () => {
         <Typography component={AironeLink} to={topPath()}>
           Top
         </Typography>
-        <Typography color="textPrimary">トリガー管理</Typography>
+        <Typography color="textPrimary">{t("trigger.list.title")}</Typography>
       </AironeBreadcrumbs>
-      <PageHeader title="トリガー管理">
+      <PageHeader title={t("trigger.list.title")}>
         <Button
           variant="contained"
           color="secondary"
@@ -254,7 +256,7 @@ export const TriggerListPage: FC = () => {
           disabled={isReadonly}
         >
           <AddIcon />
-          新規トリガーを作成
+          {t("trigger.list.createButton")}
         </Button>
       </PageHeader>
       <Container>
@@ -266,9 +268,15 @@ export const TriggerListPage: FC = () => {
               <Table data-testid="TriggerList">
                 <TableHead>
                   <HeaderTableRow>
-                    <HeaderTableCell width="200px">モデル</HeaderTableCell>
-                    <HeaderTableCell width="420px">条件</HeaderTableCell>
-                    <HeaderTableCell width="420px">アクション</HeaderTableCell>
+                    <HeaderTableCell width="200px">
+                      {t("trigger.list.columnModel")}
+                    </HeaderTableCell>
+                    <HeaderTableCell width="420px">
+                      {t("trigger.list.columnCondition")}
+                    </HeaderTableCell>
+                    <HeaderTableCell width="420px">
+                      {t("trigger.list.columnAction")}
+                    </HeaderTableCell>
                     <HeaderTableCell width="20px"></HeaderTableCell>
                     <HeaderTableCell width="20px"></HeaderTableCell>
                   </HeaderTableRow>
@@ -312,7 +320,7 @@ export const TriggerListPage: FC = () => {
                                 <DeleteOutlineIcon />
                               </StyledIconButton>
                             )}
-                            dialogTitle="本当に削除しますか？"
+                            dialogTitle={t("trigger.list.confirmDelete")}
                             onClickYes={() => handleDelete(trigger.id)}
                           />
                         </TableCell>
