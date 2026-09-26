@@ -25,6 +25,7 @@ import { PasswordResetConfirmModal } from "../components/user/PasswordResetConfi
 import { PasswordResetModal } from "../components/user/PasswordResetModal";
 import { aironeApiClient } from "../repository/AironeApiClient";
 
+import { iframeLoginCompletePath, iframePath, loginPath } from "routes/Routes";
 import { ServerContext } from "services/ServerContext";
 
 export const LoginPage: FC = () => {
@@ -115,6 +116,40 @@ export const LoginPage: FC = () => {
   const handleClosePasswordResetConfirmModal = useCallback(() => {
     setOpenPasswordResetConfirmModal(false);
   }, [setOpenPasswordResetConfirmModal]);
+
+  const nextUrl = new URL(
+    serverContext?.loginNext || "/",
+    window.location.origin,
+  );
+  const isIframeDestination =
+    nextUrl.origin === window.location.origin &&
+    (nextUrl.pathname === iframePath().replace(/\/$/, "") ||
+      nextUrl.pathname.startsWith(iframePath())) &&
+    nextUrl.pathname !== iframeLoginCompletePath();
+
+  if (isIframeDestination) {
+    const loginUrl = `${loginPath()}?${new URLSearchParams({
+      next: iframeLoginCompletePath(),
+    })}`;
+    return (
+      <Box p={3}>
+        <Typography>AirOne にログインしてください。</Typography>
+        <Button
+          component="a"
+          href={loginUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          variant="contained"
+        >
+          別タブでログイン
+        </Button>
+        <Typography>ログイン後、この画面で再読み込みしてください。</Typography>
+        <Button onClick={() => window.location.assign(nextUrl.href)}>
+          再読み込み
+        </Button>
+      </Box>
+    );
+  }
 
   return (
     <Box
