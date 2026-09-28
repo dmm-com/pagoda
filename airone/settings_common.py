@@ -160,6 +160,9 @@ class Common(Configuration):  # type: ignore[misc]
     # make the browser drop the session cookie and every login silently fail.
     SESSION_COOKIE_SECURE = env.bool("AIRONE_SSL_ENABLE", not LITE)
 
+    # Set AIRONE_SESSION_COOKIE_SAMESITE to Lax, Strict, or the string None.
+    SESSION_COOKIE_SAMESITE = env.str("AIRONE_SESSION_COOKIE_SAMESITE", "Lax")
+
     # https://docs.djangoproject.com/en/3.2/ref/middleware/#http-strict-transport-security
     SECURE_HSTS_PRELOAD = True
     SECURE_HSTS_SECONDS = 1209600
