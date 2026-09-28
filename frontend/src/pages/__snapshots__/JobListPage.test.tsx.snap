@@ -243,7 +243,7 @@ exports[`JobListPage > should match snapshot 1`] = `
                   <p
                     class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
                   >
-                    2022/1/1 9:0:0
+                    2022/1/1 0:0:0
                   </p>
                 </td>
                 <td
@@ -327,7 +327,7 @@ exports[`JobListPage > should match snapshot 1`] = `
                   <p
                     class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
                   >
-                    2022/1/1 9:0:0
+                    2022/1/1 0:0:0
                   </p>
                 </td>
                 <td
@@ -661,7 +661,7 @@ exports[`JobListPage > should match snapshot 1`] = `
                 <p
                   class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
                 >
-                  2022/1/1 9:0:0
+                  2022/1/1 0:0:0
                 </p>
               </td>
               <td
@@ -745,7 +745,7 @@ exports[`JobListPage > should match snapshot 1`] = `
                 <p
                   class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
                 >
-                  2022/1/1 9:0:0
+                  2022/1/1 0:0:0
                 </p>
               </td>
               <td
