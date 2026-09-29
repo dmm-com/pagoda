@@ -2,7 +2,7 @@
  */
 
 import { EntityDetail } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 import { EntityBreadcrumbs } from "./EntityBreadcrumbs";
 
@@ -102,5 +102,15 @@ describe("EntityBreadcrumbs", () => {
     expect(topLink).toHaveAttribute("href", "/");
     expect(entitiesLink).toHaveAttribute("href", "/entities");
     expect(entityLink).toHaveAttribute("href", "/entity/1/entries");
+  });
+  test("shows the full label in a tooltip on hover", async () => {
+    const longEntity = { ...mockEntity, name: "A very long entity name" };
+    render(<EntityBreadcrumbs entity={longEntity} />, { wrapper: TestWrapper });
+
+    fireEvent.mouseEnter(screen.getByText(longEntity.name));
+
+    await waitFor(() => {
+      expect(screen.getByRole("tooltip")).toHaveTextContent(longEntity.name);
+    });
   });
 });
