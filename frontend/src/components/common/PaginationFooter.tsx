@@ -3,6 +3,7 @@ import { styled } from "@mui/material/styles";
 import { FC } from "react";
 
 import { CenterAlignedBox } from "components/common/FlexBox";
+import { useTranslation } from "hooks/useTranslation";
 
 const StyledBox = styled(CenterAlignedBox)(({}) => ({
   alignItems: "center",
@@ -22,13 +23,15 @@ export const PaginationFooter: FC<Props> = ({
   page,
   changePage,
 }) => {
+  const { t } = useTranslation();
   return (
     <StyledBox id="pagination">
       <Typography>
-        {`${Math.min(maxRowCount * (page - 1) + 1, count)} - ${Math.min(
-          maxRowCount * page,
+        {t("pagination.range", {
+          from: Math.min(maxRowCount * (page - 1) + 1, count),
+          to: Math.min(maxRowCount * page, count),
           count,
-        )} / ${count} 件`}
+        })}
       </Typography>
       <Stack spacing={2}>
         <Pagination

@@ -14,6 +14,7 @@ import { createMemoryRouter, RouterProvider } from "react-router";
 import { vi } from "vitest";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
+import i18n from "i18n/config";
 import { UserEditPage } from "pages/UserEditPage";
 import { aironeApiClient } from "repository/AironeApiClient";
 
@@ -150,5 +151,28 @@ describe("EditUserPage", () => {
     expect(confirm).not.toHaveBeenCalled();
     expect(router.state.location.pathname).toBe("/ui/users");
     confirm.mockRestore();
+  });
+
+  test("renders in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    const router = createMemoryRouter([
+      {
+        path: "/",
+        element: <UserEditPage />,
+      },
+    ]);
+    await act(async () => {
+      render(<RouterProvider router={router} />, {
+        wrapper: TestWrapperWithoutRoutes,
+      });
+    });
+    await waitFor(() => {
+      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    });
+
+    expect(screen.getByText("User settings")).toBeInTheDocument();
   });
 });

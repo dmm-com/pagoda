@@ -4,6 +4,7 @@ import { styled } from "@mui/material/styles";
 import { FC, ReactNode } from "react";
 import { Link } from "react-router";
 
+import { useTranslation } from "hooks/useTranslation";
 import { jobsPath } from "routes/Routes";
 
 const Frame = styled(Box)({
@@ -56,6 +57,7 @@ export const PageHeader: FC<Props> = ({
   hasOngoingProcess,
   children,
 }) => {
+  const { t } = useTranslation();
   return (
     <Frame>
       <Fixed>
@@ -67,7 +69,7 @@ export const PageHeader: FC<Props> = ({
             {description}
           </Typography>
           {hasOngoingProcess && (
-            <Tooltip title="未処理の変更があります。現在表示されているデータは最新でない可能性があります。">
+            <Tooltip title={t("pageHeader.staleData")}>
               <Box component={Link} to={jobsPath(targetId)}>
                 <AutorenewIcon />
               </Box>

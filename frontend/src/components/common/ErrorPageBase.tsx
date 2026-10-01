@@ -1,6 +1,7 @@
 import { Box, Button, Typography } from "@mui/material";
 import { FC, useCallback } from "react";
 
+import { useTranslation } from "../../hooks/useTranslation";
 import { topPath } from "../../routes/Routes";
 
 interface ErrorPageBaseProps {
@@ -12,6 +13,7 @@ export const ErrorPageBase: FC<ErrorPageBaseProps> = ({
   title,
   description,
 }) => {
+  const { t } = useTranslation();
   const handleClickGoToTop = useCallback(() => {
     location.href = topPath();
   }, []);
@@ -48,7 +50,7 @@ export const ErrorPageBase: FC<ErrorPageBaseProps> = ({
           sx={{ borderRadius: "16px", my: "40px" }}
           onClick={handleClickGoToTop}
         >
-          トップページへ
+          {t("common.backToTop")}
         </Button>
       </Box>
     </Box>

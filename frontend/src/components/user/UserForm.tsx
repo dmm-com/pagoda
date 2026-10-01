@@ -38,6 +38,8 @@ import { Schema } from "./userForm/UserFormSchema";
 
 import { AironeLink } from "components/common/AironeLink";
 import { FlexBox } from "components/common/FlexBox";
+import { useTranslation } from "hooks/useTranslation";
+import { translate } from "i18n/config";
 import { groupPath, rolePath, userPath } from "routes/Routes";
 import { ServerContext } from "services/ServerContext";
 import { User } from "services/ServerContext";
@@ -100,23 +102,24 @@ const InputBox: FC<{ children: ReactNode; sx?: object }> = ({
 
 const ElemAuthenticationMethod: FC<ReadonlyProps> = ({ user }) => {
   const [openModal, setOpenModal] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <StyledTableRow>
       <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
-        認証方法
+        {t("user.form.authMethod")}
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         {user.authenticateType ===
         UserRetrieveAuthenticateTypeEnum.AUTH_TYPE_LOCAL ? (
           <Box sx={{ m: 1 }}>
-            <Box sx={{ my: 1 }}>ローカル認証</Box>
+            <Box sx={{ my: 1 }}>{t("user.form.localAuth")}</Box>
             <Button variant="outlined" onClick={() => setOpenModal(true)}>
-              認証方法をLDAPに変更する
+              {t("user.form.changeToLdap")}
             </Button>
           </Box>
         ) : (
-          <InputBox>LDAP 認証</InputBox>
+          <InputBox>{t("user.form.ldapAuth")}</InputBox>
         )}
       </TableCell>
 
@@ -133,10 +136,12 @@ const ElemAccessTokenConfiguration: FC<Props & ReadonlyProps> = ({
   control,
   user,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <StyledTableRow>
       <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
-        アクセストークンの有効期限設定
+        {t("user.form.accessTokenExpiry")}
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         <InputBox>
@@ -152,16 +157,17 @@ const ElemAccessTokenConfiguration: FC<Props & ReadonlyProps> = ({
                       {...field}
                       type="number"
                       variant="standard"
-                      label="アクセストークンが有効な期間"
+                      label={t("user.form.tokenLifetimeLabel")}
                       InputProps={{
                         endAdornment: (
-                          <InputAdornment position="end">秒</InputAdornment>
+                          <InputAdornment position="end">
+                            {t("user.form.secondsUnit")}
+                          </InputAdornment>
                         ),
                       }}
                       error={error != null}
                       helperText={
-                        error?.message ??
-                        "※0 を入力した場合は期限は無期限になります"
+                        error?.message ?? t("user.form.tokenLifetimeHelperText")
                       }
                       sx={{ width: "100%" }}
                       data-testid="token-lifetime"
@@ -173,7 +179,7 @@ const ElemAccessTokenConfiguration: FC<Props & ReadonlyProps> = ({
               <Box>
                 <TextField
                   variant="standard"
-                  label="作成日"
+                  label={t("user.form.tokenCreatedAt")}
                   id="token-created"
                   InputProps={{ disableUnderline: true, readOnly: true }}
                   value={user.token.created}
@@ -184,11 +190,13 @@ const ElemAccessTokenConfiguration: FC<Props & ReadonlyProps> = ({
 
                 <TextField
                   variant="standard"
-                  label="有効期限"
+                  label={t("user.form.tokenExpiresAt")}
                   id="token-expire"
                   InputProps={{ disableUnderline: true, readOnly: true }}
                   value={
-                    user.token.lifetime === 0 ? "無期限" : user.token.expire
+                    user.token.lifetime === 0
+                      ? t("user.form.tokenUnlimited")
+                      : user.token.expire
                   }
                   disabled
                   data-testid="token-expire"
@@ -196,7 +204,7 @@ const ElemAccessTokenConfiguration: FC<Props & ReadonlyProps> = ({
               </Box>
             </Box>
           ) : (
-            <Box>アクセストークンが発行されていません</Box>
+            <Box>{t("user.form.accessTokenNotIssued")}</Box>
           )}
         </InputBox>
       </TableCell>
@@ -206,30 +214,31 @@ const ElemAccessTokenConfiguration: FC<Props & ReadonlyProps> = ({
 
 const ElemAccessToken: FC<ReadonlyProps> = ({ user }) => {
   const { enqueueSnackbar } = useSnackbar();
+  const { t } = useTranslation();
 
   const handleCopy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(user.token?.value ?? "");
-      enqueueSnackbar("アクセストークンをクリップボードにコピーしました", {
+      enqueueSnackbar(t("user.form.copyTokenSuccess"), {
         variant: "success",
       });
     } catch (error) {
-      enqueueSnackbar("クリップボードへのコピーに失敗しました", {
+      enqueueSnackbar(t("user.form.copyTokenFailure"), {
         variant: "error",
       });
     }
-  }, [enqueueSnackbar, user.token?.value]);
+  }, [enqueueSnackbar, user.token?.value, t]);
 
   return (
     <StyledTableRow>
       <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
-        アクセストークン
+        {t("user.form.accessToken")}
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         <InputBox>
           <TextField
             sx={{ width: "100%" }}
-            placeholder="「ACCESS TOKEN をリフレッシュ」ボタンを押して発行してください"
+            placeholder={t("user.form.accessTokenPlaceholder")}
             inputProps={{
               "aria-label": "search google maps",
               readOnly: true,
@@ -252,10 +261,12 @@ const ElemAccessToken: FC<ReadonlyProps> = ({ user }) => {
 };
 
 const ElemEmailAddress: FC<Props> = ({ control }) => {
+  const { t } = useTranslation();
+
   return (
     <StyledTableRow>
       <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
-        メールアドレス
+        {t("user.form.email")}
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         <InputBox>
@@ -267,7 +278,7 @@ const ElemEmailAddress: FC<Props> = ({ control }) => {
               <TextField
                 {...field}
                 type="email"
-                placeholder="メールアドレスを入力してください"
+                placeholder={t("user.form.emailPlaceholder")}
                 error={error != null}
                 helperText={error?.message}
                 sx={{ width: "100%" }}
@@ -290,11 +301,12 @@ const ElemUserName: FC<Props & { isMyself: boolean; isCoUser: boolean }> = ({
     () => ServerContext.getInstance()?.user,
     [],
   );
+  const { t } = useTranslation();
 
   return (
     <StyledTableRow>
       <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
-        名前
+        {t("user.form.name")}
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         {isMyself || isCoUser ? (
@@ -317,7 +329,7 @@ const ElemUserName: FC<Props & { isMyself: boolean; isCoUser: boolean }> = ({
                   <TextField
                     {...field}
                     type="text"
-                    placeholder="ユーザ名を入力してください"
+                    placeholder={t("user.form.usernamePlaceholder")}
                     error={error != null}
                     helperText={error?.message}
                     sx={{ width: "100%" }}
@@ -333,10 +345,11 @@ const ElemUserName: FC<Props & { isMyself: boolean; isCoUser: boolean }> = ({
 };
 
 const ElemGroups: FC<ReadonlyProps> = ({ user }) => {
+  const { t } = useTranslation();
   return (
     <StyledTableRow>
       <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
-        所属グループ
+        {t("user.form.belongingGroups")}
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         {user.groups.length > 0 ? (
@@ -344,7 +357,13 @@ const ElemGroups: FC<ReadonlyProps> = ({ user }) => {
             {user.groups.map((group) => (
               <Chip
                 key={group.id}
-                label={group.isDirect ? group.name : `${group.name} (継承)`}
+                label={
+                  group.isDirect
+                    ? group.name
+                    : t("user.form.inheritedGroupLabel", {
+                        name: group.name,
+                      })
+                }
                 size="small"
                 variant={group.isDirect ? "filled" : "outlined"}
                 component={AironeLink}
@@ -354,7 +373,7 @@ const ElemGroups: FC<ReadonlyProps> = ({ user }) => {
             ))}
           </ChipBox>
         ) : (
-          <EmptyMessage>所属しているグループはありません</EmptyMessage>
+          <EmptyMessage>{t("user.form.noBelongingGroups")}</EmptyMessage>
         )}
       </TableCell>
     </StyledTableRow>
@@ -368,20 +387,25 @@ const ElemGroups: FC<ReadonlyProps> = ({ user }) => {
 const getRoleLabel = (role: UserRole): string => {
   const notes: string[] = [];
   if (role.isAdmin) {
-    notes.push("管理");
+    notes.push(translate("user.form.adminNote"));
   }
   if (!role.isDirect && role.viaGroups.length > 0) {
-    notes.push(`${role.viaGroups.map((g) => g.name).join(", ")} 経由`);
+    notes.push(
+      translate("user.form.viaGroupsNote", {
+        names: role.viaGroups.map((g) => g.name).join(", "),
+      }),
+    );
   }
 
   return notes.length > 0 ? `${role.name} (${notes.join(" / ")})` : role.name;
 };
 
 const ElemRoles: FC<ReadonlyProps> = ({ user }) => {
+  const { t } = useTranslation();
   return (
     <StyledTableRow>
       <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
-        所属ロール
+        {t("user.form.belongingRoles")}
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         {user.roles.length > 0 ? (
@@ -399,7 +423,7 @@ const ElemRoles: FC<ReadonlyProps> = ({ user }) => {
             ))}
           </ChipBox>
         ) : (
-          <EmptyMessage>所属しているロールはありません</EmptyMessage>
+          <EmptyMessage>{t("user.form.noBelongingRoles")}</EmptyMessage>
         )}
       </TableCell>
     </StyledTableRow>
@@ -407,13 +431,14 @@ const ElemRoles: FC<ReadonlyProps> = ({ user }) => {
 };
 
 const ElemCoUsers: FC<ReadonlyProps> = ({ user }) => {
+  const { t } = useTranslation();
   const coUsers = (user as UserWithCoUsers).coUsers ?? [];
   if (coUsers.length === 0) return null;
 
   return (
     <StyledTableRow>
       <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
-        作成したRead-Onlyユーザー
+        {t("user.form.createdReadOnlyUsers")}
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         {
@@ -436,10 +461,12 @@ const ElemCoUsers: FC<ReadonlyProps> = ({ user }) => {
 };
 
 const ElemUserPassword: FC<Props> = ({ control }) => {
+  const { t } = useTranslation();
+
   return (
     <StyledTableRow>
       <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
-        パスワード
+        {t("user.form.password")}
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         <InputBox>
@@ -451,7 +478,7 @@ const ElemUserPassword: FC<Props> = ({ control }) => {
               <TextField
                 {...field}
                 type="password"
-                placeholder="パスワードを入力してください"
+                placeholder={t("user.form.passwordPlaceholder")}
                 error={error != null}
                 helperText={error?.message}
                 sx={{ width: "100%" }}
@@ -466,11 +493,12 @@ const ElemUserPassword: FC<Props> = ({ control }) => {
 
 const ElemIsSuperuser: FC<Props> = ({ control }) => {
   const loginUser = useMemo(() => ServerContext.getInstance()?.user, []);
+  const { t } = useTranslation();
 
   return (
     <StyledTableRow>
       <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
-        管理者権限
+        {t("user.form.isSuperuser")}
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         <Controller
@@ -512,6 +540,7 @@ export const UserForm: FC<UserFormProps> = ({
   handleCancel,
 }) => {
   const loginUser = useMemo(() => ServerContext.getInstance()?.user, []);
+  const { t } = useTranslation();
 
   return (
     <Box>
@@ -523,12 +552,12 @@ export const UserForm: FC<UserFormProps> = ({
             disabled={!isSubmittable || (loginUser?.isReadonly && !isMyself)}
             onClick={handleSubmit}
           >
-            保存
+            {t("common.save")}
           </Button>
         </Box>
         <Box mx="4px">
           <Button variant="outlined" color="primary" onClick={handleCancel}>
-            キャンセル
+            {t("common.cancel")}
           </Button>
         </Box>
       </Box>
@@ -536,8 +565,12 @@ export const UserForm: FC<UserFormProps> = ({
         <Table className="table table-bordered">
           <TableHead>
             <TableRow sx={{ backgroundColor: "#455A64" }}>
-              <TableCell sx={{ color: "#FFFFFF" }}>項目</TableCell>
-              <TableCell sx={{ color: "#FFFFFF" }}>内容</TableCell>
+              <TableCell sx={{ color: "#FFFFFF" }}>
+                {t("user.form.columnItem")}
+              </TableCell>
+              <TableCell sx={{ color: "#FFFFFF" }}>
+                {t("user.form.columnContent")}
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

@@ -19,6 +19,7 @@ import { PageHeader } from "components/common/PageHeader";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { JobList } from "components/job/JobList";
 import { usePage } from "hooks/usePage";
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { topPath } from "routes/Routes";
 import { JobListParam } from "services/Constants";
@@ -30,6 +31,7 @@ const JobListContent: FC<{
   targetId?: number;
   allUsers?: boolean;
 }> = ({ page, changePage, targetId, allUsers }) => {
+  const { t } = useTranslation();
   const { data: jobs, mutate: refreshJobs } = usePagodaSWR(
     ["jobs", page, targetId, allUsers],
     () => aironeApiClient.getJobs(page, targetId, undefined, allUsers),
@@ -44,7 +46,8 @@ const JobListContent: FC<{
           color="success"
           onClick={() => refreshJobs()}
         >
-          <ReplayIcon /> ジョブ一覧を更新
+          <ReplayIcon />
+          {` ${t("job.list.refresh")}`}
         </Button>
       </Box>
       <JobList jobs={jobs.results ?? []} showUser={allUsers} />
@@ -59,6 +62,7 @@ const JobListContent: FC<{
 };
 
 export const JobListPage: FC = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const isSuperuser = ServerContext.getInstance()?.user?.isSuperuser === true;
 
@@ -79,10 +83,10 @@ export const JobListPage: FC = () => {
         <Typography component={AironeLink} to={topPath()}>
           Top
         </Typography>
-        <Typography color="textPrimary">ジョブ一覧</Typography>
+        <Typography color="textPrimary">{t("job.list.title")}</Typography>
       </AironeBreadcrumbs>
 
-      <PageHeader title="ジョブ一覧">
+      <PageHeader title={t("job.list.title")}>
         {isSuperuser && (
           <FormControlLabel
             control={
@@ -91,7 +95,7 @@ export const JobListPage: FC = () => {
                 onChange={(e) => setAllUsers(e.target.checked)}
               />
             }
-            label="全ユーザーのジョブを表示"
+            label={t("job.list.showAllUsers")}
           />
         )}
       </PageHeader>

@@ -15,6 +15,7 @@ import { createMemoryRouter, RouterProvider } from "react-router";
 import { EntryCopyPage } from "./EntryCopyPage";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
+import i18n from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { copyEntryPath } from "routes/Routes";
 
@@ -119,4 +120,40 @@ test("should show info variant snackbar on successful copy submission", async ()
       screen.getByText("コピーのジョブ登録に成功しました"),
     ).toBeInTheDocument();
   });
+});
+
+test("should render in english", async () => {
+  await act(async () => {
+    await i18n.changeLanguage("en");
+  });
+
+  const router = createMemoryRouter(
+    [
+      {
+        path: copyEntryPath(":entityId", ":entryId"),
+        element: <EntryCopyPage />,
+      },
+    ],
+    {
+      initialEntries: [copyEntryPath(2, 1)],
+    },
+  );
+
+  await act(async () => {
+    render(<RouterProvider router={router} />, {
+      wrapper: TestWrapperWithoutRoutes,
+    });
+  });
+  await waitFor(() => {
+    expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+  });
+
+  expect(screen.getByText("Copy")).toBeInTheDocument();
+  expect(screen.getByText("Create a copy of the entry")).toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "Create copies" }),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByPlaceholderText("Name of entry to copy"),
+  ).toBeInTheDocument();
 });

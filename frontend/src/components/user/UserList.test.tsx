@@ -8,6 +8,7 @@ import { createMemoryRouter, RouterProvider } from "react-router";
 import { UserList } from "./UserList";
 
 import { TestWrapper, TestWrapperWithoutRoutes } from "TestWrapper";
+import i18n from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { ServerContext } from "services/ServerContext";
 
@@ -174,5 +175,23 @@ describe("UserList", () => {
     });
 
     expect(router.state.location.pathname).toBe("/ui/users/1");
+  });
+
+  test("renders in English", async () => {
+    (ServerContext.getInstance as vi.Mock).mockReturnValue({
+      user: { username: "admin", isSuperuser: true },
+    });
+
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    await act(async () => {
+      render(<UserList />, { wrapper: TestWrapper });
+    });
+
+    expect(
+      screen.getByRole("link", { name: /Register a new user/i }),
+    ).toBeInTheDocument();
   });
 });
