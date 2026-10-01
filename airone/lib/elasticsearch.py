@@ -379,7 +379,7 @@ class ESS(Elasticsearch):
                         "nested_objects": {
                             "limit": settings.ES_CONFIG["MAXIMUM_NESTED_OBJECT_NUM"],
                         }
-                    }
+                    },
                 }
             },
             mappings={
