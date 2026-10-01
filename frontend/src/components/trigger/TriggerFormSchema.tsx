@@ -1,13 +1,14 @@
 import { TriggerParent } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { z } from "zod";
 
+import { translate } from "i18n/config";
 import { schemaForType } from "services/ZodSchemaUtil";
 
 export const schema = schemaForType<TriggerParent>()(
   z.object({
     id: z.number(), // Add the 'id' property
     entity: z.object({
-      id: z.number().min(1, "モデルは必須です"),
+      id: z.number().min(1, translate("trigger.form.entityRequired")),
       name: z.string(),
       isPublic: z.boolean().optional(),
       permission: z.number(),
@@ -17,7 +18,7 @@ export const schema = schemaForType<TriggerParent>()(
         z.object({
           id: z.number(),
           attr: z.object({
-            id: z.number().min(1, "属性は必須です"),
+            id: z.number().min(1, translate("trigger.form.attrRequired")),
             name: z.string(),
             type: z.number(),
           }),
@@ -36,13 +37,13 @@ export const schema = schemaForType<TriggerParent>()(
           isUnmatch: z.boolean().optional(),
         }),
       )
-      .min(1, "最低でもひとつの条件を設定してください"),
+      .min(1, translate("trigger.form.conditionsRequired")),
     actions: z
       .array(
         z.object({
           id: z.number(),
           attr: z.object({
-            id: z.number().min(1, "属性は必須です"),
+            id: z.number().min(1, translate("trigger.form.attrRequired")),
             name: z.string(),
             type: z.number(),
           }),
@@ -65,7 +66,7 @@ export const schema = schemaForType<TriggerParent>()(
           ),
         }),
       )
-      .min(1, "最低でもひとつのアクションを設定してください"),
+      .min(1, translate("trigger.form.actionsRequired")),
   }),
 );
 

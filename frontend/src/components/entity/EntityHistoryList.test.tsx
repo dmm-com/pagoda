@@ -2,11 +2,12 @@
  */
 
 import { PaginatedEntityHistoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { render, screen, within } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 
 import { EntityHistoryList, TargetOperation } from "./EntityHistoryList";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 
 describe("EntityHistoryList", () => {
   const histories: PaginatedEntityHistoryList = {
@@ -136,5 +137,38 @@ describe("EntityHistoryList", () => {
 
     // DEL_ENTITY: shows "削除" and changes
     expect(within(historyRows[5]).queryByText("削除")).toBeInTheDocument();
+  });
+
+  test("should render entity histories in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    const changePage = vi.fn();
+
+    render(
+      <EntityHistoryList
+        histories={histories}
+        page={1}
+        changePage={changePage}
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    const tableBody = screen.getAllByRole("rowgroup")[1];
+    const historyRows = within(tableBody).getAllByRole("row");
+
+    expect(within(historyRows[0]).queryByText("Create")).toBeInTheDocument();
+    expect(within(historyRows[1]).queryByText("Modify")).toBeInTheDocument();
+    expect(
+      within(historyRows[2]).queryByText("Add attribute"),
+    ).toBeInTheDocument();
+    expect(
+      within(historyRows[3]).queryByText("Modify attribute"),
+    ).toBeInTheDocument();
+    expect(
+      within(historyRows[4]).queryByText("Delete attribute"),
+    ).toBeInTheDocument();
+    expect(within(historyRows[5]).queryByText("Delete")).toBeInTheDocument();
   });
 });

@@ -1,12 +1,13 @@
 /**
  */
-import { render, screen, fireEvent } from "@testing-library/react";
+import { act, render, screen, fireEvent } from "@testing-library/react";
 import { useForm } from "react-hook-form";
 
 import { AttributeNoteModal } from "./AttributeNoteModal";
 import { Schema } from "./EntityFormSchema";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 
 const TestModal = ({
   initialNote = "",
@@ -73,5 +74,16 @@ describe("AttributeNoteModal", () => {
   test("should not render modal when index < 0", () => {
     render(<TestModal idx={-1} />, { wrapper: TestWrapper });
     expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  test("should render in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    render(<TestModal />, { wrapper: TestWrapper });
+    expect(screen.getByPlaceholderText("Description")).toBeInTheDocument();
+    expect(screen.getByText("Attribute description")).toBeInTheDocument();
+    expect(screen.getByText("Close")).toBeInTheDocument();
   });
 });

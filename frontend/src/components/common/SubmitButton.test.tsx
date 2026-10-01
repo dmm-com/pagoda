@@ -1,11 +1,12 @@
 /**
  */
 
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 
 import { SubmitButton } from "./SubmitButton";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 
 // Mock MUI components
 vi.mock("@mui/material", async () => {
@@ -142,5 +143,33 @@ describe("SubmitButton", () => {
       fireEvent.click(cancelButton);
       expect(handleCancel).toHaveBeenCalledTimes(1);
     }
+  });
+
+  describe("English", () => {
+    afterEach(async () => {
+      await i18n.changeLanguage("ja");
+    });
+
+    test("renders cancel button in English", async () => {
+      await act(async () => {
+        await i18n.changeLanguage("en");
+      });
+
+      const handleSubmit = vi.fn();
+      const handleCancel = vi.fn();
+
+      render(
+        <SubmitButton
+          name="Submit"
+          disabled={false}
+          isSubmitting={false}
+          handleSubmit={handleSubmit}
+          handleCancel={handleCancel}
+        />,
+        { wrapper: TestWrapper },
+      );
+
+      expect(screen.getByText("Cancel")).toBeInTheDocument();
+    });
   });
 });

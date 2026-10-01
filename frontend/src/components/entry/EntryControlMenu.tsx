@@ -12,6 +12,7 @@ import { FC } from "react";
 import { Link, useNavigate } from "react-router";
 
 import { Confirmable } from "components/common/Confirmable";
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 import {
   entryEditPath,
@@ -58,20 +59,21 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
   permission,
   entityPermission,
 }) => {
+  const { t } = useTranslation();
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
   const handleDelete = async (entryId: number) => {
     try {
       await aironeApiClient.destroyEntry(entryId);
-      enqueueSnackbar("アイテムの削除が完了しました", {
+      enqueueSnackbar(t("entry.control.deleteSuccess"), {
         variant: "success",
       });
       setToggle && setToggle();
       navigate(topPath(), { replace: true });
       navigate(entityEntriesPath(entityId), { replace: true });
     } catch (e) {
-      enqueueSnackbar("アイテムの削除が失敗しました", {
+      enqueueSnackbar(t("entry.control.deleteFailure"), {
         variant: "error",
       });
     }
@@ -101,7 +103,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
               : entryDetailsPath(entityId, entryId)
           }
         >
-          <Typography>詳細</Typography>
+          <Typography>{t("common.details")}</Typography>
         </MenuItem>
         {(permission === undefined || canEdit(permission)) && (
           <MenuItem
@@ -110,7 +112,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
               customEditPath ? customEditPath : entryEditPath(entityId, entryId)
             }
           >
-            <Typography>編集</Typography>
+            <Typography>{t("common.edit")}</Typography>
           </MenuItem>
         )}
         {(entityPermission === undefined || canEdit(entityPermission)) && (
@@ -120,7 +122,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
               customCopyPath ? customCopyPath : copyEntryPath(entityId, entryId)
             }
           >
-            <Typography>コピー</Typography>
+            <Typography>{t("common.copy")}</Typography>
           </MenuItem>
         )}
         {(permission === undefined || canModifyACL(permission)) && (
@@ -128,7 +130,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
             component={Link}
             to={customACLPath ? customACLPath : aclPath(entryId)}
           >
-            <Typography>ACL 設定</Typography>
+            <Typography>{t("entry.control.aclSettings")}</Typography>
           </MenuItem>
         )}
         <MenuItem
@@ -140,7 +142,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
           }
           disabled={disableChangeHistory}
         >
-          <Typography>変更履歴</Typography>
+          <Typography>{t("entry.common.changeHistory")}</Typography>
         </MenuItem>
         <MenuItem
           component={Link}
@@ -150,19 +152,19 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
               : aclHistoryPath(entryId)
           }
         >
-          <Typography>ACL 変更履歴</Typography>
+          <Typography>{t("entry.control.aclChangeHistory")}</Typography>
         </MenuItem>
         {(permission === undefined || canEdit(permission)) && (
           <Confirmable
             componentGenerator={(handleOpen) => (
               <MenuItem onClick={handleOpen} sx={{ justifyContent: "end" }}>
-                <ListItemText>削除</ListItemText>
+                <ListItemText>{t("common.delete")}</ListItemText>
                 <ListItemIcon>
                   <DeleteOutlineIcon />
                 </ListItemIcon>
               </MenuItem>
             )}
-            dialogTitle="本当に削除しますか？"
+            dialogTitle={t("entry.control.confirmDelete")}
             onClickYes={() => handleDelete(entryId)}
           />
         )}

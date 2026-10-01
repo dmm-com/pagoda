@@ -15,6 +15,7 @@ import { EntityControlMenu } from "components/entity/EntityControlMenu";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryImportModal } from "components/entry/EntryImportModal";
+import { useTranslation } from "hooks/useTranslation";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 
@@ -23,6 +24,7 @@ const MenuBox = styled(Box)(({}) => ({
 }));
 
 const ACLHistoryContent: FC<{ objectId: number }> = ({ objectId }) => {
+  const { t } = useTranslation();
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [openImportModal, setOpenImportModal] = useState(false);
 
@@ -57,13 +59,19 @@ const ACLHistoryContent: FC<{ objectId: number }> = ({ objectId }) => {
     switch (acl.objtype) {
       case ACLObjtypeEnum.Entity:
         return entityDetail != null ? (
-          <EntityBreadcrumbs entity={entityDetail} title="ACL変更履歴" />
+          <EntityBreadcrumbs
+            entity={entityDetail}
+            title={t("acl.history.pageTitle")}
+          />
         ) : (
           <Box />
         );
       case ACLObjtypeEnum.Entry:
         return entryRetrieve != null ? (
-          <EntryBreadcrumbs entry={entryRetrieve} title="ACL変更履歴" />
+          <EntryBreadcrumbs
+            entry={entryRetrieve}
+            title={t("acl.history.pageTitle")}
+          />
         ) : (
           <Box />
         );
@@ -104,7 +112,7 @@ const ACLHistoryContent: FC<{ objectId: number }> = ({ objectId }) => {
     <>
       {breadcrumbs}
 
-      <PageHeader title={acl.name} description="ACL変更履歴">
+      <PageHeader title={acl.name} description={t("acl.history.pageTitle")}>
         <MenuBox>
           <IconButton
             id="controlMenu"

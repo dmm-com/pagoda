@@ -7,11 +7,12 @@ import {
   EntryAttributeTypeTypeEnum,
   EntryAttributeValue,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 
 import { AttrStatsModal } from "./AttrStatsModal";
 
+import i18n from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 const ATTR_NAME = "Status";
@@ -236,5 +237,21 @@ describe("AttrStatsModal", () => {
     renderModal({ attrType });
 
     expect(await screen.findByText(expected)).toBeInTheDocument();
+  });
+
+  test("renders in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    advancedSearch.mockResolvedValue(result([row({ asString: "Beta" })]));
+
+    renderModal({ totalCount: 1 });
+
+    await screen.findByText("Value");
+    expect(
+      screen.getByText(`Aggregation of “${ATTR_NAME}”`),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Count")).toBeInTheDocument();
   });
 });

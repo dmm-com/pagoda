@@ -10,6 +10,7 @@ import { EntryHistoryList } from "components/entry/EntryHistoryList";
 import { EntrySelfHistoryList } from "components/entry/EntrySelfHistoryList";
 import { usePage } from "hooks/usePage";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
+import { useTranslation } from "hooks/useTranslation";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 
@@ -60,6 +61,7 @@ const AttributeHistorySection: FC<{
 };
 
 const EntryHistoryListContent: FC = () => {
+  const { t } = useTranslation();
   const { entryId } = useTypedParams<{ entityId: number; entryId: number }>();
 
   const { page: attributeHistoryPage, changePage: changeAttributeHistoryPage } =
@@ -79,9 +81,12 @@ const EntryHistoryListContent: FC = () => {
 
   return (
     <Box className="container">
-      <EntryBreadcrumbs entry={entry} title="変更履歴" />
+      <EntryBreadcrumbs entry={entry} title={t("entry.common.changeHistory")} />
 
-      <PageHeader title={entry.name ?? ""} description="変更履歴">
+      <PageHeader
+        title={entry.name ?? ""}
+        description={t("entry.common.changeHistory")}
+      >
         <Box width="50px">
           <IconButton
             onClick={(e) => {
@@ -107,7 +112,7 @@ const EntryHistoryListContent: FC = () => {
             variant="h6"
             sx={{ mb: 2, color: "#455A64", fontWeight: "bold" }}
           >
-            アイテム変更履歴
+            {t("entry.historyPage.selfHistorySection")}
           </Typography>
           <Suspense fallback={<Loading />}>
             <SelfHistorySection
@@ -126,7 +131,7 @@ const EntryHistoryListContent: FC = () => {
             variant="h6"
             sx={{ mb: 2, color: "#455A64", fontWeight: "bold" }}
           >
-            属性変更履歴
+            {t("entry.historyPage.attrHistorySection")}
           </Typography>
           <Suspense fallback={<Loading />}>
             <AttributeHistorySection

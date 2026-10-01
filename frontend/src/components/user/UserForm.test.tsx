@@ -6,7 +6,7 @@ import {
   UserRetrieveAuthenticateTypeEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { render, renderHook, screen } from "@testing-library/react";
+import { act, render, renderHook, screen } from "@testing-library/react";
 import { useForm } from "react-hook-form";
 
 import { TestWrapper } from "../../TestWrapper";
@@ -14,6 +14,8 @@ import { schema } from "../entry/entryForm/EntryFormSchema";
 
 import { UserForm } from "./UserForm";
 import { Schema } from "./userForm/UserFormSchema";
+
+import i18n from "i18n/config";
 
 describe("UserForm", () => {
   Object.defineProperty(window, "django_context", {
@@ -174,5 +176,46 @@ describe("UserForm", () => {
     expect(
       screen.getByText("所属しているロールはありません"),
     ).toBeInTheDocument();
+  });
+
+  test("renders in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    const {
+      result: {
+        current: { control },
+      },
+    } = renderHook(() =>
+      useForm<Schema>({
+        resolver: zodResolver(schema),
+        mode: "onBlur",
+        defaultValues: userInfo,
+      }),
+    );
+
+    render(
+      <UserForm
+        user={userInfo}
+        control={control}
+        isCreateMode={true}
+        isMyself={false}
+        isSubmittable={false}
+        isCoUser={false}
+        handleSubmit={() => Promise.resolve()}
+        handleCancel={() => {
+          /* do nothing */
+        }}
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByPlaceholderText("Please enter a username")).toHaveValue(
+      "user1",
+    );
+    expect(screen.getByPlaceholderText("Please enter a password")).toHaveValue(
+      "user1",
+    );
   });
 });

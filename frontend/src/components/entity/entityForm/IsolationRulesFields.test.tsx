@@ -2,7 +2,7 @@
  */
 
 import { Entity } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { FC } from "react";
 import { useForm } from "react-hook-form";
 
@@ -15,6 +15,7 @@ import { Schema } from "./EntityFormSchema";
 import { IsolationRulesFields } from "./IsolationRulesFields";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 
 vi.mock("components/entry/entryForm/ReferralsAutocomplete", () => ({
   ReferralsAutocomplete: vi.fn(() => (
@@ -222,5 +223,19 @@ describe("IsolationRulesFields", () => {
     expect(screen.getByTestId("rules")).toHaveTextContent('"conditions":[]');
     fireEvent.click(screen.getByTestId("DeleteOutlineIcon"));
     expect(form?.getValues("isolationRules")).toEqual([]);
+  });
+
+  test("renders in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    render(<Harness withRule={false} />, { wrapper: TestWrapper });
+
+    expect(
+      screen.getByText(
+        "Settings for entries no longer referenced by other entries",
+      ),
+    ).toBeInTheDocument();
   });
 });
