@@ -27,7 +27,7 @@ classifiers = [
 keywords = ["pagoda", "plugin", "development", "api"]
 dependencies = [
     "pagoda-plugin-sdk",
-    "django==5.2.17",
+    "django>=5.2.17,<5.3",
     "djangorestframework==3.17.2",
 ]
 requires-python = ">=3.12"

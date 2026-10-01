@@ -1220,7 +1220,11 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+<<<<<<< HEAD
     { name = "django", specifier = "==5.2.17" },
+=======
+    { name = "django", specifier = ">=5.2.17,<5.3" },
+>>>>>>> master
     { name = "djangorestframework", specifier = "==3.17.2" },
     { name = "pagoda-plugin-sdk", git = "https://github.com/dmm-com/pagoda.git?subdirectory=plugin%2Fsdk&tag=v3.153.0" },
 ]
@@ -1236,7 +1240,11 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+<<<<<<< HEAD
     { name = "django", specifier = "==5.2.17" },
+=======
+    { name = "django", specifier = ">=5.2.17,<5.3" },
+>>>>>>> master
     { name = "djangorestframework", specifier = "==3.17.2" },
 ]
 
