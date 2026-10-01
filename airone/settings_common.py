@@ -402,12 +402,13 @@ class Common(Configuration):  # type: ignore[misc]
             # do nothing and use 'unknown' as version when git does not exists
             logging.getLogger(__name__).warning("git command not found.")
 
+    _es_default_index = "airone-%s" % devmode.namespace() if LITE else "airone"
     ES_CONFIG = env.search_url(
         "AIRONE_ELASTICSEARCH_URL",
-        "elasticsearch://airone:password@localhost:9200/airone-%s" % devmode.namespace()
-        if LITE
-        else "elasticsearch://airone:password@localhost:9200/airone",
+        f"elasticsearch://airone:password@localhost:9200/{_es_default_index}",
     )
+    _es_hosts = env.list("AIRONE_ELASTICSEARCH_HOSTS", default=[])
+    ES_CONFIG["URL"] = _es_hosts or [ES_CONFIG["URL"]]
     ES_CONFIG.update(
         {
             "MAXIMUM_RESULTS_NUM": 500000,

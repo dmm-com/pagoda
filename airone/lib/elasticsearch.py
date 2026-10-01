@@ -273,8 +273,6 @@ class ESS(Elasticsearch):
         return super().__new__(cls)
 
     def __init__(self, index: str | None = None, *, request_timeout: float | None = None) -> None:
-        self.additional_config = False
-
         self._index: str = index if index else settings.ES_CONFIG["INDEX_NAME"]
 
         if request_timeout is None:
@@ -316,19 +314,6 @@ class ESS(Elasticsearch):
         track_total_hits: Literal[True] | None = None,
     ) -> RawSearchResponse:
         """Search the configured entry index with Pagoda's result-window policy."""
-        # expand max_result_window parameter which indicates numbers to return at one searching
-        if not self.additional_config:
-            self.additional_config = True
-
-            self.indices.put_settings(
-                index=self._index,
-                settings={
-                    "index": {
-                        "max_result_window": settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
-                    }
-                },
-            )
-
         if size is None:
             size = settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"]
 
@@ -389,6 +374,7 @@ class ESS(Elasticsearch):
             index=self._index,
             settings={
                 "index": {
+                    "max_result_window": settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
                     "mapping": {
                         "nested_objects": {
                             "limit": settings.ES_CONFIG["MAXIMUM_NESTED_OBJECT_NUM"],
@@ -517,7 +503,6 @@ class InMemoryESS(ESS):
 
     def __init__(self, index: str | None = None, **kwargs: Any) -> None:
         # Skip Elasticsearch.__init__ entirely: there is no transport to build.
-        self.additional_config = True
         self._index = index if index else settings.ES_CONFIG["INDEX_NAME"]
         self._engine = InMemoryElasticsearch(self._index)
         self.indices = self._engine.indices  # type: ignore[assignment]
