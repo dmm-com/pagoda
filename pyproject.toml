@@ -97,7 +97,7 @@ dependencies = [
     "django-multidb-router>=0.11",
     "django-simple-history==3.11.0",
     "django-storages==1.14.6",
-    "django==5.2.16",
+    "django==5.2.17",
     "djangorestframework==3.17.2",
     "markdown>=3.7",
     "drf-spectacular==0.29.0",
