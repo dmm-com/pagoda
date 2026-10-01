@@ -94,7 +94,7 @@ class RoleImportAPI(generics.GenericAPIView[Any]):
         serializer.is_valid(raise_exception=True)
 
         job = Job.new_role_import_v2(
-            user, text="Preparing to import role data", params=import_datas
+            user, text="Preparing to import role data", params=serializer.validated_data
         )
         try:
             task_result = job.run()

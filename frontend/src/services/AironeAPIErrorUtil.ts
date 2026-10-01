@@ -99,17 +99,26 @@ export const toReportableNonFieldErrors = async (
       .join(", ");
   }
 
-  const fieldErrors = Object.values(jsonError as Record<string, unknown>)
-    .flatMap((details) => (Array.isArray(details) ? details : []))
-    .filter(
-      (detail): detail is ErrorDetail =>
-        typeof detail === "object" &&
-        detail != null &&
-        "message" in detail &&
-        typeof detail.message === "string",
-    );
+  const fieldErrors = (
+    Array.isArray(jsonError) ? jsonError : [jsonError]
+  ).flatMap((item) =>
+    Object.entries(item as Record<string, unknown>).flatMap(
+      ([field, details]) =>
+        Array.isArray(details)
+          ? details
+              .filter(
+                (detail): detail is ErrorDetail =>
+                  typeof detail === "object" &&
+                  detail != null &&
+                  "message" in detail &&
+                  typeof detail.message === "string",
+              )
+              .map((detail) => field + ": " + extractErrorDetail(detail))
+          : [],
+    ),
+  );
   if (fieldErrors.length > 0) {
-    return fieldErrors.map((detail) => extractErrorDetail(detail)).join(", ");
+    return fieldErrors.join(", ");
   }
 
   return null;

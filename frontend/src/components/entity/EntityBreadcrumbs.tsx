@@ -1,6 +1,6 @@
 import { EntityDetail } from "@dmm-com/airone-apiclient-typescript-fetch";
 import LockIcon from "@mui/icons-material/Lock";
-import { Typography } from "@mui/material";
+import { Tooltip, Typography } from "@mui/material";
 import { FC } from "react";
 
 import { AironeLink } from "components/common";
@@ -28,14 +28,27 @@ export const EntityBreadcrumbs: FC<Props> = ({ entity, attr, title }) => {
       </Typography>
       {entity && (
         <FlexBox>
-          <Typography component={AironeLink} to={entityEntriesPath(entity.id)}>
-            {entity.name}
-          </Typography>
+          <Tooltip title={entity.name} placement="bottom-start">
+            <Typography
+              component={AironeLink}
+              to={entityEntriesPath(entity.id)}
+            >
+              {entity.name}
+            </Typography>
+          </Tooltip>
           {!entity.isPublic && <LockIcon />}
         </FlexBox>
       )}
-      {attr && <Typography color="textPrimary">{attr}</Typography>}
-      {title && <Typography color="textPrimary">{title}</Typography>}
+      {attr && (
+        <Tooltip title={attr} placement="bottom-start">
+          <Typography color="textPrimary">{attr}</Typography>
+        </Tooltip>
+      )}
+      {title && (
+        <Tooltip title={title} placement="bottom-start">
+          <Typography color="textPrimary">{title}</Typography>
+        </Tooltip>
+      )}
     </AironeBreadcrumbs>
   );
 };

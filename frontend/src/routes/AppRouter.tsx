@@ -31,6 +31,8 @@ import {
   entryEditPath,
   groupPath,
   groupsPath,
+  iframeLoginCompletePath,
+  iframePath,
   jobsPath,
   listAliasPath,
   listCategoryPath,
@@ -130,6 +132,14 @@ const GroupEditPage = lazy(() =>
 const GroupListPage = lazy(() =>
   import("pages/GroupListPage").then((m) => ({ default: m.GroupListPage })),
 );
+const IframeLoginCompletePage = lazy(() =>
+  import("pages/IframeLoginCompletePage").then((m) => ({
+    default: m.IframeLoginCompletePage,
+  })),
+);
+const IframePage = lazy(() =>
+  import("pages/IframePage").then((m) => ({ default: m.IframePage })),
+);
 const JobListPage = lazy(() =>
   import("pages/JobListPage").then((m) => ({ default: m.JobListPage })),
 );
@@ -179,6 +189,22 @@ export const AppRouter: FC<Props> = ({
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route errorElement={<ErrorBridge />}>
+        <Route
+          path={iframeLoginCompletePath()}
+          element={
+            <Suspense fallback={<Loading />}>
+              <IframeLoginCompletePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path={iframePath()}
+          element={
+            <Suspense fallback={<Loading />}>
+              <IframePage />
+            </Suspense>
+          }
+        />
         <Route
           path={loginPath()}
           element={

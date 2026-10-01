@@ -265,19 +265,20 @@ class JobListAPI(viewsets.ModelViewSet[Job]):
             and self.request.query_params.get("all_users", "false").lower() == "true"
         )
 
-        export_operations: list[JobOperation] = [
+        targetless_visible_operations: list[JobOperation] = [
             JobOperation.EXPORT_ENTRY,
             JobOperation.EXPORT_ENTRY_V2,
             JobOperation.EXPORT_SEARCH_RESULT,
             JobOperation.EXPORT_SEARCH_RESULT_V2,
+            JobOperation.IMPORT_ROLE_V2,
         ]
         query = Q(
             Q() if all_users else Q(user=user),
             ~Q(operation__in=Job.HIDDEN_OPERATIONS),
             Q(
-                Q(operation__in=export_operations)
+                Q(operation__in=targetless_visible_operations)
                 | Q(
-                    ~Q(operation__in=export_operations),
+                    ~Q(operation__in=targetless_visible_operations),
                     target__isnull=False,
                     target__is_active=True,
                 )

@@ -22,6 +22,8 @@ export const jobStatusLabel = (jobStatus: number | undefined): string => {
       return translate("job.status.processing");
     case JobStatuses.CANCELED:
       return translate("job.status.canceled");
+    case JobStatuses.WARNING:
+      return translate("job.status.warning");
     default:
       return translate("job.status.unknown");
   }
@@ -65,6 +67,7 @@ export const jobOperationLabel = (jobOperation: number | undefined): string => {
       return translate("job.operation.delete");
     case JobOperations.IMPORT_ENTRY:
     case JobOperations.IMPORT_ENTRY_V2:
+    case JobOperations.IMPORT_ROLE_V2:
       return translate("job.operation.import");
     case JobOperations.EXPORT_ENTRY:
     case JobOperations.EXPORT_SEARCH_RESULT:

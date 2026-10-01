@@ -36,6 +36,20 @@ def import_role_v2(self: Any, job: Job) -> tuple[JobStatus, str, None] | None:
         job.text = "Now importing roles... (progress: [%5d/%5d])" % (index + 1, total_count)
         job.save(update_fields=["text"])
 
+        duplicate_users = sorted(set(role_data.users) & set(role_data.admin_users))
+        duplicate_groups = sorted(set(role_data.groups) & set(role_data.admin_groups))
+        if duplicate_users or duplicate_groups:
+            details = []
+            if duplicate_users:
+                details.append("users: " + ", ".join(duplicate_users))
+            if duplicate_groups:
+                details.append("groups: " + ", ".join(duplicate_groups))
+            err_msg.append(
+                "role '%s' has the same member and administrator: %s"
+                % (role_data.name, "; ".join(details))
+            )
+            continue
+
         # Interrupt processing if the job is canceled
         if job.is_canceled():
             job.status = JobStatus.CANCELED

@@ -340,6 +340,74 @@ class ViewTest(AironeViewTest):
         self.assertContains(resp, "role id 31000 does not exist", status_code=400)
         self.assertFalse(Job.objects.filter(operation=JobOperation.IMPORT_ROLE_V2).exists())
 
+    @patch("role.tasks.import_role_v2.delay", Mock(side_effect=tasks.import_role_v2))
+    def test_import_skips_duplicate_user_membership_and_imports_valid_roles(self):
+        self.admin_login()
+        self._create_user("same-user")
+        payload = (
+            "- name: invalid\n  users: [same-user]\n  groups: []\n"
+            "  admin_users: [same-user]\n  admin_groups: []\n"
+            "- name: valid\n  users: []\n  groups: []\n"
+            "  admin_users: [same-user]\n  admin_groups: []\n"
+        )
+
+        resp = self.client.post("/role/api/v2/import", payload, content_type="application/yaml")
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(Role.objects.filter(name="invalid").count(), 0)
+        self.assertEqual(Role.objects.filter(name="valid").count(), 1)
+        job = Job.objects.get(operation=JobOperation.IMPORT_ROLE_V2)
+        self.assertEqual(job.status, JobStatus.WARNING)
+        self.assertIn("same-user", job.text)
+
+    @patch("role.tasks.import_role_v2.delay", Mock(side_effect=tasks.import_role_v2))
+    def test_import_skips_duplicate_group_membership_and_imports_valid_roles(self):
+        self.admin_login()
+        self._create_group("same-group")
+        payload = (
+            "- name: invalid\n  users: []\n  groups: [same-group]\n"
+            "  admin_users: []\n  admin_groups: [same-group]\n"
+            "- name: valid\n  users: []\n  groups: []\n"
+            "  admin_users: []\n  admin_groups: [same-group]\n"
+        )
+
+        resp = self.client.post("/role/api/v2/import", payload, content_type="application/yaml")
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(Role.objects.filter(name="invalid").count(), 0)
+        self.assertEqual(Role.objects.filter(name="valid").count(), 1)
+        job = Job.objects.get(operation=JobOperation.IMPORT_ROLE_V2)
+        self.assertEqual(job.status, JobStatus.WARNING)
+        self.assertIn("same-group", job.text)
+
+    @patch("role.tasks.import_role_v2.delay", Mock(side_effect=tasks.import_role_v2))
+    def test_import_does_not_modify_existing_role_when_users_and_groups_are_duplicated(self):
+        self.admin_login()
+        role = self._create_role("existing")
+        role.users.add(self.user1)
+        role.admin_users.add(self.user2)
+        role.groups.add(self.group1)
+        role.admin_groups.add(self.group2)
+
+        payload = (
+            f"- id: {role.id}\n  name: existing\n"
+            "  users: [user1]\n  groups: [group1]\n"
+            "  admin_users: [user1]\n  admin_groups: [group1]\n"
+        )
+
+        resp = self.client.post("/role/api/v2/import", payload, content_type="application/yaml")
+
+        self.assertEqual(resp.status_code, 200)
+        role.refresh_from_db()
+        self.assertEqual(list(role.users.values_list("username", flat=True)), ["user1"])
+        self.assertEqual(list(role.admin_users.values_list("username", flat=True)), ["user2"])
+        self.assertEqual(list(role.groups.values_list("name", flat=True)), ["group1"])
+        self.assertEqual(list(role.admin_groups.values_list("name", flat=True)), ["group2"])
+        job = Job.objects.get(operation=JobOperation.IMPORT_ROLE_V2)
+        self.assertEqual(job.status, JobStatus.WARNING)
+        self.assertIn("users: user1", job.text)
+        self.assertIn("groups: group1", job.text)
+
     def test_import_rejects_missing_member_before_creating_job(self):
         self.admin_login()
         payload = (

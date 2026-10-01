@@ -5,6 +5,7 @@ import {
   isAironeApiNonFieldsError,
   isAironeApiRootError,
   isResponseError,
+  toReportableNonFieldErrors,
   toError,
   toReportableNonFieldErrors,
 } from "./AironeAPIErrorUtil";
@@ -58,6 +59,24 @@ test("isAironeApiIndexedError should recognize an error is a indexed(array) erro
       non_field_errors: [{ code: "AE-000000", message: "dummy" }],
     }),
   ).toBeFalsy(); // non-field error
+});
+
+test("reports nested indexed field errors from an API error", async () => {
+  const response = new Response(
+    JSON.stringify([
+      {
+        username: [{ message: "This field is required.", code: "AE-113000" }],
+        groups: [{ message: "Not a valid string.", code: "AE-121000" }],
+      },
+    ]),
+    { status: 400, headers: { "Content-Type": "application/json" } },
+  );
+
+  await expect(
+    toReportableNonFieldErrors(new ResponseError(response)),
+  ).resolves.toBe(
+    "username: This field is required., groups: Not a valid string.",
+  );
 });
 
 test("Response should be converted to an appropriate error", () => {
