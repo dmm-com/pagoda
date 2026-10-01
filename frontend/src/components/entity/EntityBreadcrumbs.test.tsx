@@ -2,7 +2,13 @@
  */
 
 import { EntityDetail } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 
 import { EntityBreadcrumbs } from "./EntityBreadcrumbs";
 

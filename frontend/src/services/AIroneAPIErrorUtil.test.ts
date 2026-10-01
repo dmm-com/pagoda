@@ -7,7 +7,6 @@ import {
   isResponseError,
   toReportableNonFieldErrors,
   toError,
-  toReportableNonFieldErrors,
 } from "./AironeAPIErrorUtil";
 import { ForbiddenError, NotFoundError, UnknownError } from "./Exceptions";
 
