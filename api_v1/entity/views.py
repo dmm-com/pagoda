@@ -1,3 +1,4 @@
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from pydantic import BaseModel
 from rest_framework import status
 from rest_framework.request import Request
@@ -12,6 +13,17 @@ class EntityAttrsAPIResponse(BaseModel):
 
 
 class EntityAttrsAPI(APIView):
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "entity_ids",
+                str,
+                OpenApiParameter.PATH,
+                description="Comma-separated entity IDs. Use ',' for all entity attributes.",
+            ),
+        ],
+        responses={200: EntityAttrsAPIResponse, 400: str},
+    )
     def get(self, request: Request, entity_ids: str, format: str | None = None) -> Response:
         entities: list[Entity | None] = [
             Entity.objects.filter(id=x, is_active=True).first() for x in entity_ids.split(",") if x
