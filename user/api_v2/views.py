@@ -159,7 +159,7 @@ class SuperuserPermission(BasePermission):
 
 class UserActivityAPI(viewsets.GenericViewSet[User]):
     queryset = User.objects.none()
-    serializer_class = UserActivitySerializer  # type: ignore[assignment]
+    serializer_class = UserActivitySerializer
     LIMIT_RECORDS = 10
     LIMIT_DAYS = 60
 
