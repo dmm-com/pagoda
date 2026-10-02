@@ -17,7 +17,7 @@ class GroupTreeSerializer(serializers.Serializer[Any]):
 
     @extend_schema_field(serializers.ListField(child=serializers.DictField()))
     def get_children(self, obj: dict[str, Any]) -> list[dict[str, Any]]:
-        return obj.get("children", [])
+        return cast(list[dict[str, Any]], obj.get("children", []))
 
 
 class GroupTreeAPI(APIView):

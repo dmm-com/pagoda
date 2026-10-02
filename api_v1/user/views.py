@@ -1,4 +1,4 @@
-from typing import cast
+from typing import Any, cast
 
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
@@ -12,7 +12,7 @@ from rest_framework.views import APIView
 from user.models import User
 
 
-class AccessTokenResponseSerializer(serializers.Serializer):
+class AccessTokenResponseSerializer(serializers.Serializer[Any]):
     results = serializers.CharField()
 
 
