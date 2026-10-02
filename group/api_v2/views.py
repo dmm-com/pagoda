@@ -18,7 +18,7 @@ from group.api_v2.serializers import (
     GroupExportSerializer,
     GroupImportSerializer,
     GroupSerializer,
-    GroupTreeSerializer,
+    GroupTreeV2Serializer,
 )
 from group.models import Group
 from user.models import User
@@ -78,7 +78,7 @@ class GroupAPI(viewsets.ModelViewSet[Group]):
 
 class GroupTreeAPI(viewsets.ReadOnlyModelViewSet[Group]):
     queryset = Group.objects.filter(parent_group__isnull=True, is_active=True)  # type: ignore[assignment,misc]
-    serializer_class = GroupTreeSerializer
+    serializer_class = GroupTreeV2Serializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, GroupSearchFilter]
     ordering = ["name"]
     search_fields = ["name"]
