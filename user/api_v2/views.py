@@ -33,6 +33,7 @@ from group.models import Group
 from user.api_v2.serializers import (
     PasswordResetConfirmSerializer,
     PasswordResetSerializer,
+    UserActivitySerializer,
     UserAuthSerializer,
     UserCreateSerializer,
     UserExportSerializer,
@@ -158,7 +159,7 @@ class SuperuserPermission(BasePermission):
 
 class UserActivityAPI(viewsets.GenericViewSet[User]):
     queryset = User.objects.none()
-    serializer_class = Serializer  # type: ignore[assignment]
+    serializer_class = UserActivitySerializer  # type: ignore[assignment]
     LIMIT_RECORDS = 10
     LIMIT_DAYS = 60
 
