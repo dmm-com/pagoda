@@ -84,7 +84,7 @@ export const AdvancedSearchEditModal: FC<Props> = ({
       return [];
     }
     const [first, ...rest] = perModelChoices;
-    return (first ?? []).filter((choice) =>
+    return first.filter((choice) =>
       rest.every((other) => other.some((c) => c.value === choice.value)),
     );
   }, [isSelectLikeType, targetEntities, targetAttrname]);
@@ -144,21 +144,17 @@ export const AdvancedSearchEditModal: FC<Props> = ({
           if (targetAttr) {
             bulkUpdateEntries(
               modelId,
-              // Only a single key is ever passed in, so the result always
-              // has exactly one element.
               convertAttrsFormatCtoS({
                 [targetAttr.id]: {
                   ...settingValue[targetAttrID],
                   schema: { id: targetAttr.id },
                 } as EditableEntryAttrs,
-              })[0]!,
+              })[0],
             );
           }
         });
       } else {
-        // settingValue always has exactly one key (targetAttrID), so the
-        // result always has exactly one element.
-        bulkUpdateEntries(modelId, convertAttrsFormatCtoS(settingValue)[0]!);
+        bulkUpdateEntries(modelId, convertAttrsFormatCtoS(settingValue)[0]);
       }
     });
   };

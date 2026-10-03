@@ -95,7 +95,9 @@ describe("GroupAttributeValueField", () => {
       }),
     );
 
-    vi.spyOn(aironeApiClient, "getGroups").mockResolvedValue(groups);
+    vi.spyOn(aironeApiClient, "getGroups").mockResolvedValue(
+      Promise.resolve(groups),
+    );
 
     await act(async () => {
       render(
@@ -143,7 +145,9 @@ describe("GroupAttributeValueField", () => {
       }),
     );
 
-    vi.spyOn(aironeApiClient, "getGroups").mockResolvedValue(groups);
+    vi.spyOn(aironeApiClient, "getGroups").mockResolvedValue(
+      Promise.resolve(groups),
+    );
 
     await act(async () => {
       render(
@@ -181,7 +185,7 @@ describe("GroupAttributeValueField", () => {
   test("searches groups with entered text", async () => {
     const spy = vi
       .spyOn(aironeApiClient, "getGroups")
-      .mockResolvedValue(groups);
+      .mockResolvedValue(Promise.resolve(groups));
     const { result } = renderHook(() =>
       useForm<Schema>({ resolver: zodResolver(schema), defaultValues }),
     );
@@ -201,7 +205,9 @@ describe("GroupAttributeValueField", () => {
   });
 
   test("renders caption in english", async () => {
-    vi.spyOn(aironeApiClient, "getGroups").mockResolvedValue(groups);
+    vi.spyOn(aironeApiClient, "getGroups").mockResolvedValue(
+      Promise.resolve(groups),
+    );
 
     await act(async () => {
       await i18n.changeLanguage("en");

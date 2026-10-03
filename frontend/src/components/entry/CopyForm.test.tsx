@@ -23,7 +23,6 @@ describe("CopyForm", () => {
     isActive: true,
     isPublic: true,
     permission: ACLType.Full,
-    hasOngoingChanges: false,
   };
 
   test("should set copied entries", function () {

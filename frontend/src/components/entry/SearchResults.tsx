@@ -223,7 +223,6 @@ export const SearchResults: FC<Props> = ({
                         } else if (!result.isReadable) {
                           return <Typography>Permission denied.</Typography>;
                         }
-                        return null;
                       })()}
                     </TableCell>
                   ))}

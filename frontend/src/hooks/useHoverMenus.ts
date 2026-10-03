@@ -33,16 +33,8 @@ export function useHoverMenus() {
       Object.keys(anchors).forEach((key) => {
         if (anchors[key] == null) return;
         const inside =
-          isPointOverElement(
-            e.clientX,
-            e.clientY,
-            triggerRefs.current[key] ?? null,
-          ) ||
-          isPointOverElement(
-            e.clientX,
-            e.clientY,
-            paperRefs.current[key] ?? null,
-          );
+          isPointOverElement(e.clientX, e.clientY, triggerRefs.current[key]) ||
+          isPointOverElement(e.clientX, e.clientY, paperRefs.current[key]);
         if (!inside) {
           setAnchors((prev) => ({ ...prev, [key]: null }));
         }
@@ -72,7 +64,7 @@ export function useHoverMenus() {
       };
       if (
         reason === "backdropClick" &&
-        isPointOverElement(clientX, clientY, triggerRefs.current[key] ?? null)
+        isPointOverElement(clientX, clientY, triggerRefs.current[key])
       ) {
         return;
       }

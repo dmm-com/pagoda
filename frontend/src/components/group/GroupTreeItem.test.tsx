@@ -9,8 +9,6 @@ import { ServerContext } from "../../services/ServerContext";
 
 import { GroupTreeItem } from "./GroupTreeItem";
 
-import type { Mock } from "vitest";
-
 // Mock for ServerContext
 vi.mock("../../services/ServerContext", () => {
   const mockInstance = {
@@ -80,7 +78,7 @@ describe("GroupTreeItem", () => {
   });
 
   test("should render group name as a link to detail page when user is superuser", () => {
-    (ServerContext.getInstance as Mock).mockReturnValue({
+    (ServerContext.getInstance as vi.Mock).mockReturnValue({
       user: { isSuperuser: true },
     });
 
@@ -100,7 +98,7 @@ describe("GroupTreeItem", () => {
   });
 
   test("should not render group name as a clickable link when user is not superuser", () => {
-    (ServerContext.getInstance as Mock).mockReturnValue({
+    (ServerContext.getInstance as vi.Mock).mockReturnValue({
       user: { isSuperuser: false },
     });
 
@@ -189,7 +187,7 @@ describe("GroupTreeItem", () => {
   test("should display menu button when setGroupAnchorEls is provided", () => {
     const setGroupAnchorEls = vi.fn();
 
-    (ServerContext.getInstance as Mock).mockReturnValue({
+    (ServerContext.getInstance as vi.Mock).mockReturnValue({
       user: { isSuperuser: true },
     });
 
@@ -226,7 +224,7 @@ describe("GroupTreeItem", () => {
   test("should call setGroupAnchorEls with correct arguments when menu button is clicked", () => {
     const setGroupAnchorEls = vi.fn();
 
-    (ServerContext.getInstance as Mock).mockReturnValue({
+    (ServerContext.getInstance as vi.Mock).mockReturnValue({
       user: { isSuperuser: true },
     });
 

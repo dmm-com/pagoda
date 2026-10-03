@@ -30,7 +30,6 @@ describe("ChangeUserAuthModal", () => {
     authenticateType: UserRetrieveAuthenticateTypeEnum.AUTH_TYPE_LOCAL,
     groups: [],
     roles: [],
-    coUsers: [],
   };
 
   test("should render a component essentially", async () => {
@@ -59,7 +58,9 @@ describe("ChangeUserAuthModal", () => {
   });
 
   test("should handle a success on updating auth method", async () => {
-    vi.spyOn(aironeApiClient, "updateUserAuth").mockResolvedValue(undefined);
+    vi.spyOn(aironeApiClient, "updateUserAuth").mockResolvedValue(
+      Promise.resolve(),
+    );
 
     render(
       <ChangeUserAuthModal user={user} openModal={true} closeModal={vi.fn()} />,

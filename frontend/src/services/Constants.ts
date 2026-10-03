@@ -53,30 +53,7 @@ export const BaseAttributeTypes = {
   named: 1 << 11,
 };
 
-export type AttributeTypeKey =
-  | "string"
-  | "array_string"
-  | "object"
-  | "array_object"
-  | "named_object"
-  | "array_named_object"
-  | "group"
-  | "array_group"
-  | "role"
-  | "array_role"
-  | "text"
-  | "boolean"
-  | "date"
-  | "datetime"
-  | "number"
-  | "array_number"
-  | "select"
-  | "multi_select";
-
-export const AttributeTypes: Record<
-  AttributeTypeKey,
-  { name: string; type: number }
-> = {
+export const AttributeTypes: Record<string, { name: string; type: number }> = {
   string: {
     name: "string",
     type: BaseAttributeTypes.string,

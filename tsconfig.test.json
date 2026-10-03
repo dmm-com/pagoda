@@ -1,9 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "types": ["vitest/globals", "@testing-library/jest-dom/vitest"],
-    "noUncheckedIndexedAccess": false
-  },
-  "include": ["./frontend/src/**/*", "./vitest.setup.ts"],
-  "exclude": []
-}

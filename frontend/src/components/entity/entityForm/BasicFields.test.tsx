@@ -11,8 +11,10 @@ import {
 } from "@testing-library/react";
 import { useForm } from "react-hook-form";
 
+import { schema } from "../../entry/entryForm/EntryFormSchema";
+
 import { BasicFields } from "./BasicFields";
-import { Schema, schema } from "./EntityFormSchema";
+import { Schema } from "./EntityFormSchema";
 
 import { TestWrapper } from "TestWrapper";
 import i18n from "i18n/config";

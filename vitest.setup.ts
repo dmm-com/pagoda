@@ -17,33 +17,27 @@ Object.defineProperties(globalThis, {
 });
 
 if (globalThis.ReadableStream === undefined) {
-  globalThis.ReadableStream =
-    ReadableStream as unknown as typeof globalThis.ReadableStream;
+  globalThis.ReadableStream = ReadableStream;
 }
 if (globalThis.TransformStream === undefined) {
-  globalThis.TransformStream =
-    TransformStream as unknown as typeof globalThis.TransformStream;
+  globalThis.TransformStream = TransformStream;
 }
 
 // undici binds markResourceTiming at module-eval time; jsdom does not implement it.
-// (Not part of the standard lib.dom Performance type.)
-const performanceWithMarkResourceTiming = performance as Performance & {
-  markResourceTiming?: () => void;
-};
 if (
   typeof performance !== "undefined" &&
-  typeof performanceWithMarkResourceTiming.markResourceTiming !== "function"
+  typeof performance.markResourceTiming !== "function"
 ) {
-  performanceWithMarkResourceTiming.markResourceTiming = () => {};
+  performance.markResourceTiming = () => {};
 }
 
-globalThis.fetch = fetch as unknown as typeof globalThis.fetch;
-globalThis.Blob = Blob as unknown as typeof globalThis.Blob;
-globalThis.File = File as unknown as typeof globalThis.File;
-globalThis.Headers = Headers as unknown as typeof globalThis.Headers;
-globalThis.FormData = FormData as unknown as typeof globalThis.FormData;
-globalThis.Request = Request as unknown as typeof globalThis.Request;
-globalThis.Response = Response as unknown as typeof globalThis.Response;
+globalThis.fetch = fetch as typeof globalThis.fetch;
+globalThis.Blob = Blob;
+globalThis.File = File;
+globalThis.Headers = Headers as typeof globalThis.Headers;
+globalThis.FormData = FormData as typeof globalThis.FormData;
+globalThis.Request = Request as typeof globalThis.Request;
+globalThis.Response = Response as typeof globalThis.Response;
 
 class BroadcastChannel {
   name: string;

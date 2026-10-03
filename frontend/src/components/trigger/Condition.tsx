@@ -200,7 +200,6 @@ const ConditionValue: FC<PropsConditionValue> = ({
         <ConditionValueAsName index={index} control={control} attrId={attrId} />
       );
   }
-  return null;
 };
 
 export const Condition: FC<Props> = ({

@@ -39,8 +39,12 @@ describe("RoleList", () => {
   ];
 
   test("should show role list", async () => {
-    vi.spyOn(aironeApiClient, "getRoles").mockResolvedValue(roles);
-    vi.spyOn(aironeApiClient, "deleteRole").mockResolvedValue(undefined);
+    vi.spyOn(aironeApiClient, "getRoles").mockResolvedValue(
+      Promise.resolve(roles),
+    );
+    vi.spyOn(aironeApiClient, "deleteRole").mockResolvedValue(
+      Promise.resolve(),
+    );
 
     await act(async () => {
       render(<RoleList />, { wrapper: TestWrapper });
@@ -70,7 +74,9 @@ describe("RoleList", () => {
   });
 
   test("renders in English", async () => {
-    vi.spyOn(aironeApiClient, "getRoles").mockResolvedValue(roles);
+    vi.spyOn(aironeApiClient, "getRoles").mockResolvedValue(
+      Promise.resolve(roles),
+    );
 
     await act(async () => {
       await i18n.changeLanguage("en");

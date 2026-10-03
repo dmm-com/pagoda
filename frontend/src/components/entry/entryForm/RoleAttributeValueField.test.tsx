@@ -22,8 +22,6 @@ import { aironeApiClient } from "../../../repository/AironeApiClient";
 import { schema, Schema } from "./EntryFormSchema";
 import { RoleAttributeValueField } from "./RoleAttributeValueField";
 
-import type { Mock } from "vitest";
-
 import { TestWrapper } from "TestWrapper";
 import i18n from "i18n/config";
 
@@ -100,7 +98,7 @@ describe("RoleAttributeValueField", () => {
   ];
 
   test("should provide role value editor", async () => {
-    (aironeApiClient.getRoles as Mock).mockResolvedValue(roles);
+    (aironeApiClient.getRoles as vi.Mock).mockResolvedValue(roles);
 
     const {
       result: {
@@ -144,7 +142,7 @@ describe("RoleAttributeValueField", () => {
   });
 
   test("should provide array-role value editor", async () => {
-    (aironeApiClient.getRoles as Mock).mockResolvedValue(roles);
+    (aironeApiClient.getRoles as vi.Mock).mockResolvedValue(roles);
 
     const {
       result: {
@@ -195,7 +193,7 @@ describe("RoleAttributeValueField", () => {
     ]);
   });
   test("searches roles with entered text", async () => {
-    const spy = aironeApiClient.getRoles as Mock;
+    const spy = aironeApiClient.getRoles as vi.Mock;
     spy.mockResolvedValue(roles);
     const { result } = renderHook(() =>
       useForm<Schema>({ resolver: zodResolver(schema), defaultValues }),
@@ -216,7 +214,7 @@ describe("RoleAttributeValueField", () => {
   });
 
   test("renders caption in english", async () => {
-    (aironeApiClient.getRoles as Mock).mockResolvedValue(roles);
+    (aironeApiClient.getRoles as vi.Mock).mockResolvedValue(roles);
 
     await act(async () => {
       await i18n.changeLanguage("en");

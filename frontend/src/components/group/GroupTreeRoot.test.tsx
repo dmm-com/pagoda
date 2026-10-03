@@ -9,8 +9,6 @@ import { ServerContext } from "../../services/ServerContext";
 
 import { GroupTreeRoot } from "./GroupTreeRoot";
 
-import type { Mock } from "vitest";
-
 // Mock for ServerContext
 vi.mock("../../services/ServerContext", () => {
   const mockInstance = {
@@ -57,12 +55,12 @@ describe("GroupTreeRoot", () => {
 
   afterEach(() => {
     // Reset mock state after each test
-    (ServerContext.getInstance as Mock).mockReset();
+    (ServerContext.getInstance as vi.Mock).mockReset();
   });
 
   test("renders correctly for general user (no menu buttons)", () => {
     // Mock as a general user
-    (ServerContext.getInstance as Mock).mockReturnValue({
+    (ServerContext.getInstance as vi.Mock).mockReturnValue({
       user: { isSuperuser: false },
     });
 
@@ -76,7 +74,7 @@ describe("GroupTreeRoot", () => {
   });
 
   test("renders correctly for superuser (menu buttons shown)", () => {
-    (ServerContext.getInstance as Mock).mockReturnValue({
+    (ServerContext.getInstance as vi.Mock).mockReturnValue({
       user: { isSuperuser: true },
     });
 

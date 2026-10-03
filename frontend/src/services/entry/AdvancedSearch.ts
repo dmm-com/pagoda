@@ -157,8 +157,8 @@ export function formatAdvancedSearchParams({
         Object.keys(attrsFilter).map(
           (key): AdvancedSearchResultAttrInfo => ({
             name: key,
-            filterKey: attrsFilter[key]?.filterKey,
-            keyword: attrsFilter[key]?.keyword,
+            filterKey: attrsFilter[key].filterKey,
+            keyword: attrsFilter[key].keyword,
           }),
         ),
       ),

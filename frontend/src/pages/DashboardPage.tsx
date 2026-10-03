@@ -43,13 +43,13 @@ export const DashboardPage: FC = () => {
     if (query != null) {
       return await aironeApiClient.getSearchEntries(query);
     }
-    return undefined;
   }, [query]);
 
   // If there is only one search result, move to entry details page.
-  const firstEntry = entries.value?.length === 1 ? entries.value[0] : undefined;
-  if (!entries.loading && firstEntry != null) {
-    navigate(entryDetailsPath(firstEntry.schema?.id ?? 0, firstEntry.id));
+  if (!entries.loading && entries.value?.length === 1) {
+    navigate(
+      entryDetailsPath(entries.value[0].schema?.id ?? 0, entries.value[0].id),
+    );
   }
 
   return (

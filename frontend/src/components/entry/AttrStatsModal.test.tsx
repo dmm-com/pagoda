@@ -12,8 +12,6 @@ import { MemoryRouter } from "react-router";
 
 import { AttrStatsModal } from "./AttrStatsModal";
 
-import type { MockInstance } from "vitest";
-
 import i18n from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 
@@ -65,7 +63,7 @@ const renderModal = (
 };
 
 describe("AttrStatsModal", () => {
-  let advancedSearch: MockInstance;
+  let advancedSearch: vi.SpyInstance;
 
   beforeEach(() => {
     advancedSearch = vi.spyOn(aironeApiClient, "advancedSearch");
@@ -123,9 +121,7 @@ describe("AttrStatsModal", () => {
 
     await screen.findByText("Second");
     expect(advancedSearch).toHaveBeenCalledTimes(2);
-    expect(advancedSearch.mock.calls.map((call: unknown[]) => call[6])).toEqual(
-      [1, 2],
-    );
+    expect(advancedSearch.mock.calls.map((call) => call[6])).toEqual([1, 2]);
     expect(screen.getByText("101 / 101 件")).toBeInTheDocument();
   });
 

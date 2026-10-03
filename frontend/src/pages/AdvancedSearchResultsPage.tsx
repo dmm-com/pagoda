@@ -106,7 +106,6 @@ function DeleteAllLabel(attrinfo: Array<AdvancedSearchResultAttrInfo>) {
                   </TableRow>
                 );
               }
-              return null;
             })}
           </TableBody>
         </Table>

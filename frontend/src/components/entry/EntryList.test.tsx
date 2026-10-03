@@ -59,7 +59,9 @@ describe("EntryList", () => {
   };
 
   test("should render a component with essential props", async () => {
-    vi.spyOn(aironeApiClient, "getEntries").mockResolvedValue(mockApiResponse);
+    vi.spyOn(aironeApiClient, "getEntries").mockResolvedValue(
+      Promise.resolve(mockApiResponse),
+    );
 
     await act(async () => {
       render(<EntryList entityId={1} />, {
@@ -71,10 +73,12 @@ describe("EntryList", () => {
   });
 
   test("should display empty state when no entries", async () => {
-    vi.spyOn(aironeApiClient, "getEntries").mockResolvedValue({
-      count: 0,
-      results: [],
-    });
+    vi.spyOn(aironeApiClient, "getEntries").mockResolvedValue(
+      Promise.resolve({
+        count: 0,
+        results: [],
+      }),
+    );
 
     await act(async () => {
       render(<EntryList entityId={0} />, {
@@ -86,7 +90,9 @@ describe("EntryList", () => {
   });
 
   test("should display entries in table format", async () => {
-    vi.spyOn(aironeApiClient, "getEntries").mockResolvedValue(mockApiResponse);
+    vi.spyOn(aironeApiClient, "getEntries").mockResolvedValue(
+      Promise.resolve(mockApiResponse),
+    );
 
     await act(async () => {
       render(<EntryList entityId={1} />, {
@@ -103,7 +109,7 @@ describe("EntryList", () => {
   test.skip("should handle search functionality", async () => {
     const getEntriesSpy = vi
       .spyOn(aironeApiClient, "getEntries")
-      .mockResolvedValue(mockApiResponse);
+      .mockResolvedValue(Promise.resolve(mockApiResponse));
 
     await act(async () => {
       render(<EntryList entityId={1} />, {
@@ -148,10 +154,12 @@ describe("EntryList", () => {
   test.skip("should handle pagination", async () => {
     const getEntriesSpy = vi
       .spyOn(aironeApiClient, "getEntries")
-      .mockResolvedValue({
-        count: 25, // More than one page
-        results: mockEntries,
-      });
+      .mockResolvedValue(
+        Promise.resolve({
+          count: 25, // More than one page
+          results: mockEntries,
+        }),
+      );
 
     await act(async () => {
       render(<EntryList entityId={1} />, {
@@ -244,7 +252,7 @@ describe("EntryList", () => {
   test("should refresh data when entityId changes", async () => {
     const getEntriesSpy = vi
       .spyOn(aironeApiClient, "getEntries")
-      .mockResolvedValue(mockApiResponse);
+      .mockResolvedValue(Promise.resolve(mockApiResponse));
 
     const { rerender } = render(<EntryList entityId={1} />, {
       wrapper: TestWrapper,
@@ -274,7 +282,9 @@ describe("EntryList", () => {
       await i18n.changeLanguage("en");
     });
 
-    vi.spyOn(aironeApiClient, "getEntries").mockResolvedValue(mockApiResponse);
+    vi.spyOn(aironeApiClient, "getEntries").mockResolvedValue(
+      Promise.resolve(mockApiResponse),
+    );
 
     await act(async () => {
       render(<EntryList entityId={1} />, {

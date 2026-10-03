@@ -44,7 +44,7 @@ import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { aclPath } from "routes/Routes";
-import { AttributeTypeKey, AttributeTypes } from "services/Constants";
+import { AttributeTypes } from "services/Constants";
 import { fuzzyMatch } from "services/StringUtil";
 
 const StyledBox = styled(Box)(({ theme }) => ({
@@ -76,7 +76,7 @@ const DISPLAY_ATTR_ALLOWED_TYPES: ReadonlySet<number> = new Set([
 ]);
 
 // Define the custom display order for attribute types
-const ATTRIBUTE_TYPE_ORDER: AttributeTypeKey[] = [
+const ATTRIBUTE_TYPE_ORDER = [
   "string",
   "array_string",
   "object",

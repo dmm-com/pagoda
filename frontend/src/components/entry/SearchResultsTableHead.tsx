@@ -99,7 +99,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 
 interface Props {
   hasReferral: boolean;
-  attrTypes: Record<string, number | undefined>;
+  attrTypes: Record<string, number>;
   defaultEntryFilter?: EntryHint;
   defaultReferralFilter?: string;
   defaultReferralIncludeModelIds?: number[];
@@ -208,7 +208,7 @@ export const SearchResultsTableHead: FC<Props> = ({
           const attrFilter = defaultAttrsFilter[attrName];
           return [
             attrName,
-            getIsFiltered(attrFilter?.filterKey, attrFilter?.keyword),
+            getIsFiltered(attrFilter.filterKey, attrFilter.keyword),
           ];
         }),
       ),
@@ -262,13 +262,12 @@ export const SearchResultsTableHead: FC<Props> = ({
             attrinfo: Object.keys(_attrsFilter)
               .filter(
                 (j) =>
-                  _attrsFilter[j]?.baseAttrname ===
-                  _attrsFilter[k]?.baseAttrname,
+                  _attrsFilter[j].baseAttrname === _attrsFilter[k].baseAttrname,
               )
               .map((j) => ({
                 name: _attrsFilter[j]?.joinedAttrname ?? "",
-                filterKey: _attrsFilter[j]?.filterKey,
-                keyword: _attrsFilter[j]?.keyword,
+                filterKey: _attrsFilter[j].filterKey,
+                keyword: _attrsFilter[j].keyword,
               })),
           }))
           // This removes duplicates
@@ -424,9 +423,7 @@ export const SearchResultsTableHead: FC<Props> = ({
               )}
 
               {/* Bulk operation checkbox would be invisible when NarrowDown mode is true */}
-              {((attrTypes[attrName] ?? 0) &
-                EntryAttributeTypeTypeEnum.OBJECT) >
-                0 &&
+              {(attrTypes[attrName] & EntryAttributeTypeTypeEnum.OBJECT) > 0 &&
                 isNarrowDown &&
                 attrsFilter[attrName]?.joinedAttrname === undefined && (
                   <Tooltip title={t("advancedSearch.tableHead.joinAttr")}>

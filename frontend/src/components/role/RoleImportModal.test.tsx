@@ -11,8 +11,6 @@ import {
 
 import { RoleImportModal } from "./RoleImportModal";
 
-import type { Mock } from "vitest";
-
 import { TestWrapper } from "TestWrapper";
 import i18n from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
@@ -75,7 +73,7 @@ describe("RoleImportModal", () => {
   });
 
   test("should successfully import file", async () => {
-    (aironeApiClient.importRoles as Mock).mockResolvedValue(undefined);
+    (aironeApiClient.importRoles as vi.Mock).mockResolvedValue(undefined);
 
     render(<RoleImportModal {...defaultProps} />, { wrapper: TestWrapper });
 

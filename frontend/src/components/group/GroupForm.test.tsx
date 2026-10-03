@@ -13,9 +13,10 @@ import {
 import { useForm } from "react-hook-form";
 
 import { TestWrapper } from "../../TestWrapper";
+import { schema } from "../entry/entryForm/EntryFormSchema";
 
 import { GroupForm } from "./GroupForm";
-import { Schema, schema } from "./groupForm/GroupFormSchema";
+import { Schema } from "./groupForm/GroupFormSchema";
 
 import i18n from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
@@ -64,11 +65,12 @@ describe("GroupForm", () => {
       }),
     );
 
-    vi.spyOn(aironeApiClient, "getUsers").mockResolvedValue({
-      count: 0,
-      results: [],
-    });
-    vi.spyOn(aironeApiClient, "getGroupTrees").mockResolvedValue(groups);
+    vi.spyOn(aironeApiClient, "getUsers").mockResolvedValue(
+      Promise.resolve([]),
+    );
+    vi.spyOn(aironeApiClient, "getGroupTrees").mockResolvedValue(
+      Promise.resolve(groups),
+    );
 
     render(<GroupForm control={control} setValue={setValue} groupId={1} />, {
       wrapper: TestWrapper,
@@ -100,11 +102,12 @@ describe("GroupForm", () => {
       }),
     );
 
-    vi.spyOn(aironeApiClient, "getUsers").mockResolvedValue({
-      count: 0,
-      results: [],
-    });
-    vi.spyOn(aironeApiClient, "getGroupTrees").mockResolvedValue(groups);
+    vi.spyOn(aironeApiClient, "getUsers").mockResolvedValue(
+      Promise.resolve([]),
+    );
+    vi.spyOn(aironeApiClient, "getGroupTrees").mockResolvedValue(
+      Promise.resolve(groups),
+    );
 
     render(<GroupForm control={control} setValue={setValue} groupId={1} />, {
       wrapper: TestWrapper,
