@@ -55,11 +55,11 @@ def _csv_export(
             value = entry_info.attrs[attrinfo["name"]]
 
             vtype = None
-            if (value is not None) and ("type" in value):
+            if "type" in value:
                 vtype = value["type"]
 
             vval: Any = None
-            if (value is not None) and ("value" in value):
+            if "value" in value:
                 vval = value["value"]
 
             if not value or "value" not in value or value["value"] is None:

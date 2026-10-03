@@ -636,9 +636,8 @@ class TriggerAction(models.Model):
         serializer = EntryUpdateSerializer(
             instance=entry, data=setting_data, context={"request": DRFRequest(user)}
         )
-        if serializer:
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
 
 class TriggerActionValue(models.Model):

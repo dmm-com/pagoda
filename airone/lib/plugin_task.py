@@ -68,7 +68,9 @@ class PluginTaskConfig:
         if not self.tasks:
             raise ValueError(f"No tasks defined for plugin '{self.plugin_id}'")
 
-        for op_name, task_info in self.tasks.items():
+        for op_name, declared_task_info in self.tasks.items():
+            # Plugin-supplied config is not type checked, so validate it as an arbitrary object.
+            task_info: object = declared_task_info
             if not isinstance(task_info, tuple) or len(task_info) != 2:
                 raise ValueError(
                     f"Task value for operation '{op_name}' in plugin '{self.plugin_id}' "
@@ -96,7 +98,8 @@ class PluginTaskConfig:
                 f"Parameter models reference unknown operations for plugin '{self.plugin_id}': "
                 f"{sorted(unknown_parameter_models)}"
             )
-        for op_name, contract in self.parameter_models.items():
+        for op_name, declared_contract in self.parameter_models.items():
+            contract: object = declared_contract
             if not isinstance(contract, type) or not issubclass(contract, BaseModel):
                 raise TypeError(
                     f"Parameter model for operation '{op_name}' in plugin "

@@ -69,9 +69,9 @@ class RoleAPI(viewsets.ModelViewSet[Role]):
     def get_queryset(self) -> QuerySet[Role]:
         base_queryset = Role.objects.filter(is_active=True).prefetch_related(
             Prefetch("users", queryset=User.objects.filter(is_active=True)),
-            Prefetch("groups", queryset=Group.objects.filter(is_active=True)),  # type: ignore[misc]
+            Prefetch("groups", queryset=Group.objects.filter(is_active=True)),
             Prefetch("admin_users", queryset=User.objects.filter(is_active=True)),
-            Prefetch("admin_groups", queryset=Group.objects.filter(is_active=True)),  # type: ignore[misc]
+            Prefetch("admin_groups", queryset=Group.objects.filter(is_active=True)),
         )
         return get_permitted_roles(cast(User, self.request.user), base_queryset)
 
