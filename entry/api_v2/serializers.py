@@ -625,11 +625,8 @@ class EntryCreateData(TypedDict, total=False):
 
 @extend_schema_serializer(exclude_fields=["schema"])
 class EntryCreateSerializer(EntryBaseSerializer):
-    schema = serializers.PrimaryKeyRelatedField(  # type: ignore[assignment]  # intentional
-        # write-only override of the base read-only nested EntitySerializer field
-        queryset=Entity.objects.all(),
-        write_only=True,
-        required=True,
+    schema = serializers.PrimaryKeyRelatedField(  # type: ignore[assignment]
+        queryset=Entity.objects.all(), write_only=True, required=True
     )
     attrs = serializers.ListField(child=AttributeDataSerializer(), write_only=True, required=False)
     created_user = serializers.HiddenField(default=drf.AironeUserDefault())
@@ -1365,7 +1362,7 @@ class EntryImportEntitySerializer(serializers.Serializer[Any]):
 
             def _group(val: str) -> int | None:
                 if val:
-                    ref_group = Group.objects.filter(name=val).first()
+                    ref_group: Group | None = Group.objects.filter(name=val).first()
                     return ref_group.id if ref_group else 0
                 return None
 

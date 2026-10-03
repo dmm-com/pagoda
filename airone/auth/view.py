@@ -26,10 +26,6 @@ class PagodaLoginView(django_auth_views.LoginView):
         # Read settings per request instead of baking them into the URLconf at
         # import time, so runtime changes (and per-test overrides) are honored
         context = super().get_context_data(**kwargs)
-        # Only defined when SAML is configured.
-        saml_idps: dict[str, object] | None = getattr(
-            settings, "SOCIAL_AUTH_SAML_ENABLED_IDPS", None
-        )
         context.update(
             {
                 "title": settings.AIRONE["TITLE"],
@@ -37,7 +33,9 @@ class PagodaLoginView(django_auth_views.LoginView):
                 "note_desc": settings.AIRONE["NOTE_DESC"],
                 "note_link": settings.AIRONE["NOTE_LINK"],
                 "sso_desc": settings.AIRONE["SSO_DESC"],
-                "idp": list(saml_idps.keys())[0] if saml_idps is not None else None,
+                "idp": list(getattr(settings, "SOCIAL_AUTH_SAML_ENABLED_IDPS").keys())[0]
+                if hasattr(settings, "SOCIAL_AUTH_SAML_ENABLED_IDPS")
+                else None,
                 "password_reset_disabled": settings.AIRONE["PASSWORD_RESET_DISABLED"],
                 "check_term_service": settings.AIRONE["CHECK_TERM_SERVICE"],
                 "terms_of_service_url": settings.AIRONE["TERMS_OF_SERVICE_URL"],

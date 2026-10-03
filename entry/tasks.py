@@ -244,8 +244,6 @@ def _do_import_entries(job: Job) -> None:
 
             attr: Attribute | None = attr_query.last()
             if attr is None:
-                # can only happen if the matching EntityAttr became inactive
-                # concurrently; nothing to import this attribute against.
                 continue
             if not user.has_permission(attr.schema, ACLType.Writable) or not user.has_permission(
                 attr, ACLType.Writable
@@ -448,12 +446,6 @@ def _yaml_export_v2(
 
 
 def _delete_uncommitted_created_entry(job: Job) -> None:
-    """on_cancelled handler for create_entry_attrs.
-
-    If the job gets canceled before it finishes, remove the Entry stub that
-    was created for it (still is_active, since del_status(STATUS_CREATING)
-    never ran).
-    """
     if job.target is None:
         return
     entry = Entry.objects.filter(id=job.target.id, is_active=True).first()
@@ -695,9 +687,6 @@ def do_copy_entry(self: Task[Any, Any], job: Job) -> tuple[JobStatus, str, Entry
     dest_entry = Entry.objects.filter(schema=src_entry.schema, name=params.new_name).first()
     if not dest_entry:
         dest_entry = src_entry.clone(job.user, name=params.new_name)
-        # clone() only returns None when the acting user lost read permission
-        # on src_entry between the check above and here; that was already an
-        # unguarded AttributeError below, so keep it fatal.
         assert dest_entry is not None
 
         # for updating its name from attribute values

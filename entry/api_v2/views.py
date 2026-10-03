@@ -248,8 +248,6 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet[Entry]):
     def list_alias(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         entry: Entry = self.get_object()
 
-        # This action swaps the queryset model for super().list(); genuinely
-        # different from the ModelViewSet[Entry] declared type at runtime.
         self.queryset = AliasEntry.objects.filter(  # type: ignore[assignment]
             entry=entry, entry__is_active=True
         )
@@ -279,8 +277,6 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet[Entry]):
             display_prefetches.append(_make_display_attr_prefetch(display_attr_names))
             data_array_extra.append(_make_display_attr_prefetch(display_attr_names))
 
-        # This action swaps the queryset model for super().list(); genuinely
-        # different from the ModelViewSet[Entry] declared type at runtime.
         self.queryset = (
             AttributeValue.objects.filter(  # type: ignore[assignment]
                 parent_attr__in=target_attrs,
@@ -957,8 +953,6 @@ class EntryImportAPI(generics.GenericAPIView[Entity]):
     serializer_class = EntryImportSerializer
 
     def get_queryset(self) -> QuerySet[Entity]:
-        # YAMLParser (parser_classes above) yields a list of dicts here, not the
-        # dict[str, Any] the base Request.data stub assumes.
         import_data = cast("list[dict[str, Any]]", self.request.data)
         entity_names = [d["entity"] for d in import_data]
         return Entity.objects.filter(name__in=entity_names, is_active=True)
@@ -1078,8 +1072,6 @@ class EntryImportPreviewAPI(generics.GenericAPIView[Any]):
         if user.is_readonly:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        # YAMLParser (parser_classes above) yields a list of dicts here, not the
-        # dict[str, Any] the base Request.data stub assumes.
         import_datas = cast("list[dict[str, Any]]", request.data)
         serializer = EntryImportSerializer(data=import_datas)
         serializer.is_valid(raise_exception=True)
@@ -1321,7 +1313,7 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView[Any]):
         if isAll and target_model is not None:
             results = AdvancedSearchService.search_entries(
                 user,
-                hint_entity_ids=list({str(e.schema.id) for e in entries}),
+                hint_entity_ids=list(set([str(e.schema.id) for e in entries])),
                 hint_attrs=[
                     AttrHint(
                         **{
@@ -1354,8 +1346,6 @@ class EntryAliasAPI(viewsets.ModelViewSet[AliasEntry]):
 
     def bulk_create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         # refuse input that has duplicated name
-        # bulk_create receives a list of alias dicts, not the dict[str, Any] the
-        # base Request.data stub assumes.
         bulk_data = cast("list[dict[str, Any]]", request.data)
         counter = Counter([x["name"] for x in bulk_data])
         if any([c > 1 for c in counter.values()]):
