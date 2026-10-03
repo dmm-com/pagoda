@@ -8,10 +8,10 @@ import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryHistoryList } from "components/entry/EntryHistoryList";
 import { EntrySelfHistoryList } from "components/entry/EntrySelfHistoryList";
+import { useIdParams } from "hooks/useIdParams";
 import { usePage } from "hooks/usePage";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { useTranslation } from "hooks/useTranslation";
-import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 const SelfHistorySection: FC<{
@@ -62,7 +62,7 @@ const AttributeHistorySection: FC<{
 
 const EntryHistoryListContent: FC = () => {
   const { t } = useTranslation();
-  const { entryId } = useTypedParams<{ entityId: number; entryId: number }>();
+  const { entryId } = useIdParams({ required: ["entryId"] });
 
   const { page: attributeHistoryPage, changePage: changeAttributeHistoryPage } =
     usePage();
