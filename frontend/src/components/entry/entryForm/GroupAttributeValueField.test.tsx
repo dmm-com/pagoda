@@ -201,9 +201,7 @@ describe("GroupAttributeValueField", () => {
   });
 
   test("renders caption in english", async () => {
-    vi.spyOn(aironeApiClient, "getGroups").mockResolvedValue(
-      Promise.resolve(groups),
-    );
+    vi.spyOn(aironeApiClient, "getGroups").mockResolvedValue(groups);
 
     await act(async () => {
       await i18n.changeLanguage("en");

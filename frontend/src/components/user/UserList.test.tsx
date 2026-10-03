@@ -180,7 +180,7 @@ describe("UserList", () => {
   });
 
   test("renders in English", async () => {
-    (ServerContext.getInstance as vi.Mock).mockReturnValue({
+    (ServerContext.getInstance as Mock).mockReturnValue({
       user: { username: "admin", isSuperuser: true },
     });
 

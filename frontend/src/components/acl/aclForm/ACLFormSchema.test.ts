@@ -71,7 +71,7 @@ describe("schema", () => {
 
     try {
       schema.parse(value);
-      fail("should have thrown");
+      expect.fail("should have thrown");
     } catch (e) {
       expect(String(e)).toContain(
         "限定公開にする場合は、いずれかのロールの権限を 閲覧・編集・削除 にしてください",
@@ -98,7 +98,7 @@ describe("schema", () => {
 
     try {
       schema.parse(value);
-      fail("should have thrown");
+      expect.fail("should have thrown");
     } catch (e) {
       expect(String(e)).toContain(
         "To set this to limited public, set at least one role's permission to Read / Write / Delete",

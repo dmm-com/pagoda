@@ -29,12 +29,10 @@ test("should render a component with essential props", async () => {
 });
 
 test("renders in English", async () => {
-  vi.spyOn(aironeApiClient, "getEntries").mockResolvedValue(
-    Promise.resolve({
-      count: 0,
-      results: [],
-    }),
-  );
+  vi.spyOn(aironeApiClient, "getEntries").mockResolvedValue({
+    count: 0,
+    results: [],
+  });
 
   await act(async () => {
     await i18n.changeLanguage("en");

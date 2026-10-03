@@ -274,9 +274,7 @@ describe("EntryList", () => {
       await i18n.changeLanguage("en");
     });
 
-    vi.spyOn(aironeApiClient, "getEntries").mockResolvedValue(
-      Promise.resolve(mockApiResponse),
-    );
+    vi.spyOn(aironeApiClient, "getEntries").mockResolvedValue(mockApiResponse);
 
     await act(async () => {
       render(<EntryList entityId={1} />, {

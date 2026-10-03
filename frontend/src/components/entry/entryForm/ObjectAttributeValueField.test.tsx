@@ -443,9 +443,10 @@ describe("ObjectAttributeValueField", () => {
   });
 
   test("renders caption in english", async () => {
-    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue(
-      Promise.resolve({ results: entries, hasRestrictedItems: false }),
-    );
+    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue({
+      results: entries,
+      hasRestrictedItems: false,
+    });
 
     await act(async () => {
       await i18n.changeLanguage("en");
@@ -478,9 +479,10 @@ describe("ObjectAttributeValueField", () => {
   });
 
   test("renders disabled boolean caption in english", async () => {
-    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue(
-      Promise.resolve({ results: entries, hasRestrictedItems: false }),
-    );
+    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue({
+      results: entries,
+      hasRestrictedItems: false,
+    });
 
     await act(async () => {
       await i18n.changeLanguage("en");

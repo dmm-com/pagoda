@@ -70,9 +70,7 @@ describe("RoleList", () => {
   });
 
   test("renders in English", async () => {
-    vi.spyOn(aironeApiClient, "getRoles").mockResolvedValue(
-      Promise.resolve(roles),
-    );
+    vi.spyOn(aironeApiClient, "getRoles").mockResolvedValue(roles);
 
     await act(async () => {
       await i18n.changeLanguage("en");

@@ -100,12 +100,11 @@ describe("GroupForm", () => {
       }),
     );
 
-    vi.spyOn(aironeApiClient, "getUsers").mockResolvedValue(
-      Promise.resolve([]),
-    );
-    vi.spyOn(aironeApiClient, "getGroupTrees").mockResolvedValue(
-      Promise.resolve(groups),
-    );
+    vi.spyOn(aironeApiClient, "getUsers").mockResolvedValue({
+      count: 0,
+      results: [],
+    });
+    vi.spyOn(aironeApiClient, "getGroupTrees").mockResolvedValue(groups);
 
     render(<GroupForm control={control} setValue={setValue} groupId={1} />, {
       wrapper: TestWrapper,

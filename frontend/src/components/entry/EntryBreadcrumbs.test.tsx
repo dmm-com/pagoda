@@ -24,6 +24,7 @@ const mockEntry: EntryRetrieve = {
   attrs: [],
   deletedUser: null,
   permission: ACLType.Full,
+  hasOngoingChanges: false,
 };
 
 test("should render breadcrumbs with entry", () => {

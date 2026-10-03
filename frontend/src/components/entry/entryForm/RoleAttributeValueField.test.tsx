@@ -216,7 +216,7 @@ describe("RoleAttributeValueField", () => {
   });
 
   test("renders caption in english", async () => {
-    (aironeApiClient.getRoles as vi.Mock).mockResolvedValue(roles);
+    (aironeApiClient.getRoles as Mock).mockResolvedValue(roles);
 
     await act(async () => {
       await i18n.changeLanguage("en");
