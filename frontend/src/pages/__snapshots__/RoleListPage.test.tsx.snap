@@ -108,7 +108,8 @@ exports[`RoleListPage > should match snapshot 1`] = `
                       d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
                     />
                   </svg>
-                   新規ロールを作成
+                   
+                  新規ロールを作成
                 </a>
               </div>
             </div>
@@ -345,7 +346,8 @@ exports[`RoleListPage > should match snapshot 1`] = `
                     d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
                   />
                 </svg>
-                 新規ロールを作成
+                 
+                新規ロールを作成
               </a>
             </div>
           </div>

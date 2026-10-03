@@ -1,6 +1,7 @@
 import { UserRetrieve } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { z } from "zod";
 
+import { translate } from "../../../i18n/config";
 import { schemaForType } from "../../../services/ZodSchemaUtil";
 
 interface User
@@ -11,19 +12,21 @@ interface User
 
 export const schema = schemaForType<User>()(
   z.object({
-    username: z.string().min(1, { message: "ユーザ名は必須です" }),
-    email: z
+    username: z
       .string()
-      .email("正しいメールアドレスを入力してください")
-      .optional(),
+      .min(1, { message: translate("user.form.usernameRequired") }),
+    email: z.string().email(translate("user.form.emailInvalid")).optional(),
     isSuperuser: z.boolean().default(false),
-    password: z.string().min(1, { message: "パスワードは必須です" }).optional(),
+    password: z
+      .string()
+      .min(1, { message: translate("user.form.passwordRequired") })
+      .optional(),
     tokenLifetime: z.coerce
       .number({
-        invalid_type_error: "有効期限には数値を入力してください",
+        invalid_type_error: translate("user.form.tokenLifetimeInvalid"),
       })
-      .int("整数を入力してください")
-      .min(0, { message: "0以上の秒数で入力してください" })
+      .int(translate("user.form.tokenLifetimeNotInteger"))
+      .min(0, { message: translate("user.form.tokenLifetimeMin") })
       .optional(),
   }),
 );

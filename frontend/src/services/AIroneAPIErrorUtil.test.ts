@@ -5,9 +5,12 @@ import {
   isAironeApiNonFieldsError,
   isAironeApiRootError,
   isResponseError,
+  toReportableNonFieldErrors,
   toError,
 } from "./AironeAPIErrorUtil";
 import { ForbiddenError, NotFoundError, UnknownError } from "./Exceptions";
+
+import i18n from "i18n/config";
 
 test("isAironeApiRootError should recognize an error is a root-level(same as ErrorDetail) or not", () => {
   expect(
@@ -57,6 +60,24 @@ test("isAironeApiIndexedError should recognize an error is a indexed(array) erro
   ).toBeFalsy(); // non-field error
 });
 
+test("reports nested indexed field errors from an API error", async () => {
+  const response = new Response(
+    JSON.stringify([
+      {
+        username: [{ message: "This field is required.", code: "AE-113000" }],
+        groups: [{ message: "Not a valid string.", code: "AE-121000" }],
+      },
+    ]),
+    { status: 400, headers: { "Content-Type": "application/json" } },
+  );
+
+  await expect(
+    toReportableNonFieldErrors(new ResponseError(response)),
+  ).resolves.toBe(
+    "username: This field is required., groups: Not a valid string.",
+  );
+});
+
 test("Response should be converted to an appropriate error", () => {
   expect(toError(new Response(null, { status: 403 }))).toHaveProperty(
     "name",
@@ -76,4 +97,36 @@ test("isResponseError should recognize an error is a ResponseError or not", () =
   expect(isResponseError(new ResponseError(new Response()))).toBeTruthy();
 
   expect(isResponseError(new Error("others"))).toBeFalsy();
+});
+
+describe("toReportableNonFieldErrors", () => {
+  afterEach(async () => {
+    await i18n.changeLanguage("ja");
+  });
+
+  test("translates a known error code to Japanese", async () => {
+    const response = new Response(
+      JSON.stringify({ code: "AE-210000", message: "dummy" }),
+      { status: 400 },
+    );
+    const error = new ResponseError(response);
+
+    expect(await toReportableNonFieldErrors(error)).toBe(
+      "操作に必要な権限が不足しています",
+    );
+  });
+
+  test("translates a known error code to English", async () => {
+    await i18n.changeLanguage("en");
+
+    const response = new Response(
+      JSON.stringify({ code: "AE-210000", message: "dummy" }),
+      { status: 400 },
+    );
+    const error = new ResponseError(response);
+
+    expect(await toReportableNonFieldErrors(error)).toBe(
+      "You do not have permission for this operation",
+    );
+  });
 });

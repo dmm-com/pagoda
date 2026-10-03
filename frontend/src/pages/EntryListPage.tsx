@@ -10,6 +10,7 @@ import { EntryImportModal } from "components/entry/EntryImportModal";
 import { EntryList } from "components/entry/EntryList";
 import { usePageTitle } from "hooks/usePageTitle";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
+import { useTranslation } from "hooks/useTranslation";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { TITLE_TEMPLATES } from "services";
@@ -20,6 +21,7 @@ interface Props {
 }
 
 const EntryListContent: FC<Props> = ({ canCreateEntry = true }) => {
+  const { t } = useTranslation();
   const { entityId } = useTypedParams<{ entityId: number }>();
 
   const [entityAnchorEl, setEntityAnchorEl] =
@@ -42,7 +44,7 @@ const EntryListContent: FC<Props> = ({ canCreateEntry = true }) => {
 
       <PageHeader
         title={entity.name}
-        description="アイテム一覧"
+        description={t("entry.listPage.description")}
         targetId={entity.id}
         hasOngoingProcess={entity.hasOngoingChanges}
       >

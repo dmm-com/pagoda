@@ -13,6 +13,8 @@ import {
   setCustomJobOperations,
 } from "./JobUtil";
 
+import i18n from "i18n/config";
+
 describe("JobUtil", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -47,6 +49,10 @@ describe("JobUtil", () => {
 
     test("should return 'キャンセル' for CANCELED status", () => {
       expect(jobStatusLabel(JobStatuses.CANCELED)).toBe("キャンセル");
+    });
+
+    test("should return '警告' for WARNING status", () => {
+      expect(jobStatusLabel(JobStatuses.WARNING)).toBe("警告");
     });
 
     test("should return '不明' for undefined status", () => {
@@ -223,6 +229,44 @@ describe("JobUtil", () => {
       expect(localStorage.getItem("job__latest_check_date")).toBe(
         secondDate.toISOString(),
       );
+    });
+  });
+
+  describe("English labels", () => {
+    afterEach(async () => {
+      await i18n.changeLanguage("ja");
+    });
+
+    test("should return English job status labels", async () => {
+      await i18n.changeLanguage("en");
+
+      expect(jobStatusLabel(JobStatuses.DONE)).toBe("Done");
+      expect(jobStatusLabel(JobStatuses.ERROR)).toBe("Failed");
+      expect(jobStatusLabel(undefined)).toBe("Unknown");
+    });
+
+    test("should return English job operation labels", async () => {
+      await i18n.changeLanguage("en");
+
+      expect(jobOperationLabel(JobOperations.CREATE_ENTRY)).toBe("Create");
+      expect(jobOperationLabel(JobOperations.BULK_EDIT_ENTRY)).toBe(
+        "Bulk update",
+      );
+      expect(jobOperationLabel(undefined)).toBe("Unknown");
+    });
+
+    test("should format job target label in English", async () => {
+      await i18n.changeLanguage("en");
+
+      const job = {
+        id: 1,
+        status: JobStatuses.DONE,
+        operation: JobOperations.CREATE_ENTRY,
+        target: { id: 1, name: "TestEntry", schemaId: 1, schemaName: "Entity" },
+        createdAt: new Date(),
+      } as JobSerializers;
+
+      expect(jobTargetLabel(job)).toBe("[Done/Create] TestEntry");
     });
   });
 });

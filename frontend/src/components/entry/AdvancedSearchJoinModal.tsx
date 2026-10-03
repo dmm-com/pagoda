@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from "react-router";
 
 import { AironeModal } from "components/common/AironeModal";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 import {
   extractAdvancedSearchParams,
@@ -31,6 +32,7 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
   // This is join attributes that have been already been selected before.
   const currentAttrInfo: AdvancedSearchJoinAttrInfo | undefined =
     joinAttrs.find((attr) => attr.name === targetAttrname);
@@ -92,7 +94,7 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
 
   return (
     <AironeModal
-      title={"結合するアイテムの属性名"}
+      title={t("advancedSearch.joinModal.title")}
       open={targetAttrname !== ""}
       onClose={handleClose}
     >
@@ -103,7 +105,11 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
           setSelectedAttrNames(value);
         }}
         renderInput={(params) => (
-          <TextField {...params} variant="outlined" placeholder="属性を選択" />
+          <TextField
+            {...params}
+            variant="outlined"
+            placeholder={t("advancedSearch.modal.selectAttrPlaceholder")}
+          />
         )}
         multiple
         sx={{ width: "100%", margin: "20px 0" }}
@@ -115,7 +121,7 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
           sx={{ mx: "4px" }}
           onClick={handleUpdatePageURL}
         >
-          保存
+          {t("common.save")}
         </Button>
         <Button
           variant="outlined"
@@ -123,7 +129,7 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
           sx={{ mx: "4px" }}
           onClick={handleClose}
         >
-          キャンセル
+          {t("common.cancel")}
         </Button>
       </Box>
     </AironeModal>

@@ -2,9 +2,10 @@
  */
 
 import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 
 import { TestWrapper } from "../../TestWrapper";
+import i18n from "../../i18n/config";
 import { JobOperations, JobStatuses } from "../../services/Constants";
 
 import { JobList } from "./JobList";
@@ -98,5 +99,43 @@ describe("JobList", () => {
     );
 
     expect(screen.getByText("a".repeat(300) + "...")).toBeInTheDocument();
+  });
+
+  describe("English", () => {
+    afterEach(async () => {
+      await i18n.changeLanguage("ja");
+    });
+
+    test("should show operation buttons in English", async () => {
+      await act(async () => {
+        await i18n.changeLanguage("en");
+      });
+
+      const jobs = Object.values(JobStatuses).map(
+        (status, index): JobSerializers => ({
+          id: index,
+          user: "test-user",
+          text: `status-${index}`,
+          status,
+          operation: JobOperations.CREATE_ENTRY,
+          target: {
+            id: 1,
+            name: "test",
+            schemaId: null,
+            schemaName: null,
+          },
+          createdAt: new Date(),
+          passedTime: 0,
+        }),
+      );
+
+      render(<JobList jobs={jobs} />, {
+        wrapper: TestWrapper,
+      });
+
+      expect(screen.queryAllByRole("button", { name: "Cancel" })).toHaveLength(
+        3,
+      );
+    });
   });
 });

@@ -1,10 +1,11 @@
-FROM python:3.13-bookworm
+FROM python:3.14-bookworm
 
 ENV TZ Asia/Tokyo
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
     && apt-get install -y \
+    bash-completion \
     sudo \
     vim \
     gh \
@@ -31,9 +32,23 @@ RUN mkdir -p \
     /home/airone/.npm \
     /home/airone/.cache/ms-playwright \
     /home/airone/.config \
+    /home/airone/.config/codex \
+    /home/airone/.config/vscode-user \
+    /home/airone/.vscode-server/data \
+    && ln -s /home/airone/.config/codex /home/airone/.codex \
+    && ln -s /home/airone/.config/vscode-user /home/airone/.vscode-server/data/User \
     && chown -R $USER_ID:$USER_ID /workspace /home/airone
 
 USER $USER_ID
+
+RUN printf '%s\n' \
+    '' \
+    '# Enable git and GitHub CLI completion in interactive bash shells.' \
+    'if [[ $- == *i* ]]; then' \
+    '    for completion in /usr/share/bash-completion/completions/git /usr/share/bash-completion/completions/gh; do' \
+    '        [[ -f "$completion" ]] && . "$completion"' \
+    '    done' \
+    'fi' >> ~/.bashrc
 
 # nodenv, node
 COPY .node-version ./

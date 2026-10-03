@@ -30,7 +30,7 @@ const FlagKey = {
 } as const;
 type FlagKey = (typeof FlagKey)[keyof typeof FlagKey];
 
-// windowオブジェクトの型拡張
+// Type extension for the window object
 declare global {
   interface Window {
     django_context?: Record<string, unknown>;

@@ -18,6 +18,7 @@ import { UseFormSetValue } from "react-hook-form";
 import { Schema } from "./EntryFormSchema";
 import { ReferralsAutocomplete } from "./ReferralsAutocomplete";
 
+import { useTranslation } from "hooks/useTranslation";
 import { getStagedErrorStyle } from "utils/styleUtils";
 
 const StyledList = styled(List)(({}) => ({
@@ -68,6 +69,8 @@ export const ObjectAttributeValueField: FC<
   }
 > = ({ multiple, attrId, control, setValue, isDisabled = false }) => {
   const [hasRestrictedItems, setHasRestrictedItems] = useState(false);
+  const { t } = useTranslation();
+
   const handleChange = (
     value: GetEntryAttrReferral | GetEntryAttrReferral[] | null,
   ) => {
@@ -105,10 +108,12 @@ export const ObjectAttributeValueField: FC<
   return (
     <Box>
       <StyledBox>
-        <StyledTypography variant="caption">アイテムを選択</StyledTypography>
+        <StyledTypography variant="caption">
+          {t("entryForm.objectField.selectItem")}
+        </StyledTypography>
         {hasRestrictedItems && (
           <StyledTypography variant="caption" sx={{ color: "error.main" }}>
-            （注: 権限によってアイテム表示が制限されています）
+            {t("entryForm.objectField.restrictedItemsNote")}
           </StyledTypography>
         )}
       </StyledBox>
@@ -152,6 +157,8 @@ export const NamedObjectAttributeValueField: FC<
   withBoolean,
 }) => {
   const [hasRestrictedItems, setHasRestrictedItems] = useState(false);
+  const { t } = useTranslation();
+
   const handleChange = (
     value: GetEntryAttrReferral | GetEntryAttrReferral[] | null,
   ) => {
@@ -211,7 +218,9 @@ export const NamedObjectAttributeValueField: FC<
       </FlexBox>
       {withBoolean === true && (
         <BooleanBox>
-          <StyledTypography variant="caption">使用不可</StyledTypography>
+          <StyledTypography variant="caption">
+            {t("entryForm.objectField.disabled")}
+          </StyledTypography>
           <Controller
             name={`attrs.${attrId}.value.asArrayNamedObject.${index}._boolean`}
             control={control}
@@ -226,10 +235,12 @@ export const NamedObjectAttributeValueField: FC<
       )}
       <Box flexGrow={1}>
         <Box display="flex" alignItems="center" gap={1}>
-          <StyledTypography variant="caption">アイテムを選択</StyledTypography>
+          <StyledTypography variant="caption">
+            {t("entryForm.objectField.selectItem")}
+          </StyledTypography>
           {hasRestrictedItems && (
             <StyledTypography variant="caption" sx={{ color: "error.main" }}>
-              （注: 権限によってアイテム表示が制限されています）
+              {t("entryForm.objectField.restrictedItemsNote")}
             </StyledTypography>
           )}
         </Box>

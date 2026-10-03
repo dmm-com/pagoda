@@ -19,6 +19,8 @@ import { AironeModal } from "../../common/AironeModal";
 
 import { Schema } from "./EntityFormSchema";
 
+import { useTranslation } from "hooks/useTranslation";
+
 const StyledTable = styled(Table)(({}) => ({
   "& td": {
     height: "72px",
@@ -39,6 +41,7 @@ export const WebhookHeadersModal: FC<Props> = ({
   handleCloseModal,
   control,
 }) => {
+  const { t } = useTranslation();
   const { fields, insert, remove, replace } = useFieldArray({
     control,
     name: `webhooks.${webhookIndex}.headers`,
@@ -80,9 +83,7 @@ export const WebhookHeadersModal: FC<Props> = ({
   return (
     <AironeModal
       title={"AdditionalHeader (Optional)"}
-      caption={
-        "指定した endpoint URL に送るリクエストに付加するヘッダ情報を入力してください。"
-      }
+      caption={t("entity.form.webhookHeadersCaption")}
       open={webhookIndex >= 0}
       onClose={handleCloseModal}
     >
@@ -181,7 +182,7 @@ export const WebhookHeadersModal: FC<Props> = ({
 
       <Box sx={{ width: "92%" }}>
         <Button onClick={handleCloseModal}>
-          <Typography align="right">閉じる</Typography>
+          <Typography align="right">{t("common.close")}</Typography>
         </Button>
       </Box>
     </AironeModal>

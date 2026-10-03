@@ -1,14 +1,16 @@
 import { FC } from "react";
 
 import { ErrorPageBase } from "../components/common/ErrorPageBase";
+import { useTranslation } from "../hooks/useTranslation";
 
 export const UnavailableErrorPage: FC = () => {
+  const { t } = useTranslation();
   return (
     <ErrorPageBase
-      title="利用できません:;(∩´﹏`∩);:"
+      title={t("errorPage.unavailable.title")}
       description={[
-        "このページは現在、利用ができません。",
-        "管理者からのお知らせをご覧いただくか、お問合せください。",
+        t("errorPage.unavailable.description1"),
+        t("errorPage.unavailable.description2"),
       ]}
     />
   );

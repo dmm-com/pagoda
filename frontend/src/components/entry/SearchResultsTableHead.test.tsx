@@ -6,12 +6,13 @@ import {
   EntryAttributeTypeTypeEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Table, TableContainer } from "@mui/material";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { useLocation, useNavigate } from "react-router";
 
 import { SearchResultsTableHead } from "./SearchResultsTableHead";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 
 // Mock react-router hooks
 vi.mock("react-router", async () => ({
@@ -128,6 +129,19 @@ describe("SearchResultsTableHead", () => {
     renderSearchResultsTableHead({ hasReferral: true });
     expect(screen.getByText("参照アイテム")).toBeInTheDocument();
     expect(screen.getByLabelText("参照アイテムでフィルタ")).toBeInTheDocument();
+  });
+
+  test("renders in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+    renderSearchResultsTableHead({ hasReferral: true });
+    expect(screen.getByText("Item name")).toBeInTheDocument();
+    expect(screen.getByLabelText("Filter by item name")).toBeInTheDocument();
+    expect(screen.getByText("Referral item")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Filter by referral item"),
+    ).toBeInTheDocument();
   });
 
   test("should hide filter controls in readonly mode", () => {

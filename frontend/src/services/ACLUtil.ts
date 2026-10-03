@@ -1,3 +1,5 @@
+import { translate } from "../i18n/config";
+
 export const ACLType = {
   Nothing: 1,
   Readable: 2,
@@ -6,11 +8,20 @@ export const ACLType = {
 } as const;
 export type ACLType = (typeof ACLType)[keyof typeof ACLType];
 
+// Getters resolve the label in the current language on each access.
 export const ACLTypeLabels: Record<ACLType, string> = {
-  [ACLType.Nothing]: "権限なし",
-  [ACLType.Readable]: "閲覧",
-  [ACLType.Writable]: "閲覧・編集",
-  [ACLType.Full]: "閲覧・編集・削除",
+  get [ACLType.Nothing]() {
+    return translate("acl.type.nothing");
+  },
+  get [ACLType.Readable]() {
+    return translate("acl.type.readable");
+  },
+  get [ACLType.Writable]() {
+    return translate("acl.type.writable");
+  },
+  get [ACLType.Full]() {
+    return translate("acl.type.full");
+  },
 };
 
 /**

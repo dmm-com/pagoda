@@ -1,11 +1,12 @@
 /**
  */
 
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 
 import { CategoryControlMenu } from "./CategoryControlMenu";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 import { ACLType } from "services/ACLUtil";
 
 describe("CategoryControlMenu", () => {
@@ -131,5 +132,24 @@ describe("CategoryControlMenu", () => {
         expect(screen.getByText("削除")).toBeInTheDocument();
       });
     });
+  });
+
+  test("renders in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    render(
+      <CategoryControlMenu
+        categoryId={1}
+        anchorElem={document.createElement("button")}
+        handleClose={vi.fn()}
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByText("Edit")).toBeInTheDocument();
+    expect(screen.getByText("ACL settings")).toBeInTheDocument();
+    expect(screen.getByText("Delete")).toBeInTheDocument();
   });
 });

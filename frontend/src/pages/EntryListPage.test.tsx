@@ -9,6 +9,7 @@ import { createMemoryRouter, RouterProvider } from "react-router";
 import { EntryListPage } from "./EntryListPage";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
+import i18n from "i18n/config";
 import { entityEntriesPath } from "routes/Routes";
 import { ACLType } from "services/ACLUtil";
 
@@ -90,5 +91,34 @@ describe("EntryListPage", () => {
     });
 
     expect(result).toMatchSnapshot();
+  });
+
+  test("renders in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    const router = createMemoryRouter(
+      [
+        {
+          path: entityEntriesPath(":entityId"),
+          element: <EntryListPage />,
+        },
+      ],
+      {
+        initialEntries: ["/ui/entities/1/entries"],
+      },
+    );
+    await act(async () => {
+      render(<RouterProvider router={router} />, {
+        wrapper: TestWrapperWithoutRoutes,
+      });
+    });
+    await waitFor(() => {
+      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    });
+
+    expect(screen.getByText("Entry list")).toBeInTheDocument();
+    expect(screen.getByText("Create new entry")).toBeInTheDocument();
   });
 });

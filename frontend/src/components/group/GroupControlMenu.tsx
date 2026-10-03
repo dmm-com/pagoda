@@ -11,6 +11,7 @@ import { FC, useCallback } from "react";
 import { Link } from "react-router";
 
 import { Confirmable } from "components/common/Confirmable";
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { groupPath } from "routes/Routes";
 
@@ -28,21 +29,22 @@ export const GroupControlMenu: FC<Props> = ({
   setToggle,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
+  const { t } = useTranslation();
 
   const handleDelete = useCallback(async () => {
     try {
       await aironeApiClient.deleteGroup(groupId);
       handleClose();
-      enqueueSnackbar(`グループの削除が完了しました`, {
+      enqueueSnackbar(t("group.controlMenu.deleteSuccess"), {
         variant: "success",
       });
       setToggle && setToggle();
     } catch (e) {
-      enqueueSnackbar("グループの削除が失敗しました", {
+      enqueueSnackbar(t("group.controlMenu.deleteFailure"), {
         variant: "error",
       });
     }
-  }, [enqueueSnackbar, groupId, handleClose, setToggle]);
+  }, [enqueueSnackbar, groupId, handleClose, setToggle, t]);
 
   return (
     <Menu
@@ -59,18 +61,18 @@ export const GroupControlMenu: FC<Props> = ({
       }}
     >
       <MenuItem component={Link} to={groupPath(groupId)}>
-        <Typography>グループ編集</Typography>
+        <Typography>{t("group.controlMenu.editGroup")}</Typography>
       </MenuItem>
       <Confirmable
         componentGenerator={(handleOpen) => (
           <MenuItem onClick={handleOpen} sx={{ justifyContent: "end" }}>
-            <ListItemText>削除</ListItemText>
+            <ListItemText>{t("common.delete")}</ListItemText>
             <ListItemIcon>
               <DeleteOutlineIcon />
             </ListItemIcon>
           </MenuItem>
         )}
-        dialogTitle="本当に削除しますか？"
+        dialogTitle={t("group.controlMenu.deleteConfirm")}
         onClickYes={handleDelete}
       />
     </Menu>

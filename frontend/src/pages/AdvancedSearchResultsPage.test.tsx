@@ -12,6 +12,7 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 import {
   AdvancedSearchResultsPage,
   getDisplayedSearchResultCount,
@@ -116,4 +117,28 @@ test("should match snapshot", async () => {
   });
 
   expect(result).toMatchSnapshot();
+});
+
+test("renders in English", async () => {
+  // "should match snapshot" (which runs before this test in this file)
+  // already defines window.django_context as a non-writable property.
+  await act(async () => {
+    await i18n.changeLanguage("en");
+  });
+
+  await act(async () => {
+    render(<AdvancedSearchResultsPage />, {
+      wrapper: TestWrapper,
+    });
+  });
+  await waitFor(() => {
+    expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+  });
+
+  expect(screen.getAllByText("Search results").length).toBeGreaterThan(0);
+  expect(screen.getAllByText("Advanced Search").length).toBeGreaterThan(0);
+  expect(screen.getByText("Reset attributes")).toBeInTheDocument();
+  expect(screen.getByText("Export YAML")).toBeInTheDocument();
+  expect(screen.getByText("Export CSV")).toBeInTheDocument();
+  expect(screen.getByText("Bulk delete")).toBeInTheDocument();
 });

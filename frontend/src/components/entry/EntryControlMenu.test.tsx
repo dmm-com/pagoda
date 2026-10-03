@@ -1,10 +1,17 @@
 /**
  */
 
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import {
+  act,
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+} from "@testing-library/react";
 
 import { TestWrapper } from "TestWrapper";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
+import i18n from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { ACLType } from "services/ACLUtil";
 
@@ -57,6 +64,22 @@ describe("EntryControlMenu", () => {
       expect(screen.getByText("変更履歴")).toBeInTheDocument();
       expect(screen.getByText("ACL 変更履歴")).toBeInTheDocument();
       expect(screen.getByText("削除")).toBeInTheDocument();
+    });
+
+    test("renders in English", async () => {
+      await act(async () => {
+        await i18n.changeLanguage("en");
+      });
+
+      render(<EntryControlMenu {...defaultProps} />, { wrapper: TestWrapper });
+
+      expect(screen.getByText("Details")).toBeInTheDocument();
+      expect(screen.getByText("Edit")).toBeInTheDocument();
+      expect(screen.getByText("Copy")).toBeInTheDocument();
+      expect(screen.getByText("ACL settings")).toBeInTheDocument();
+      expect(screen.getByText("Change History")).toBeInTheDocument();
+      expect(screen.getByText("ACL change history")).toBeInTheDocument();
+      expect(screen.getByText("Delete")).toBeInTheDocument();
     });
 
     test("anchorElem is null, menu is closed", () => {

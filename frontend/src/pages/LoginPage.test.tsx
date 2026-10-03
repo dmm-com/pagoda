@@ -1,11 +1,14 @@
 /**
  */
 
-import { render, screen, fireEvent } from "@testing-library/react";
+import { act, render, screen, fireEvent } from "@testing-library/react";
 
 import { LoginPage } from "./LoginPage";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
+
+const loginContext = vi.hoisted(() => ({ next: "/ui/" }));
 
 // Mock ServerContext
 vi.mock("../services/ServerContext", () => ({
@@ -13,7 +16,7 @@ vi.mock("../services/ServerContext", () => ({
     getInstance: () => ({
       title: "AirOne",
       subTitle: "Test Subtitle",
-      loginNext: "/ui/",
+      loginNext: loginContext.next,
       checkTermService: false,
       termsOfServiceUrl: "https://example.com/terms",
       singleSignOnLoginUrl: null,
@@ -33,6 +36,7 @@ vi.mock("../repository/AironeApiClient", () => ({
 
 afterEach(() => {
   vi.clearAllMocks();
+  loginContext.next = "/ui/";
 });
 
 describe("LoginPage", () => {
@@ -84,6 +88,16 @@ describe("LoginPage", () => {
       render(<LoginPage />, { wrapper: TestWrapper });
 
       expect(screen.queryByText("SSO ログイン")).not.toBeInTheDocument();
+    });
+
+    test("should render password reset link in English", async () => {
+      await act(async () => {
+        await i18n.changeLanguage("en");
+      });
+
+      render(<LoginPage />, { wrapper: TestWrapper });
+
+      expect(screen.getByText("Password reset")).toBeInTheDocument();
     });
   });
 
@@ -165,5 +179,33 @@ describe("LoginPage", () => {
       const loginButton = screen.getByRole("button", { name: "Login" });
       expect(loginButton).toHaveAttribute("type", "submit");
     });
+  });
+});
+
+describe("iframe login", () => {
+  test("opens login in a separate tab with a completion destination", () => {
+    loginContext.next = "/ui/iframe/?example=1";
+    render(<LoginPage />, { wrapper: TestWrapper });
+    const link = screen.getByRole("link", { name: "別タブでログイン" });
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    const url = new URL(link.getAttribute("href")!, window.location.origin);
+    expect(url.searchParams.get("next")).toBe("/ui/iframe/login-complete/");
+    expect(screen.queryByLabelText("Password")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "再読み込み" }),
+    ).toBeInTheDocument();
+  });
+
+  test("shows the normal form in the separate login tab", () => {
+    loginContext.next = "/ui/iframe/login-complete/";
+    render(<LoginPage />, { wrapper: TestWrapper });
+    expect(screen.getByLabelText("Password")).toBeInTheDocument();
+    expect(document.querySelector('input[name="next"]')).toHaveValue(
+      loginContext.next,
+    );
+    expect(
+      screen.queryByRole("link", { name: "別タブでログイン" }),
+    ).not.toBeInTheDocument();
   });
 });
