@@ -23,6 +23,7 @@ import { PageHeader } from "components/common/PageHeader";
 import { SearchBox } from "components/common/SearchBox";
 import { usePageTitle } from "hooks/usePageTitle";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { newGroupPath, topPath } from "routes/Routes";
 import { TITLE_TEMPLATES } from "services";
@@ -46,6 +47,7 @@ const UserListPanel = styled(Box)(({ theme }) => ({
 }));
 
 const GroupListContent: FC = () => {
+  const { t } = useTranslation();
   const [keyword, setKeyword] = useState("");
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
   const [groupAnchorEls, setGroupAnchorEls] = useState<{
@@ -90,9 +92,7 @@ const GroupListContent: FC = () => {
     >
       <Box flex={1}>
         <StyledContainer>
-          <Typography>
-            選択したいグループにチェックマークを入れてください。
-          </Typography>
+          <Typography>{t("group.list.selectHelp")}</Typography>
           <Divider sx={{ mt: "16px" }} />
           <GroupTreeRoot
             groupTrees={groupTrees}
@@ -112,9 +112,13 @@ const GroupListContent: FC = () => {
       </Box>
 
       <UserListPanel>
-        <Typography>属するユーザ(計 {usersInGroup?.length ?? 0})</Typography>
+        <Typography>
+          {t("group.list.memberCount", {
+            count: usersInGroup?.length ?? 0,
+          })}
+        </Typography>
         <SearchBox
-          placeholder="ユーザを絞り込む"
+          placeholder={t("group.list.searchPlaceholder")}
           value={keyword}
           onChange={(e) => {
             setKeyword(e.target.value);
@@ -134,6 +138,7 @@ const GroupListContent: FC = () => {
 };
 
 export const GroupListPage: FC = () => {
+  const { t } = useTranslation();
   const [openImportModal, setOpenImportModal] = useState(false);
 
   const handleExport = useCallback(async () => {
@@ -151,17 +156,17 @@ export const GroupListPage: FC = () => {
         <Typography component={AironeLink} to={topPath()}>
           Top
         </Typography>
-        <Typography color="textPrimary">グループ管理</Typography>
+        <Typography color="textPrimary">{t("group.list.pageTitle")}</Typography>
       </AironeBreadcrumbs>
 
-      <PageHeader title="グループ管理">
+      <PageHeader title={t("group.list.pageTitle")}>
         <Button
           variant="contained"
           color="info"
           sx={{ margin: "0 4px" }}
           onClick={handleExport}
         >
-          エクスポート
+          {t("common.export")}
         </Button>
         <Button
           variant="contained"
@@ -170,7 +175,7 @@ export const GroupListPage: FC = () => {
           onClick={() => setOpenImportModal(true)}
           disabled={isReadonly}
         >
-          インポート
+          {t("common.import")}
         </Button>
         <GroupImportModal
           openImportModal={openImportModal}
@@ -184,7 +189,7 @@ export const GroupListPage: FC = () => {
           to={newGroupPath()}
           sx={{ height: "48px", borderRadius: "24px", ml: "16px" }}
         >
-          <AddIcon /> 新規グループを作成
+          <AddIcon /> {t("group.list.createNew")}
         </Button>
       </PageHeader>
 

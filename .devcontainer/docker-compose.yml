@@ -33,6 +33,8 @@ services:
       # authenticating again. Not shared with the host, because the host config
       # may belong to another platform.
       - config:/home/airone/.config
+      # The Dockerfile links ~/.codex and ~/.vscode-server/data/User into
+      # this volume to retain Codex state and remote VS Code extension storage.
 
 volumes:
   venv:

@@ -10,6 +10,7 @@ import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
 import { usePage } from "hooks/usePage";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
+import { useTranslation } from "hooks/useTranslation";
 import { ServerContext } from "index";
 import { aironeApiClient } from "repository";
 import { entityEntriesPath, newCategoryPath } from "routes/Routes";
@@ -17,6 +18,7 @@ import { EntityListParam } from "services/Constants";
 import { normalizeToMatch } from "services/StringUtil";
 
 const CategoryListContent: FC = () => {
+  const { t } = useTranslation();
   const { page, query, changeQuery, changePage } = usePage();
 
   const isReadonly = ServerContext.getInstance()?.user?.isReadonly ?? false;
@@ -38,7 +40,7 @@ const CategoryListContent: FC = () => {
       <Box display="flex" justifyContent="space-between" mb="16px">
         <Box width="600px">
           <SearchBox
-            placeholder="カテゴリを絞り込む"
+            placeholder={t("category.list.searchPlaceholder")}
             defaultValue={query}
             onKeyPress={(e) => {
               e.key === "Enter" &&
@@ -56,7 +58,8 @@ const CategoryListContent: FC = () => {
           sx={{ height: "48px", borderRadius: "24px" }}
           disabled={isReadonly}
         >
-          <AddIcon /> 新規カテゴリを作成
+          <AddIcon />
+          {t("category.list.createButton")}
         </Button>
       </Box>
 

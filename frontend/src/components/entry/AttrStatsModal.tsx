@@ -22,6 +22,8 @@ import {
 import { FC, useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router";
 
+import { useTranslation } from "hooks/useTranslation";
+import { translate } from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { extractAdvancedSearchParams } from "services/entry/AdvancedSearch";
 
@@ -94,6 +96,7 @@ export const AttrStatsModal: FC<Props> = ({
   attrType,
   totalCount,
 }) => {
+  const { t } = useTranslation();
   const location = useLocation();
   const [counts, setCounts] = useState<Map<string, number>>(new Map());
   const [loadedCount, setLoadedCount] = useState(0);
@@ -158,7 +161,9 @@ export const AttrStatsModal: FC<Props> = ({
           for (const row of results.values) {
             const attr = row.attrs[attrname];
             if (!attr || !attr.isReadable) continue;
-            const key = attrValueToKey(attr.value, attrType) || "(空白)";
+            const key =
+              attrValueToKey(attr.value, attrType) ||
+              translate("entry.attrStats.blank");
             next.set(key, (next.get(key) ?? 0) + 1);
           }
           return next;
@@ -199,7 +204,7 @@ export const AttrStatsModal: FC<Props> = ({
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
-        「{attrname}」の集計
+        {t("entry.attrStats.title", { attrname })}
         <IconButton
           onClick={onClose}
           sx={{ position: "absolute", right: 8, top: 8 }}
@@ -213,7 +218,7 @@ export const AttrStatsModal: FC<Props> = ({
             sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}
           >
             <Typography variant="caption" color="text.secondary">
-              {displayedCount} / {totalCount} 件
+              {t("entry.attrStats.progress", { displayedCount, totalCount })}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               {progress}%
@@ -226,7 +231,7 @@ export const AttrStatsModal: FC<Props> = ({
           />
           {loadFailed && (
             <Typography variant="caption" color="error">
-              集計に失敗しました
+              {t("entry.attrStats.loadFailed")}
             </Typography>
           )}
         </Box>
@@ -234,8 +239,10 @@ export const AttrStatsModal: FC<Props> = ({
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell>値</TableCell>
-                <TableCell align="right">件数</TableCell>
+                <TableCell>{t("entry.attrStats.valueHeader")}</TableCell>
+                <TableCell align="right">
+                  {t("entry.attrStats.countHeader")}
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

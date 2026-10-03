@@ -52,6 +52,17 @@ class Common(Configuration):  # type: ignore[misc]
 
     ALLOWED_HOSTS = ["*"]
 
+    # https://github.com/adamchainz/django-cors-headers
+    # No origins are allowed by default; set AIRONE_CORS_ALLOWED_ORIGINS to a
+    # comma-separated list of origins (e.g. "https://example.com,https://foo.example.com")
+    # to enable cross-origin requests from those hosts.
+    CORS_ALLOWED_ORIGINS = env.list("AIRONE_CORS_ALLOWED_ORIGINS", default=[])
+    CORS_ALLOW_CREDENTIALS = env.bool("AIRONE_CORS_ALLOW_CREDENTIALS", False)
+    CORS_ALLOW_METHODS = env.list(
+        "AIRONE_CORS_ALLOW_METHODS",
+        default=["DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT"],
+    )
+
     # Application definition
 
     # Plugin system configuration
@@ -80,6 +91,7 @@ class Common(Configuration):  # type: ignore[misc]
         "rest_framework.authtoken",
         "drf_spectacular",
         "django_filters",
+        "corsheaders",
         "social_django",
         "simple_history",
         "storages",
@@ -103,8 +115,11 @@ class Common(Configuration):  # type: ignore[misc]
             INSTALLED_APPS.insert(job_index, plugin_module)
             job_index += 1  # Keep job at the same relative position
 
+    IFRAME_ALLOWED_ORIGINS = env.list("AIRONE_IFRAME_ALLOWED_ORIGINS", default=[])
+
     MIDDLEWARE = [
         "django.middleware.security.SecurityMiddleware",
+        "corsheaders.middleware.CorsMiddleware",
         "whitenoise.middleware.WhiteNoiseMiddleware",
         "airone.middleware.log.LoggingRequestMiddleware",
         "django.contrib.sessions.middleware.SessionMiddleware",
@@ -112,6 +127,8 @@ class Common(Configuration):  # type: ignore[misc]
         "django.middleware.csrf.CsrfViewMiddleware",
         "django.contrib.auth.middleware.AuthenticationMiddleware",
         "django.contrib.messages.middleware.MessageMiddleware",
+        # Responses run in reverse order: adjust framing after the default protection.
+        "airone.middleware.iframe.IframePolicyMiddleware",
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
         "social_django.middleware.SocialAuthExceptionMiddleware",
         "airone.lib.multidb.AironePinningRouterMiddleware",
@@ -159,6 +176,9 @@ class Common(Configuration):  # type: ignore[misc]
     # The lite dev server speaks plain HTTP on localhost; leaving this on would
     # make the browser drop the session cookie and every login silently fail.
     SESSION_COOKIE_SECURE = env.bool("AIRONE_SSL_ENABLE", not LITE)
+
+    # Set AIRONE_SESSION_COOKIE_SAMESITE to Lax, Strict, or the string None.
+    SESSION_COOKIE_SAMESITE = env.str("AIRONE_SESSION_COOKIE_SAMESITE", "Lax")
 
     # https://docs.djangoproject.com/en/3.2/ref/middleware/#http-strict-transport-security
     SECURE_HSTS_PRELOAD = True
@@ -382,12 +402,13 @@ class Common(Configuration):  # type: ignore[misc]
             # do nothing and use 'unknown' as version when git does not exists
             logging.getLogger(__name__).warning("git command not found.")
 
+    _es_default_index = "airone-%s" % devmode.namespace() if LITE else "airone"
     ES_CONFIG = env.search_url(
         "AIRONE_ELASTICSEARCH_URL",
-        "elasticsearch://airone:password@localhost:9200/airone-%s" % devmode.namespace()
-        if LITE
-        else "elasticsearch://airone:password@localhost:9200/airone",
+        f"elasticsearch://airone:password@localhost:9200/{_es_default_index}",
     )
+    _es_hosts = env.list("AIRONE_ELASTICSEARCH_HOSTS", default=[])
+    ES_CONFIG["URL"] = _es_hosts or [ES_CONFIG["URL"]]
     ES_CONFIG.update(
         {
             "MAXIMUM_RESULTS_NUM": 500000,

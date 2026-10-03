@@ -16,6 +16,7 @@ import { Schema, schema } from "./categoryForm/CategoryFormSchema";
 
 import { TestWrapper } from "TestWrapper";
 import * as usePagodaSWRModule from "hooks/usePagodaSWR";
+import i18n from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { ACLType } from "services/ACLUtil";
 
@@ -291,5 +292,39 @@ describe("CategoryForm", () => {
     expect(screen.queryByText("モデル1")).not.toBeInTheDocument();
     expect(screen.queryByText("モデル2")).not.toBeInTheDocument();
     expect(screen.queryByText("モデル3")).not.toBeInTheDocument();
+  });
+
+  test("renders in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    vi.spyOn(aironeApiClient, "getEntities").mockResolvedValue(mockEntities);
+
+    const { result } = renderHook(() =>
+      useForm<Schema>({
+        resolver: zodResolver(schema),
+        mode: "onBlur",
+        defaultValues,
+      }),
+    );
+
+    await act(async () => {
+      render(
+        <CategoryForm
+          control={result.current.control}
+          setValue={result.current.setValue}
+        />,
+        { wrapper: TestWrapper },
+      );
+    });
+
+    expect(screen.getByText("Category name")).toBeInTheDocument();
+    expect(screen.getByText("Note")).toBeInTheDocument();
+    expect(
+      screen.getByText("Registered models (multiple allowed)"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Display priority")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Select models")).toBeInTheDocument();
   });
 });

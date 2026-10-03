@@ -6,6 +6,7 @@ import { FC, useMemo, useState } from "react";
 import { aironeApiClient } from "../../repository/AironeApiClient";
 import { AironeModal } from "../common/AironeModal";
 
+import { useTranslation } from "hooks/useTranslation";
 import { ServerContext } from "services/ServerContext";
 
 const PasswordField = styled(Box)(({ theme }) => ({
@@ -42,6 +43,7 @@ export const UserPasswordFormModal: FC<Props> = ({
   onSubmitSuccess,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
+  const { t } = useTranslation();
   // const navigate = useNavigate();
 
   const [oldPassword, setOldPassword] = useState("");
@@ -77,23 +79,24 @@ export const UserPasswordFormModal: FC<Props> = ({
       }
       onSubmitSuccess?.();
     } catch (e) {
-      enqueueSnackbar(
-        "パスワードリセットに失敗しました。入力項目を見直してください",
-        {
-          variant: "error",
-        },
-      );
+      enqueueSnackbar(t("user.passwordFormModal.resetFailure"), {
+        variant: "error",
+      });
       // TODO show error causes
     }
   };
 
   return (
-    <AironeModal title={"パスワード編集"} open={openModal} onClose={onClose}>
+    <AironeModal
+      title={t("user.passwordFormModal.title")}
+      open={openModal}
+      onClose={onClose}
+    >
       {!asSuperuser && (
         <PasswordField>
           <Box>
             <PasswordFieldLabel>
-              今まで使用していたパスワードをご入力ください。
+              {t("user.passwordFormModal.oldPasswordLabel")}
             </PasswordFieldLabel>
           </Box>
           <PasswordFieldInput
@@ -109,7 +112,7 @@ export const UserPasswordFormModal: FC<Props> = ({
       <PasswordField>
         <Box>
           <PasswordFieldLabel>
-            新しいパスワードをご入力ください。
+            {t("user.passwordFormModal.newPasswordLabel")}
           </PasswordFieldLabel>
         </Box>
         <PasswordFieldInput
@@ -123,7 +126,7 @@ export const UserPasswordFormModal: FC<Props> = ({
       <PasswordField>
         <Box>
           <PasswordFieldLabel>
-            確認のためもう一度、新しいパスワードをご入力ください。
+            {t("user.passwordFormModal.confirmPasswordLabel")}
           </PasswordFieldLabel>
         </Box>
         <PasswordFieldInput
@@ -132,9 +135,7 @@ export const UserPasswordFormModal: FC<Props> = ({
           type="password"
           placeholder="Confirm new password"
           value={checkPassword}
-          helperText={
-            isUnmatch ? "新しいパスワードと、入力内容が一致しません" : ""
-          }
+          helperText={isUnmatch ? t("user.passwordFormModal.mismatch") : ""}
           onChange={(e) => {
             setCheckPassword(e.target.value);
             setIsUnmatch(false);
@@ -157,7 +158,7 @@ export const UserPasswordFormModal: FC<Props> = ({
           onClick={handleSubmit}
           sx={{ m: 1 }}
         >
-          保存
+          {t("common.save")}
         </Button>
         <Button
           type="submit"
@@ -166,7 +167,7 @@ export const UserPasswordFormModal: FC<Props> = ({
           onClick={onClose}
           sx={{ m: 1 }}
         >
-          キャンセル
+          {t("common.cancel")}
         </Button>
       </Buttons>
     </AironeModal>

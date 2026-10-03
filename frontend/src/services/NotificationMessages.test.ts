@@ -1,5 +1,7 @@
 import { NotificationMessages } from "./NotificationMessages";
 
+import i18n from "i18n/config";
+
 describe("NotificationMessages", () => {
   describe("jobRegistered", () => {
     test("should include operation name", () => {
@@ -75,6 +77,39 @@ describe("NotificationMessages", () => {
     test("should include detail when provided", () => {
       expect(NotificationMessages.uploadFailed("サイズ超過")).toBe(
         "ファイルのアップロードに失敗しました: サイズ超過",
+      );
+    });
+  });
+
+  describe("English messages", () => {
+    afterEach(async () => {
+      await i18n.changeLanguage("ja");
+    });
+
+    test("jobCompleted should include label in English", async () => {
+      await i18n.changeLanguage("en");
+
+      expect(NotificationMessages.jobCompleted("Test job")).toBe(
+        "Test job completed",
+      );
+    });
+
+    test("operationCompleted should include target and operation names in English", async () => {
+      await i18n.changeLanguage("en");
+
+      expect(NotificationMessages.operationCompleted("Entry", "Create")).toBe(
+        "Create Entry completed.",
+      );
+    });
+
+    test("uploadFailed should show English message with detail", async () => {
+      await i18n.changeLanguage("en");
+
+      expect(NotificationMessages.uploadFailed()).toBe(
+        "Failed to upload the file",
+      );
+      expect(NotificationMessages.uploadFailed("too large")).toBe(
+        "Failed to upload the file: too large",
       );
     });
   });

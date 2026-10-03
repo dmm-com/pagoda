@@ -1,5 +1,7 @@
 import { ResponseError } from "@dmm-com/airone-apiclient-typescript-fetch";
 
+import { TranslationKey, translate } from "../i18n/config";
+
 import { ForbiddenError, NotFoundError, UnknownError } from "./Exceptions";
 
 type ErrorDetail = {
@@ -59,17 +61,18 @@ export function isAironeApiIndexedError(
 }
 
 // https://github.com/dmm-com/airone/wiki/(Blueprint)-AirOne-API-Error-code-mapping
-const aironeAPIErrors: Record<string, string> = {
-  "AE-122000": "入力データが大きすぎます",
-  "AE-210000": "操作に必要な権限が不足しています",
-  "AE-220000": "入力データが既存のデータと重複しています",
-  "AE-240000":
-    "紐づくアイテムが残っているため削除できません。先に全てのアイテムを削除してください。",
-  "AE-260000": "短期間に同じターゲットに対してインポートが発生しました",
+const aironeAPIErrors: Record<string, TranslationKey> = {
+  "AE-122000": "apiError.AE-122000",
+  "AE-210000": "apiError.AE-210000",
+  "AE-220000": "apiError.AE-220000",
+  "AE-240000": "apiError.AE-240000",
+  "AE-260000": "apiError.AE-260000",
 };
 
-const extractErrorDetail = (errorDetail: ErrorDetail): string =>
-  aironeAPIErrors[errorDetail.code] ?? errorDetail.message;
+const extractErrorDetail = (errorDetail: ErrorDetail): string => {
+  const key = aironeAPIErrors[errorDetail.code];
+  return key != null ? translate(key) : errorDetail.message;
+};
 
 export const toReportableNonFieldErrors = async (
   error: ResponseError,
@@ -96,17 +99,26 @@ export const toReportableNonFieldErrors = async (
       .join(", ");
   }
 
-  const fieldErrors = Object.values(jsonError as Record<string, unknown>)
-    .flatMap((details) => (Array.isArray(details) ? details : []))
-    .filter(
-      (detail): detail is ErrorDetail =>
-        typeof detail === "object" &&
-        detail != null &&
-        "message" in detail &&
-        typeof detail.message === "string",
-    );
+  const fieldErrors = (
+    Array.isArray(jsonError) ? jsonError : [jsonError]
+  ).flatMap((item) =>
+    Object.entries(item as Record<string, unknown>).flatMap(
+      ([field, details]) =>
+        Array.isArray(details)
+          ? details
+              .filter(
+                (detail): detail is ErrorDetail =>
+                  typeof detail === "object" &&
+                  detail != null &&
+                  "message" in detail &&
+                  typeof detail.message === "string",
+              )
+              .map((detail) => field + ": " + extractErrorDetail(detail))
+          : [],
+    ),
+  );
   if (fieldErrors.length > 0) {
-    return fieldErrors.map((detail) => extractErrorDetail(detail)).join(", ");
+    return fieldErrors.join(", ");
   }
 
   return null;

@@ -14,6 +14,8 @@ import { Control, Controller, useFieldArray, useWatch } from "react-hook-form";
 
 import { Schema } from "./EntityFormSchema";
 
+import { useTranslation } from "hooks/useTranslation";
+
 interface Props {
   control: Control<Schema>;
   index: number;
@@ -25,6 +27,7 @@ export const ChoicesEditor: FC<Props> = ({
   index,
   disabled = false,
 }) => {
+  const { t } = useTranslation();
   // useFieldArray operates over choice rows; each row may carry a server-assigned
   // `value` (internal id) which is hidden from the UI. New rows are appended
   // without a value and the backend auto-assigns it on save.
@@ -50,7 +53,7 @@ export const ChoicesEditor: FC<Props> = ({
   return (
     <Box>
       <Typography variant="caption" color="textSecondary">
-        選択肢
+        {t("entity.form.choicesLabel")}
       </Typography>
       <Stack spacing={1} mt={0.5}>
         {fields.map((field, i) => {
@@ -70,7 +73,7 @@ export const ChoicesEditor: FC<Props> = ({
                 render={({ field: f, fieldState: { error } }) => (
                   <TextField
                     {...f}
-                    placeholder="選択肢の表示名"
+                    placeholder={t("entity.form.choiceDisplayNamePlaceholder")}
                     size="small"
                     fullWidth
                     disabled={disabled}
@@ -80,11 +83,7 @@ export const ChoicesEditor: FC<Props> = ({
                 )}
               />
               <Tooltip
-                title={
-                  isUsed
-                    ? "この選択肢は既存のアイテムで使用中のため削除できません"
-                    : ""
-                }
+                title={isUsed ? t("entity.form.choiceInUseTooltip") : ""}
               >
                 <span>
                   <IconButton
@@ -107,7 +106,7 @@ export const ChoicesEditor: FC<Props> = ({
         disabled={disabled}
         sx={{ mt: 1 }}
       >
-        選択肢を追加
+        {t("entity.form.addChoiceButton")}
       </Button>
     </Box>
   );

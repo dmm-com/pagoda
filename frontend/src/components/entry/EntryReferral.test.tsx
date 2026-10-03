@@ -14,6 +14,7 @@ import type { Mock } from "vitest";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
 import { EntryReferral } from "components/entry/EntryReferral";
+import i18n from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 // Mock API client
@@ -192,6 +193,19 @@ describe("EntryReferral", () => {
       expect(
         screen.getByText(/関連づけられたアイテム.*10/),
       ).toBeInTheDocument();
+    });
+  });
+
+  describe("English locale", () => {
+    test("renders in English", async () => {
+      await act(async () => {
+        await i18n.changeLanguage("en");
+      });
+
+      await renderComponent();
+
+      expect(screen.getByText(/Referring entries.*3/)).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("Filter entries")).toBeInTheDocument();
     });
   });
 });

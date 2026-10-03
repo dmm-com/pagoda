@@ -25,6 +25,7 @@ import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { ChangeEvent, FC, KeyboardEvent, useEffect, useState } from "react";
 
+import { useTranslation } from "../../hooks/useTranslation";
 import { AttrFilter } from "../../services/entry/AdvancedSearch";
 import { DateRangePicker } from "../common/DateRangePicker";
 import { DateTimeRangePicker } from "../common/DateTimeRangePicker";
@@ -80,6 +81,7 @@ export const SearchResultControlMenu: FC<Props> = ({
   setEditTargetAttrtype,
   totalCount,
 }) => {
+  const { t } = useTranslation();
   const [openStatsModal, setOpenStatsModal] = useState(false);
 
   // attrFilter is undefined when no filter has been set yet for this attr;
@@ -155,10 +157,10 @@ export const SearchResultControlMenu: FC<Props> = ({
   const filterKey = safeAttrFilter.filterKey;
   const keyword = safeAttrFilter.keyword;
 
-  // 日付範囲選択のための状態管理
+  // State management for the date range selection
   const [isRange, setIsRange] = useState(false);
 
-  // 初期状態の設定
+  // Set the initial state
   useEffect(() => {
     if (keyword && keyword.includes("~")) {
       setIsRange(true);
@@ -175,7 +177,9 @@ export const SearchResultControlMenu: FC<Props> = ({
         anchorEl={anchorElem}
       >
         <Box pl="16px" py="8px">
-          <Typography>絞り込み条件</Typography>
+          <Typography>
+            {t("advancedSearch.controlMenu.filterConditions")}
+          </Typography>
         </Box>
         <StyledBox>
           <Button
@@ -185,7 +189,7 @@ export const SearchResultControlMenu: FC<Props> = ({
               handleClick(AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED)
             }
           >
-            <Typography>クリア</Typography>
+            <Typography>{t("advancedSearch.controlMenu.clear")}</Typography>
           </Button>
         </StyledBox>
         <Divider />
@@ -199,7 +203,7 @@ export const SearchResultControlMenu: FC<Props> = ({
               <Check />
             </ListItemIcon>
           )}
-          <Typography>空白</Typography>
+          <Typography>{t("advancedSearch.controlMenu.empty")}</Typography>
         </MenuItem>
         <MenuItem
           onClick={() =>
@@ -212,7 +216,7 @@ export const SearchResultControlMenu: FC<Props> = ({
               <Check />
             </ListItemIcon>
           )}
-          <Typography>空白ではない</Typography>
+          <Typography>{t("advancedSearch.controlMenu.nonEmpty")}</Typography>
         </MenuItem>
         <MenuItem
           onClick={() =>
@@ -225,7 +229,7 @@ export const SearchResultControlMenu: FC<Props> = ({
               <Check />
             </ListItemIcon>
           )}
-          <Typography>重複</Typography>
+          <Typography>{t("advancedSearch.controlMenu.duplicated")}</Typography>
         </MenuItem>
 
         {attrType === EntryAttributeTypeTypeEnum.DATE && (
@@ -241,11 +245,11 @@ export const SearchResultControlMenu: FC<Props> = ({
                     size="small"
                   />
                 }
-                label="範囲で指定する"
+                label={t("advancedSearch.controlMenu.rangeSpecifyDate")}
               />
 
               <StyledTypography variant="caption">
-                次を含む日付
+                {t("advancedSearch.controlMenu.containsDate")}
               </StyledTypography>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 {isRange ? (
@@ -307,7 +311,7 @@ export const SearchResultControlMenu: FC<Props> = ({
             </StyledBox>
             <StyledBox display="flex" flexDirection="column">
               <StyledTypography variant="caption">
-                次を含まない日付
+                {t("advancedSearch.controlMenu.notContainsDate")}
               </StyledTypography>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 {isRange ? (
@@ -383,11 +387,11 @@ export const SearchResultControlMenu: FC<Props> = ({
                     size="small"
                   />
                 }
-                label="範囲指定"
+                label={t("advancedSearch.controlMenu.rangeSpecify")}
               />
 
               <StyledTypography variant="caption">
-                次を含む日時
+                {t("advancedSearch.controlMenu.containsDateTime")}
               </StyledTypography>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 {isRange ? (
@@ -449,7 +453,7 @@ export const SearchResultControlMenu: FC<Props> = ({
             </StyledBox>
             <StyledBox display="flex" flexDirection="column">
               <StyledTypography variant="caption">
-                次を含まない日時
+                {t("advancedSearch.controlMenu.notContainsDateTime")}
               </StyledTypography>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 {isRange ? (
@@ -533,7 +537,9 @@ export const SearchResultControlMenu: FC<Props> = ({
                   <Check />
                 </ListItemIcon>
               )}
-              <Typography>true のみ</Typography>
+              <Typography>
+                {t("advancedSearch.controlMenu.trueOnly")}
+              </Typography>
             </MenuItem>
             <MenuItem
               onClick={() =>
@@ -553,7 +559,9 @@ export const SearchResultControlMenu: FC<Props> = ({
                   <Check />
                 </ListItemIcon>
               )}
-              <Typography>false のみ</Typography>
+              <Typography>
+                {t("advancedSearch.controlMenu.falseOnly")}
+              </Typography>
             </MenuItem>
           </Box>
         )}
@@ -566,7 +574,7 @@ export const SearchResultControlMenu: FC<Props> = ({
               <Box>
                 <StyledTextField
                   size="small"
-                  placeholder="次を含むテキスト"
+                  placeholder={t("advancedSearch.controlMenu.containsText")}
                   value={
                     filterKey ===
                     AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
@@ -584,7 +592,7 @@ export const SearchResultControlMenu: FC<Props> = ({
               <Box>
                 <StyledTextField
                   size="small"
-                  placeholder="次を含まないテキスト"
+                  placeholder={t("advancedSearch.controlMenu.notContainsText")}
                   value={
                     filterKey ===
                     AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
@@ -603,7 +611,9 @@ export const SearchResultControlMenu: FC<Props> = ({
           )}
         <Divider />
         <Box pl="16px" py="8px">
-          <Typography>その他機能</Typography>
+          <Typography>
+            {t("advancedSearch.controlMenu.otherFunctions")}
+          </Typography>
         </Box>
         <StyledBox>
           <Button
@@ -624,7 +634,9 @@ export const SearchResultControlMenu: FC<Props> = ({
               setOpenEditModal(true);
             }}
           >
-            <Typography>一括更新</Typography>
+            <Typography>
+              {t("advancedSearch.controlMenu.bulkUpdate")}
+            </Typography>
           </Button>
         </StyledBox>
         <StyledBox>
@@ -637,7 +649,7 @@ export const SearchResultControlMenu: FC<Props> = ({
               setOpenStatsModal(true);
             }}
           >
-            <Typography>集計表示</Typography>
+            <Typography>{t("advancedSearch.controlMenu.showStats")}</Typography>
           </Button>
         </StyledBox>
       </Menu>

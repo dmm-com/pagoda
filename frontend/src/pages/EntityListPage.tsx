@@ -10,6 +10,7 @@ import { EntityList } from "components/entity/EntityList";
 import { usePage } from "hooks/usePage";
 import { usePageTitle } from "hooks/usePageTitle";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { topPath } from "routes/Routes";
 import { ServerContext, TITLE_TEMPLATES } from "services";
@@ -40,6 +41,7 @@ const EntityListContent: FC = () => {
 };
 
 export const EntityListPage: FC = () => {
+  const { t } = useTranslation();
   const [openImportModal, setOpenImportModal] = useState(false);
 
   const isReadonly = ServerContext.getInstance()?.user?.isReadonly ?? false;
@@ -54,10 +56,12 @@ export const EntityListPage: FC = () => {
         <Typography component={AironeLink} to={topPath()}>
           Top
         </Typography>
-        <Typography color="textPrimary">モデル一覧</Typography>
+        <Typography color="textPrimary">
+          {t("entity.list.pageTitle")}
+        </Typography>
       </AironeBreadcrumbs>
 
-      <PageHeader title="モデル一覧">
+      <PageHeader title={t("entity.list.pageTitle")}>
         <Box display="flex" alignItems="center">
           <Button
             variant="contained"
@@ -65,7 +69,7 @@ export const EntityListPage: FC = () => {
             sx={{ margin: "0 4px" }}
             onClick={handleExport}
           >
-            エクスポート
+            {t("common.export")}
           </Button>
           <Button
             variant="contained"
@@ -74,7 +78,7 @@ export const EntityListPage: FC = () => {
             onClick={() => setOpenImportModal(true)}
             disabled={isReadonly}
           >
-            インポート
+            {t("common.import")}
           </Button>
           <EntityImportModal
             openImportModal={openImportModal}

@@ -104,4 +104,39 @@ describe("schema", () => {
 
     expect(() => schema.parse(value)).toThrow();
   });
+
+  test("validation fails with Japanese messages by default", () => {
+    const result = schema.safeParse({
+      ...baseValue,
+      entity: { ...baseValue.entity, id: 0 },
+      conditions: [],
+    });
+    expect(result.success).toBe(false);
+    const messages = result.error?.issues.map(
+      (issue: { message: string }) => issue.message,
+    );
+    expect(messages).toContain("モデルは必須です");
+    expect(messages).toContain("最低でもひとつの条件を設定してください");
+  });
+
+  test("validation fails with English messages when language is English", async () => {
+    vi.resetModules();
+    const { default: i18n } = await import("i18n/config");
+    await i18n.changeLanguage("en");
+    const { schema } = await import("./TriggerFormSchema");
+    const result = schema.safeParse({
+      ...baseValue,
+      entity: { ...baseValue.entity, id: 0 },
+      conditions: [],
+    });
+    expect(result.success).toBe(false);
+    const messages = result.error?.issues.map(
+      (issue: { message: string }) => issue.message,
+    );
+    expect(messages).toContain("Model is required");
+    expect(messages).toContain("Set at least one condition");
+
+    // restore for later tests in the file
+    vi.resetModules();
+  });
 });
