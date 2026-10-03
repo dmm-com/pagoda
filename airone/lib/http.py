@@ -86,11 +86,8 @@ def check_superuser(func: Callable[..., HttpResponse]) -> Callable[..., HttpResp
 
 
 def http_post(
-    validator: List[Dict[str, Any]] | None = None,
+    validator: List[Dict[str, Any]] = [],
 ) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
-    if validator is None:
-        validator = []
-
     def _decorator(func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
         def http_post_handler(*args: Any, **kwargs: Any) -> HttpResponse:
             request = args[0]
@@ -150,11 +147,7 @@ def http_file_upload(func: Callable[..., HttpResponse]) -> Callable[..., HttpRes
     return wrapper
 
 
-def render(
-    request: HttpRequest, template: str, context: Dict[str, Any] | None = None
-) -> HttpResponse:
-    if context is None:
-        context = {}
+def render(request: HttpRequest, template: str, context: Dict[str, Any] = {}) -> HttpResponse:
     # added default parameters for navigate
     entity_objects = entity_models.Entity.objects.order_by("name").filter(is_active=True)
     context["navigator"] = {

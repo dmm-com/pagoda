@@ -345,7 +345,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet[Entry]):
         try:
             historical_record = entry.history.get(history_id=history_id)
         except entry.history.model.DoesNotExist:
-            raise ObjectNotExistsError("指定された履歴が見つかりません") from None
+            raise ObjectNotExistsError("指定された履歴が見つかりません")
 
         # Update entry name to the historical value
         old_name = entry.name
@@ -1052,7 +1052,7 @@ def _preview_job_id_param(request: Request) -> int | None:
     try:
         return int(raw)
     except ValueError:
-        raise InvalidValueError("'preview_job_id' must be an integer") from None
+        raise InvalidValueError("'preview_job_id' must be an integer")
 
 
 class EntryImportPreviewAPI(generics.GenericAPIView[Any]):
@@ -1286,7 +1286,7 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView[Any]):
                 if not FilterKey.isin(int(info["filterKey"])):
                     raise RequiredParameterError("(01)Invalid attrinfo was specified")
         except Exception as e:
-            raise RequiredParameterError(str(e)) from e
+            raise RequiredParameterError(str(e))
 
         return cast("list[dict[str, Any]]", json_loaded_value)
 

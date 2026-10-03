@@ -619,9 +619,7 @@ class TriggerAction(models.Model):
         elif attr_type == AttrType.OBJECT:
             return value.ref_cond.id if isinstance(value.ref_cond, Entry) else None
 
-    def run(self, user: "User", entry: Entry, call_stacks: list[int] | None = None) -> None:
-        if call_stacks is None:
-            call_stacks = []
+    def run(self, user: "User", entry: Entry, call_stacks: list[int] = []) -> None:
         # When self.id contains in call_stacks, it means that this action is already invoked.
         # This prevents infinite loop.
         if self.id in call_stacks:

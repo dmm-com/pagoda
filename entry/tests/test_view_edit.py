@@ -1480,7 +1480,7 @@ class ViewEditTest(BaseViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 200)
-        for _name, info in attr_info.items():
+        for name, info in attr_info.items():
             self.assertEqual(
                 entry.attrs.get(schema=info["schema"]).get_latest_value().get_value(),
                 info["expect_blank_value"],

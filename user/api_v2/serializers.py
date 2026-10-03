@@ -405,7 +405,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer[Any]):
         try:
             password_validation.validate_password(password1)
         except DjangoCoreValidationError as e:
-            raise ValidationError("invalid password given. details: %s" % e) from e
+            raise ValidationError("invalid password given. details: %s" % e)
 
         return attrs
 

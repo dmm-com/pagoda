@@ -250,7 +250,7 @@ class EntrySearchChainSerializer(serializers.Serializer[dict[str, Any]]):
                 search_result = AdvancedSearchService.search_entries(**query_params)
             except Exception as e:
                 Logger.warning("Search Chain API error:%s" % e)
-                raise ElasticsearchException() from e
+                raise ElasticsearchException()
 
             if search_result.ret_count > CONFIG.SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT:
                 Logger.warning("Search Chain API error: SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT")
@@ -347,7 +347,7 @@ class EntrySearchChainSerializer(serializers.Serializer[dict[str, Any]]):
                 )
             except Exception as e:
                 Logger.warning("Search Chain API error:%s" % e)
-                raise ElasticsearchException() from e
+                raise ElasticsearchException()
 
             # All results of this request would be joined and pass to next request. It might be
             # huge request and leads to glitch of Elasticsearch by just a single request.

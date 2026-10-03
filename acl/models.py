@@ -66,7 +66,7 @@ class ACLBase(models.Model):
         if isinstance(update_fields, list) and "updated_time" not in update_fields:
             new_update_fields = update_fields + ["updated_time"]
 
-        super(ACLBase, self).save(*args, update_fields=new_update_fields, **kwargs)
+        super(ACLBase, self).save(update_fields=new_update_fields, *args, **kwargs)
 
     def get_diff(instance, offset: int = 0) -> list[HistoricalDifference]:
         ret = []

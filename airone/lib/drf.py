@@ -46,7 +46,7 @@ class YAMLParser(BaseParser):
             loaded: dict[str, object] = yaml.safe_load(data)
             return loaded
         except (ValueError, yaml.parser.ParserError, yaml.scanner.ScannerError) as exc:
-            raise ParseError("YAML parse error - %s" % str(exc)) from exc
+            raise ParseError("YAML parse error - %s" % str(exc))
 
 
 class YAMLRenderer(BaseRenderer):

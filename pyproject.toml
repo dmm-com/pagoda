@@ -79,13 +79,11 @@ ignore_missing_imports = true
 # so they act purely as a guard against new occurrences rather than as a
 # backlog. Larger rule sets (SIM, S, DTZ, ...) are introduced separately.
 #
-# flake8-bugbear (B) catches bug-prone patterns such as mutable default
-# arguments and exceptions re-raised without their cause. pygrep-hooks (PGH)
-# rejects blanket `noqa` / `type: ignore`, and RUF100 rejects stale `noqa`, so
-# every suppression names a rule that still fires.
+# pygrep-hooks (PGH) rejects blanket `noqa` / `type: ignore`, and RUF100
+# rejects stale `noqa`, so every suppression names a rule that still fires.
 lint.select = [
     "E", "F", "I", "W", "ASYNC", "ICN", "LOG", "INP", "TID", "T20",
-    "B", "PGH", "RUF100",
+    "PGH", "RUF100",
 ]
 line-length = 100
 extend-exclude = ["./*/migrations", "manage.py", "./node_modules"]

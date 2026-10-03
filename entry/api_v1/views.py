@@ -201,10 +201,8 @@ def get_attr_referrals(request: HttpRequest, attr_id: str) -> HttpResponse:
     def _get_referral_objects(
         attr: EntityAttr,
         model: type[Entry] | type[Group] | type[Role],
-        query_params: dict[str, Any] | None = None,
+        query_params: dict[str, Any] = {},
     ) -> list[dict[str, Any]]:
-        if query_params is None:
-            query_params = {}
         query_name = Q()
 
         keyword = request.GET.get("keyword")

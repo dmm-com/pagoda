@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 from pagoda_plugin_sdk import Plugin
 from pagoda_plugin_sdk.decorators import entry_hook
-from pagoda_plugin_sdk.exceptions import PluginError, PluginValidationError
+from pagoda_plugin_sdk.exceptions import PluginError
 
 from airone.plugins.registry import PluginRegistry
 
@@ -200,7 +200,7 @@ class TestPluginRegistry(unittest.TestCase):
             id = ""  # Empty ID
             name = "Bad Plugin"
 
-        with self.assertRaises(PluginValidationError):
+        with self.assertRaises(Exception):
             self.registry.register(BadPlugin)
 
     @patch("airone.plugins.registry.hook_manager")

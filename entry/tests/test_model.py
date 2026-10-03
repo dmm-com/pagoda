@@ -570,27 +570,21 @@ class ModelTest(BaseModelTest):
 
         self.assertFalse(
             attr.is_updated(
-                [
-                    {"id": x["id"], "name": y}
-                    for x, y in zip(r_entries, ["key_0", "key_1", "key_2"], strict=True)
-                ]
+                [{"id": x["id"], "name": y} for x, y in zip(r_entries, ["key_0", "key_1", "key_2"])]
             )
         )
         self.assertFalse(
             attr.is_updated(
                 [
                     {"id": x["id"], "name": y, "boolean": False}
-                    for x, y in zip(r_entries, ["key_0", "key_1", "key_2"], strict=True)
+                    for x, y in zip(r_entries, ["key_0", "key_1", "key_2"])
                 ]
             )
         )
         self.assertTrue(attr.is_updated([{"name": x} for x in ["key_0", "key_1", "key_2"]]))
         self.assertTrue(
             attr.is_updated(
-                [
-                    {"id": x["id"], "name": y}
-                    for x, y in zip(r_entries, ["key_0", "key_1"], strict=False)
-                ]
+                [{"id": x["id"], "name": y} for x, y in zip(r_entries, ["key_0", "key_1"])]
             )
         )
         self.assertTrue(attr.is_updated(r_entries))
@@ -598,7 +592,7 @@ class ModelTest(BaseModelTest):
             attr.is_updated(
                 [
                     {"id": x["id"], "name": y, "boolean": True}
-                    for x, y in zip(r_entries, ["key_0", "key_1", "key_2"], strict=True)
+                    for x, y in zip(r_entries, ["key_0", "key_1", "key_2"])
                 ]
             )
         )

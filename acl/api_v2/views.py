@@ -121,7 +121,7 @@ class ACLHistoryAPI(generics.ListAPIView[ACLBase]):
         for ph in permission_history:
             grouped_histories[ph.permission_ptr_id].append(ph)
 
-        for _permission_id, histories in grouped_histories.items():
+        for permission_id, histories in grouped_histories.items():
             # Sort in chronological order (same as queryset order)
             histories.sort(key=lambda x: (x.history_date, x.history_id), reverse=True)
             for i in range(len(histories)):
@@ -137,7 +137,7 @@ class ACLHistoryAPI(generics.ListAPIView[ACLBase]):
         for ah in acl_history:
             acl_grouped_histories[(ah.__class__.__name__, ah.aclbase_ptr_id)].append(ah)
 
-        for _group_key, histories in acl_grouped_histories.items():
+        for group_key, histories in acl_grouped_histories.items():
             # Sort in chronological order (same as queryset order)
             histories.sort(key=lambda x: (x.history_date, x.history_id), reverse=True)
             for i in range(len(histories)):

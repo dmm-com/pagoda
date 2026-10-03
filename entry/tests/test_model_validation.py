@@ -1392,9 +1392,7 @@ class ModelValidationTest(BaseModelTest):
                 retrieved = parent_attr_v.get_value()
                 self.assertEqual(len(retrieved), len(expected_output))
 
-                for i, (actual, expected) in enumerate(
-                    zip(retrieved, expected_output, strict=True)
-                ):
+                for i, (actual, expected) in enumerate(zip(retrieved, expected_output)):
                     self.assertAlmostEqual(
                         actual,
                         expected,

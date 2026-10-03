@@ -132,11 +132,11 @@ class PluginRegistry:
         # Split into module path and function name
         try:
             module_path, func_name = handler_path.rsplit(".", 1)
-        except ValueError as e:
+        except ValueError:
             raise ImportError(
                 f"Invalid handler path '{handler_path}'. "
                 f"Expected format: 'module.path.function_name'"
-            ) from e
+            )
 
         # Import the module
         module = importlib.import_module(module_path)

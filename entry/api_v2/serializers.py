@@ -522,7 +522,7 @@ class EntryBaseSerializer(serializers.ModelSerializer[Entry]):
             for error in e.errors():
                 field = ".".join(str(loc) for loc in error["loc"])
                 errors.append(f"{field}: {error['msg']}")
-            raise IncorrectTypeError("; ".join(errors)) from e
+            raise IncorrectTypeError("; ".join(errors))
 
         user: User | None = None
         if "request" in self.context:
@@ -1068,7 +1068,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
             try:
                 attr_type = AttrType(type)
             except ValueError:
-                raise IncorrectTypeError(f"unexpected type: {type}") from None
+                raise IncorrectTypeError(f"unexpected type: {type}")
 
             match attr_type:
                 case AttrType.ARRAY_STRING:

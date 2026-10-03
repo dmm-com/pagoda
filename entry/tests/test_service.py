@@ -252,7 +252,7 @@ class AdvancedSearchServiceTest(AironeTestCase):
         self.assertEqual(ret.ret_values[0].entry["name"], "e-5")
 
         # search entries with keyword for Role Attribute
-        for _role_attrname in ["role", "arr_role"]:
+        for role_attrname in ["role", "arr_role"]:
             # call AdvancedSearchService.search_entries with invalid keyword
             self.assertEqual(
                 AdvancedSearchService.search_entries(

@@ -497,8 +497,8 @@ class AttributeValue(models.Model):
                         raise Exception("value(%s) is isolated entry" % value)
 
                 return True
-            except (ValueError, TypeError) as e:
-                raise Exception("value(%s) is not int" % value) from e
+            except (ValueError, TypeError):
+                raise Exception("value(%s) is not int" % value)
 
         def _is_validate_attr(t: int, value: Any) -> bool:
             match t:
@@ -544,8 +544,8 @@ class AttributeValue(models.Model):
                             if len(value.encode("utf-8")) > AttributeValue.MAXIMUM_VALUE_SIZE:
                                 raise ExceedLimitError("value is exceeded the limit")
                             return True
-                        except ValueError as e:
-                            raise Exception("value(%s) is not a valid number string" % value) from e
+                        except ValueError:
+                            raise Exception("value(%s) is not a valid number string" % value)
                         except ExceedLimitError as e:
                             raise e
                     raise Exception("value(%s) is not a valid number type or format" % value)
@@ -581,8 +581,8 @@ class AttributeValue(models.Model):
                             raise Exception("value(%s) is not group id" % value)
                         if is_mandatory and not value:
                             return False
-                    except (ValueError, TypeError) as e:
-                        raise Exception("value(%s) is not int" % value) from e
+                    except (ValueError, TypeError):
+                        raise Exception("value(%s) is not int" % value)
 
                 case AttrType.BOOLEAN:
                     if not isinstance(value, bool):
@@ -594,8 +594,8 @@ class AttributeValue(models.Model):
                             datetime.strptime(value, "%Y-%m-%d").date()
                         elif is_mandatory:
                             return False
-                    except (ValueError, TypeError) as e:
-                        raise Exception("value(%s) is not format(YYYY-MM-DD)" % value) from e
+                    except (ValueError, TypeError):
+                        raise Exception("value(%s) is not format(YYYY-MM-DD)" % value)
 
                 case AttrType.ROLE:
                     try:
@@ -613,8 +613,8 @@ class AttributeValue(models.Model):
 
                         if is_mandatory and not value:
                             return False
-                    except (ValueError, TypeError) as e:
-                        raise Exception("value(%s) is not int" % value) from e
+                    except (ValueError, TypeError):
+                        raise Exception("value(%s) is not int" % value)
 
                 case AttrType.DATETIME:
                     try:
@@ -622,8 +622,8 @@ class AttributeValue(models.Model):
                             datetime.fromisoformat(value)
                         elif is_mandatory:
                             return False
-                    except (ValueError, TypeError) as e:
-                        raise Exception("value(%s) is not ISO8601 format" % value) from e
+                    except (ValueError, TypeError):
+                        raise Exception("value(%s) is not ISO8601 format" % value)
 
             return True
 
@@ -991,8 +991,8 @@ class Attribute(ACLBase):
 
         return False
 
-    def get_values(self, where_extra: list[str] | None = None) -> QuerySet[AttributeValue]:
-        where_cond = [] + (where_extra or [])
+    def get_values(self, where_extra: list[str] = []) -> QuerySet[AttributeValue]:
+        where_cond = [] + where_extra
 
         if self.is_array():
             where_cond.append("status & %d > 0" % AttributeValue.STATUS_DATA_ARRAY_PARENT)
@@ -1268,10 +1268,8 @@ class Attribute(ACLBase):
             attr_type: int,
             val: Any,
             attrv: AttributeValue | None = None,
-            params: dict[str, Any] | None = None,
+            params: dict[str, Any] = {},
         ) -> AttributeValue | None:
-            if params is None:
-                params = {}
             if not attrv:
                 attrv = AttributeValue(**params)
 
@@ -1966,10 +1964,8 @@ class Entry(ACLBase):
 
         return self.name
 
-    def save_autoname(self, past_path: list[int] | None = None) -> None:
+    def save_autoname(self, past_path: list[int] = []) -> None:
         """This method saves auto-generated name according to the Entity settings"""
-        if past_path is None:
-            past_path = []
         autoname = self.autoname
         if self.name != autoname:
             # check duplication
@@ -2074,7 +2070,7 @@ class Entry(ACLBase):
         return Entry.objects.filter(id__in=entry_ids)
 
     def get_referred_objects(
-        self, filter_entities: list[str] | None = None, exclude_entities: list[str] | None = None
+        self, filter_entities: list[str] = [], exclude_entities: list[str] = []
     ) -> QuerySet["Entry"]:
         return Entry.get_referred_entries([self.id], filter_entities, exclude_entities)
 
@@ -2666,9 +2662,7 @@ class Entry(ACLBase):
 
         return document
 
-    def register_es(
-        self, es: ESS | None = None, recursive_call_stack: list["Entry"] | None = None
-    ) -> None:
+    def register_es(self, es: ESS | None = None, recursive_call_stack: list["Entry"] = []) -> None:
         """
         Arguments
           * recursive_call_stack:
@@ -2683,8 +2677,6 @@ class Entry(ACLBase):
         """
         if not es:
             es = ESS()
-        if recursive_call_stack is None:
-            recursive_call_stack = []
 
         es.index_entry(self.id, self.get_es_document())
         es.refresh_index()
@@ -2826,19 +2818,12 @@ class Entry(ACLBase):
 
     @classmethod
     def get_referred_entries(
-        kls,
-        id_list: list[int],
-        filter_entities: list[str] | None = None,
-        exclude_entities: list[str] | None = None,
+        kls, id_list: list[int], filter_entities: list[str] = [], exclude_entities: list[str] = []
     ) -> QuerySet["Entry"]:
         """
         This returns objects that refer Entries, which is specifeied in the kd_list,
         in the AttributeValue.
         """
-        if filter_entities is None:
-            filter_entities = []
-        if exclude_entities is None:
-            exclude_entities = []
         ids = AttributeValue.objects.filter(
             Q(referral__in=id_list, is_latest=True)
             | Q(referral__in=id_list, parent_attrv__is_latest=True),
@@ -3162,7 +3147,7 @@ class ItemWalker:
     def prefetch_attr_refs(
         kls,
         attrnames: Iterable[str],
-        nested_prefetch: list[Any] | None = None,
+        nested_prefetch: list[Any] = [],
         is_intermediate: bool = True,
     ) -> "Prefetch[Any, Any, Any]":
         """
@@ -3172,8 +3157,6 @@ class ItemWalker:
         Making nested Prefetch structure by using this method, you can get
         referral items with less query count for backend database.
         """
-        if nested_prefetch is None:
-            nested_prefetch = []
         prefetch_co_values = Prefetch(
             lookup="data_array",
             queryset=AttributeValue.objects.exclude(referral__is_active=False)
@@ -3204,13 +3187,11 @@ class ItemWalker:
 
     @classmethod
     def create_prefetch(
-        kls, step_map: dict[str, Any] | None = None, is_last: bool = False
+        kls, step_map: dict[str, Any] = {}, is_last: bool = False
     ) -> "Prefetch[Any, Any, Any]":
-        if step_map is None:
-            step_map = {}
         # check attr_routes has nested attribute steps
         related_prefetches = []
-        for _step_attrname, co_steps in step_map.items():
+        for step_attrname, co_steps in step_map.items():
             if co_steps:
                 related_prefetches.append(ItemWalker.create_prefetch(co_steps))
 
@@ -3221,9 +3202,7 @@ class ItemWalker:
             is_intermediate=not is_last,
         )
 
-    def __init__(self, base_item_ids: list[int], step_map: dict[str, Any] | None = None) -> None:
-        if step_map is None:
-            step_map = {}
+    def __init__(self, base_item_ids: list[int], step_map: dict[str, Any] = {}) -> None:
         prefetch = ItemWalker.create_prefetch(step_map, is_last=True)
 
         self.base_items = Entry.objects.prefetch_related(prefetch).filter(id__in=base_item_ids)

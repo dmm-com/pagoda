@@ -82,7 +82,7 @@ class JobAPI(viewsets.ModelViewSet[Job]):
         except OSError as e:
             # errno.ENOENT is the errno of FileNotFoundError
             if e.errno == errno.ENOENT:
-                raise FileIsNotExistsError("Target file is not exists") from e
+                raise FileIsNotExistsError("Target file is not exists")
 
         return cast(Response, get_download_response(io_stream, job.text, encode_param))
 
@@ -128,7 +128,7 @@ class JobAPI(viewsets.ModelViewSet[Job]):
         except OSError as e:
             # errno.ENOENT is the errno of FileNotFoundError
             if e.errno == errno.ENOENT:
-                raise FileIsNotExistsError("Target file is not exists") from e
+                raise FileIsNotExistsError("Target file is not exists")
             raise
 
         rows = _filter_by_action(payload["rows"], request.query_params.get("action"))
@@ -182,7 +182,7 @@ class JobAPI(viewsets.ModelViewSet[Job]):
             payload = job.get_cache()
         except OSError as e:
             if e.errno == errno.ENOENT:
-                raise FileIsNotExistsError("Target file is not exists") from e
+                raise FileIsNotExistsError("Target file is not exists")
             raise
 
         io_stream = io.StringIO()
@@ -232,8 +232,8 @@ def _query_int(request: Request, name: str, default: int) -> int:
         return default
     try:
         value = int(raw)
-    except ValueError as e:
-        raise InvalidValueError("'%s' must be an integer" % name) from e
+    except ValueError:
+        raise InvalidValueError("'%s' must be an integer" % name)
     if value < 0:
         raise InvalidValueError("'%s' must not be negative" % name)
     return value

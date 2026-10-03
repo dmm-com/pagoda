@@ -395,7 +395,7 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer[EntityAttr]):
                     errors.append(f"{field}: {msg}")
                 else:
                     errors.append(msg)
-            raise ValidationError("; ".join(errors)) from e
+            raise ValidationError("; ".join(errors))
 
         # Additional validation for referral field (after Pydantic validation)
         if "type" in attr:
@@ -799,7 +799,7 @@ class EntitySerializer(serializers.ModelSerializer[Entity]):
         try:
             re.compile(item_name_pattern)
         except Exception:
-            raise ValidationError("Invalid regex pattern") from None
+            raise ValidationError("Invalid regex pattern")
 
         return item_name_pattern
 

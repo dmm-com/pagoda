@@ -107,13 +107,9 @@ class AironeTestCase(TestCase):
         self,
         user: User,
         entity: Entity,
-        attrs: list[dict[str, object]] | None = None,
-        webhooks: list[dict[str, object]] | None = None,
+        attrs: list[dict[str, object]] = [],
+        webhooks: list[dict[str, object]] = [],
     ) -> Entity:
-        if attrs is None:
-            attrs = []
-        if webhooks is None:
-            webhooks = []
         for index, attr_info in enumerate(attrs):
             entity_attr: EntityAttr = EntityAttr.objects.create(
                 **{
@@ -155,12 +151,12 @@ class AironeTestCase(TestCase):
         self,
         user: User,
         name: str,
-        attrs: list[dict[str, object]] | None = None,
+        attrs: list[dict[str, object]] = [],
         is_public: bool = True,
         item_name_pattern: str = "",
         item_name_type: ItemNameType | None = None,
         default_permission: int = ACLType.Nothing.id,
-        webhooks: list[dict[str, object]] | None = None,
+        webhooks: list[dict[str, object]] = [],
     ) -> Entity:
         """
         This is a helper method to create Entity for test. This method has following parameters.
@@ -195,8 +191,8 @@ class AironeTestCase(TestCase):
         self,
         user: User,
         entity: Entity,
-        attrs: list[dict[str, object]] | None = None,
-        webhooks: list[dict[str, object]] | None = None,
+        attrs: list[dict[str, object]] = [],
+        webhooks: list[dict[str, object]] = [],
     ) -> Entity:
         return self._do_update_entity(user, entity, attrs, webhooks)
 
@@ -205,11 +201,9 @@ class AironeTestCase(TestCase):
         user: User,
         name: str,
         schema: Entity,
-        values: dict[str, object] | None = None,
+        values: dict[str, object] = {},
         is_public: bool = True,
     ) -> Entry:
-        if values is None:
-            values = {}
         entry = Entry.objects.create(
             name=name, schema=schema, created_user=user, is_public=is_public
         )
@@ -225,15 +219,8 @@ class AironeTestCase(TestCase):
         return entry
 
     def create_category(
-        self,
-        user: User,
-        name: str,
-        note: str = "",
-        models: list[Entity] | None = None,
-        priority: int = 0,
+        self, user: User, name: str, note: str = "", models: list[Entity] = [], priority: int = 0
     ) -> Category:
-        if models is None:
-            models = []
         # create target Category instance
         category = Category.objects.create(
             name=name, note=note, priority=priority, created_user=user
@@ -342,15 +329,11 @@ class DisableStderr:
         self.f.close()
 
 
-def with_airone_settings(
-    info: dict[str, object] | None = None,
-) -> Callable[..., Callable[..., None]]:
+def with_airone_settings(info: dict[str, object] = {}) -> Callable[..., Callable[..., None]]:
     """
     This update AIRONE.settings parameter duing running test and retrieve it
     after running test.
     """
-    if info is None:
-        info = {}
 
     def _with_settings(method: Callable[..., None]) -> Callable[..., None]:
         @functools.wraps(method)

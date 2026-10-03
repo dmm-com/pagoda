@@ -96,7 +96,7 @@ def _merge_referrals_by_index(
         be_aligned(*args)
 
     result: dict[int, dict[str, Any]] = {}
-    for ref_info, name_info in zip(ref_list, name_list, strict=True):
+    for ref_info, name_info in zip(ref_list, name_list):
         if ref_info:
             index = ref_info["index"]
             if index not in result:

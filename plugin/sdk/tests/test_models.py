@@ -417,7 +417,7 @@ class TestModelInjection(unittest.TestCase):
 
         # However, __getattr__ function can still be tested with a non-existent model
         with self.assertRaises(AttributeError) as context:
-            _ = sdk_models.NonExistentModel
+            _ = getattr(sdk_models, "NonExistentModel")
 
         self.assertIn("module", str(context.exception))
         self.assertIn("has no attribute", str(context.exception))
