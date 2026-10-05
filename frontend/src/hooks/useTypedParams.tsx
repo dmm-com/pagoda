@@ -4,10 +4,11 @@ interface UseTypedParamsOptions {
   allowEmpty?: boolean;
 }
 
-export const useTypedParams = <
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Params extends { [K in keyof Params]: any },
->(
+/**
+ * @deprecated URL parameters are always strings at runtime, so the declared
+ * `Params` type is not enforced. Use `useIdParams` for numeric IDs.
+ */
+export const useTypedParams = <Params extends { [K in keyof Params]: unknown }>(
   options: UseTypedParamsOptions = {},
 ): Required<Params> => {
   const { allowEmpty = false } = options;

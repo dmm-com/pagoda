@@ -209,6 +209,7 @@ exports[`EditUserPage > should match snapshot 1`] = `
                         <p
                           class="MuiTypography-root MuiTypography-body1 css-1c26xtj-MuiTypography-root"
                         >
+                          user1
                           -
                         </p>
                         <form
@@ -512,6 +513,7 @@ exports[`EditUserPage > should match snapshot 1`] = `
                       <p
                         class="MuiTypography-root MuiTypography-body1 css-1c26xtj-MuiTypography-root"
                       >
+                        user1
                         -
                       </p>
                       <form

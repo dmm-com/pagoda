@@ -124,7 +124,7 @@ dependencies = [
     "django-simple-history==3.11.0",
     "django-storages==1.14.6",
     "django==5.2.17",
-    "djangorestframework==3.17.2",
+    "djangorestframework==3.18.1",
     "markdown>=3.7",
     "drf-spectacular==0.29.0",
     "elasticsearch==8.19.3",

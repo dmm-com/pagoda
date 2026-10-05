@@ -102,7 +102,7 @@ class GroupCreateUpdateSerializer(serializers.ModelSerializer[Group]):
         return instance
 
 
-class GroupTreeSerializer(serializers.ModelSerializer[Group]):
+class GroupTreeV2Serializer(serializers.ModelSerializer[Group]):
     children = serializers.SerializerMethodField(method_name="get_children")
 
     class Meta:

@@ -15,11 +15,11 @@ import {
 } from "components/entry/EntryForm";
 import { Schema, schema } from "components/entry/entryForm/EntryFormSchema";
 import { useFormNotification } from "hooks/useFormNotification";
+import { useIdParams } from "hooks/useIdParams";
 import { usePageTitle } from "hooks/usePageTitle";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { usePrompt } from "hooks/usePrompt";
 import { useTranslation } from "hooks/useTranslation";
-import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { entityEntriesPath, entryDetailsPath } from "routes/Routes";
 import { TITLE_TEMPLATES } from "services";
@@ -43,10 +43,10 @@ export const EntryEditPage: FC<Props> = ({
   EntryForm = DefaultEntryForm,
   useUUID = false,
 }) => {
-  const { entityId, entryId } = useTypedParams<{
-    entityId: number;
-    entryId: number;
-  }>();
+  const { entityId, entryId } = useIdParams({
+    required: ["entityId"],
+    optional: ["entryId"],
+  });
 
   const willCreate = entryId == null;
 
@@ -84,7 +84,7 @@ export const EntryEditPage: FC<Props> = ({
 
   const { data: entry, isLoading: entryLoading } = usePagodaSWR(
     entryId != undefined ? ["entry", entryId] : null,
-    () => aironeApiClient.getEntry(entryId!),
+    entryId != undefined ? () => aironeApiClient.getEntry(entryId) : null,
   );
 
   useEffect(() => {

@@ -14,11 +14,11 @@ import { UserForm } from "components/user/UserForm";
 import { UserPasswordFormModal } from "components/user/UserPasswordFormModal";
 import { schema, Schema } from "components/user/userForm/UserFormSchema";
 import { useFormNotification } from "hooks/useFormNotification";
+import { useIdParams } from "hooks/useIdParams";
 import { usePageTitle } from "hooks/usePageTitle";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { usePrompt } from "hooks/usePrompt";
 import { useTranslation } from "hooks/useTranslation";
-import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { topPath, usersPath, loginPath } from "routes/Routes";
 import { TITLE_TEMPLATES } from "services";
@@ -29,7 +29,7 @@ import {
 import { ServerContext } from "services/ServerContext";
 
 export const UserEditPage: FC = () => {
-  const { userId } = useTypedParams<{ userId?: number }>({ allowEmpty: true });
+  const { userId } = useIdParams({ optional: ["userId"] });
   const willCreate = userId == null;
 
   const navigate = useNavigate();
@@ -43,8 +43,9 @@ export const UserEditPage: FC = () => {
     data: user,
     isLoading: userLoading,
     mutate: refreshUser,
-  } = usePagodaSWR(userId ? ["user", userId] : null, () =>
-    aironeApiClient.getUser(userId!),
+  } = usePagodaSWR(
+    userId ? ["user", userId] : null,
+    userId ? () => aironeApiClient.getUser(userId) : null,
   );
 
   // Fill schema-required defaults for optional API fields.
