@@ -57,7 +57,7 @@ import {
   UserToken,
   UserUpdate,
   WebhookCreateUpdate,
-  GroupTree as _GroupTree,
+  GroupTreeV2 as _GroupTree,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 import {

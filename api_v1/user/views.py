@@ -2,7 +2,7 @@ from typing import Any, cast
 
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
-from drf_spectacular.utils import extend_schema, extend_schema_view, inline_serializer
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from rest_framework.request import Request
@@ -16,46 +16,16 @@ class AccessTokenResponseSerializer(serializers.Serializer[Any]):
     results = serializers.CharField()
 
 
-@extend_schema_view(
-    get=extend_schema(
-        responses={
-            200: inline_serializer(
-                name="V1AccessTokenResponse", fields={"results": serializers.CharField()}
-            )
-        }
-    ),
-    put=extend_schema(
-        responses={
-            200: inline_serializer(
-                name="V1AccessTokenResponse", fields={"results": serializers.CharField()}
-            )
-        }
-    ),
-)
 class AccessTokenAPI(APIView):
     serializer_class = AccessTokenResponseSerializer
 
-    @extend_schema(
-        responses={
-            200: inline_serializer(
-                name="V1AccessTokenResponse",
-                fields={"results": serializers.CharField()},
-            )
-        }
-    )
+    @extend_schema(responses={200: AccessTokenResponseSerializer})
     def get(self, request: Request, format: str | None = None) -> Response:
         user = cast(User, request.user)
         return Response({"results": str(user.token)})
 
     @method_decorator(csrf_protect)
-    @extend_schema(
-        responses={
-            200: inline_serializer(
-                name="V1AccessTokenResponse",
-                fields={"results": serializers.CharField()},
-            )
-        }
-    )
+    @extend_schema(responses={200: AccessTokenResponseSerializer})
     def put(self, request: Request, format: str | None = None) -> Response:
         """
         This refresh access_token to another one
