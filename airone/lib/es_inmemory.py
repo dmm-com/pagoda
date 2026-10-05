@@ -295,6 +295,7 @@ def _as_datetime(value: Any) -> datetime | None:
         try:
             parsed = datetime.fromisoformat(text)
         except ValueError:
+            parsed = None
             for fmt in ("%Y-%m-%d", "%Y/%m/%d", "%Y-%m-%dT%H:%M:%S"):
                 try:
                     parsed = datetime.strptime(text, fmt)

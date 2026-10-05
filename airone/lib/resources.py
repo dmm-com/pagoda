@@ -45,7 +45,7 @@ class AironeModelResource(ModelResource):  # type: ignore[misc]
         # the case of creating new instance
         if not self._meta.model.objects.filter(id=instance.id).exists():
             # Inhibits the spoofing
-            if isinstance(instance, ACLBase) and instance.created_user != self.request_user:
+            if instance.created_user != self.request_user:
                 return True
 
         # the case of instance is updated

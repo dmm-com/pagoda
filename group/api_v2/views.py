@@ -54,7 +54,7 @@ class GroupSearchFilter(filters.SearchFilter):
 
 
 class GroupAPI(viewsets.ModelViewSet[Group]):
-    queryset = Group.objects.filter(is_active=True).prefetch_related(  # type: ignore[assignment,misc]
+    queryset = Group.objects.filter(is_active=True).prefetch_related(
         Prefetch(
             "user_set",
             queryset=User.objects.filter(is_active=True).order_by("username"),
@@ -77,7 +77,7 @@ class GroupAPI(viewsets.ModelViewSet[Group]):
 
 
 class GroupTreeAPI(viewsets.ReadOnlyModelViewSet[Group]):
-    queryset = Group.objects.filter(parent_group__isnull=True, is_active=True)  # type: ignore[assignment,misc]
+    queryset = Group.objects.filter(parent_group__isnull=True, is_active=True)
     serializer_class = GroupTreeV2Serializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, GroupSearchFilter]
     ordering = ["name"]
@@ -98,9 +98,7 @@ class GroupImportAPI(generics.GenericAPIView[Any]):
         for group_data in import_datas:
             if "id" in group_data:
                 # update group by id
-                group: Group | None = cast(
-                    Group | None, Group.objects.filter(id=group_data["id"]).first()
-                )
+                group = Group.objects.filter(id=group_data["id"]).first()
                 if not group:
                     return Response(
                         "Specified id group does not exist(id:%s, group:%s)"
@@ -122,7 +120,7 @@ class GroupImportAPI(generics.GenericAPIView[Any]):
                 group.save()
             else:
                 # update group by name
-                group = cast(Group | None, Group.objects.filter(name=group_data["name"]).first())
+                group = Group.objects.filter(name=group_data["name"]).first()
                 if not group:
                     # create group
                     group = Group(name=group_data["name"])
@@ -132,7 +130,7 @@ class GroupImportAPI(generics.GenericAPIView[Any]):
 
 
 class GroupExportAPI(generics.ListAPIView[Group]):
-    queryset = Group.objects.filter(is_active=True)  # type: ignore[assignment,misc]
+    queryset = Group.objects.filter(is_active=True)
     serializer_class = GroupExportSerializer
     renderer_classes = [YAMLRenderer]
 

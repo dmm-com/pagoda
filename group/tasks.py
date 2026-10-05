@@ -1,4 +1,4 @@
-from typing import Any, cast
+from typing import Any
 
 from airone.celery import app
 from airone.lib.job import may_schedule_until_job_is_ready, register_job_task
@@ -12,7 +12,7 @@ from job.params import GroupReferralParams
 @may_schedule_until_job_is_ready
 def edit_group_referrals(self: Any, job: Job) -> JobStatus:
     params = job.get_typed_params(GroupReferralParams)
-    group = cast(Group, Group.objects.get(id=params.group_id))
+    group = Group.objects.get(id=params.group_id)
 
     for entry in [x for x in group.get_referred_entries()]:
         entry.register_es()

@@ -36,9 +36,6 @@ class GroupTreeAPI(APIView):
 
         return Response(
             _make_hierarchical_group(
-                cast(
-                    QuerySet[Group],
-                    Group.objects.filter(parent_group__isnull=True, is_active=True),  # type: ignore[misc]
-                )
+                Group.objects.filter(parent_group__isnull=True, is_active=True)
             )
         )

@@ -14,10 +14,10 @@ os.environ.setdefault("DJANGO_CONFIGURATION", "Dev")
 # load AirOne application
 configurations.setup()
 
-from multidb.pinning import use_primary_db  # NOQA
+from multidb.pinning import use_primary_db  # noqa: E402
 
-from entity.models import Entity  # NOQA
-from job.models import Job  # NOQA
+from entity.models import Entity  # noqa: E402
+from job.models import Job  # noqa: E402
 
 
 def update_es_document(entities: list[str]) -> None:

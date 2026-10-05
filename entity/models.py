@@ -120,7 +120,7 @@ class EntityAttr(ACLBase):
         elif isinstance(referral, str):
             adding_referral = Entity.objects.filter(name=referral, is_active=True).first()
 
-        elif isinstance(referral, int) and not isinstance(referral, bool):  # noqa: E721
+        elif isinstance(referral, int) and not isinstance(referral, bool):
             adding_referral = Entity.objects.filter(id=referral, is_active=True).first()
 
         elif isinstance(referral, Entity) and referral.is_active:
