@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 
 from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema_field
