@@ -21,8 +21,12 @@ describe("UserForm", () => {
   Object.defineProperty(window, "django_context", {
     value: {
       user: {
+        id: 1,
         username: "user1",
         isSuperuser: false,
+        isReadonly: false,
+        parentUser: null,
+        email: "user1@example.com",
       },
     },
     writable: false,

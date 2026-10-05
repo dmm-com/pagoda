@@ -1,5 +1,6 @@
 export * from "./usePagodaSWR";
 export * from "./useFormNotification";
+export * from "./useIdParams";
 export * from "./usePage";
 export * from "./usePageTitle";
 export * from "./usePluginMappings";

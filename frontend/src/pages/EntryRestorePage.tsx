@@ -10,8 +10,8 @@ import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntityControlMenu } from "components/entity/EntityControlMenu";
 import { EntryImportModal } from "components/entry/EntryImportModal";
 import { RestorableEntryList } from "components/entry/RestorableEntryList";
+import { useIdParams } from "hooks/useIdParams";
 import { useTranslation } from "hooks/useTranslation";
-import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 const EntryRestoreContent: FC<{ entityId: number }> = ({ entityId }) => {
@@ -65,7 +65,7 @@ const EntryRestoreContent: FC<{ entityId: number }> = ({ entityId }) => {
 };
 
 export const EntryRestorePage: FC = () => {
-  const { entityId } = useTypedParams<{ entityId: number }>();
+  const { entityId } = useIdParams({ required: ["entityId"] });
 
   return (
     <Box>
