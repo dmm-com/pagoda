@@ -216,19 +216,13 @@ class EntryAPI(APIView):
         elif param_entry_name:
             query = Q(query, name=param_entry_name)
 
-        entries = list(
-            Entry.objects.filter(query)[
+        retinfo = [
+            x.to_dict(user)
+            for x in Entry.objects.filter(query)[
                 int(param_offset) : int(param_offset) + ENTRY_CONFIG.MAX_LIST_ENTRIES
             ]
-        )
-        retinfo = [x.to_dict(user) for x in entries]
+        ]
         if not any(retinfo):
-            if entries and all(
-                not user.has_permission(entry.schema, ACLType.Readable)
-                or not user.has_permission(entry, ACLType.Readable)
-                for entry in entries
-            ):
-                return Response("Permission denied to operate", status=status.HTTP_400_BAD_REQUEST)
             return Response({"result": "Failed to find entry"}, status=status.HTTP_404_NOT_FOUND)
 
         return Response([x for x in retinfo if x])
