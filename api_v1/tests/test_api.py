@@ -894,7 +894,8 @@ class APITest(AironeViewTest):
 
         # the case to specify only 'entry' parameter
         resp = self.client.get("/api/v1/entry", {"entry": "entry-0"})
-        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode("utf-8"), '"Permission denied to operate"')
 
         resp = self.client.get("/api/v1/entry", {"entry": "entry-1"})
         self.assertEqual(resp.status_code, 200)
@@ -945,6 +946,36 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(resp.json()), ENTRY_CONFIG.MAX_LIST_ENTRIES)
         self.assertEqual([x["name"] for x in resp.json()], ["bar", "baz"])
+
+    def test_get_entry_returns_permission_error_for_inaccessible_entry(self):
+        admin = self.admin_login()
+
+        public_entity = Entity.objects.create(name="PublicEntity", created_user=admin)
+        private_entry = Entry.objects.create(
+            name="PrivateEntry", schema=public_entity, created_user=admin, is_public=False
+        )
+
+        private_entity = Entity.objects.create(
+            name="PrivateEntity", created_user=admin, is_public=False
+        )
+        Entry.objects.create(name="EntryInPrivateEntity", schema=private_entity, created_user=admin)
+
+        self.guest_login()
+
+        # The Entity is readable, but the Entry is not.
+        resp = self.client.get("/api/v1/entry", {"entry_id": private_entry.id})
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(resp.content.decode("utf-8"), '"Permission denied to operate"')
+
+        # The Entry exists, but its Entity is not readable.
+        resp = self.client.get("/api/v1/entry", {"entry": "EntryInPrivateEntity"})
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(resp.content.decode("utf-8"), '"Permission denied to operate"')
+
+        # An unknown Entry remains a not-found error.
+        resp = self.client.get("/api/v1/entry", {"entry": "UnknownEntry"})
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(resp.json()["result"], "Failed to find entry")
 
     def test_get_entry_with_invalid_offset(self):
         user = self.guest_login()
