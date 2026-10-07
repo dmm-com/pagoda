@@ -699,6 +699,19 @@ class ReadonlyUserPermissionTest(AironeViewTest):
         resp = self.client.delete(f"/role/api/v2/{self.role.id}")
         self.assertEqual(resp.status_code, 403)
 
-    def test_retrieve_role_is_allowed_for_readonly_user(self):
+    def test_retrieve_role_is_forbidden_for_readonly_user(self):
         resp = self.client.get(f"/role/api/v2/{self.role.id}")
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_retrieve_role_is_forbidden_for_non_admin_member(self):
+        self.user.is_readonly = False
+        self.user.save(update_fields=["is_readonly"])
+
+        resp = self.client.get(f"/role/api/v2/{self.role.id}")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_retrieve_role_is_forbidden_for_non_member(self):
+        role = Role.objects.create(name="role-for-other-user")
+
+        resp = self.client.get(f"/role/api/v2/{role.id}")
+        self.assertEqual(resp.status_code, 403)
