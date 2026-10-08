@@ -179,11 +179,16 @@ interface Props {
     path: string;
     element: ReactNode;
   }[];
+  customIframeRoutes?: {
+    path: string;
+    element: ReactNode;
+  }[];
   pluginMap?: Map<string, Plugin>;
 }
 
 export const AppRouter: FC<Props> = ({
   customRoutes,
+  customIframeRoutes,
   pluginMap = new Map(),
 }) => {
   const router = createBrowserRouter(
@@ -198,13 +203,22 @@ export const AppRouter: FC<Props> = ({
           }
         />
         <Route
-          path={iframePath()}
-          element={
-            <Suspense fallback={<Loading />}>
-              <IframePage />
-            </Suspense>
-          }
-        />
+          path={`${iframePath()}*`}
+          element={<Outlet />}
+        >
+          <Route
+            index
+            element={
+              <Suspense fallback={<Loading />}>
+                <IframePage />
+              </Suspense>
+            }
+          />
+          {customIframeRoutes &&
+            customIframeRoutes.map((r) => (
+              <Route key={r.path} path={r.path} element={r.element} />
+            ))}
+        </Route>
         <Route
           path={loginPath()}
           element={
