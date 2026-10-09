@@ -202,10 +202,7 @@ export const AppRouter: FC<Props> = ({
             </Suspense>
           }
         />
-        <Route
-          path={`${iframePath()}*`}
-          element={<Outlet />}
-        >
+        <Route path={`${iframePath()}*`} element={<Outlet />}>
           <Route
             index
             element={
