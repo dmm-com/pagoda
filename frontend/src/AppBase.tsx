@@ -12,10 +12,18 @@ interface Props {
     path: string;
     element: ReactNode;
   }[];
+  customIframeRoutes?: {
+    path: string;
+    element: ReactNode;
+  }[];
   plugins?: Plugin[];
 }
 
-export const AppBase: FC<Props> = ({ customRoutes, plugins = [] }) => {
+export const AppBase: FC<Props> = ({
+  customRoutes,
+  customIframeRoutes,
+  plugins = [],
+}) => {
   const allCustomRoutes = [...(customRoutes || []), ...extractRoutes(plugins)];
 
   // Convert plugins array to Map for O(1) lookup
@@ -28,7 +36,11 @@ export const AppBase: FC<Props> = ({ customRoutes, plugins = [] }) => {
     <SWRConfig value={{ revalidateOnFocus: true, dedupingInterval: 2000 }}>
       <ErrorHandler>
         <CheckTerms>
-          <AppRouter customRoutes={allCustomRoutes} pluginMap={pluginMap} />
+          <AppRouter
+            customRoutes={allCustomRoutes}
+            customIframeRoutes={customIframeRoutes}
+            pluginMap={pluginMap}
+          />
         </CheckTerms>
       </ErrorHandler>
     </SWRConfig>
