@@ -15,10 +15,10 @@ import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
 import { useFormNotification } from "hooks/useFormNotification";
+import { useIdParams } from "hooks/useIdParams";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { usePrompt } from "hooks/usePrompt";
 import { useTranslation } from "hooks/useTranslation";
-import { useTypedParams } from "hooks/useTypedParams";
 import { translate } from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { listCategoryPath, topPath } from "routes/Routes";
@@ -29,9 +29,7 @@ import {
 
 export const CategoryEditPage: FC = () => {
   const { t } = useTranslation();
-  const { categoryId } = useTypedParams<{ categoryId?: number }>({
-    allowEmpty: true,
-  });
+  const { categoryId } = useIdParams({ optional: ["categoryId"] });
   const willCreate = categoryId == null;
 
   const navigate = useNavigate();
@@ -42,7 +40,7 @@ export const CategoryEditPage: FC = () => {
 
   const { data: category, isLoading: categoryLoading } = usePagodaSWR(
     categoryId != null ? ["category", categoryId] : null,
-    () => aironeApiClient.getCategory(categoryId!),
+    categoryId != null ? () => aironeApiClient.getCategory(categoryId) : null,
   );
 
   // Fill schema-required defaults for optional API fields.

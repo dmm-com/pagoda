@@ -437,11 +437,11 @@ class AttributeValue(models.Model):
                 obj = instance
             case str():
                 if val.isdigit():
-                    obj = model.objects.filter(id=val, is_active=True).first()  # type: ignore[misc, assignment]
+                    obj = model.objects.filter(id=val, is_active=True).first()
                 else:
-                    obj = model.objects.filter(name=val, is_active=True).first()  # type: ignore[misc, assignment]
+                    obj = model.objects.filter(name=val, is_active=True).first()
             case int():
-                obj = model.objects.filter(id=val, is_active=True).first()  # type: ignore[misc, assignment]
+                obj = model.objects.filter(id=val, is_active=True).first()
 
         # when value is invalid value (e.g. False, empty string) set 0
         # not to cause ValueError exception at other retrieval processing.
@@ -575,7 +575,7 @@ class AttributeValue(models.Model):
                             value
                             and not Group.objects.filter(
                                 id=value,
-                                is_active=True,  # type: ignore[misc]
+                                is_active=True,
                             ).exists()
                         ):
                             raise Exception("value(%s) is not group id" % value)
@@ -1317,9 +1317,9 @@ class Attribute(ACLBase):
                         case Group() if val.is_active:
                             group_ref = val
                         case int():
-                            group_ref = Group.objects.filter(id=val, is_active=True).first()  # type: ignore[misc, assignment]
+                            group_ref = Group.objects.filter(id=val, is_active=True).first()
                         case str() if val.isdigit():
-                            group_ref = Group.objects.filter(id=val, is_active=True).first()  # type: ignore[misc, assignment]
+                            group_ref = Group.objects.filter(id=val, is_active=True).first()
                         case _:
                             return None
                     if group_ref:
@@ -1917,6 +1917,10 @@ class Entry(ACLBase):
 
     history = HistoricalRecords(excluded_fields=["status", "updated_time"])
 
+    # HistoricalRecords sets `_history_user` dynamically to pick up the acting user
+    # for each save; declare it here so callers can assign without a type: ignore.
+    _history_user: User | None
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.objtype = ACLObjType.Entry
@@ -2353,12 +2357,16 @@ class Entry(ACLBase):
             self.unregister_es()
 
     # implementation for Entry
-    def check_duplication_entry_at_restoring(self, entry_chain: list["Entry"] = []) -> bool:
+    def check_duplication_entry_at_restoring(
+        self, entry_chain: list["Entry"] | None = None
+    ) -> bool:
         """This method returns true when this Entry has referral that is
            same name with other entry at restoring Entry.
         - case True: there is an Entry(at least) that is same name with same Entity.
         - case False: there is no Entry that is same name with same Entity.
         """
+        if entry_chain is None:
+            entry_chain = []
         for attr in self.attrs.filter(is_active=False):
             if attr.check_duplication_entry_at_restoring(entry_chain):
                 return True
@@ -2405,7 +2413,7 @@ class Entry(ACLBase):
         cloned_entry = Entry(**params)
 
         # for history record
-        cloned_entry._history_user = user  # type: ignore[attr-defined]
+        cloned_entry._history_user = user
 
         cloned_entry.save()
 

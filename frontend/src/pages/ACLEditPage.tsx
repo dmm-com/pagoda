@@ -16,9 +16,9 @@ import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
+import { useIdParams } from "hooks/useIdParams";
 import { usePrompt } from "hooks/usePrompt";
 import { useTranslation } from "hooks/useTranslation";
-import { useTypedParams } from "hooks/useTypedParams";
 import { translate } from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 import {
@@ -234,7 +234,7 @@ const ACLEditContent: FC<{ objectId: number }> = ({ objectId }) => {
 };
 
 export const ACLEditPage: FC = () => {
-  const { objectId } = useTypedParams<{ objectId: number }>();
+  const { objectId } = useIdParams({ required: ["objectId"] });
 
   return (
     <Box className="container-fluid">

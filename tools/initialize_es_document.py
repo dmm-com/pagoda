@@ -14,9 +14,9 @@ os.environ.setdefault("DJANGO_CONFIGURATION", "Dev")
 # load AirOne application
 configurations.setup()
 
-from airone.lib.elasticsearch import ESS  # NOQA
-from entity.models import Entity  # NOQA
-from job.models import Job  # NOQA
+from airone.lib.elasticsearch import ESS  # noqa: E402
+from entity.models import Entity  # noqa: E402
+from job.models import Job  # noqa: E402
 
 
 def initialize_es_document(entities: list[str]) -> None:

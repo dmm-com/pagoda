@@ -15,49 +15,45 @@ type AironeApiNonFieldsError = {
 
 type AironeApiIndexedFieldsError = Array<ErrorDetail>;
 
-type AironeApiErrorBase = {
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value != null && !Array.isArray(value);
+
+const isErrorDetail = (value: unknown): value is ErrorDetail =>
+  isRecord(value) &&
+  typeof value.code === "string" &&
+  typeof value.message === "string";
+
+// Field-level details only need a message; the code is optional there.
+type FieldErrorDetail = {
   code?: string;
-  message?: string;
-  non_field_errors?: Array<ErrorDetail>;
-  [key: string]: unknown;
+  message: string;
 };
+
+const isFieldErrorDetail = (value: unknown): value is FieldErrorDetail =>
+  isRecord(value) &&
+  typeof value.message === "string" &&
+  (value.code === undefined || typeof value.code === "string");
+
+const isErrorDetailList = (value: unknown): value is Array<ErrorDetail> =>
+  Array.isArray(value) && value.length > 0 && value.every(isErrorDetail);
 
 // root-level error has the same structure with ErrorDetail
 export function isAironeApiRootError(
   jsonError: unknown,
 ): jsonError is ErrorDetail {
-  if (Array.isArray(jsonError)) {
-    return false;
-  }
-
-  const error = jsonError as AironeApiErrorBase;
-  return error?.code != null && error?.message != null;
+  return isErrorDetail(jsonError);
 }
 
 export function isAironeApiNonFieldsError(
   jsonError: unknown,
 ): jsonError is AironeApiNonFieldsError {
-  if (Array.isArray(jsonError)) {
-    return false;
-  }
-
-  const error = jsonError as AironeApiErrorBase;
-  return (
-    error?.non_field_errors != null &&
-    Array.isArray(error.non_field_errors) &&
-    error.non_field_errors[0]?.code != null &&
-    error.non_field_errors[0]?.message != null
-  );
+  return isRecord(jsonError) && isErrorDetailList(jsonError.non_field_errors);
 }
 
 export function isAironeApiIndexedError(
   jsonError: unknown,
 ): jsonError is AironeApiIndexedFieldsError {
-  return (
-    Array.isArray(jsonError) &&
-    jsonError[0]?.code != null &&
-    jsonError[0]?.message != null
-  );
+  return isErrorDetailList(jsonError);
 }
 
 // https://github.com/dmm-com/airone/wiki/(Blueprint)-AirOne-API-Error-code-mapping
@@ -69,8 +65,9 @@ const aironeAPIErrors: Record<string, TranslationKey> = {
   "AE-260000": "apiError.AE-260000",
 };
 
-const extractErrorDetail = (errorDetail: ErrorDetail): string => {
-  const key = aironeAPIErrors[errorDetail.code];
+const extractErrorDetail = (errorDetail: FieldErrorDetail): string => {
+  const key =
+    errorDetail.code != null ? aironeAPIErrors[errorDetail.code] : undefined;
   return key != null ? translate(key) : errorDetail.message;
 };
 
@@ -81,42 +78,35 @@ export const toReportableNonFieldErrors = async (
     return null;
   }
 
-  const jsonError = await error.response.json();
+  const jsonError: unknown = await error.response.json();
 
   if (isAironeApiRootError(jsonError)) {
-    return extractErrorDetail(jsonError as ErrorDetail);
+    return extractErrorDetail(jsonError);
   }
 
   if (isAironeApiNonFieldsError(jsonError)) {
-    return (jsonError as AironeApiNonFieldsError).non_field_errors
+    return jsonError.non_field_errors
       .map((e) => extractErrorDetail(e))
       .join(", ");
   }
 
   if (isAironeApiIndexedError(jsonError)) {
-    return (jsonError as AironeApiIndexedFieldsError)
-      .map((e) => extractErrorDetail(e))
-      .join(", ");
+    return jsonError.map((e) => extractErrorDetail(e)).join(", ");
   }
 
-  const fieldErrors = (
-    Array.isArray(jsonError) ? jsonError : [jsonError]
-  ).flatMap((item) =>
-    Object.entries(item as Record<string, unknown>).flatMap(
-      ([field, details]) =>
+  // Field errors may be a single record or an array of records (indexed
+  // nested errors); report each as "field: message".
+  const fieldErrors = (Array.isArray(jsonError) ? jsonError : [jsonError])
+    .filter(isRecord)
+    .flatMap((item) =>
+      Object.entries(item).flatMap(([field, details]) =>
         Array.isArray(details)
           ? details
-              .filter(
-                (detail): detail is ErrorDetail =>
-                  typeof detail === "object" &&
-                  detail != null &&
-                  "message" in detail &&
-                  typeof detail.message === "string",
-              )
-              .map((detail) => field + ": " + extractErrorDetail(detail))
+              .filter(isFieldErrorDetail)
+              .map((detail) => `${field}: ${extractErrorDetail(detail)}`)
           : [],
-    ),
-  );
+      ),
+    );
   if (fieldErrors.length > 0) {
     return fieldErrors.join(", ");
   }
@@ -134,16 +124,16 @@ export const extractAPIException = async <T extends Record<string, unknown>>(
     return;
   }
 
-  const jsonError = await error.response.json();
+  const jsonError: unknown = await error.response.json();
 
   // root-level error will drop field-level errors
   if (isAironeApiRootError(jsonError)) {
-    nonFieldReporter(extractErrorDetail(jsonError as ErrorDetail));
+    nonFieldReporter(extractErrorDetail(jsonError));
     return;
   }
 
   if (isAironeApiNonFieldsError(jsonError)) {
-    const fullMessage = (jsonError as AironeApiNonFieldsError).non_field_errors
+    const fullMessage = jsonError.non_field_errors
       .map((e) => extractErrorDetail(e))
       .join(", ");
     nonFieldReporter(fullMessage);
@@ -151,17 +141,20 @@ export const extractAPIException = async <T extends Record<string, unknown>>(
   }
 
   if (isAironeApiIndexedError(jsonError)) {
-    const fullMessage = (jsonError as AironeApiIndexedFieldsError)
-      .map((e) => extractErrorDetail(e))
-      .join(", ");
+    const fullMessage = jsonError.map((e) => extractErrorDetail(e)).join(", ");
     nonFieldReporter(fullMessage);
     return;
   }
 
-  const typed = jsonError as Record<string, Array<ErrorDetail>>;
-  Object.keys(typed).forEach((fieldName: string) => {
-    const details = typed[fieldName];
-    if (Array.isArray(details) && details.length > 0) {
+  if (!isRecord(jsonError)) {
+    return;
+  }
+
+  Object.entries(jsonError).forEach(([fieldName, value]) => {
+    const details = Array.isArray(value)
+      ? value.filter(isFieldErrorDetail)
+      : [];
+    if (details.length > 0) {
       const message = details.map((e) => extractErrorDetail(e)).join(", ");
 
       // This convert snake_case to camelCase (e.g. "nw_addr" -> "nwAddr")

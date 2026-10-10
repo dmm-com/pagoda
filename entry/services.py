@@ -567,7 +567,7 @@ class AdvancedSearchService:
         )
         for entry_id in set(entry_ids_from_es) - set(entry_ids_from_db):
             if not is_update:
-                Logger.warning("Delete elasticsearch document (entry_id: %s)" % entry.id)
+                Logger.warning("Delete elasticsearch document (entry_id: %s)" % entry_id)
             try:
                 es.delete_entry(entry_id)
             except NotFoundError:
@@ -908,4 +908,4 @@ def _is_stale(
         return True
 
     current = _latest_value_ids(entry, [int(x["id"]) for x in entry_data.get("attrs", [])])
-    return current != baseline["values"]
+    return bool(current != baseline["values"])

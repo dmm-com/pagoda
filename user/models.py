@@ -87,8 +87,8 @@ class User(AbstractUser):
         # up the parent Manager's generic, so we widen with ignore[return-value].
         return Group.objects.filter(
             id__in=[g.id for g in self.groups.all()],
-            is_active=True,  # type: ignore[misc]
-        )  # type: ignore[return-value]
+            is_active=True,
+        )
 
     # to make a polymorphism between the Group model
     @property

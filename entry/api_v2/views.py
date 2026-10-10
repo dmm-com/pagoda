@@ -107,7 +107,7 @@ class EntryPermission(BasePermission):
         return True
 
 
-class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
+class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet[Entry]):
     """Entry API ViewSet with plugin override support.
 
     Plugin overrides are automatically handled by PluginOverrideMixin.
@@ -118,8 +118,8 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated & EntryPermission]
     pagination_class = LimitOffsetPagination
 
-    def get_serializer_class(self) -> type[BaseSerializer]:
-        serializer = {
+    def get_serializer_class(self) -> type[BaseSerializer[Any]]:
+        serializer: dict[str, type[BaseSerializer[Any]]] = {
             "retrieve": EntryRetrieveSerializer,
             "update": EntryUpdateSerializer,
             "copy": EntryCopySerializer,
@@ -173,7 +173,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         if not entry.is_active:
             raise ObjectNotExistsError("specified entry has already been deleted")
 
-        user: User = request.user
+        user = cast("User", request.user)
 
         if custom_view.is_custom("before_delete_entry_v2", entry.schema.name):
             custom_view.call_custom("before_delete_entry_v2", entry.schema.name, user, entry)
@@ -199,7 +199,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         if not entry.schema.is_available(re.sub(r"_deleted_[0-9_]*$", "", entry.name)):
             raise DuplicatedObjectExistsError("specified entry has already exist alias")
 
-        user: User = request.user
+        user = cast("User", request.user)
 
         if custom_view.is_custom("before_restore_entry_v2", entry.schema.name):
             custom_view.call_custom("before_restore_entry_v2", entry.schema.name, user, entry)
@@ -223,6 +223,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
 
     def copy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         src_entry: Entry = self.get_object()
+        user = cast("User", request.user)
 
         if not src_entry.is_active:
             raise ObjectNotExistsError("specified entry is not active")
@@ -238,7 +239,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         }
 
         # run copy job
-        job = Job.new_copy(request.user, src_entry, text="Preparing to copy entry", params=params)
+        job = Job.new_copy(user, src_entry, text="Preparing to copy entry", params=params)
         job.run()
 
         return Response({}, status=status.HTTP_200_OK)
@@ -247,13 +248,15 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
     def list_alias(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         entry: Entry = self.get_object()
 
-        self.queryset = AliasEntry.objects.filter(entry=entry, entry__is_active=True)
+        self.queryset = AliasEntry.objects.filter(  # type: ignore[assignment]
+            entry=entry, entry__is_active=True
+        )
 
         return super().list(request, *args, **kwargs)
 
     @extend_schema(responses=EntryHistoryAttributeValueSerializer(many=True))
     def list_histories(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        user: User = self.request.user
+        user = cast("User", self.request.user)
         entry: Entry = self.get_object()
 
         # check permission for attribute
@@ -268,14 +271,14 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         display_attr_names: set[str] = {
             a.schema.display_attr for a in target_attrs if a.schema.display_attr
         }
-        display_prefetches: list[Prefetch] = []
-        data_array_extra: list[Prefetch] = []
+        display_prefetches: list[Prefetch[Any]] = []
+        data_array_extra: list[Prefetch[Any]] = []
         if display_attr_names:
             display_prefetches.append(_make_display_attr_prefetch(display_attr_names))
             data_array_extra.append(_make_display_attr_prefetch(display_attr_names))
 
         self.queryset = (
-            AttributeValue.objects.filter(
+            AttributeValue.objects.filter(  # type: ignore[assignment]
                 parent_attr__in=target_attrs,
                 parent_attrv__isnull=True,
             )
@@ -376,10 +379,10 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         OpenApiParameter("query", OpenApiTypes.STR, OpenApiParameter.QUERY),
     ],
 )
-class searchAPI(viewsets.ReadOnlyModelViewSet):
+class searchAPI(viewsets.ReadOnlyModelViewSet[Any]):
     serializer_class = EntrySearchSerializer
 
-    def get_queryset(self) -> list[Any]:
+    def get_queryset(self) -> list[Any]:  # type: ignore[override]  # ES results, not a QuerySet
         queryset: list[Any] = []
         query = self.request.query_params.get("query", None)
 
@@ -393,7 +396,7 @@ class searchAPI(viewsets.ReadOnlyModelViewSet):
 
 
 @db_readonly
-class AdvancedSearchAPI(generics.GenericAPIView):
+class AdvancedSearchAPI(generics.GenericAPIView[Any]):
     serializer_class = AdvancedSearchSerializer
     """
     NOTE for now it's just copied from /api/v1/entry/search, but it should be
@@ -654,7 +657,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         serializer = AdvancedSearchResultSerializer(
             data={
                 "count": resp.ret_count,
-                "values": [x.dict() for x in resp.ret_values],
+                "values": [x.model_dump() for x in resp.ret_values],
                 "total_count": total_count,
             }
         )
@@ -668,7 +671,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
 
 @db_readonly
-class AdvancedSearchChainAPI(generics.GenericAPIView):
+class AdvancedSearchChainAPI(generics.GenericAPIView[Any]):
     serializer_class = EntrySearchChainSerializer
     """
     NOTE For now, it's just copied from /api/v1/entry/search_chain.
@@ -700,7 +703,7 @@ class AdvancedSearchChainAPI(generics.GenericAPIView):
         return Response(EntryBaseSerializer(entries, many=True).data)
 
 
-class AdvancedSearchResultAPI(generics.GenericAPIView):
+class AdvancedSearchResultAPI(generics.GenericAPIView[Any]):
     serializer_class = AdvancedSearchResultExportSerializer
 
     def post(self, request: Request) -> Response:
@@ -715,17 +718,17 @@ class AdvancedSearchResultAPI(generics.GenericAPIView):
         OpenApiParameter("keyword", OpenApiTypes.STR, OpenApiParameter.QUERY),
     ],
 )
-class EntryReferralAPI(viewsets.ReadOnlyModelViewSet):
+class EntryReferralAPI(viewsets.ReadOnlyModelViewSet[Entry]):
     serializer_class = EntryBaseSerializer
     pagination_class = EntryReferralPagination
 
-    def get_queryset(self) -> QuerySet[Entry] | list[Entry]:
+    def get_queryset(self) -> QuerySet[Entry, Entry]:
         entry_id = self.kwargs["pk"]
         keyword = self.request.query_params.get("keyword", None)
 
         entry = Entry.objects.filter(pk=entry_id).first()
         if not entry:
-            return []
+            return Entry.objects.none()
 
         ids = AttributeValue.objects.filter(
             Q(referral=entry, is_latest=True) | Q(referral=entry, parent_attrv__is_latest=True)
@@ -739,10 +742,12 @@ class EntryReferralAPI(viewsets.ReadOnlyModelViewSet):
         return Entry.objects.filter(query).select_related("schema")
 
 
-class EntryExportAPI(generics.GenericAPIView):
+class EntryExportAPI(generics.GenericAPIView[Any]):
     serializer_class = EntryExportSerializer
 
     def post(self, request: Request, entity_id: int) -> Response:
+        user = cast("User", request.user)
+
         if not Entity.objects.filter(id=entity_id).exists():
             return Response(
                 "Failed to get entity of specified id", status=status.HTTP_400_BAD_REQUEST
@@ -764,7 +769,7 @@ class EntryExportAPI(generics.GenericAPIView):
         job_status_not_finished = [JobStatus.PREPARING, JobStatus.PROCESSING]
         if (
             Job.get_job_with_params(
-                request.user,
+                user,
                 JobOperation.EXPORT_ENTRY_V2,
                 job_params.model_dump(mode="json"),
             )
@@ -776,14 +781,14 @@ class EntryExportAPI(generics.GenericAPIView):
             )
 
         entity = Entity.objects.get(id=entity_id)
-        if not request.user.has_permission(entity, ACLType.Readable):
+        if not user.has_permission(entity, ACLType.Readable):
             return Response(
                 'Permission denied to _value "%s"' % entity.name, status=status.HTTP_400_BAD_REQUEST
             )
 
         # create a job to export search result and run it
         job = Job.new_export_v2(
-            request.user,
+            user,
             target=entity,
             text=timestamped_filename("entry_%s.%s" % (entity.name, str(job_params.export_format))),
             params=job_params.model_dump(mode="json"),
@@ -796,18 +801,19 @@ class EntryExportAPI(generics.GenericAPIView):
         )
 
 
-class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
+class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet[Any]):
     serializer_class = GetEntryAttrReferralSerializer
 
     def _resolve_entity_attr(self) -> EntityAttr:
         # DRF calls both get_serializer_context() and get_queryset() per
         # request; cache the resolved EntityAttr on self to avoid a duplicate
         # Attribute + EntityAttr lookup on every autocomplete keystroke.
-        cached = getattr(self, "_entity_attr_cache", None)
+        cached: EntityAttr | None = getattr(self, "_entity_attr_cache", None)
         if cached is not None:
             return cached
         attr_id = self.kwargs["attr_id"]
         attr = Attribute.objects.filter(id=attr_id).first()
+        entity_attr: EntityAttr | None
         if attr:
             entity_attr = attr.schema
         else:
@@ -818,7 +824,7 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
         return entity_attr
 
     def get_serializer_context(self) -> dict[str, Any]:
-        context = super().get_serializer_context()
+        context = dict(super().get_serializer_context())
         # Skip resolution for actions like get_schema where kwargs is empty.
         if "attr_id" in self.kwargs:
             entity_attr = self._resolve_entity_attr()
@@ -832,6 +838,7 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
 
         conditions = {"is_active": True}
         conditions_q = Q()
+        normalized_keyword: str | None = None
         if keyword:
             normalized_keyword = normalize_search_text(keyword)
             conditions_q = Q()
@@ -875,6 +882,7 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
                 qs = qs.prefetch_related(display_attr_prefetch)
             entries: list[Entry] = list(qs)
             if keyword:
+                assert normalized_keyword is not None
                 entries = [
                     entry
                     for entry in entries
@@ -886,6 +894,7 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
                 list[Group], list(Group.objects.filter(**conditions).order_by("name"))
             )
             if keyword:
+                assert normalized_keyword is not None
                 groups = [
                     group
                     for group in groups
@@ -895,6 +904,7 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
         elif entity_attr.type & AttrType.ROLE:
             roles = list(Role.objects.filter(**conditions).order_by("name"))
             if keyword:
+                assert normalized_keyword is not None
                 roles = [
                     role for role in roles if normalized_keyword in normalize_search_text(role.name)
                 ]
@@ -938,12 +948,12 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
         )
 
 
-class EntryImportAPI(generics.GenericAPIView):
+class EntryImportAPI(generics.GenericAPIView[Entity]):
     parser_classes = [YAMLParser]
     serializer_class = EntryImportSerializer
 
     def get_queryset(self) -> QuerySet[Entity]:
-        import_data = self.request.data
+        import_data = cast("list[dict[str, Any]]", self.request.data)
         entity_names = [d["entity"] for d in import_data]
         return Entity.objects.filter(name__in=entity_names, is_active=True)
 
@@ -965,12 +975,12 @@ class EntryImportAPI(generics.GenericAPIView):
         },
     )
     def post(self, request: Request) -> Response:
-        if request.user.is_readonly:
+        user = cast("User", request.user)
+        if user.is_readonly:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         import_datas = request.data
         preview_job_id = _preview_job_id_param(request)
-        user: User = request.user
         serializer = EntryImportSerializer(data=import_datas)
         serializer.is_valid(raise_exception=True)
         import_datas = serializer.validated_data
@@ -1039,7 +1049,7 @@ def _preview_job_id_param(request: Request) -> int | None:
         raise InvalidValueError("'preview_job_id' must be an integer")
 
 
-class EntryImportPreviewAPI(generics.GenericAPIView):
+class EntryImportPreviewAPI(generics.GenericAPIView[Any]):
     """Start a job that reports what an item import file would change.
 
     Nothing is written: applying an item import also reindexes Elasticsearch and
@@ -1058,11 +1068,11 @@ class EntryImportPreviewAPI(generics.GenericAPIView):
         responses={202: ImportPreviewJobsSerializer},
     )
     def post(self, request: Request) -> Response:
-        if request.user.is_readonly:
+        user = cast("User", request.user)
+        if user.is_readonly:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        import_datas = request.data
-        user: User = request.user
+        import_datas = cast("list[dict[str, Any]]", request.data)
         serializer = EntryImportSerializer(data=import_datas)
         serializer.is_valid(raise_exception=True)
 
@@ -1070,7 +1080,7 @@ class EntryImportPreviewAPI(generics.GenericAPIView):
             name__in=[d["entity"] for d in import_datas], is_active=True
         )
 
-        jobs: list[dict[str, int]] = []
+        jobs: list[dict[str, Any]] = []
         error_list: list[str] = []
         for import_data in import_datas:
             entity = next((e for e in entities if e.name == import_data["entity"]), None)
@@ -1091,26 +1101,32 @@ class EntryImportPreviewAPI(generics.GenericAPIView):
         )
 
 
-class EntryAttributeValueRestoreAPI(generics.UpdateAPIView):
+class EntryAttributeValueRestoreAPI(generics.UpdateAPIView[AttributeValue]):
     queryset = AttributeValue.objects.all()
     serializer_class = EntryAttributeValueRestoreSerializer
 
     def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        if request.user.is_readonly:
+        user = cast("User", request.user)
+        if user.is_readonly:
             return Response(status=status.HTTP_403_FORBIDDEN)
         return super().update(request, *args, **kwargs)
 
 
-class EntryBulkUpdateAPI(generics.UpdateAPIView):
+class EntryBulkUpdateAPI(generics.UpdateAPIView[Any]):
     serializer_class = EntryBulkUpdateSerializer
 
     def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        user: User = request.user
+        user = cast("User", request.user)
 
         serializer = EntryBulkUpdateSerializer(data=request.data, context={"_user": user})
         serializer.is_valid(raise_exception=True)
 
-        model = Entity.objects.filter(id=request.data.get("modelid"), is_active=True).first()
+        modelid = cast("str | int | None", request.data.get("modelid"))
+        model = (
+            Entity.objects.filter(id=modelid, is_active=True).first()
+            if modelid is not None
+            else None
+        )
         if not model:
             return Response("There is no model that is specified by modelid.", status=400)
 
@@ -1120,12 +1136,12 @@ class EntryBulkUpdateAPI(generics.UpdateAPIView):
         return Response({}, status=status.HTTP_202_ACCEPTED)
 
 
-class ItemRollbackAPI(generics.GenericAPIView):
+class ItemRollbackAPI(generics.GenericAPIView[Any]):
     serializer_class = ItemRollbackSerializer
 
     @extend_schema(request=ItemRollbackSerializer)
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        user: User = request.user
+        user = cast("User", request.user)
         if user.is_readonly:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
@@ -1245,7 +1261,7 @@ class ItemRollbackAPI(generics.GenericAPIView):
         OpenApiParameter("attrinfo", OpenApiTypes.STR, OpenApiParameter.QUERY),
     ],
 )
-class EntryBulkDeleteAPI(generics.DestroyAPIView):
+class EntryBulkDeleteAPI(generics.DestroyAPIView[Any]):
     # (Execuse)
     # Specifying serializer_class is necessary for passing processing
     # of npm run generate
@@ -1262,9 +1278,9 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
                 if not FilterKey.isin(int(info["filterKey"])):
                     raise RequiredParameterError("(01)Invalid attrinfo was specified")
         except Exception as e:
-            raise RequiredParameterError(e)
+            raise RequiredParameterError(str(e))
 
-        return json_loaded_value
+        return cast("list[dict[str, Any]]", json_loaded_value)
 
     def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         # validate "attrinfo" parameter and save it before deleting item processing
@@ -1278,12 +1294,13 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
         if len(ids) != entries.count():
             raise NotFound("some specified entries don't exist")
 
-        user: User = request.user
+        user = cast("User", request.user)
         if not all([user.has_permission(e, ACLType.Writable) for e in entries]):
             raise PermissionDenied("deleting some entries is not allowed")
 
         # Run jobs that delete user specified Items
-        target_model = entries.first().schema if entries.first() else None
+        first_entry = entries.first()
+        target_model = first_entry.schema if first_entry else None
         for entry in entries:
             job: Job = Job.new_delete_entry_v2(user, entry)
             job.run()
@@ -1295,8 +1312,8 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
 
         if isAll and target_model is not None:
             results = AdvancedSearchService.search_entries(
-                request.user,
-                hint_entity_ids=list(set([e.schema.id for e in entries])),
+                user,
+                hint_entity_ids=list(set([str(e.schema.id) for e in entries])),
                 hint_attrs=[
                     AttrHint(
                         **{
@@ -1322,14 +1339,15 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class EntryAliasAPI(viewsets.ModelViewSet):
+class EntryAliasAPI(viewsets.ModelViewSet[AliasEntry]):
     pagination_class = LimitOffsetPagination
     serializer_class = EntryAliasSerializer
     queryset = AliasEntry.objects.filter(entry__is_active=True)
 
     def bulk_create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         # refuse input that has duplicated name
-        counter = Counter([x["name"] for x in request.data])
+        bulk_data = cast("list[dict[str, Any]]", request.data)
+        counter = Counter([x["name"] for x in bulk_data])
         if any([c > 1 for c in counter.values()]):
             raise DuplicatedObjectExistsError(
                 "Duplicated names(%s) were specified"

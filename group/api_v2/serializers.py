@@ -28,6 +28,7 @@ class GroupSerializer(serializers.ModelSerializer[Group]):
 
     @extend_schema_field(GroupMemberSerializer(many=True))
     def get_members(self, obj: Group) -> list[GroupMemberType]:
+        # active_members is attached by Prefetch(to_attr=...), so it is invisible to the checker.
         users = cast(list[User], getattr(obj, "active_members"))
         return [
             {
@@ -101,7 +102,7 @@ class GroupCreateUpdateSerializer(serializers.ModelSerializer[Group]):
         return instance
 
 
-class GroupTreeSerializer(serializers.ModelSerializer[Group]):
+class GroupTreeV2Serializer(serializers.ModelSerializer[Group]):
     children = serializers.SerializerMethodField(method_name="get_children")
 
     class Meta:

@@ -26,6 +26,8 @@ from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from .utils import _is_authenticated
+
 if TYPE_CHECKING:
     from entity.models import Entity
     from entry.models import Entry
@@ -104,7 +106,7 @@ def override_operation(operation: str) -> Callable[[F], F]:
             return method(*args, **kwargs)
 
         setattr(wrapper, OVERRIDE_META_ATTR, meta)
-        return wrapper  # type: ignore
+        return wrapper  # type: ignore[return-value]
 
     return decorator
 
@@ -288,7 +290,7 @@ class OverrideContext:
     @property
     def is_authenticated(self) -> bool:
         """Check if the user is authenticated."""
-        return bool(self.user and self.user.is_authenticated)
+        return _is_authenticated(self.user)
 
     def get_request_data(self) -> Dict[str, Any]:
         """Get the request data as a dictionary."""

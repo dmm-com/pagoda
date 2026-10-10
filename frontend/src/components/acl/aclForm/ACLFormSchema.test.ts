@@ -13,7 +13,11 @@ beforeAll(() => {
       version: "v0.0.1-test",
       user: {
         id: 123,
+        username: "admin",
         isSuperuser: true,
+        isReadonly: false,
+        parentUser: null,
+        email: "admin@example.com",
       },
     },
     writable: false,

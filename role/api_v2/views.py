@@ -51,7 +51,7 @@ class RolePermission(BasePermission):
             current_user, list(obj.admin_users.all()), list(obj.admin_groups.all())
         )
         permission = {
-            "retrieve": True,
+            "retrieve": is_editable,
             "create": True,
             "destroy": is_editable,
             "update": is_editable,
@@ -69,10 +69,12 @@ class RoleAPI(viewsets.ModelViewSet[Role]):
     def get_queryset(self) -> QuerySet[Role]:
         base_queryset = Role.objects.filter(is_active=True).prefetch_related(
             Prefetch("users", queryset=User.objects.filter(is_active=True)),
-            Prefetch("groups", queryset=Group.objects.filter(is_active=True)),  # type: ignore[misc]
+            Prefetch("groups", queryset=Group.objects.filter(is_active=True)),
             Prefetch("admin_users", queryset=User.objects.filter(is_active=True)),
-            Prefetch("admin_groups", queryset=Group.objects.filter(is_active=True)),  # type: ignore[misc]
+            Prefetch("admin_groups", queryset=Group.objects.filter(is_active=True)),
         )
+        if self.action == "retrieve":
+            return base_queryset
         return get_permitted_roles(cast(User, self.request.user), base_queryset)
 
     def get_serializer_class(self) -> type[serializers.Serializer[Any]]:

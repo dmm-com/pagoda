@@ -4,8 +4,8 @@ import { FC, Suspense, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { preload } from "swr";
 
+import { useIdParams } from "../hooks/useIdParams";
 import { usePagodaSWR, wrapFetcher } from "../hooks/usePagodaSWR";
-import { useTypedParams } from "../hooks/useTypedParams";
 
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
@@ -29,10 +29,9 @@ const EntryCopyContent: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
-  const { entityId, entryId } = useTypedParams<{
-    entityId: number;
-    entryId: number;
-  }>();
+  const { entityId, entryId } = useIdParams({
+    required: ["entityId", "entryId"],
+  });
 
   // newline delimited string value, not string[]
   const [entries, _setEntries] = useState<string>("");
@@ -130,10 +129,9 @@ const EntryCopyContent: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
 };
 
 export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
-  const { entityId, entryId } = useTypedParams<{
-    entityId: number;
-    entryId: number;
-  }>();
+  const { entityId, entryId } = useIdParams({
+    required: ["entityId", "entryId"],
+  });
 
   preload(
     ["entity", entityId],

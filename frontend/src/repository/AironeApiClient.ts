@@ -57,7 +57,7 @@ import {
   UserToken,
   UserUpdate,
   WebhookCreateUpdate,
-  GroupTree as _GroupTree,
+  GroupTreeV2 as _GroupTree,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 import {
@@ -1058,7 +1058,7 @@ class AironeApiClient {
 
   async updateTrigger(
     triggerId: number,
-    params: TriggerParentUpdate,
+    params: Omit<TriggerParentUpdate, "id">,
   ): Promise<void> {
     await this.trigger.triggerApiV2Update(
       {
@@ -1074,7 +1074,7 @@ class AironeApiClient {
     );
   }
 
-  async createTrigger(params: TriggerParentUpdate): Promise<void> {
+  async createTrigger(params: Omit<TriggerParentUpdate, "id">): Promise<void> {
     await this.trigger.triggerApiV2Create(
       {
         triggerParentCreate: params,

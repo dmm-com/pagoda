@@ -13,11 +13,11 @@ import { EntityForm } from "components/entity/EntityForm";
 import { Schema, schema } from "components/entity/entityForm/EntityFormSchema";
 import { toEntityFormValues } from "components/entity/entityForm/toEntityFormValues";
 import { useFormNotification } from "hooks/useFormNotification";
+import { useIdParams } from "hooks/useIdParams";
 import { usePageTitle } from "hooks/usePageTitle";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { usePrompt } from "hooks/usePrompt";
 import { useTranslation } from "hooks/useTranslation";
-import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { entitiesPath, entityEntriesPath } from "routes/Routes";
 import { TITLE_TEMPLATES } from "services";
@@ -29,9 +29,7 @@ import { BaseAttributeTypes } from "services/Constants";
 import { processAttrDefaultValue } from "services/entity/Edit";
 
 export const EntityEditPage: FC = () => {
-  const { entityId } = useTypedParams<{
-    entityId?: number;
-  }>({ allowEmpty: true });
+  const { entityId } = useIdParams({ optional: ["entityId"] });
 
   const willCreate = entityId === undefined;
 
@@ -44,7 +42,7 @@ export const EntityEditPage: FC = () => {
 
   const { data: entity, isLoading: entityLoading } = usePagodaSWR(
     entityId !== undefined ? ["entity", entityId] : null,
-    () => aironeApiClient.getEntity(entityId!),
+    entityId !== undefined ? () => aironeApiClient.getEntity(entityId) : null,
   );
 
   const { data: referralEntities, isLoading: referralEntitiesLoading } =

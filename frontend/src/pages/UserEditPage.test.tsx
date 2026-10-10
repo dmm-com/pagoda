@@ -41,7 +41,11 @@ describe("EditUserPage", () => {
     value: {
       user: {
         id: 1,
-        is_superuser: false,
+        username: "user1",
+        isSuperuser: false,
+        isReadonly: false,
+        parentUser: null,
+        email: "user1@example.com",
       },
     },
     writable: false,

@@ -5,8 +5,8 @@ import Grid from "@mui/material/Grid2";
 import { useSnackbar } from "notistack";
 import { FC, Suspense, useEffect, useState } from "react";
 
+import { useIdParams } from "../hooks/useIdParams";
 import { usePagodaSWR } from "../hooks/usePagodaSWR";
-import { useTypedParams } from "../hooks/useTypedParams";
 
 import { PaginationFooter } from "components";
 import { Loading } from "components/common/Loading";
@@ -27,9 +27,7 @@ import {
 } from "services";
 
 const ListAliasEntryContent: FC = () => {
-  const { entityId } = useTypedParams<{
-    entityId: number;
-  }>();
+  const { entityId } = useIdParams({ required: ["entityId"] });
 
   const { t } = useTranslation();
   const { enqueueSubmitResult } = useFormNotification(

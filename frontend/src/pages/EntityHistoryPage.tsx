@@ -9,10 +9,10 @@ import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntityControlMenu } from "components/entity/EntityControlMenu";
 import { EntityHistoryList } from "components/entity/EntityHistoryList";
 import { EntryImportModal } from "components/entry/EntryImportModal";
+import { useIdParams } from "hooks/useIdParams";
 import { usePage } from "hooks/usePage";
 import { usePagodaSWR, wrapFetcher } from "hooks/usePagodaSWR";
 import { useTranslation } from "hooks/useTranslation";
-import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 const EntityHistoryContent: FC<{
@@ -83,7 +83,7 @@ const EntityHistoryContent: FC<{
 };
 
 export const EntityHistoryPage: FC = () => {
-  const { entityId } = useTypedParams<{ entityId: number }>();
+  const { entityId } = useIdParams({ required: ["entityId"] });
   const { page, changePage } = usePage();
 
   preload(
