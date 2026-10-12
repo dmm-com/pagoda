@@ -12,6 +12,12 @@ on:
       - "apiclient/typescript-fetch/package.json"
       - ".github/workflows/release-apiv2-client.yml"
 
+# Never cancel a publish midway: cancel-in-progress is disabled and runs for the
+# same ref are serialized instead.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   # Generates the client from the merged (trusted) code and publishes it.
   # Publish is skipped when the current version is already on the registry,
