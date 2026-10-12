@@ -24,6 +24,7 @@ import { formatAdvancedSearchParams } from "../services/entry/AdvancedSearch";
 
 import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { useTranslation } from "hooks/useTranslation";
 import { advancedSearchResultPath, topPath } from "routes/Routes";
 
 const StyledFlexBox = styled(Box)({
@@ -43,6 +44,7 @@ const StyledTypography = styled(Typography)({
 });
 
 export const AdvancedSearchPage: FC = () => {
+  const { t } = useTranslation();
   const [selectedEntities, setSelectedEntities] = useState<Array<EntityList>>(
     [],
   );
@@ -115,10 +117,12 @@ export const AdvancedSearchPage: FC = () => {
         <Typography component={AironeLink} to={topPath()}>
           Top
         </Typography>
-        <Typography color="textPrimary">高度な検索</Typography>
+        <Typography color="textPrimary">
+          {t("advancedSearch.page.breadcrumb")}
+        </Typography>
       </AironeBreadcrumbs>
 
-      <PageHeader title="高度な検索">
+      <PageHeader title={t("advancedSearch.page.title")}>
         <StyledFlexBox>
           <Button
             variant="contained"
@@ -127,14 +131,16 @@ export const AdvancedSearchPage: FC = () => {
             to={`${advancedSearchResultPath()}?${searchParams}`}
             disabled={selectedEntities.length === 0 && !searchAllEntities}
           >
-            検索
+            {t("advancedSearch.page.search")}
           </Button>
         </StyledFlexBox>
       </PageHeader>
 
       <Container>
         <StyledFlexColumnBox>
-          <StyledTypography variant="h4">検索対象のモデル</StyledTypography>
+          <StyledTypography variant="h4">
+            {t("advancedSearch.page.targetModel")}
+          </StyledTypography>
 
           <Autocomplete
             options={entities ?? []}
@@ -150,7 +156,7 @@ export const AdvancedSearchPage: FC = () => {
               <TextField
                 {...params}
                 variant="outlined"
-                placeholder="モデルを選択"
+                placeholder={t("advancedSearch.page.selectModelPlaceholder")}
               />
             )}
             multiple
@@ -158,7 +164,7 @@ export const AdvancedSearchPage: FC = () => {
             fullWidth
           />
           <Box>
-            検索対象を絞り込まない
+            {t("advancedSearch.page.searchAllEntities")}
             <Checkbox
               checked={searchAllEntities}
               onChange={(e) => setSearchAllEntities(e.target.checked)}
@@ -167,10 +173,12 @@ export const AdvancedSearchPage: FC = () => {
         </StyledFlexColumnBox>
 
         <StyledFlexColumnBox>
-          <StyledTypography variant="h4">属性</StyledTypography>
+          <StyledTypography variant="h4">
+            {t("advancedSearch.page.attr")}
+          </StyledTypography>
 
           <AutocompleteWithAllSelector
-            selectAllLabel="すべて選択"
+            selectAllLabel={t("advancedSearch.page.selectAll")}
             options={Array.from(new Set(attrs?.map((x) => x.name) ?? []))}
             value={selectedAttrs}
             inputValue={attrName}
@@ -181,7 +189,7 @@ export const AdvancedSearchPage: FC = () => {
               <TextField
                 {...params}
                 variant="outlined"
-                placeholder="属性を選択"
+                placeholder={t("advancedSearch.page.selectAttrPlaceholder")}
               />
             )}
             multiple
@@ -189,7 +197,7 @@ export const AdvancedSearchPage: FC = () => {
             fullWidth
           />
           <Box>
-            参照アイテムも含める
+            {t("advancedSearch.page.includeReferral")}
             <Checkbox
               checked={hasReferral}
               onChange={(e) => setHasReferral(e.target.checked)}

@@ -4,6 +4,7 @@ from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.db.models import Q
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from pydantic import BaseModel, Field, RootModel, ValidationError, field_validator
 from rest_framework import status
 from rest_framework.request import Request
@@ -18,7 +19,14 @@ from airone.lib.elasticsearch import (
     AttrHint,
 )
 from airone.lib.multidb import db_readonly
-from api_v1.entry.serializer import EntrySearchChainSerializer
+from api_v1.entry.serializer import (
+    EntryReferredResponseSerializer,
+    EntrySearchChainSerializer,
+    EntrySearchRequestSerializer,
+    EntrySearchResponseSerializer,
+    EntrySearchResultsSerializer,
+    UpdateHistoryItemSerializer,
+)
 from entity.models import Entity
 from entry.models import Entry
 from entry.services import AdvancedSearchService
@@ -62,6 +70,16 @@ class EntrySearchAPIResponse(BaseModel):
 
 @db_readonly
 class EntrySearchChainAPI(APIView):
+    @extend_schema(
+        request=EntrySearchChainSerializer,
+        responses={
+            200: EntrySearchResultsSerializer,
+            400: {
+                "type": "object",
+                "properties": {"reason": {"type": "string"}},
+            },
+        },
+    )
     def post(self, request: Request) -> Response:
         serializer = EntrySearchChainSerializer(data=request.data)
         if not serializer.is_valid():
@@ -108,6 +126,10 @@ class EntrySearchChainAPI(APIView):
 
 @db_readonly
 class EntrySearchAPI(APIView):
+    @extend_schema(
+        request=EntrySearchRequestSerializer,
+        responses={200: EntrySearchResponseSerializer, 400: str},
+    )
     def post(self, request: Request, format: str | None = None) -> Response:
         if not isinstance(cast(Any, request.data), dict):
             return Response(
@@ -203,6 +225,16 @@ class EntryReferredResponse(BaseModel):
 
 
 class EntryReferredAPI(APIView):
+    @extend_schema(
+        responses={
+            200: EntryReferredResponseSerializer,
+            400: {
+                "type": "object",
+                "properties": {"result": {"type": "string"}},
+                "required": ["result"],
+            },
+        },
+    )
     def get(self, request: Request) -> Response:
         # set each request parameters to description variables
         param_entity: str | None = request.query_params.get("entity")
@@ -276,6 +308,17 @@ class UpdateHistoryResponse(RootModel[List["UpdateHistoryResponse.ResponseItem"]
 
 
 class UpdateHistory(APIView):
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("attribute", str, required=True),
+            OpenApiParameter("entry", str),
+            OpenApiParameter("entry_id", str),
+            OpenApiParameter("entity", str),
+            OpenApiParameter("older_than", str),
+            OpenApiParameter("newer_than", str),
+        ],
+        responses={200: UpdateHistoryItemSerializer(many=True), 400: str},
+    )
     def get(self, request: Request) -> Response:
         # validate whether mandatory parameters are specified
         p_attr = request.GET.get("attribute")

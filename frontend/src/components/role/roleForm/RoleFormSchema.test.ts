@@ -169,3 +169,38 @@ describe("schema", () => {
     expect(() => schema.parse(value)).toThrow();
   });
 });
+
+describe("schema messages", () => {
+  const baseValue: Schema = {
+    id: 1,
+    isActive: true,
+    name: "role1",
+    description: "test description",
+    users: [],
+    groups: [],
+    adminUsers: [{ id: 3, username: "user3" }],
+    adminGroups: [],
+  };
+
+  test("japanese validation messages", () => {
+    const result = schema.safeParse({ ...baseValue, name: "" });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0].message).toBe("ロール名は必須です");
+    }
+  });
+
+  test("english validation messages", async () => {
+    vi.resetModules();
+    const { default: i18n } = await import("i18n/config");
+    await i18n.changeLanguage("en");
+    const { schema } = await import("./RoleFormSchema");
+    const result = schema.safeParse({ ...baseValue, name: "" });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0].message).toBe("Role name is required");
+    }
+    // restore for later tests in the file
+    vi.resetModules();
+  });
+});

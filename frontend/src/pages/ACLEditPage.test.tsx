@@ -7,6 +7,7 @@ import { setupServer } from "msw/node";
 import { createMemoryRouter, RouterProvider } from "react-router";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
+import i18n from "i18n/config";
 import { ACLEditPage } from "pages/ACLEditPage";
 import { aclPath } from "routes/Routes";
 
@@ -56,7 +57,12 @@ test("should match snapshot", async () => {
   Object.defineProperty(window, "django_context", {
     value: {
       user: {
-        is_superuser: false,
+        id: 1,
+        username: "user1",
+        isSuperuser: false,
+        isReadonly: false,
+        parentUser: null,
+        email: "user1@example.com",
       },
     },
     writable: false,
@@ -83,4 +89,33 @@ test("should match snapshot", async () => {
   });
 
   expect(result).toMatchSnapshot();
+});
+
+test("renders in English", async () => {
+  await act(async () => {
+    await i18n.changeLanguage("en");
+  });
+
+  const router = createMemoryRouter(
+    [
+      {
+        path: aclPath(":objectId"),
+        element: <ACLEditPage />,
+      },
+    ],
+    {
+      initialEntries: [aclPath(1)],
+    },
+  );
+  await act(async () => {
+    render(<RouterProvider router={router} />, {
+      wrapper: TestWrapperWithoutRoutes,
+    });
+  });
+  await waitFor(() => {
+    expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+  });
+
+  expect(screen.getAllByText("ACL settings").length).toBeGreaterThan(0);
+  expect(screen.getByText("Public restriction settings")).toBeInTheDocument();
 });

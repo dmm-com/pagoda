@@ -4,6 +4,7 @@ import { FC, useCallback, useState } from "react";
 
 import { AironeModal } from "../common/AironeModal";
 
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 interface Props {
@@ -13,29 +14,28 @@ interface Props {
 
 export const PasswordResetModal: FC<Props> = ({ openModal, closeModal }) => {
   const { enqueueSnackbar } = useSnackbar();
+  const { t } = useTranslation();
 
   const [username, setUsername] = useState("");
 
   const handleSubmit = useCallback(async () => {
     try {
       await aironeApiClient.resetPassword(username);
-      enqueueSnackbar("パスワードリセットメールの送信に成功しました", {
+      enqueueSnackbar(t("user.passwordResetModal.sendSuccess"), {
         variant: "success",
       });
       closeModal();
     } catch (e) {
-      enqueueSnackbar("パスワードリセットメールの送信に失敗しました", {
+      enqueueSnackbar(t("user.passwordResetModal.sendFailure"), {
         variant: "error",
       });
     }
-  }, [username, closeModal, enqueueSnackbar]);
+  }, [username, closeModal, enqueueSnackbar, t]);
 
   return (
     <AironeModal
-      title={"パスワードリセット"}
-      description={
-        "パスワードリセットをメールで案内します。ユーザ名を入力してください。"
-      }
+      title={t("user.passwordResetModal.title")}
+      description={t("user.passwordResetModal.description")}
       open={openModal}
       onClose={closeModal}
     >
@@ -53,7 +53,7 @@ export const PasswordResetModal: FC<Props> = ({ openModal, closeModal }) => {
             onClick={handleSubmit}
             sx={{ m: "4px" }}
           >
-            送信
+            {t("common.submit")}
           </Button>
           <Button
             variant="contained"
@@ -61,7 +61,7 @@ export const PasswordResetModal: FC<Props> = ({ openModal, closeModal }) => {
             onClick={closeModal}
             sx={{ m: "4px" }}
           >
-            キャンセル
+            {t("common.cancel")}
           </Button>
         </Box>
       </Box>

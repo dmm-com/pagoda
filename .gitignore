@@ -195,3 +195,7 @@ docs/.hugo_build.lock
 # lite dev mode state: per-checkout SQLite DB, search index, media, test logs
 .pagoda-lite/
 e2e/live/test-results/
+
+# Ignore generated Webpack chunks and their source maps.
+# These files are rebuilt from frontend sources and should not be committed.
+/static/js/*.ui.js*

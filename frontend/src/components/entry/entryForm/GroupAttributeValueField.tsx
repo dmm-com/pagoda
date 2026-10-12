@@ -15,6 +15,7 @@ import { aironeApiClient } from "../../../repository/AironeApiClient";
 
 import { Schema } from "./EntryFormSchema";
 
+import { useTranslation } from "hooks/useTranslation";
 import { fuzzyMatch } from "services/StringUtil";
 import { getStagedErrorStyle } from "utils/styleUtils";
 
@@ -44,6 +45,7 @@ export const GroupAttributeValueField: FC<Props> = ({
   multiple = false,
   isDisabled = false,
 }) => {
+  const { t } = useTranslation();
   const [inputValue, setInputValue] = useState("");
 
   const { data: options = [], isLoading: loading } = usePagodaSWR(
@@ -94,7 +96,9 @@ export const GroupAttributeValueField: FC<Props> = ({
 
   return (
     <Box>
-      <StyledTypography variant="caption">グループを選択</StyledTypography>
+      <StyledTypography variant="caption">
+        {t("entryForm.groupField.selectGroup")}
+      </StyledTypography>
       <StyledBox>
         <Controller
           name={

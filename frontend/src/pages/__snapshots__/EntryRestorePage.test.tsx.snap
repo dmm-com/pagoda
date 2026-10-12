@@ -65,8 +65,10 @@ exports[`should match snapshot 1`] = `
                       class="MuiBox-root css-162tvoi"
                     >
                       <a
+                        aria-label="aaa"
                         class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                         data-discover="true"
+                        data-mui-internal-clone-element="true"
                         href="/ui/entities/1/entries"
                       >
                         aaa
@@ -94,7 +96,9 @@ exports[`should match snapshot 1`] = `
                     class="MuiBreadcrumbs-li"
                   >
                     <p
+                      aria-label="復旧"
                       class="MuiTypography-root MuiTypography-body1 css-1bgbmvw-MuiTypography-root"
+                      data-mui-internal-clone-element="true"
                     >
                       復旧
                     </p>
@@ -199,7 +203,7 @@ exports[`should match snapshot 1`] = `
                     <input
                       aria-invalid="false"
                       class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-2u11ia-MuiInputBase-input-MuiOutlinedInput-input"
-                      id="_r_1_"
+                      id="_r_3_"
                       placeholder="アイテムを絞り込む"
                       type="text"
                       value=""
@@ -541,8 +545,10 @@ exports[`should match snapshot 1`] = `
                     class="MuiBox-root css-162tvoi"
                   >
                     <a
+                      aria-label="aaa"
                       class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                       data-discover="true"
+                      data-mui-internal-clone-element="true"
                       href="/ui/entities/1/entries"
                     >
                       aaa
@@ -570,7 +576,9 @@ exports[`should match snapshot 1`] = `
                   class="MuiBreadcrumbs-li"
                 >
                   <p
+                    aria-label="復旧"
                     class="MuiTypography-root MuiTypography-body1 css-1bgbmvw-MuiTypography-root"
+                    data-mui-internal-clone-element="true"
                   >
                     復旧
                   </p>
@@ -675,7 +683,7 @@ exports[`should match snapshot 1`] = `
                   <input
                     aria-invalid="false"
                     class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-2u11ia-MuiInputBase-input-MuiOutlinedInput-input"
-                    id="_r_1_"
+                    id="_r_3_"
                     placeholder="アイテムを絞り込む"
                     type="text"
                     value=""

@@ -30,6 +30,7 @@ import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
 import { usePage } from "hooks/usePage";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { restoreEntryPath, topPath } from "routes/Routes";
 import { canEdit } from "services/ACLUtil";
@@ -101,6 +102,7 @@ const EntryDetailModalContent: FC<{
   onRestore: (entryId: number) => void;
   onClose: () => void;
 }> = ({ entryId, onRestore, onClose }) => {
+  const { t } = useTranslation();
   const { data: entryDetail } = usePagodaSWR(
     ["entry", entryId],
     () => aironeApiClient.getEntry(entryId),
@@ -116,8 +118,8 @@ const EntryDetailModalContent: FC<{
         <Table id="table_info_list">
           <TableHead sx={{ backgroundColor: "primary.dark" }}>
             <TableRow>
-              <HeaderTableCell>項目</HeaderTableCell>
-              <HeaderTableCell>内容</HeaderTableCell>
+              <HeaderTableCell>{t("entry.common.itemHeader")}</HeaderTableCell>
+              <HeaderTableCell>{t("entry.common.valueHeader")}</HeaderTableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -154,14 +156,14 @@ const EntryDetailModalContent: FC<{
               onClick={handleOpen}
               disabled={!canEdit(entryDetail.permission)}
             >
-              復旧
+              {t("common.restore")}
             </Button>
           )}
-          dialogTitle="本当に復旧しますか？"
+          dialogTitle={t("entry.restorable.confirmRestore")}
           onClickYes={() => onRestore(entryDetail.id)}
         />
         <Button variant="outlined" sx={{ margin: "0 4px" }} onClick={onClose}>
-          キャンセル
+          {t("common.cancel")}
         </Button>
       </Box>
     </>
@@ -173,6 +175,7 @@ interface Props {
 }
 
 const RestorableEntryListContent: FC<Props> = ({ entityId }) => {
+  const { t } = useTranslation();
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
@@ -193,14 +196,14 @@ const RestorableEntryListContent: FC<Props> = ({ entityId }) => {
     await aironeApiClient
       .restoreEntry(entryId)
       .then(() => {
-        enqueueSnackbar("アイテムの復旧が完了しました", {
+        enqueueSnackbar(t("entry.restorable.restoreSuccess"), {
           variant: "success",
         });
         navigate(topPath());
         navigate(restoreEntryPath(entityId, query));
       })
       .catch(() => {
-        enqueueSnackbar("アイテムの復旧が失敗しました", {
+        enqueueSnackbar(t("entry.restorable.restoreFailure"), {
           variant: "error",
         });
       });
@@ -212,7 +215,7 @@ const RestorableEntryListContent: FC<Props> = ({ entityId }) => {
       <Box display="flex" justifyContent="space-between" mb="16px">
         <Box width="600px">
           <SearchBox
-            placeholder="アイテムを絞り込む"
+            placeholder={t("entry.list.searchPlaceholder")}
             defaultValue={query}
             onKeyPress={(e) => {
               e.key === "Enter" &&
@@ -254,7 +257,7 @@ const RestorableEntryListContent: FC<Props> = ({ entityId }) => {
                             <RestoreIcon />
                           </IconButton>
                         )}
-                        dialogTitle="本当に復旧しますか？"
+                        dialogTitle={t("entry.restorable.confirmRestore")}
                         onClickYes={() => handleRestore(entry.id)}
                       />
                     </>

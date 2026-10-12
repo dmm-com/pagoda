@@ -13,6 +13,7 @@ import {
 
 import { TestWrapper } from "TestWrapper";
 import { EntryList } from "components/entry/EntryList";
+import i18n from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { ACLType } from "services/ACLUtil";
 
@@ -274,5 +275,24 @@ describe("EntryList", () => {
     });
 
     expect(getEntriesSpy).toHaveBeenCalledTimes(1);
+  });
+
+  test("renders in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    vi.spyOn(aironeApiClient, "getEntries").mockResolvedValue(
+      Promise.resolve(mockApiResponse),
+    );
+
+    await act(async () => {
+      render(<EntryList entityId={1} />, {
+        wrapper: TestWrapper,
+      });
+    });
+
+    expect(screen.getByText("Create new entry")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Filter entries")).toBeInTheDocument();
   });
 });

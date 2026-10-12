@@ -9,6 +9,7 @@ import Encoding from "encoding-japanese";
 import { useSnackbar } from "notistack";
 import { ChangeEvent, FC, useEffect, useRef, useState } from "react";
 
+import { useTranslation } from "../../hooks/useTranslation";
 import {
   isResponseError,
   toReportableNonFieldErrors,
@@ -59,6 +60,7 @@ export const ImportForm: FC<Props> = ({
   handleCancel,
   handlePreview,
 }) => {
+  const { t } = useTranslation();
   const [file, setFile] = useState<File>();
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [preview, setPreview] = useState<ImportPreview>();
@@ -98,8 +100,8 @@ export const ImportForm: FC<Props> = ({
     }
     if (e instanceof Error && isResponseError(e)) {
       if (e.response.status === 403) {
-        setErrorMessage("この操作を行う権限がありません。");
-        enqueueSnackbar("この操作を行う権限がありません。", {
+        setErrorMessage(t("importForm.permissionDenied"));
+        enqueueSnackbar(t("importForm.permissionDenied"), {
           variant: "error",
         });
         return;
@@ -120,7 +122,7 @@ export const ImportForm: FC<Props> = ({
     }
 
     setProcessing(true);
-    setProgress("変更内容を確認しています...");
+    setProgress(t("importForm.checkingChanges"));
     try {
       const jobIds = await handlePreview(await readFileAsText(file));
       previewJobIds.current = jobIds;
@@ -133,7 +135,7 @@ export const ImportForm: FC<Props> = ({
       setErrorMessage("");
     } catch (e) {
       setPreview(undefined);
-      await reportError(e, "変更内容の確認に失敗しました");
+      await reportError(e, t("importForm.previewFailed"));
     } finally {
       setProcessing(false);
       setProgress(undefined);
@@ -158,7 +160,7 @@ export const ImportForm: FC<Props> = ({
           : page,
       );
     } catch (e) {
-      await reportError(e, "変更内容の読み込みに失敗しました");
+      await reportError(e, t("importForm.loadPageFailed"));
     } finally {
       setProcessing(false);
     }
@@ -184,7 +186,7 @@ export const ImportForm: FC<Props> = ({
         ),
       );
     } catch (e) {
-      await reportError(e, "変更内容のダウンロードに失敗しました");
+      await reportError(e, t("importForm.downloadPreviewFailed"));
     }
   };
 
@@ -211,7 +213,7 @@ export const ImportForm: FC<Props> = ({
       sessionStorage.setItem("role-import-success", "1");
       window.location.reload();
     } catch (e) {
-      await reportError(e, "ファイルのアップロードに失敗しました");
+      await reportError(e, t("notification.uploadFailed"));
     } finally {
       setProcessing(false);
     }
@@ -231,7 +233,7 @@ export const ImportForm: FC<Props> = ({
             onClick={onCancelPreview}
             data-testid="cancel-import-preview"
           >
-            中止
+            {t("importForm.cancelPreview")}
           </Button>
         </Box>
       )}
@@ -260,7 +262,7 @@ export const ImportForm: FC<Props> = ({
             sx={{ m: "4px" }}
             data-testid="preview-import-file"
           >
-            変更内容を確認
+            {t("importForm.previewButton")}
           </Button>
         )}
         <Button
@@ -271,7 +273,7 @@ export const ImportForm: FC<Props> = ({
           onClick={onImport}
           sx={{ m: "4px" }}
         >
-          インポート
+          {t("common.import")}
         </Button>
         <Button
           variant="contained"
@@ -279,7 +281,7 @@ export const ImportForm: FC<Props> = ({
           onClick={handleCancel}
           sx={{ m: "4px" }}
         >
-          キャンセル
+          {t("common.cancel")}
         </Button>
       </Box>
     </Box>

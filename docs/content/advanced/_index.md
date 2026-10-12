@@ -22,3 +22,4 @@ AirOne's powerful plugin system allows you to create and distribute independent 
 - **[Frontend Architecture](frontend_architecture/)** - Frontend design
 - **[Google Spreadsheet Linkage](google_spreadsheet_linkage/)** - Google Spreadsheet integration
 - **[Categories](categories/)** - Category features
+- **[Iframe Embedding](iframe_embedding/)** - Configure trusted origins for embedding the UI

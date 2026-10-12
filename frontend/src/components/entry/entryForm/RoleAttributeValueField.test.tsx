@@ -23,6 +23,7 @@ import { schema, Schema } from "./EntryFormSchema";
 import { RoleAttributeValueField } from "./RoleAttributeValueField";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 
 import "@testing-library/jest-dom";
 
@@ -210,5 +211,38 @@ describe("RoleAttributeValueField", () => {
     fireEvent.input(input, { target: { value: "admin" } });
     await waitFor(() => expect(input).toHaveValue("admin"));
     await waitFor(() => expect(spy).toHaveBeenCalledWith("admin"));
+  });
+
+  test("renders caption in english", async () => {
+    (aironeApiClient.getRoles as vi.Mock).mockResolvedValue(roles);
+
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    const {
+      result: {
+        current: { control, setValue },
+      },
+    } = renderHook(() =>
+      useForm<Schema>({
+        resolver: zodResolver(schema),
+        mode: "onBlur",
+        defaultValues,
+      }),
+    );
+
+    await act(async () => {
+      render(
+        <RoleAttributeValueField
+          attrId={0}
+          control={control}
+          setValue={setValue}
+        />,
+        { wrapper: TestWrapper },
+      );
+    });
+
+    expect(screen.getByText("Select a role")).toBeInTheDocument();
   });
 });

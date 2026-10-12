@@ -4,6 +4,7 @@ import {
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { z } from "zod";
 
+import { translate } from "../../../i18n/config";
 import { ACLType, ACLTypeLabels } from "../../../services/ACLUtil";
 import { schemaForType } from "../../../services/ZodSchemaUtil";
 
@@ -47,9 +48,9 @@ export const schema = schemaForType<ACLForm>()(
         ctx.addIssue({
           path: ["generalError"],
           code: z.ZodIssueCode.custom,
-          message: `限定公開にする場合は、いずれかのロールの権限を ${
-            ACLTypeLabels[ACLType.Full]
-          } にしてください`,
+          message: translate("acl.form.limitedPublicRequiresFullRole", {
+            fullLabel: ACLTypeLabels[ACLType.Full],
+          }),
         });
       }
     }),

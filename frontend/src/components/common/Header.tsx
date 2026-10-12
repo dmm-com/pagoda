@@ -261,7 +261,7 @@ export const Header: FC = () => {
         >
           <StyledToolbar variant="dense">
             <NavToggleButton
-              aria-label={t("openNavigationMenu")}
+              aria-label={t("header.openNavigationMenu")}
               aria-controls="nav-drawer"
               aria-expanded={navOpen}
               onClick={() => setNavOpen(true)}
@@ -430,7 +430,7 @@ export const Header: FC = () => {
                 keepMounted
               >
                 <MenuItem>
-                  {serverContext?.user?.username ?? "不明なユーザ"}{" "}
+                  {serverContext?.user?.username ?? t("header.unknownUser")}{" "}
                   {t("currentUser")}
                 </MenuItem>
                 <Divider light />

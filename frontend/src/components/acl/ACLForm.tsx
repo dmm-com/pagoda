@@ -15,6 +15,7 @@ import { Control, Controller, useFieldArray } from "react-hook-form";
 import { UseFormWatch } from "react-hook-form";
 
 import { Schema } from "components/acl/aclForm/ACLFormSchema";
+import { useTranslation } from "hooks/useTranslation";
 import { ACLType, ACLTypeLabels } from "services/ACLUtil";
 
 interface Props {
@@ -53,6 +54,8 @@ const StyledTableBody = styled(TableBody)({
 });
 
 export const ACLForm: FC<Props> = ({ control, watch }) => {
+  const { t } = useTranslation();
+
   const { fields } = useFieldArray({
     control,
     name: "roles",
@@ -63,13 +66,15 @@ export const ACLForm: FC<Props> = ({ control, watch }) => {
       <Table className="table table-bordered">
         <TableHead>
           <HeaderTableRow>
-            <HeaderTableCellItem>項目</HeaderTableCellItem>
-            <HeaderTableCellContext>内容</HeaderTableCellContext>
+            <HeaderTableCellItem>{t("acl.form.item")}</HeaderTableCellItem>
+            <HeaderTableCellContext>
+              {t("acl.form.content")}
+            </HeaderTableCellContext>
           </HeaderTableRow>
         </TableHead>
         <StyledTableBody>
           <TableRow>
-            <TableCell>公開設定</TableCell>
+            <TableCell>{t("acl.form.isPublicLabel")}</TableCell>
             <TableCell>
               <Controller
                 name="isPublic"
@@ -84,8 +89,8 @@ export const ACLForm: FC<Props> = ({ control, watch }) => {
                     value={field.value ? 1 : 0}
                     onChange={(e) => field.onChange(e.target.value === 1)}
                   >
-                    <MenuItem value={1}>公開</MenuItem>
-                    <MenuItem value={0}>限定公開</MenuItem>
+                    <MenuItem value={1}>{t("acl.form.public")}</MenuItem>
+                    <MenuItem value={0}>{t("acl.form.limitedPublic")}</MenuItem>
                   </Select>
                 )}
               />
@@ -97,21 +102,21 @@ export const ACLForm: FC<Props> = ({ control, watch }) => {
       <Box>
         <Box my="32px">
           <Typography variant="h4" align="center">
-            公開制限設定
+            {t("acl.form.title")}
           </Typography>
         </Box>
 
         <Table id="table_role_list" className="table table-bordered">
           <TableHead>
             <HeaderTableRow>
-              <HeaderTableCellItem>ロール</HeaderTableCellItem>
-              <HeaderTableCellNote>備考</HeaderTableCellNote>
+              <HeaderTableCellItem>{t("acl.form.role")}</HeaderTableCellItem>
+              <HeaderTableCellNote>{t("acl.form.note")}</HeaderTableCellNote>
               <HeaderTableCellContext />
             </HeaderTableRow>
           </TableHead>
           <StyledTableBody>
             <TableRow>
-              <TableCell>全員</TableCell>
+              <TableCell>{t("acl.form.everyone")}</TableCell>
               <TableCell />
               <TableCell>
                 <Controller

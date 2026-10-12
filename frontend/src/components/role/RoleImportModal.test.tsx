@@ -1,11 +1,18 @@
 /**
  */
 
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 
 import { RoleImportModal } from "./RoleImportModal";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 // Mock dependencies
@@ -172,5 +179,21 @@ describe("RoleImportModal", () => {
       ".MuiTypography-caption.css-1hldsye-MuiTypography-root",
     );
     expect(errorContainer).toBeInTheDocument();
+  });
+
+  test("renders in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    render(<RoleImportModal {...defaultProps} />, { wrapper: TestWrapper });
+
+    expect(screen.getByText("Import roles")).toBeInTheDocument();
+    expect(
+      screen.getByText("Please select a file to import."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("* CSV files cannot be selected."),
+    ).toBeInTheDocument();
   });
 });

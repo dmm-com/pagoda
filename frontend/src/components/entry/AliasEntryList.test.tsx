@@ -4,10 +4,11 @@
 import "@testing-library/jest-dom";
 
 import { EntryBase } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 
 import { AliasEntryList } from "./AliasEntryList";
 
+import i18n from "i18n/config";
 import { ACLType } from "services/ACLUtil";
 
 const mockHandleCreate = vi.fn();
@@ -105,5 +106,17 @@ describe("AliasEntryList Component", () => {
     expect(screen.queryByText("Alias One")).not.toBeInTheDocument();
     expect(screen.queryByText("Alias Two")).not.toBeInTheDocument();
     expect(screen.getByTestId("AddIcon")).toBeInTheDocument();
+  });
+
+  test("renders in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    renderComponent();
+    const addChipButton = screen.getByTestId("AddIcon");
+    fireEvent.click(addChipButton);
+
+    expect(screen.getByPlaceholderText("Add alias")).toBeInTheDocument();
   });
 });

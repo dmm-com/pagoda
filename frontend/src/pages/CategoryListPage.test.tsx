@@ -7,6 +7,7 @@ import { setupServer } from "msw/node";
 import { createMemoryRouter, RouterProvider } from "react-router";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
+import i18n from "i18n/config";
 import { CategoryListPage } from "pages/CategoryListPage";
 import { listCategoryPath } from "routes/Routes";
 
@@ -76,5 +77,35 @@ describe("CategoryListPage", () => {
     // Verify categories are displayed
     expect(screen.getByText("category1")).toBeInTheDocument();
     expect(screen.getByText("category2")).toBeInTheDocument();
+  });
+
+  it("renders in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    const router = createMemoryRouter(
+      [
+        {
+          path: listCategoryPath(),
+          element: <CategoryListPage />,
+        },
+      ],
+      {
+        initialEntries: [listCategoryPath()],
+      },
+    );
+
+    await act(async () => {
+      render(
+        <TestWrapperWithoutRoutes>
+          <RouterProvider router={router} />
+        </TestWrapperWithoutRoutes>,
+      );
+    });
+
+    expect(
+      screen.getByRole("heading", { name: "Category list" }),
+    ).toBeInTheDocument();
   });
 });

@@ -45,7 +45,7 @@ if "debug_toolbar" in settings.INSTALLED_APPS:
 
 for extension in settings.AIRONE["EXTENSIONS"]:
     urlpatterns.append(
-        re_path(r"^extension/%s" % extension, include(("%s.urls" % extension, extension)))
+        re_path(r"^extension/%s/" % extension, include(("%s.urls" % extension, extension)))
     )
 
 # Conditionally add plugin URL patterns

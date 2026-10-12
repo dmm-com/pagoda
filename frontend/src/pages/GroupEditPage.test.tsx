@@ -15,6 +15,7 @@ import { createMemoryRouter, RouterProvider } from "react-router";
 import { useSWRConfig } from "swr";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
+import i18n from "i18n/config";
 import { GroupEditPage } from "pages/GroupEditPage";
 
 const server = setupServer(
@@ -92,7 +93,12 @@ describe("EditGroupPage", () => {
   Object.defineProperty(window, "django_context", {
     value: {
       user: {
+        id: 1,
+        username: "admin",
         isSuperuser: true,
+        isReadonly: false,
+        parentUser: null,
+        email: "admin@example.com",
       },
     },
     writable: false,
@@ -167,5 +173,28 @@ describe("EditGroupPage", () => {
     });
 
     expect(getNameInputValue()).toBe("edited");
+  });
+
+  test("renders in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    const router = createMemoryRouter([
+      {
+        path: "/",
+        element: <GroupEditPage />,
+      },
+    ]);
+    await act(async () => {
+      render(<RouterProvider router={router} />, {
+        wrapper: TestWrapperWithoutRoutes,
+      });
+    });
+    await waitFor(() => {
+      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    });
+
+    expect(screen.getAllByText("Create a new group").length).toBeGreaterThan(0);
   });
 });

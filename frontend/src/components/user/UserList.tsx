@@ -25,6 +25,7 @@ import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
 import { usePage } from "hooks/usePage";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { newUserPath, userPath } from "routes/Routes";
 import { UserListParam } from "services/Constants";
@@ -48,6 +49,7 @@ const UserName = styled(Typography)(({}) => ({
 }));
 
 const UserListContent: FC = () => {
+  const { t } = useTranslation();
   const { page, query, changePage, changeQuery } = usePage();
   const [userAnchorEls, setUserAnchorEls] = useState<{
     [key: number]: HTMLButtonElement | null;
@@ -92,7 +94,7 @@ const UserListContent: FC = () => {
       <Box display="flex" justifyContent="space-between" mb="16px">
         <Box width={500}>
           <SearchBox
-            placeholder="ユーザを絞り込む"
+            placeholder={t("user.list.searchPlaceholder")}
             defaultValue={query}
             onKeyPress={(e: KeyboardEvent<HTMLDivElement>, value: string) => {
               if (e.key === "Enter") {
@@ -110,7 +112,8 @@ const UserListContent: FC = () => {
           sx={{ borderRadius: "24px", height: "100%" }}
         >
           <AddIcon />
-          {(isSuperuser && "新規ユーザを登録") || "Read-Only ユーザを作成"}
+          {(isSuperuser && t("user.list.createNew")) ||
+            t("user.list.createReadOnly")}
         </Button>
       </Box>
 
@@ -185,7 +188,7 @@ const UserListContent: FC = () => {
           openModal={true}
           onClose={handleClosePasswordModal}
           onSubmitSuccess={() => {
-            enqueueSnackbar("パスワードの変更が完了しました", {
+            enqueueSnackbar(t("user.list.passwordChangeSuccess"), {
               variant: "success",
             });
             handleClosePasswordModal();

@@ -88,6 +88,7 @@ class PluginRegistry:
 
         registered_count = 0
         for handler_info in hook_handlers:
+            hook_name: str | None = None
             try:
                 hook_name = handler_info["hook_name"]
                 entity = handler_info.get("entity")

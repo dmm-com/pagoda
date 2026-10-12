@@ -383,6 +383,26 @@ class ViewTest(BaseViewTest):
         self.assertEqual([x["last_value"] for x in attr_info if x["name"] == "test"], [""])
         self.assertEqual([x["last_value"] for x in attr_info if x["name"] == "new_attr"], ["foo"])
 
+    def test_create_entry_attrs_task_cancels_when_target_entry_is_gone(self):
+        """
+        entry.tasks.create_entry_attrs must gracefully CANCEL the Job (rather
+        than raising) when the target Entry no longer exists / is inactive by
+        the time the task runs, e.g. it was deleted in the meantime.
+        """
+        user = self.admin_login()
+
+        entry = Entry.objects.create(name="entry", schema=self._entity, created_user=user)
+        job = Job.new_create(user, entry, params={"entry_name": entry.name, "attrs": []})
+
+        # simulate the entry having been removed before the task executes
+        entry.delete()
+
+        # this must not raise, and the job must end up CANCELED
+        tasks.create_entry_attrs(job.id)
+
+        job.refresh_from_db()
+        self.assertEqual(job.status, JobStatus.CANCELED)
+
     @patch(
         "entry.tasks.create_entry_attrs.delay",
         Mock(side_effect=tasks.create_entry_attrs),

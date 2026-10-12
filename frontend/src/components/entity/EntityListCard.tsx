@@ -17,6 +17,7 @@ import { EntityControlMenu } from "./EntityControlMenu";
 
 import { ClipboardCopyButton } from "components/common/ClipboardCopyButton";
 import { EntryImportModal } from "components/entry/EntryImportModal";
+import { useTranslation } from "hooks/useTranslation";
 import { entityEntriesPath } from "routes/Routes";
 
 const EntityNote = styled(Typography)(({ theme }) => ({
@@ -61,6 +62,7 @@ interface Props {
 }
 
 export const EntityListCard: FC<Props> = ({ entity, setToggle }) => {
+  const { t } = useTranslation();
   const [anchorElem, setAnchorElem] = useState<HTMLButtonElement | null>(null);
   const [openImportModal, setOpenImportModal] = useState(false);
 
@@ -78,7 +80,7 @@ export const EntityListCard: FC<Props> = ({ entity, setToggle }) => {
           <>
             <ClipboardCopyButton name={entity.name} />
 
-            <Tooltip title="モデルの操作">
+            <Tooltip title={t("entity.list.actionsTooltip")}>
               <IconButton
                 onClick={(e) => {
                   setAnchorElem(e.currentTarget);

@@ -53,7 +53,7 @@ else:
     CUSTOM_PARALLELIZABLE_OPERATIONS = []
     CUSTOM_TASKS = {}
 
-    class JobOperationCustom(BaseIntEnum):  # type: ignore
+    class JobOperationCustom(BaseIntEnum):  # type: ignore[no-redef]
         pass
 
 
@@ -178,6 +178,7 @@ class Job(models.Model):
         JobOperation.BULK_EDIT_ENTRY,
         JobOperation.IMPORT_ENTITY_PREVIEW,
         JobOperation.IMPORT_ENTRY_PREVIEW,
+        JobOperation.IMPORT_ROLE_V2,
     ] + CUSTOM_CANCELABLE_OPERATIONS
 
     PARALLELIZABLE_OPERATIONS: list[JobOperation | JobOperationCustom] = [

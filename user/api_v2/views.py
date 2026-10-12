@@ -33,6 +33,7 @@ from group.models import Group
 from user.api_v2.serializers import (
     PasswordResetConfirmSerializer,
     PasswordResetSerializer,
+    UserActivitySerializer,
     UserAuthSerializer,
     UserCreateSerializer,
     UserExportSerializer,
@@ -158,7 +159,7 @@ class SuperuserPermission(BasePermission):
 
 class UserActivityAPI(viewsets.GenericViewSet[User]):
     queryset = User.objects.none()
-    serializer_class = Serializer  # type: ignore[assignment]
+    serializer_class = UserActivitySerializer
     LIMIT_RECORDS = 10
     LIMIT_DAYS = 60
 
@@ -276,12 +277,13 @@ class UserActivityAPI(viewsets.GenericViewSet[User]):
                 "timestamp": attr_val.created_time,
             }
             for attr_val in qs
-            if (entry := attr_val.parent_attr.parent_entry)
-            if (attr := attr_val.parent_attr)
-            if (attr_schema := attr_val.parent_attr.schema)
-            if requesting_user.has_permission(entry, ACLType.Readable)
-            and requesting_user.has_permission(attr_schema, ACLType.Readable)
-            and requesting_user.has_permission(attr, ACLType.Readable)
+            if requesting_user.has_permission(
+                (entry := attr_val.parent_attr.parent_entry), ACLType.Readable
+            )
+            and requesting_user.has_permission(
+                (attr_schema := attr_val.parent_attr.schema), ACLType.Readable
+            )
+            and requesting_user.has_permission(attr_val.parent_attr, ACLType.Readable)
         ]
 
     def _get_activity_for_deleting_item(
@@ -529,7 +531,7 @@ class UserImportAPI(generics.GenericAPIView[Any]):
             for group_name in user_data["groups"].split(","):
                 if group_name == "":
                     continue
-                new_group: Group | None = Group.objects.filter(name=group_name).first()  # type: ignore[assignment]
+                new_group: Group | None = Group.objects.filter(name=group_name).first()
                 if not new_group:
                     return Response(
                         "Specified group does not exist(user:%s, group:%s)"

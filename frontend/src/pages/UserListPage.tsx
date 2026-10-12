@@ -7,11 +7,13 @@ import { PageHeader } from "components/common/PageHeader";
 import { UserImportModal } from "components/user/UserImportModal";
 import { UserList } from "components/user/UserList";
 import { usePageTitle } from "hooks/usePageTitle";
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { topPath } from "routes/Routes";
 import { ServerContext, TITLE_TEMPLATES } from "services";
 
 export const UserListPage: FC = () => {
+  const { t } = useTranslation();
   const [openImportModal, setOpenImportModal] = useState(false);
 
   const isReadonly = ServerContext.getInstance()?.user?.isReadonly ?? false;
@@ -28,10 +30,10 @@ export const UserListPage: FC = () => {
         <Typography component={AironeLink} to={topPath()}>
           Top
         </Typography>
-        <Typography color="textPrimary">ユーザ管理</Typography>
+        <Typography color="textPrimary">{t("user.list.pageTitle")}</Typography>
       </AironeBreadcrumbs>
 
-      <PageHeader title="ユーザ管理">
+      <PageHeader title={t("user.list.pageTitle")}>
         <Box display="flex" alignItems="center">
           <Button
             variant="contained"
@@ -39,7 +41,7 @@ export const UserListPage: FC = () => {
             sx={{ margin: "0 4px" }}
             onClick={handleExport}
           >
-            エクスポート
+            {t("common.export")}
           </Button>
           <Button
             variant="contained"
@@ -48,7 +50,7 @@ export const UserListPage: FC = () => {
             onClick={() => setOpenImportModal(true)}
             disabled={isReadonly}
           >
-            インポート
+            {t("common.import")}
           </Button>
           <UserImportModal
             openImportModal={openImportModal}

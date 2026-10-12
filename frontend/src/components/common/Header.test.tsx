@@ -53,7 +53,7 @@ vi.mock("../../hooks/useTranslation", () => ({
         logout: "Logout",
         noRunningJobs: "No running jobs",
         jobs: "Jobs",
-        openNavigationMenu: "Open navigation menu",
+        "header.openNavigationMenu": "Open navigation menu",
       };
       return translations[key] || key;
     },

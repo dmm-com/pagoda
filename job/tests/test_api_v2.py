@@ -52,6 +52,29 @@ class ViewTest(AironeViewTest):
         # user field is present in results
         self.assertIn("user", resp.json()["results"][0])
 
+    def test_get_jobs_includes_role_import_without_target(self):
+        user = self.guest_login()
+        Job.new_role_import_v2(
+            user,
+            params=[
+                {
+                    "name": "role",
+                    "description": "",
+                    "users": [],
+                    "groups": [],
+                    "admin_users": [user.username],
+                    "admin_groups": [],
+                    "permissions": [],
+                }
+            ],
+        )
+
+        resp = self.client.get("/job/api/v2/jobs?limit=100&offset=0")
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], 1)
+        self.assertEqual(resp.json()["results"][0]["operation"], JobOperation.IMPORT_ROLE_V2)
+
     def test_get_jobs_deleted_target(self):
         user = self.guest_login()
 

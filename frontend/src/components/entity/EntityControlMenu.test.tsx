@@ -1,11 +1,18 @@
 /**
  */
 
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 
 import { EntityControlMenu } from "./EntityControlMenu";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { ACLType } from "services/ACLUtil";
 
@@ -50,6 +57,34 @@ describe("EntityControlMenu", () => {
     expect(screen.getByText("インポート")).toBeInTheDocument();
     expect(screen.getByText("削除アイテムの復旧")).toBeInTheDocument();
     expect(screen.getByText("削除")).toBeInTheDocument();
+  });
+
+  test("menu items are displayed in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    render(
+      <EntityControlMenu
+        entityId={1}
+        anchorElem={document.createElement("button")}
+        handleClose={() => {}}
+        setOpenImportModal={() => false}
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByText("Entries")).toBeInTheDocument();
+    expect(screen.getByText("Aliases")).toBeInTheDocument();
+    expect(screen.getByText("Edit")).toBeInTheDocument();
+    expect(screen.getByText("ACL settings")).toBeInTheDocument();
+    expect(screen.getByText("Change history")).toBeInTheDocument();
+    expect(screen.getByText("ACL change history")).toBeInTheDocument();
+    expect(screen.getByText("Export (YAML)")).toBeInTheDocument();
+    expect(screen.getByText("Export (CSV)")).toBeInTheDocument();
+    expect(screen.getByText("Import")).toBeInTheDocument();
+    expect(screen.getByText("Restore deleted entries")).toBeInTheDocument();
+    expect(screen.getByText("Delete")).toBeInTheDocument();
   });
 
   test("anchorElem is null, menu is closed", () => {

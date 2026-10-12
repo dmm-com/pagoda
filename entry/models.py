@@ -10,6 +10,7 @@ from django.db import models
 from django.db.models import Prefetch, Q, QuerySet
 from elasticsearch import NotFoundError
 from simple_history.models import HistoricalRecords
+from typing_extensions import TypedDict
 
 from acl.models import ACLBase
 from airone.lib import auto_complement
@@ -19,6 +20,7 @@ from airone.lib.elasticsearch import (
     ESS,
     AttributeDocument,
     EntryDocument,
+    ReferringEntrySearchResponse,
 )
 from airone.lib.log import Logger
 from airone.lib.types import (
@@ -32,6 +34,11 @@ from role.models import Role
 from user.models import User
 
 from .settings import CONFIG
+
+
+class ReferringEntryInfo(TypedDict):
+    dst_entry_id: int
+    entry_name: str
 
 
 class AttributeValue(models.Model):
@@ -430,11 +437,11 @@ class AttributeValue(models.Model):
                 obj = instance
             case str():
                 if val.isdigit():
-                    obj = model.objects.filter(id=val, is_active=True).first()  # type: ignore[misc, assignment]
+                    obj = model.objects.filter(id=val, is_active=True).first()
                 else:
-                    obj = model.objects.filter(name=val, is_active=True).first()  # type: ignore[misc, assignment]
+                    obj = model.objects.filter(name=val, is_active=True).first()
             case int():
-                obj = model.objects.filter(id=val, is_active=True).first()  # type: ignore[misc, assignment]
+                obj = model.objects.filter(id=val, is_active=True).first()
 
         # when value is invalid value (e.g. False, empty string) set 0
         # not to cause ValueError exception at other retrieval processing.
@@ -568,7 +575,7 @@ class AttributeValue(models.Model):
                             value
                             and not Group.objects.filter(
                                 id=value,
-                                is_active=True,  # type: ignore[misc]
+                                is_active=True,
                             ).exists()
                         ):
                             raise Exception("value(%s) is not group id" % value)
@@ -1310,9 +1317,9 @@ class Attribute(ACLBase):
                         case Group() if val.is_active:
                             group_ref = val
                         case int():
-                            group_ref = Group.objects.filter(id=val, is_active=True).first()  # type: ignore[misc, assignment]
+                            group_ref = Group.objects.filter(id=val, is_active=True).first()
                         case str() if val.isdigit():
-                            group_ref = Group.objects.filter(id=val, is_active=True).first()  # type: ignore[misc, assignment]
+                            group_ref = Group.objects.filter(id=val, is_active=True).first()
                         case _:
                             return None
                     if group_ref:
@@ -1910,6 +1917,10 @@ class Entry(ACLBase):
 
     history = HistoricalRecords(excluded_fields=["status", "updated_time"])
 
+    # HistoricalRecords sets `_history_user` dynamically to pick up the acting user
+    # for each save; declare it here so callers can assign without a type: ignore.
+    _history_user: User | None
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.objtype = ACLObjType.Entry
@@ -2346,12 +2357,16 @@ class Entry(ACLBase):
             self.unregister_es()
 
     # implementation for Entry
-    def check_duplication_entry_at_restoring(self, entry_chain: list["Entry"] = []) -> bool:
+    def check_duplication_entry_at_restoring(
+        self, entry_chain: list["Entry"] | None = None
+    ) -> bool:
         """This method returns true when this Entry has referral that is
            same name with other entry at restoring Entry.
         - case True: there is an Entry(at least) that is same name with same Entity.
         - case False: there is no Entry that is same name with same Entity.
         """
+        if entry_chain is None:
+            entry_chain = []
         for attr in self.attrs.filter(is_active=False):
             if attr.check_duplication_entry_at_restoring(entry_chain):
                 return True
@@ -2398,7 +2413,7 @@ class Entry(ACLBase):
         cloned_entry = Entry(**params)
 
         # for history record
-        cloned_entry._history_user = user  # type: ignore[attr-defined]
+        cloned_entry._history_user = user
 
         cloned_entry.save()
 
@@ -2670,19 +2685,22 @@ class Entry(ACLBase):
             return
 
         # It's also needed to update es-document for Entries that this Entry refers to
-        search_result = es.search_entries(
-            {
-                "query": {
-                    "nested": {
-                        "path": "referrals",
-                        "query": {"term": {"referrals.id": self.id}},
-                        "inner_hits": {},
+        search_result = cast(
+            ReferringEntrySearchResponse,
+            es.search_entries(
+                {
+                    "query": {
+                        "nested": {
+                            "path": "referrals",
+                            "query": {"term": {"referrals.id": self.id}},
+                            "inner_hits": {},
+                        }
                     }
                 }
-            }
+            ),
         )
 
-        refers_from_es = [
+        refers_from_es: list[ReferringEntryInfo] = [
             {
                 "dst_entry_id": int(x["_id"]),
                 "entry_name": x["inner_hits"]["referrals"]["hits"]["hits"][0]["_source"]["name"],
@@ -2690,7 +2708,7 @@ class Entry(ACLBase):
             for x in search_result["hits"]["hits"]
         ]
 
-        refers_from_db = [
+        refers_from_db: list[ReferringEntryInfo] = [
             {"dst_entry_id": e.id, "entry_name": self.name}
             for e in self.get_refers_objects()
             if e.id != self.id
@@ -2708,7 +2726,7 @@ class Entry(ACLBase):
         # db: esixts
         for refer in refers_from_db:
             if refer["dst_entry_id"] not in [x["dst_entry_id"] for x in refers_from_es]:
-                entry = Entry.objects.get(id=cast("int", refer["dst_entry_id"]))
+                entry = Entry.objects.get(id=refer["dst_entry_id"])
                 entry.register_es(es, recursive_call_stack + [self])
 
     def unregister_es(self, es: ESS | None = None) -> None:

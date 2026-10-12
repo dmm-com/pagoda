@@ -5,12 +5,13 @@ import {
   AdvancedSearchResultAttrInfoFilterKeyEnum,
   EntryAttributeTypeTypeEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { act, render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 
 import { AdvancedSearchJoinModal } from "./AdvancedSearchJoinModal";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 const joinAttrs: AdvancedSearchJoinAttrInfo[] = [
@@ -113,6 +114,27 @@ describe("AdvancedSearchJoinModal", () => {
     const navigation = navigateMock.mock.calls.at(-1)?.[0];
     expect(navigation.search).toContain("hint_entry=");
     expect(decodeURIComponent(navigation.search)).toContain("target-item");
+  });
+
+  test("renders in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+    render(
+      <AdvancedSearchJoinModal
+        targetEntityIds={[1]}
+        searchAllEntities={false}
+        targetAttrname="ref_item"
+        joinAttrs={joinAttrs}
+        handleClose={vi.fn()}
+      />,
+      { wrapper: TestWrapper },
+    );
+    expect(
+      screen.getByText("Attribute name of the item to join"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Save")).toBeInTheDocument();
+    expect(screen.getByText("Cancel")).toBeInTheDocument();
   });
 
   test("should not render modal when targetAttrname is empty", () => {

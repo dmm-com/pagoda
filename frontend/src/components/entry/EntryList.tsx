@@ -11,6 +11,7 @@ import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
 import { usePage } from "hooks/usePage";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { newEntryPath } from "routes/Routes";
 import { EntryListParam } from "services/Constants";
@@ -22,6 +23,7 @@ interface Props {
 }
 
 const EntryListContent: FC<Props> = ({ entityId, canCreateEntry = true }) => {
+  const { t } = useTranslation();
   const { page, query, changePage, changeQuery } = usePage();
 
   const { data: entries, mutate: refreshEntries } = usePagodaSWR(
@@ -38,7 +40,7 @@ const EntryListContent: FC<Props> = ({ entityId, canCreateEntry = true }) => {
       <Box display="flex" justifyContent="space-between" mb="16px">
         <Box width="600px">
           <SearchBox
-            placeholder="アイテムを絞り込む"
+            placeholder={t("entry.list.searchPlaceholder")}
             defaultValue={query}
             onKeyPress={(e) => {
               e.key === "Enter" &&
@@ -57,7 +59,7 @@ const EntryListContent: FC<Props> = ({ entityId, canCreateEntry = true }) => {
           sx={{ borderRadius: "24px" }}
         >
           <AddIcon />
-          新規アイテムを作成
+          {t("entry.list.createButton")}
         </Button>
       </Box>
 

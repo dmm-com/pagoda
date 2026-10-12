@@ -2,10 +2,11 @@
  */
 
 import { EntityList } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 
 import { TestWrapper } from "TestWrapper";
 import { EntityListCard } from "components/entity/EntityListCard";
+import i18n from "i18n/config";
 import { ACLType } from "services/ACLUtil";
 
 describe("EntityListCard", () => {
@@ -106,5 +107,18 @@ describe("EntityListCard", () => {
 
     // Verify the correct value was written to clipboard
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(entity.name);
+  });
+
+  test("should render in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    render(<EntityListCard entity={entity} />, {
+      wrapper: TestWrapper,
+    });
+
+    const moreButton = screen.getByRole("button", { name: "Entity actions" });
+    expect(moreButton).toBeInTheDocument();
   });
 });

@@ -9,6 +9,7 @@ import { EntityListCard } from "./EntityListCard";
 
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
+import { useTranslation } from "hooks/useTranslation";
 import { ServerContext } from "index";
 import { newEntityPath } from "routes/Routes";
 import { EntityListParam } from "services/Constants";
@@ -31,6 +32,7 @@ export const EntityList: FC<Props> = ({
   handleChangeQuery,
   setToggle,
 }) => {
+  const { t } = useTranslation();
   const isReadonly = ServerContext.getInstance()?.user?.isReadonly ?? false;
 
   return (
@@ -39,7 +41,7 @@ export const EntityList: FC<Props> = ({
       <Box display="flex" justifyContent="space-between" mb="16px">
         <Box width="600px">
           <SearchBox
-            placeholder="モデルを絞り込む"
+            placeholder={t("entity.list.searchPlaceholder")}
             defaultValue={query}
             onKeyPress={(e) => {
               e.key === "Enter" &&
@@ -57,7 +59,8 @@ export const EntityList: FC<Props> = ({
           sx={{ height: "48px", borderRadius: "24px" }}
           disabled={isReadonly}
         >
-          <AddIcon /> 新規モデルを作成
+          <AddIcon />
+          {` ${t("entity.list.createButton")}`}
         </Button>
       </Box>
 

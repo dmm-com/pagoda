@@ -19,9 +19,10 @@ import { EntryAttributes } from "components/entry/EntryAttributes";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryReferral } from "components/entry/EntryReferral";
+import { useIdParams } from "hooks/useIdParams";
 import { usePageTitle } from "hooks/usePageTitle";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
-import { useTypedParams } from "hooks/useTypedParams";
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { entryDetailsPath, restoreEntryPath } from "routes/Routes";
 import { TITLE_TEMPLATES } from "services";
@@ -79,10 +80,10 @@ const EntryDetailsContent: FC<Props> = ({
   additionalContents = [],
   sideContent = <Box />,
 }) => {
-  const { entityId, entryId } = useTypedParams<{
-    entityId: number;
-    entryId: number;
-  }>();
+  const { t } = useTranslation();
+  const { entityId, entryId } = useIdParams({
+    required: ["entityId", "entryId"],
+  });
   const navigate = useNavigate();
 
   const [entryAnchorEl, setEntryAnchorEl] = useState<HTMLButtonElement | null>(
@@ -137,7 +138,7 @@ const EntryDetailsContent: FC<Props> = ({
 
       <PageHeader
         title={entry.name ?? ""}
-        description="アイテム詳細"
+        description={t("entry.details.pageDescription")}
         targetId={entryId}
         hasOngoingProcess={entry.hasOngoingChanges}
       >
@@ -146,7 +147,7 @@ const EntryDetailsContent: FC<Props> = ({
             {[
               {
                 name: "attr_list",
-                label: "項目一覧",
+                label: t("entry.details.attrListLabel"),
               },
               ...additionalContents,
             ].map((content) => {
@@ -193,7 +194,7 @@ const EntryDetailsContent: FC<Props> = ({
           {[
             {
               name: "attr_list",
-              label: "項目一覧",
+              label: t("entry.details.attrListLabel"),
               content: (
                 <EntryAttributes
                   attributes={entry.attrs.filter(

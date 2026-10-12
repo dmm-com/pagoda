@@ -13,6 +13,8 @@ from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework.views import APIView
 
+from pagoda_plugin_sdk.utils import _is_authenticated
+
 logger = logging.getLogger(__name__)
 
 
@@ -61,7 +63,7 @@ class PluginPermission(BasePermission):
             True if permission is granted, False otherwise
         """
         # Basic authentication check
-        if not request.user or not request.user.is_authenticated:
+        if not _is_authenticated(request.user):
             logger.debug("Permission denied: User not authenticated")
             return False
 
@@ -211,11 +213,7 @@ class IsPluginAuthenticated(BasePermission):
         Returns:
             True if user is authenticated and active
         """
-        return bool(
-            request.user
-            and request.user.is_authenticated
-            and getattr(request.user, "is_active", True)
-        )
+        return _is_authenticated(request.user) and bool(getattr(request.user, "is_active", True))
 
 
 class IsPluginOwner(BasePermission):
@@ -239,7 +237,7 @@ class IsPluginOwner(BasePermission):
         Returns:
             True if user owns the object
         """
-        if not request.user or not request.user.is_authenticated:
+        if not _is_authenticated(request.user):
             return False
 
         # Check common ownership fields
@@ -270,7 +268,7 @@ class IsPluginAdminOrOwner(IsPluginOwner):
         Returns:
             True if user has permission
         """
-        if not request.user or not request.user.is_authenticated:
+        if not _is_authenticated(request.user):
             return False
 
         # Allow admins/superusers
@@ -291,7 +289,7 @@ class IsPluginAdminOrOwner(IsPluginOwner):
         Returns:
             True if user has permission
         """
-        if not request.user or not request.user.is_authenticated:
+        if not _is_authenticated(request.user):
             return False
 
         # Allow admins/superusers

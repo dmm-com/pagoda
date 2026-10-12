@@ -15,7 +15,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "jsdom",
-    setupFiles: ["./vitest.setup.ts"],
+    setupFiles: ["./vitest.setup.ts", "./vitest.setup.i18n.ts"],
     include: ["frontend/src/**/*.{test,spec}.{ts,tsx}"],
     coverage: {
       provider: "v8",

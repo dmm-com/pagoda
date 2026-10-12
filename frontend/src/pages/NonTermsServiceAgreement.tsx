@@ -3,9 +3,11 @@ import { FC } from "react";
 
 import { loginPath } from "../routes/Routes";
 
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 export const NonTermsServiceAgreementPage: FC = () => {
+  const { t } = useTranslation();
   const handleLogout = async () => {
     await aironeApiClient.postLogout();
     window.location.href = `${loginPath()}?next=${window.location.pathname}`;
@@ -29,9 +31,7 @@ export const NonTermsServiceAgreementPage: FC = () => {
           :;(∩´﹏`∩);:
         </Typography>
       </Box>
-      <Typography color="#455A64">
-        ご利用をされるにはサービス規約への同意が必要です。
-      </Typography>
+      <Typography color="#455A64">{t("user.terms.description")}</Typography>
       <Box>
         <Button
           variant="contained"
@@ -39,7 +39,7 @@ export const NonTermsServiceAgreementPage: FC = () => {
           sx={{ borderRadius: "16px", my: "40px" }}
           onClick={() => handleLogout()}
         >
-          規約同意ページに戻る
+          {t("user.terms.backToAgreement")}
         </Button>
       </Box>
     </Box>

@@ -65,8 +65,10 @@ exports[`should match snapshot 1`] = `
                       class="MuiBox-root css-162tvoi"
                     >
                       <a
+                        aria-label="test entity"
                         class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                         data-discover="true"
+                        data-mui-internal-clone-element="true"
                         href="/ui/entities/2/entries"
                       >
                         test entity
@@ -97,8 +99,10 @@ exports[`should match snapshot 1`] = `
                       class="MuiBox-root css-162tvoi"
                     >
                       <a
+                        aria-label="test entry"
                         class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                         data-discover="true"
+                        data-mui-internal-clone-element="true"
                         href="/ui/entities/2/entries/1/details"
                       >
                         test entry
@@ -253,7 +257,7 @@ exports[`should match snapshot 1`] = `
                     <input
                       aria-invalid="false"
                       class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-2u11ia-MuiInputBase-input-MuiOutlinedInput-input"
-                      id="_r_1_"
+                      id="_r_3_"
                       placeholder="アイテムを絞り込む"
                       type="text"
                     />
@@ -491,8 +495,10 @@ exports[`should match snapshot 1`] = `
                     class="MuiBox-root css-162tvoi"
                   >
                     <a
+                      aria-label="test entity"
                       class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                       data-discover="true"
+                      data-mui-internal-clone-element="true"
                       href="/ui/entities/2/entries"
                     >
                       test entity
@@ -523,8 +529,10 @@ exports[`should match snapshot 1`] = `
                     class="MuiBox-root css-162tvoi"
                   >
                     <a
+                      aria-label="test entry"
                       class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                       data-discover="true"
+                      data-mui-internal-clone-element="true"
                       href="/ui/entities/2/entries/1/details"
                     >
                       test entry
@@ -679,7 +687,7 @@ exports[`should match snapshot 1`] = `
                   <input
                     aria-invalid="false"
                     class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-2u11ia-MuiInputBase-input-MuiOutlinedInput-input"
-                    id="_r_1_"
+                    id="_r_3_"
                     placeholder="アイテムを絞り込む"
                     type="text"
                   />

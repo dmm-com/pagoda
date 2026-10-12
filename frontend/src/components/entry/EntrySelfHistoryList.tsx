@@ -15,6 +15,8 @@ import { useNavigate } from "react-router";
 
 import { Confirmable } from "components/common/Confirmable";
 import { PaginationFooter } from "components/common/PaginationFooter";
+import { useTranslation } from "hooks/useTranslation";
+import { translate } from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { showEntryHistoryPath, topPath } from "routes/Routes";
 import { EntryHistoryListParam } from "services/Constants";
@@ -66,6 +68,7 @@ export const EntrySelfHistoryList: FC<Props> = ({
   page,
   changePage,
 }) => {
+  const { t } = useTranslation();
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
@@ -73,13 +76,13 @@ export const EntrySelfHistoryList: FC<Props> = ({
     async (historyId: number) => {
       try {
         await aironeApiClient.restoreEntrySelfHistory(entryId, historyId);
-        enqueueSnackbar(`アイテム名の復旧が完了しました`, {
+        enqueueSnackbar(translate("entry.selfHistory.restoreSuccess"), {
           variant: "success",
         });
         navigate(topPath(), { replace: true });
         navigate(showEntryHistoryPath(entityId, entryId), { replace: true });
       } catch (e) {
-        enqueueSnackbar(`アイテム名の復旧が失敗しました`, {
+        enqueueSnackbar(translate("entry.selfHistory.restoreFailure"), {
           variant: "error",
         });
       }
@@ -90,13 +93,13 @@ export const EntrySelfHistoryList: FC<Props> = ({
   const getHistoryTypeLabel = (historyType: string): string => {
     switch (historyType) {
       case "+":
-        return "作成";
+        return t("common.create");
       case "~":
-        return "更新";
+        return t("common.update");
       case "-":
-        return "削除";
+        return t("common.delete");
       default:
-        return "不明";
+        return t("common.unknown");
     }
   };
 
@@ -105,12 +108,24 @@ export const EntrySelfHistoryList: FC<Props> = ({
       <Table id="table_self_history_list">
         <TableHead>
           <HeaderTableRow>
-            <HeaderTableCell width="120px">操作</HeaderTableCell>
-            <HeaderTableCell width="200px">変更前のアイテム名</HeaderTableCell>
-            <HeaderTableCell width="200px">変更後のアイテム名</HeaderTableCell>
-            <HeaderTableCell width="120px">実行日時</HeaderTableCell>
-            <HeaderTableCell width="100px">実行者</HeaderTableCell>
-            <HeaderTableCell width="60px">復旧</HeaderTableCell>
+            <HeaderTableCell width="120px">
+              {t("entry.selfHistory.operationHeader")}
+            </HeaderTableCell>
+            <HeaderTableCell width="200px">
+              {t("entry.selfHistory.beforeNameHeader")}
+            </HeaderTableCell>
+            <HeaderTableCell width="200px">
+              {t("entry.selfHistory.afterNameHeader")}
+            </HeaderTableCell>
+            <HeaderTableCell width="120px">
+              {t("entry.history.executedAtHeader")}
+            </HeaderTableCell>
+            <HeaderTableCell width="100px">
+              {t("entry.history.executedByHeader")}
+            </HeaderTableCell>
+            <HeaderTableCell width="60px">
+              {t("common.restore")}
+            </HeaderTableCell>
           </HeaderTableRow>
         </TableHead>
 
@@ -141,12 +156,14 @@ export const EntrySelfHistoryList: FC<Props> = ({
                   componentGenerator={(handleOpen) => (
                     <IconButton
                       onClick={handleOpen}
-                      disabled={index === 0} // 最新の状態（index 0）は復旧不可
+                      disabled={index === 0} // the latest state (index 0) cannot be restored
                     >
                       <RestoreIcon />
                     </IconButton>
                   )}
-                  dialogTitle={`アイテム名を「${history.name}」に復旧しますか？`}
+                  dialogTitle={t("entry.selfHistory.confirmRestore", {
+                    name: history.name,
+                  })}
                   onClickYes={() => handleRestore(history.history_id)}
                 />
               </TableCell>

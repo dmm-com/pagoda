@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "sdk"))
 
 from pagoda_plugin_sdk.utils import (
     PluginLogger,
+    _is_authenticated,
     format_datetime_for_api,
     generate_plugin_cache_key,
     get_pagoda_version,
@@ -370,6 +371,38 @@ class TestPluginLogger(unittest.TestCase):
         mock_logger.info.assert_called_once_with(
             "[test-plugin] Test message", extra={"user": "test"}
         )
+
+
+class TestIsAuthenticated(unittest.TestCase):
+    """Test cases for the internal _is_authenticated helper"""
+
+    def test_is_authenticated_none_user(self):
+        """None is treated as unauthenticated"""
+        self.assertFalse(_is_authenticated(None))
+
+    def test_is_authenticated_anonymous_like_user(self):
+        """An AnonymousUser-like object with is_authenticated=False is unauthenticated"""
+
+        class AnonymousLike:
+            is_authenticated = False
+
+        self.assertFalse(_is_authenticated(AnonymousLike()))
+
+    def test_is_authenticated_object_without_attribute(self):
+        """An object with no is_authenticated attribute at all is unauthenticated"""
+
+        class NoAttr:
+            pass
+
+        self.assertFalse(_is_authenticated(NoAttr()))
+
+    def test_is_authenticated_true_user(self):
+        """An object with is_authenticated=True is authenticated"""
+
+        class AuthenticatedLike:
+            is_authenticated = True
+
+        self.assertTrue(_is_authenticated(AuthenticatedLike()))
 
 
 if __name__ == "__main__":

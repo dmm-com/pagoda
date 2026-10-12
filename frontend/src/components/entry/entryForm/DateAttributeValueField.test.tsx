@@ -10,6 +10,7 @@ import { DateAttributeValueField } from "./DateAttributeValueField";
 import { schema, Schema } from "./EntryFormSchema";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 
 import "@testing-library/jest-dom";
 
@@ -74,5 +75,36 @@ describe("DateAttributeValueField", () => {
 
     expect(screen.getByRole("textbox")).toHaveValue("2020/01/02");
     expect(getValues("attrs.0.value.asString")).toEqual("2020-1-2");
+  });
+
+  test("renders caption in english", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    const {
+      result: {
+        current: { control, setValue },
+      },
+    } = renderHook(() =>
+      useForm<Schema>({
+        resolver: zodResolver(schema),
+        mode: "onBlur",
+        defaultValues,
+      }),
+    );
+
+    render(
+      <DateAttributeValueField
+        attrId={0}
+        control={control}
+        setValue={setValue}
+      />,
+      {
+        wrapper: TestWrapper,
+      },
+    );
+
+    expect(screen.getByText("Select a date")).toBeInTheDocument();
   });
 });

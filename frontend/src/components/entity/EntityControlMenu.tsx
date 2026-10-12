@@ -13,6 +13,7 @@ import { Link, useNavigate } from "react-router";
 import { RateLimitedClickable } from "../common/RateLimitedClickable";
 
 import { Confirmable } from "components/common/Confirmable";
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 import {
   aclPath,
@@ -51,13 +52,14 @@ export const EntityControlMenu: FC<Props> = ({
   setToggle,
   permission,
 }) => {
+  const { t } = useTranslation();
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
   const handleDelete = async (entityId: number) => {
     try {
       await aironeApiClient.deleteEntity(entityId);
-      enqueueSnackbar("モデルの削除が完了しました", {
+      enqueueSnackbar(t("entity.controlMenu.deleteSucceeded"), {
         variant: "success",
       });
       // A magic to reload the entity list with keeping snackbar
@@ -77,8 +79,8 @@ export const EntityControlMenu: FC<Props> = ({
           : null;
       enqueueSnackbar(
         detail
-          ? `モデルの削除が失敗しました: ${detail}`
-          : "モデルの削除が失敗しました",
+          ? t("entity.controlMenu.deleteFailedWithDetail", { detail })
+          : t("entity.controlMenu.deleteFailed"),
         {
           variant: "error",
         },
@@ -88,12 +90,12 @@ export const EntityControlMenu: FC<Props> = ({
   const handleExport = async (entityId: number, format: ExportFormatType) => {
     try {
       await aironeApiClient.exportEntries(entityId, format);
-      enqueueSnackbar(NotificationMessages.jobRegistered("エクスポート"), {
+      enqueueSnackbar(NotificationMessages.jobRegistered(t("common.export")), {
         variant: "info",
       });
     } catch (e) {
       enqueueSnackbar(
-        NotificationMessages.jobRegistrationFailed("エクスポート"),
+        NotificationMessages.jobRegistrationFailed(t("common.export")),
         {
           variant: "error",
         },
@@ -117,33 +119,35 @@ export const EntityControlMenu: FC<Props> = ({
       }}
     >
       <MenuItem component={Link} to={entityEntriesPath(entityId)}>
-        <Typography>アイテム一覧</Typography>
+        <Typography>{t("entity.controlMenu.entryList")}</Typography>
       </MenuItem>
       <MenuItem component={Link} to={listAliasPath(entityId)}>
-        <Typography>エイリアス一覧</Typography>
+        <Typography>{t("entity.controlMenu.aliasList")}</Typography>
       </MenuItem>
       {(permission === undefined || canEdit(permission)) && (
         <MenuItem component={Link} to={editEntityPath(entityId)}>
-          <Typography>編集</Typography>
+          <Typography>{t("common.edit")}</Typography>
         </MenuItem>
       )}
       {(permission === undefined || canModifyACL(permission)) && (
         <MenuItem component={Link} to={aclPath(entityId)}>
-          <Typography>ACL 設定</Typography>
+          <Typography>{t("entity.controlMenu.aclSettings")}</Typography>
         </MenuItem>
       )}
       <MenuItem component={Link} to={entityHistoryPath(entityId)}>
-        <Typography>変更履歴</Typography>
+        <Typography>{t("entity.controlMenu.history")}</Typography>
       </MenuItem>
       <MenuItem component={Link} to={aclHistoryPath(entityId)}>
-        <Typography>ACL 変更履歴</Typography>
+        <Typography>{t("entity.controlMenu.aclHistory")}</Typography>
       </MenuItem>
       <RateLimitedClickable
         intervalSec={5}
         onClick={handleExport.bind(null, entityId, "YAML")}
       >
         <MenuItem>
-          <Typography>エクスポート(YAML)</Typography>
+          <Typography>
+            {t("entity.controlMenu.exportFormat", { format: "YAML" })}
+          </Typography>
         </MenuItem>
       </RateLimitedClickable>
       <RateLimitedClickable
@@ -151,28 +155,30 @@ export const EntityControlMenu: FC<Props> = ({
         onClick={handleExport.bind(null, entityId, "CSV")}
       >
         <MenuItem>
-          <Typography>エクスポート(CSV)</Typography>
+          <Typography>
+            {t("entity.controlMenu.exportFormat", { format: "CSV" })}
+          </Typography>
         </MenuItem>
       </RateLimitedClickable>
       {(permission === undefined || canEdit(permission)) && (
         <MenuItem onClick={() => setOpenImportModal(true)}>
-          <Typography>インポート</Typography>
+          <Typography>{t("common.import")}</Typography>
         </MenuItem>
       )}
       <MenuItem component={Link} to={restoreEntryPath(entityId)}>
-        <Typography>削除アイテムの復旧</Typography>
+        <Typography>{t("entity.controlMenu.restoreEntries")}</Typography>
       </MenuItem>
       {(permission === undefined || canModifyACL(permission)) && (
         <Confirmable
           componentGenerator={(handleOpen) => (
             <MenuItem onClick={handleOpen}>
-              <ListItemText>削除</ListItemText>
+              <ListItemText>{t("common.delete")}</ListItemText>
               <ListItemIcon>
                 <DeleteOutlineIcon />
               </ListItemIcon>
             </MenuItem>
           )}
-          dialogTitle="本当に削除しますか？"
+          dialogTitle={t("entity.controlMenu.deleteConfirm")}
           onClickYes={() => handleDelete(entityId)}
         />
       )}

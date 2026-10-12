@@ -15,6 +15,8 @@ import { FC, KeyboardEvent } from "react";
 
 import { handleSelectFilterConditionsParams } from "./SearchResultsTableHead";
 
+import { useTranslation } from "hooks/useTranslation";
+
 const StyledBox = styled(Box)({
   margin: "8px",
 });
@@ -36,6 +38,7 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
   hintEntryDispatcher,
   handleSelectFilterConditions,
 }) => {
+  const { t } = useTranslation();
   const handleKeyPressKeyword = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter") {
       handleSelectFilterConditions({});
@@ -49,7 +52,9 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
       anchorEl={anchorElem}
     >
       <Box pl="16px" py="8px">
-        <Typography>絞り込み条件</Typography>
+        <Typography>
+          {t("advancedSearch.controlMenu.filterConditions")}
+        </Typography>
       </Box>
       <StyledBox>
         <Button
@@ -66,14 +71,14 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
             });
           }}
         >
-          <Typography>クリア</Typography>
+          <Typography>{t("advancedSearch.controlMenu.clear")}</Typography>
         </Button>
       </StyledBox>
       <Divider />
       <StyledBox>
         <TextField
           size="small"
-          placeholder="次を含むテキスト"
+          placeholder={t("advancedSearch.controlMenu.containsText")}
           value={
             hintEntry?.filterKey === EntryHintFilterKeyEnum.TEXT_CONTAINED
               ? (hintEntry?.keyword ?? "")
@@ -91,7 +96,7 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
       <StyledBox>
         <TextField
           size="small"
-          placeholder="次を含まないテキスト"
+          placeholder={t("advancedSearch.controlMenu.notContainsText")}
           value={
             hintEntry?.filterKey === EntryHintFilterKeyEnum.TEXT_NOT_CONTAINED
               ? (hintEntry?.keyword ?? "")

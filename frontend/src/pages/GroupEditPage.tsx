@@ -11,10 +11,11 @@ import { SubmitButton } from "components/common/SubmitButton";
 import { GroupForm } from "components/group/GroupForm";
 import { schema, Schema } from "components/group/groupForm/GroupFormSchema";
 import { useFormNotification } from "hooks/useFormNotification";
+import { useIdParams } from "hooks/useIdParams";
 import { usePageTitle } from "hooks/usePageTitle";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { usePrompt } from "hooks/usePrompt";
-import { useTypedParams } from "hooks/useTypedParams";
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { groupsPath, topPath } from "routes/Routes";
 import { TITLE_TEMPLATES } from "services";
@@ -26,17 +27,19 @@ import { ForbiddenError } from "services/Exceptions";
 import { ServerContext } from "services/ServerContext";
 
 export const GroupEditPage: FC = () => {
-  const { groupId } = useTypedParams<{ groupId?: number }>({
-    allowEmpty: true,
-  });
+  const { groupId } = useIdParams({ optional: ["groupId"] });
   const willCreate = groupId == null;
 
   const navigate = useNavigate();
-  const { enqueueSubmitResult } = useFormNotification("グループ", willCreate);
+  const { t } = useTranslation();
+  const { enqueueSubmitResult } = useFormNotification(
+    t("common.target.group"),
+    willCreate,
+  );
 
   const { data: group, isLoading: groupLoading } = usePagodaSWR(
     groupId != null ? ["group", groupId] : null,
-    () => aironeApiClient.getGroup(groupId!),
+    groupId != null ? () => aironeApiClient.getGroup(groupId) : null,
   );
 
   const {
@@ -54,10 +57,7 @@ export const GroupEditPage: FC = () => {
     resetOptions: { keepDirtyValues: true },
   });
 
-  usePrompt(
-    isDirty && !isSubmitSuccessful,
-    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
-  );
+  usePrompt(isDirty && !isSubmitSuccessful, t("group.edit.confirmLeave"));
 
   const handleSubmitOnValid = async (group: Schema) => {
     try {
@@ -77,7 +77,11 @@ export const GroupEditPage: FC = () => {
       if (e instanceof Error && isResponseError(e)) {
         await extractAPIException<Schema>(
           e,
-          (message) => enqueueSubmitResult(false, `詳細: "${message}"`),
+          (message) =>
+            enqueueSubmitResult(
+              false,
+              t("group.edit.submitFailureDetail", { message }),
+            ),
           (name, message) => {
             setError(name, { type: "custom", message: message });
             enqueueSubmitResult(false);
@@ -93,9 +97,14 @@ export const GroupEditPage: FC = () => {
     isSubmitSuccessful && navigate(groupsPath(), { replace: true });
   }, [isSubmitSuccessful, navigate]);
 
-  usePageTitle(groupLoading ? "読み込み中..." : TITLE_TEMPLATES.groupEdit, {
-    prefix: group?.name ?? (willCreate ? "新規作成" : undefined),
-  });
+  usePageTitle(
+    groupLoading ? t("group.edit.loading") : TITLE_TEMPLATES.groupEdit,
+    {
+      prefix:
+        group?.name ??
+        (willCreate ? t("group.edit.newGroupPrefix") : undefined),
+    },
+  );
 
   const handleCancel = async () => {
     navigate(-1);
@@ -105,8 +114,8 @@ export const GroupEditPage: FC = () => {
     throw new ForbiddenError("only admin can edit a group");
   }
 
-  const pageTitle = group?.name ?? "新規グループの作成";
-  const pageDescription = willCreate ? undefined : "グループ編集";
+  const pageTitle = group?.name ?? t("group.edit.pageTitleNew");
+  const pageDescription = willCreate ? undefined : t("group.edit.description");
 
   return (
     <Box>
@@ -115,15 +124,17 @@ export const GroupEditPage: FC = () => {
           Top
         </Typography>
         <Typography component={AironeLink} to={groupsPath()}>
-          グループ管理
+          {t("group.list.pageTitle")}
         </Typography>
         <Typography color="textPrimary">
-          {willCreate ? "新規グループの作成" : "グループの編集"}
+          {willCreate
+            ? t("group.edit.breadcrumbCreate")
+            : t("group.edit.breadcrumbEdit")}
         </Typography>
       </AironeBreadcrumbs>
       <PageHeader title={pageTitle} description={pageDescription}>
         <SubmitButton
-          name="保存"
+          name={t("common.save")}
           disabled={!isDirty || !isValid || isSubmitting || isSubmitSuccessful}
           isSubmitting={isSubmitting}
           handleSubmit={handleSubmit(handleSubmitOnValid)}
@@ -132,11 +143,7 @@ export const GroupEditPage: FC = () => {
       </PageHeader>
 
       <Container>
-        <GroupForm
-          control={control}
-          setValue={setValue}
-          groupId={Number(groupId)}
-        />
+        <GroupForm control={control} setValue={setValue} groupId={groupId} />
       </Container>
     </Box>
   );

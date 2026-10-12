@@ -14,6 +14,7 @@ import {
 import { FC, ReactElement } from "react";
 
 import { PaginationFooter } from "components/common/PaginationFooter";
+import { useTranslation } from "hooks/useTranslation";
 import { EntityHistoryListParam } from "services/Constants";
 import { formatDateTime } from "services/DateUtil";
 
@@ -89,16 +90,28 @@ export const EntityHistoryList: FC<Props> = ({
   page,
   changePage,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <Box>
       <Table>
         <TableHead>
           <TableRow sx={{ backgroundColor: "#455A64" }}>
-            <TableCell sx={{ color: "#FFFFFF" }}>内容</TableCell>
-            <TableCell sx={{ color: "#FFFFFF" }}>変更前</TableCell>
-            <TableCell sx={{ color: "#FFFFFF" }}>変更後</TableCell>
-            <TableCell sx={{ color: "#FFFFFF" }}>実行日時</TableCell>
-            <TableCell sx={{ color: "#FFFFFF" }}>実行者</TableCell>
+            <TableCell sx={{ color: "#FFFFFF" }}>
+              {t("entity.history.contentHeader")}
+            </TableCell>
+            <TableCell sx={{ color: "#FFFFFF" }}>
+              {t("entity.history.beforeHeader")}
+            </TableCell>
+            <TableCell sx={{ color: "#FFFFFF" }}>
+              {t("entity.history.afterHeader")}
+            </TableCell>
+            <TableCell sx={{ color: "#FFFFFF" }}>
+              {t("entity.history.executedAtHeader")}
+            </TableCell>
+            <TableCell sx={{ color: "#FFFFFF" }}>
+              {t("entity.history.executedByHeader")}
+            </TableCell>
           </TableRow>
         </TableHead>
 
@@ -109,17 +122,27 @@ export const EntityHistoryList: FC<Props> = ({
                 {(() => {
                   switch (history.operation) {
                     case TargetOperation.ADD_ENTITY:
-                      return <Typography>作成</Typography>;
+                      return (
+                        <Typography>{t("entity.history.opCreate")}</Typography>
+                      );
                     case TargetOperation.MOD_ENTITY:
-                      return <Typography>変更</Typography>;
+                      return (
+                        <Typography>{t("entity.history.opModify")}</Typography>
+                      );
                     case TargetOperation.DEL_ENTITY:
-                      return <Typography>削除</Typography>;
+                      return <Typography>{t("common.delete")}</Typography>;
                     case TargetOperation.ADD_ATTR:
-                      return <Typography>属性追加</Typography>;
+                      return (
+                        <Typography>{t("entity.history.opAddAttr")}</Typography>
+                      );
                     case TargetOperation.MOD_ATTR:
-                      return <Typography>属性変更</Typography>;
+                      return (
+                        <Typography>{t("entity.history.opModAttr")}</Typography>
+                      );
                     case TargetOperation.DEL_ATTR:
-                      return <Typography>属性削除</Typography>;
+                      return (
+                        <Typography>{t("entity.history.opDelAttr")}</Typography>
+                      );
                     default:
                       return (
                         <Typography>

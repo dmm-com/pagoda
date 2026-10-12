@@ -5,6 +5,8 @@ import { FC, useState } from "react";
 import { aironeApiClient } from "../../repository/AironeApiClient";
 import { AironeModal } from "../common/AironeModal";
 
+import { useTranslation } from "hooks/useTranslation";
+
 interface Props {
   openModal: boolean;
   closeModal: () => void;
@@ -19,6 +21,7 @@ export const PasswordResetConfirmModal: FC<Props> = ({
   token,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
+  const { t } = useTranslation();
 
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
@@ -31,12 +34,12 @@ export const PasswordResetConfirmModal: FC<Props> = ({
         password,
         passwordConfirmation,
       );
-      enqueueSnackbar("パスワードリセットに成功しました", {
+      enqueueSnackbar(t("user.passwordResetConfirmModal.resetSuccess"), {
         variant: "success",
       });
       closeModal();
     } catch {
-      enqueueSnackbar("パスワードリセットに失敗しました", {
+      enqueueSnackbar(t("user.passwordResetConfirmModal.resetFailure"), {
         variant: "error",
       });
     }
@@ -44,8 +47,8 @@ export const PasswordResetConfirmModal: FC<Props> = ({
 
   return (
     <AironeModal
-      title={"パスワードリセット"}
-      description={"新しいパスワードを入力してください。"}
+      title={t("user.passwordResetConfirmModal.title")}
+      description={t("user.passwordResetConfirmModal.description")}
       open={openModal}
       onClose={closeModal}
     >
@@ -70,7 +73,7 @@ export const PasswordResetConfirmModal: FC<Props> = ({
             onClick={handleSubmit}
             sx={{ m: "4px" }}
           >
-            送信
+            {t("common.submit")}
           </Button>
           <Button
             variant="contained"
@@ -78,7 +81,7 @@ export const PasswordResetConfirmModal: FC<Props> = ({
             onClick={closeModal}
             sx={{ m: "4px" }}
           >
-            キャンセル
+            {t("common.cancel")}
           </Button>
         </Box>
       </Box>

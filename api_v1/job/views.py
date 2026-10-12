@@ -2,8 +2,9 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from django.db.models import Q
+from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
 from pydantic import BaseModel
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -13,6 +14,34 @@ from job.settings import CONFIG as JOB_CONFIG
 
 
 class JobAPI(APIView):
+    @extend_schema(
+        responses={
+            200: inline_serializer(
+                name="V1JobListResponse",
+                fields={
+                    "result": serializers.ListField(
+                        child=inline_serializer(
+                            name="V1JobItem",
+                            fields={
+                                "id": serializers.IntegerField(),
+                                "user": serializers.CharField(),
+                                "target_type": serializers.IntegerField(),
+                                "target": serializers.DictField(child=serializers.JSONField()),
+                                "text": serializers.CharField(),
+                                "status": serializers.IntegerField(),
+                                "operation": serializers.IntegerField(),
+                                "created_at": serializers.DateTimeField(),
+                                "updated_at": serializers.DateTimeField(),
+                            },
+                        ),
+                    ),
+                    "constant": serializers.DictField(
+                        child=serializers.DictField(child=serializers.IntegerField())
+                    ),
+                },
+            ),
+        },
+    )
     def get(self, request: Request, format: str | None = None) -> Response:
         """
         This returns only jobs that are created by the user who sends this request.
@@ -61,6 +90,13 @@ class JobAPI(APIView):
             }
         )
 
+    @extend_schema(
+        request=inline_serializer(
+            name="V1CancelJobRequest",
+            fields={"job_id": serializers.IntegerField()},
+        ),
+        responses={200: str, 400: str},
+    )
     def delete(self, request: Request, format: str | None = None) -> Response:
         """
         This cancels a specified Job.
@@ -103,6 +139,13 @@ class SearchJobResponse(BaseModel):
 
 
 class SearchJob(APIView):
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("operation", int),
+            OpenApiParameter("target_id", int),
+        ],
+        responses={200: SearchJobResponse, 400: str, 404: str},
+    )
     def get(self, request: Request) -> Response:
         """
         This returns jobs that are matched to the specified conditions in spite of who makes.

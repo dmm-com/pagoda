@@ -98,7 +98,7 @@ for (const viewport of viewports) {
       expect(await categoryColumnCount(page)).toBe(expectedColumns);
 
       const createButton = page.getByRole("link", {
-        name: "新規カテゴリを作成",
+        name: "Create new category",
       });
       await expect(createButton).toBeVisible();
       // The label must stay on one line instead of wrapping per character.
@@ -294,13 +294,13 @@ test.describe("@responsive desktop layout contract", () => {
       expect(headerSearchBox?.width).toBe(240);
 
       const filterBox = await page
-        .getByPlaceholder("カテゴリを絞り込む")
+        .getByPlaceholder("Filter categories")
         .locator("xpath=ancestor::div[contains(@class, 'MuiTextField-root')]")
         .boundingBox();
       expect(filterBox?.width).toBe(600);
 
       const createBox = await page
-        .getByRole("link", { name: "新規カテゴリを作成" })
+        .getByRole("link", { name: "Create new category" })
         .boundingBox();
       // The create button stays on the same row as the filter box.
       expect(createBox?.y).toBe(filterBox?.y);

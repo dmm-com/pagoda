@@ -1,24 +1,33 @@
+import { translate } from "../i18n/config";
+
 export const NotificationMessages = {
   // Job lifecycle
   jobRegistered: (operationName: string) =>
-    `${operationName}のジョブ登録に成功しました`,
+    translate("notification.jobRegistered", { operationName }),
   jobRegistrationFailed: (operationName: string) =>
-    `${operationName}のジョブ登録に失敗しました`,
-  jobCompleted: (label: string) => `${label}が完了しました`,
-  jobFailed: (label: string) => `${label}が失敗しました`,
-  jobTimedOut: (label: string) => `${label}がタイムアウトしました`,
+    translate("notification.jobRegistrationFailed", { operationName }),
+  jobCompleted: (label: string) =>
+    translate("notification.jobCompleted", { label }),
+  jobFailed: (label: string) => translate("notification.jobFailed", { label }),
+  jobTimedOut: (label: string) =>
+    translate("notification.jobTimedOut", { label }),
 
   // CRUD operations (used by useFormNotification)
   operationCompleted: (targetName: string, operationName: string) =>
-    `${targetName}の${operationName}が完了しました。`,
+    translate("notification.operationCompleted", {
+      targetName,
+      operationName,
+    }),
   operationFailed: (targetName: string, operationName: string) =>
-    `${targetName}の${operationName}が失敗しました。`,
+    translate("notification.operationFailed", { targetName, operationName }),
 
   // Export
   exportReady: (targetName: string) =>
-    `${targetName}のエクスポートが完了しました`,
+    translate("notification.exportReady", { targetName }),
 
   // File
   uploadFailed: (detail?: string) =>
-    `ファイルのアップロードに失敗しました${detail ? `: ${detail}` : ""}`,
+    detail
+      ? translate("notification.uploadFailedWithDetail", { detail })
+      : translate("notification.uploadFailed"),
 } as const;

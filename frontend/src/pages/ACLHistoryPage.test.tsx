@@ -9,6 +9,7 @@ import { createMemoryRouter, RouterProvider } from "react-router";
 import { ACLHistoryPage } from "./ACLHistoryPage";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
+import i18n from "i18n/config";
 import { aclHistoryPath } from "routes/Routes";
 
 const server = setupServer(
@@ -61,7 +62,12 @@ test("should match snapshot", async () => {
   Object.defineProperty(window, "django_context", {
     value: {
       user: {
-        is_superuser: false,
+        id: 1,
+        username: "user1",
+        isSuperuser: false,
+        isReadonly: false,
+        parentUser: null,
+        email: "user1@example.com",
       },
     },
     writable: false,
@@ -88,4 +94,32 @@ test("should match snapshot", async () => {
   });
 
   expect(result).toMatchSnapshot();
+});
+
+test("renders in English", async () => {
+  await act(async () => {
+    await i18n.changeLanguage("en");
+  });
+
+  const router = createMemoryRouter(
+    [
+      {
+        path: aclHistoryPath(":objectId"),
+        element: <ACLHistoryPage />,
+      },
+    ],
+    {
+      initialEntries: [aclHistoryPath(1)],
+    },
+  );
+  await act(async () => {
+    render(<RouterProvider router={router} />, {
+      wrapper: TestWrapperWithoutRoutes,
+    });
+  });
+  await waitFor(() => {
+    expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+  });
+
+  expect(screen.getAllByText("ACL history").length).toBeGreaterThan(0);
 });

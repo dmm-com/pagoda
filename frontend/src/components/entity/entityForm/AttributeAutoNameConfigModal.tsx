@@ -15,6 +15,8 @@ import { AironeModal } from "../../common/AironeModal";
 
 import { Schema } from "./EntityFormSchema";
 
+import { useTranslation } from "hooks/useTranslation";
+
 interface Props {
   index: number;
   handleCloseModal: () => void;
@@ -26,10 +28,12 @@ export const AttributeAutoNameConfigModal: FC<Props> = ({
   handleCloseModal,
   control,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <AironeModal
-      title={"アイテム名の自動設定"}
-      caption={"属性値からアイテム名を自動的に登録するための設定"}
+      title={t("entity.form.autoNameConfigTitle")}
+      caption={t("entity.form.autoNameConfigCaption")}
       open={index >= 0}
       onClose={handleCloseModal}
     >
@@ -37,7 +41,7 @@ export const AttributeAutoNameConfigModal: FC<Props> = ({
         <TableBody>
           {/* set attr.nameOrder */}
           <TableRow>
-            <TableCell>名前に設定する順番</TableCell>
+            <TableCell>{t("entity.form.nameOrderLabel")}</TableCell>
             <TableCell>
               <Controller
                 name={`attrs.${index}.nameOrder`}
@@ -62,7 +66,7 @@ export const AttributeAutoNameConfigModal: FC<Props> = ({
 
           {/* set attr.namePrefix */}
           <TableRow>
-            <TableCell>名前に付ける接頭辞</TableCell>
+            <TableCell>{t("entity.form.namePrefixLabel")}</TableCell>
             <TableCell>
               <Controller
                 name={`attrs.${index}.namePrefix`}
@@ -85,7 +89,7 @@ export const AttributeAutoNameConfigModal: FC<Props> = ({
 
           {/* set attr.namePostfix */}
           <TableRow>
-            <TableCell>名前に付ける接尾辞</TableCell>
+            <TableCell>{t("entity.form.namePostfixLabel")}</TableCell>
             <TableCell>
               <Controller
                 name={`attrs.${index}.namePostfix`}
@@ -110,7 +114,7 @@ export const AttributeAutoNameConfigModal: FC<Props> = ({
 
       <Box display="flex" justifyContent="flex-end">
         <Button onClick={handleCloseModal}>
-          <Typography align="right">閉じる</Typography>
+          <Typography align="right">{t("common.close")}</Typography>
         </Button>
       </Box>
     </AironeModal>

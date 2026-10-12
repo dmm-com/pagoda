@@ -8,12 +8,15 @@ import {
 } from "@mui/material";
 import { FC, ReactNode, useState } from "react";
 
+import { useTranslation } from "hooks/useTranslation";
+
 interface Props {
   url: string;
   children: ReactNode;
 }
 
 export const ExternalLinkConfirmDialog: FC<Props> = ({ url, children }) => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
   return (
@@ -32,7 +35,7 @@ export const ExternalLinkConfirmDialog: FC<Props> = ({ url, children }) => {
         {children}
       </Box>
       <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogTitle>外部サイトを開きますか？</DialogTitle>
+        <DialogTitle>{t("entry.externalLink.confirmTitle")}</DialogTitle>
         <DialogContent>
           <Box sx={{ wordBreak: "break-all" }}>{url}</Box>
         </DialogContent>

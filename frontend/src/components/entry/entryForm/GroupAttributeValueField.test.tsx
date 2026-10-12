@@ -21,6 +21,7 @@ import { schema, Schema } from "./EntryFormSchema";
 import { GroupAttributeValueField } from "./GroupAttributeValueField";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 import "@testing-library/jest-dom";
@@ -201,5 +202,40 @@ describe("GroupAttributeValueField", () => {
     fireEvent.input(input, { target: { value: "admin" } });
     await waitFor(() => expect(input).toHaveValue("admin"));
     await waitFor(() => expect(spy).toHaveBeenCalledWith(1, "admin"));
+  });
+
+  test("renders caption in english", async () => {
+    vi.spyOn(aironeApiClient, "getGroups").mockResolvedValue(
+      Promise.resolve(groups),
+    );
+
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    const {
+      result: {
+        current: { control, setValue },
+      },
+    } = renderHook(() =>
+      useForm<Schema>({
+        resolver: zodResolver(schema),
+        mode: "onBlur",
+        defaultValues,
+      }),
+    );
+
+    await act(async () => {
+      render(
+        <GroupAttributeValueField
+          attrId={0}
+          control={control}
+          setValue={setValue}
+        />,
+        { wrapper: TestWrapper },
+      );
+    });
+
+    expect(screen.getByText("Select a group")).toBeInTheDocument();
   });
 });

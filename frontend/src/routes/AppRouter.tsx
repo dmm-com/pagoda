@@ -31,6 +31,8 @@ import {
   entryEditPath,
   groupPath,
   groupsPath,
+  iframeLoginCompletePath,
+  iframePath,
   jobsPath,
   listAliasPath,
   listCategoryPath,
@@ -130,6 +132,14 @@ const GroupEditPage = lazy(() =>
 const GroupListPage = lazy(() =>
   import("pages/GroupListPage").then((m) => ({ default: m.GroupListPage })),
 );
+const IframeLoginCompletePage = lazy(() =>
+  import("pages/IframeLoginCompletePage").then((m) => ({
+    default: m.IframeLoginCompletePage,
+  })),
+);
+const IframePage = lazy(() =>
+  import("pages/IframePage").then((m) => ({ default: m.IframePage })),
+);
 const JobListPage = lazy(() =>
   import("pages/JobListPage").then((m) => ({ default: m.JobListPage })),
 );
@@ -169,16 +179,43 @@ interface Props {
     path: string;
     element: ReactNode;
   }[];
+  customIframeRoutes?: {
+    path: string;
+    element: ReactNode;
+  }[];
   pluginMap?: Map<string, Plugin>;
 }
 
 export const AppRouter: FC<Props> = ({
   customRoutes,
+  customIframeRoutes,
   pluginMap = new Map(),
 }) => {
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route errorElement={<ErrorBridge />}>
+        <Route
+          path={iframeLoginCompletePath()}
+          element={
+            <Suspense fallback={<Loading />}>
+              <IframeLoginCompletePage />
+            </Suspense>
+          }
+        />
+        <Route path={`${iframePath()}*`} element={<Outlet />}>
+          <Route
+            index
+            element={
+              <Suspense fallback={<Loading />}>
+                <IframePage />
+              </Suspense>
+            }
+          />
+          {customIframeRoutes &&
+            customIframeRoutes.map((r) => (
+              <Route key={r.path} path={r.path} element={r.element} />
+            ))}
+        </Route>
         <Route
           path={loginPath()}
           element={

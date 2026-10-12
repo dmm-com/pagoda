@@ -40,6 +40,7 @@ import { SearchResultControlMenu } from "./SearchResultControlMenu";
 import { SearchResultControlMenuForEntry } from "./SearchResultControlMenuForEntry";
 import { SearchResultControlMenuForReferral } from "./SearchResultControlMenuForReferral";
 
+import { useTranslation } from "hooks/useTranslation";
 import { getIsFiltered } from "pages/AdvancedSearchResultsPage";
 import {
   AttrFilter,
@@ -145,6 +146,7 @@ export const SearchResultsTableHead: FC<Props> = ({
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [checked, setChecked] = useState(false);
 
   /* These are used for AdvancedSearchEditModal component */
@@ -357,14 +359,18 @@ export const SearchResultsTableHead: FC<Props> = ({
                     },
                 }}
               >
-                <Typography>アイテム名</Typography>
+                <Typography>
+                  {t("advancedSearch.tableHead.entryName")}
+                </Typography>
               </TableSortLabel>
             )}
 
             {/* SearchControlMenu would be invisible when NarrowDown Mode is True */}
             {isNarrowDown && !omitHeadline && (
               <>
-                <Tooltip title="アイテム名でフィルタ">
+                <Tooltip
+                  title={t("advancedSearch.tableHead.filterByEntryName")}
+                >
                   <StyledIconButton
                     onClick={(e) => {
                       setEntryMenuEls(e.currentTarget);
@@ -420,7 +426,7 @@ export const SearchResultsTableHead: FC<Props> = ({
               {(attrTypes[attrName] & EntryAttributeTypeTypeEnum.OBJECT) > 0 &&
                 isNarrowDown &&
                 attrsFilter[attrName]?.joinedAttrname === undefined && (
-                  <Tooltip title="アイテムの属性を結合する">
+                  <Tooltip title={t("advancedSearch.tableHead.joinAttr")}>
                     <StyledIconButton onClick={() => setJoinAttrname(attrName)}>
                       <AddIcon />
                     </StyledIconButton>
@@ -437,7 +443,9 @@ export const SearchResultsTableHead: FC<Props> = ({
               )}
               {isNarrowDown && (
                 <>
-                  <Tooltip title="属性値でフィルタ">
+                  <Tooltip
+                    title={t("advancedSearch.tableHead.filterByAttrValue")}
+                  >
                     <StyledIconButton
                       onClick={(e) => {
                         setAttributeMenuEls({
@@ -487,8 +495,8 @@ export const SearchResultsTableHead: FC<Props> = ({
         {hasReferral && (
           <StyledTableCell sx={{ outline: "1px solid #FFFFFF" }}>
             <HeaderBox>
-              <Typography>参照アイテム</Typography>
-              <Tooltip title="参照アイテムでフィルタ">
+              <Typography>{t("advancedSearch.tableHead.referral")}</Typography>
+              <Tooltip title={t("advancedSearch.tableHead.filterByReferral")}>
                 <StyledIconButton
                   onClick={(e) => {
                     setReferralMenuEls(e.currentTarget);

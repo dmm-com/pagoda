@@ -3,6 +3,8 @@ import { Box, TextField, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { FC } from "react";
 
+import { useTranslation } from "hooks/useTranslation";
+
 const SampleBox = styled(Box)({
   width: "100%",
   margin: "80px 0",
@@ -28,19 +30,21 @@ export const CopyForm: FC<CopyFormProps> = ({
   setEntries,
   templateEntry,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <>
       <Typography>
-        {"入力した各行ごとに " +
-          templateEntry.name.substring(0, 50) +
-          " と同じ属性を持つ別のアイテムを作成"}
+        {t("entryForm.copyForm.description", {
+          name: templateEntry.name.substring(0, 50),
+        })}
       </Typography>
       <TextField
         id="copy-name"
         fullWidth
         minRows={6}
         maxRows={15}
-        placeholder="コピーするアイテム名"
+        placeholder={t("entryForm.copyForm.placeholder")}
         multiline
         value={entries}
         onChange={(e) => setEntries(e.target.value)}
@@ -51,12 +55,12 @@ export const CopyForm: FC<CopyFormProps> = ({
           SAMPLE
         </Typography>
         <Typography color="primary">
-          (Vm0001、vm0002、…vm006の6アイテムを作成する場合)
+          {t("entryForm.copyForm.sampleDescription")}
         </Typography>
         <SampleTextField
           multiline
           disabled
-          label="コピーするアイテム名"
+          label={t("entryForm.copyForm.placeholder")}
           value="vm0001
 vm0002
 vm0003

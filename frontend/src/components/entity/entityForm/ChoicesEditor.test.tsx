@@ -1,7 +1,7 @@
 /**
  */
 
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { FC } from "react";
 import { useForm } from "react-hook-form";
 
@@ -9,6 +9,7 @@ import { ChoicesEditor } from "./ChoicesEditor";
 import { Schema } from "./EntityFormSchema";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 
 const Harness: FC<{ disabled?: boolean }> = ({ disabled = false }) => {
   const form = useForm<Schema>({
@@ -79,6 +80,20 @@ describe("ChoicesEditor", () => {
     expect(screen.getByRole("button", { name: "選択肢を追加" })).toBeDisabled();
     expect(screen.getAllByRole("button", { name: "delete-choice" })).toEqual(
       expect.arrayContaining([expect.objectContaining({ disabled: true })]),
+    );
+  });
+
+  test("renders in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    render(<Harness />, { wrapper: TestWrapper });
+
+    expect(screen.getByText("Choices")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add a choice" })).toBeVisible();
+    expect(screen.getAllByPlaceholderText("Choice display name")).toHaveLength(
+      2,
     );
   });
 });

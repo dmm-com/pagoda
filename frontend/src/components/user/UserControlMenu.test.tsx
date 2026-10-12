@@ -1,11 +1,12 @@
 /**
  */
 
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 
 import { UserControlMenu } from "./UserControlMenu";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 
 describe("UserControlMenu", () => {
   // dummy user data for testing
@@ -80,5 +81,24 @@ describe("UserControlMenu", () => {
         { wrapper: TestWrapper },
       ),
     ).not.toThrow();
+  });
+
+  test("renders menu items in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    render(
+      <UserControlMenu
+        user={mockUser}
+        anchorElem={document.createElement("button")}
+        handleClose={() => {}}
+        onClickEditPassword={() => {}}
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByText("Edit password")).toBeInTheDocument();
+    expect(screen.getByText("Delete")).toBeInTheDocument();
   });
 });

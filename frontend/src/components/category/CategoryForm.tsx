@@ -21,6 +21,7 @@ import {
   StyledTableRow,
 } from "components/common/Table";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { fuzzyMatch } from "services/StringUtil";
 
@@ -39,6 +40,7 @@ interface Props {
 }
 
 export const CategoryForm: FC<Props> = ({ control, setValue }) => {
+  const { t } = useTranslation();
   const { data: entities, isLoading: entitiesLoading } = usePagodaSWR(
     ["entities"],
     () => aironeApiClient.getEntities(),
@@ -50,13 +52,17 @@ export const CategoryForm: FC<Props> = ({ control, setValue }) => {
         <Table className="table table-bordered">
           <TableHead>
             <HeaderTableRow>
-              <HeaderTableCell width="400px">項目</HeaderTableCell>
-              <HeaderTableCell width="800px">内容</HeaderTableCell>
+              <HeaderTableCell width="400px">
+                {t("category.form.item")}
+              </HeaderTableCell>
+              <HeaderTableCell width="800px">
+                {t("category.form.content")}
+              </HeaderTableCell>
             </HeaderTableRow>
           </TableHead>
           <TableBody>
             <StyledTableRow>
-              <TableCell>カテゴリ名</TableCell>
+              <TableCell>{t("category.form.name")}</TableCell>
               <TableCell>
                 <Controller
                   name="name"
@@ -67,7 +73,7 @@ export const CategoryForm: FC<Props> = ({ control, setValue }) => {
                       {...field}
                       id="category-name"
                       required
-                      placeholder="カテゴリ名"
+                      placeholder={t("category.form.name")}
                       error={error != null}
                       helperText={error?.message}
                       size="small"
@@ -79,7 +85,7 @@ export const CategoryForm: FC<Props> = ({ control, setValue }) => {
               </TableCell>
             </StyledTableRow>
             <StyledTableRow>
-              <TableCell>備考</TableCell>
+              <TableCell>{t("category.form.note")}</TableCell>
               <TableCell>
                 <Controller
                   name="note"
@@ -91,7 +97,7 @@ export const CategoryForm: FC<Props> = ({ control, setValue }) => {
                       minRows={5}
                       multiline
                       required
-                      placeholder="備考"
+                      placeholder={t("category.form.note")}
                       error={error != null}
                       helperText={error?.message}
                       size="small"
@@ -104,7 +110,7 @@ export const CategoryForm: FC<Props> = ({ control, setValue }) => {
             </StyledTableRow>
 
             <StyledTableRow>
-              <TableCell>登録モデル(複数可)</TableCell>
+              <TableCell>{t("category.form.models")}</TableCell>
               <TableCell>
                 <Controller
                   name="models"
@@ -140,7 +146,7 @@ export const CategoryForm: FC<Props> = ({ control, setValue }) => {
                         <TextField
                           {...params}
                           variant="outlined"
-                          placeholder="モデルを選択"
+                          placeholder={t("category.form.modelsPlaceholder")}
                         />
                       )}
                       multiple
@@ -152,7 +158,7 @@ export const CategoryForm: FC<Props> = ({ control, setValue }) => {
               </TableCell>
             </StyledTableRow>
             <StyledTableRow>
-              <TableCell>表示優先度</TableCell>
+              <TableCell>{t("category.form.priority")}</TableCell>
               <TableCell>
                 <Controller
                   name="priority"
@@ -164,7 +170,7 @@ export const CategoryForm: FC<Props> = ({ control, setValue }) => {
                       type="number"
                       id="category-priority"
                       required
-                      placeholder="表示優先度"
+                      placeholder={t("category.form.priority")}
                       error={error != null}
                       helperText={error?.message}
                       size="small"

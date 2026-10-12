@@ -20,6 +20,7 @@ import { ChangeEvent, Dispatch, FC, KeyboardEvent, useState } from "react";
 import { handleSelectFilterConditionsParams } from "./SearchResultsTableHead";
 
 import { useAsync } from "hooks/useAsync";
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository";
 
 const StyledTextField = styled(TextField)({
@@ -57,6 +58,7 @@ export const SearchResultControlMenuForReferral: FC<Props> = ({
   referralExcludeModelIdsDispatcher,
   handleSelectFilterConditions,
 }) => {
+  const { t } = useTranslation();
   const entities = useAsync(async () => {
     return await aironeApiClient.getEntities();
   });
@@ -128,7 +130,7 @@ export const SearchResultControlMenuForReferral: FC<Props> = ({
             });
           }}
         >
-          <Typography>クリア</Typography>
+          <Typography>{t("advancedSearch.controlMenu.clear")}</Typography>
         </Button>
       </StyledBox>
       <Divider />
@@ -142,7 +144,7 @@ export const SearchResultControlMenuForReferral: FC<Props> = ({
             <Check />
           </ListItemIcon>
         )}
-        <Typography>空白</Typography>
+        <Typography>{t("advancedSearch.controlMenu.empty")}</Typography>
       </MenuItem>
       <MenuItem
         onClick={() =>
@@ -154,11 +156,11 @@ export const SearchResultControlMenuForReferral: FC<Props> = ({
             <Check />
           </ListItemIcon>
         )}
-        <Typography>空白ではない</Typography>
+        <Typography>{t("advancedSearch.controlMenu.nonEmpty")}</Typography>
       </MenuItem>
       <StyledTextField
         size="small"
-        placeholder="次を含むテキスト"
+        placeholder={t("advancedSearch.controlMenu.containsText")}
         value={referralFilter}
         onChange={referralFilterDispatcher}
         onKeyPress={handleKeyPressKeyword}
@@ -181,7 +183,7 @@ export const SearchResultControlMenuForReferral: FC<Props> = ({
           <TextField
             {...params}
             variant="outlined"
-            placeholder="次のモデルを含む"
+            placeholder={t("advancedSearch.controlMenu.includeModel")}
             size="small"
           />
         )}
@@ -206,7 +208,7 @@ export const SearchResultControlMenuForReferral: FC<Props> = ({
           <TextField
             {...params}
             variant="outlined"
-            placeholder="次のモデルを含まない"
+            placeholder={t("advancedSearch.controlMenu.excludeModel")}
             size="small"
           />
         )}

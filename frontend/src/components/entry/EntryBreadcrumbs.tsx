@@ -1,11 +1,12 @@
 import { EntryRetrieve } from "@dmm-com/airone-apiclient-typescript-fetch";
 import LockIcon from "@mui/icons-material/Lock";
-import { Typography } from "@mui/material";
+import { Tooltip, Typography } from "@mui/material";
 import { FC } from "react";
 
 import { AironeLink } from "components/common";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { FlexBox } from "components/common/FlexBox";
+import { useTranslation } from "hooks/useTranslation";
 import {
   entitiesPath,
   entityEntriesPath,
@@ -19,37 +20,47 @@ interface Props {
 }
 
 export const EntryBreadcrumbs: FC<Props> = ({ entry, title }) => {
+  const { t } = useTranslation();
+
   return (
     <AironeBreadcrumbs>
       <Typography component={AironeLink} to={topPath()}>
         Top
       </Typography>
       <Typography component={AironeLink} to={entitiesPath()}>
-        モデル一覧
+        {t("entry.breadcrumbs.entityList")}
       </Typography>
       {entry && (
         <FlexBox>
-          <Typography
-            component={AironeLink}
-            to={entityEntriesPath(entry.schema.id)}
-          >
-            {entry.schema.name}
-          </Typography>
+          <Tooltip title={entry.schema.name} placement="bottom-start">
+            <Typography
+              component={AironeLink}
+              to={entityEntriesPath(entry.schema.id)}
+            >
+              {entry.schema.name}
+            </Typography>
+          </Tooltip>
           {!entry.schema.isPublic && <LockIcon />}
         </FlexBox>
       )}
       {entry && (
         <FlexBox>
-          <Typography
-            component={AironeLink}
-            to={entryDetailsPath(entry.schema.id, entry.id)}
-          >
-            {entry.name}
-          </Typography>
+          <Tooltip title={entry.name} placement="bottom-start">
+            <Typography
+              component={AironeLink}
+              to={entryDetailsPath(entry.schema.id, entry.id)}
+            >
+              {entry.name}
+            </Typography>
+          </Tooltip>
           {!entry.isPublic && <LockIcon />}
         </FlexBox>
       )}
-      {title && <Typography color="textPrimary">{title}</Typography>}
+      {title && (
+        <Tooltip title={title} placement="bottom-start">
+          <Typography color="textPrimary">{title}</Typography>
+        </Tooltip>
+      )}
     </AironeBreadcrumbs>
   );
 };

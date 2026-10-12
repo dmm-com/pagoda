@@ -4,8 +4,8 @@ import { FC, Suspense, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { preload } from "swr";
 
+import { useIdParams } from "../hooks/useIdParams";
 import { usePagodaSWR, wrapFetcher } from "../hooks/usePagodaSWR";
-import { useTypedParams } from "../hooks/useTypedParams";
 
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
@@ -16,6 +16,7 @@ import {
 } from "components/entry/CopyForm";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { usePrompt } from "hooks/usePrompt";
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { entityEntriesPath, entryDetailsPath } from "routes/Routes";
 import { NotificationMessages } from "services/NotificationMessages";
@@ -25,12 +26,12 @@ interface Props {
 }
 
 const EntryCopyContent: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
-  const { entityId, entryId } = useTypedParams<{
-    entityId: number;
-    entryId: number;
-  }>();
+  const { entityId, entryId } = useIdParams({
+    required: ["entityId", "entryId"],
+  });
 
   // newline delimited string value, not string[]
   const [entries, _setEntries] = useState<string>("");
@@ -38,10 +39,7 @@ const EntryCopyContent: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [edited, setEdited] = useState<boolean>(false);
 
-  usePrompt(
-    edited && !submitted,
-    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
-  );
+  usePrompt(edited && !submitted, t("entryForm.editPage.leaveConfirm"));
 
   useEffect(() => {
     if (submitted) {
@@ -79,13 +77,16 @@ const EntryCopyContent: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
 
       setEdited(false);
       setSubmitted(true);
-      enqueueSnackbar(NotificationMessages.jobRegistered("コピー"), {
+      enqueueSnackbar(NotificationMessages.jobRegistered(t("common.copy")), {
         variant: "info",
       });
     } catch {
-      enqueueSnackbar(NotificationMessages.jobRegistrationFailed("コピー"), {
-        variant: "error",
-      });
+      enqueueSnackbar(
+        NotificationMessages.jobRegistrationFailed(t("common.copy")),
+        {
+          variant: "error",
+        },
+      );
     }
   };
 
@@ -97,11 +98,14 @@ const EntryCopyContent: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
 
   return (
     <>
-      <EntryBreadcrumbs entry={entry} title="コピー" />
+      <EntryBreadcrumbs entry={entry} title={t("common.copy")} />
 
-      <PageHeader title={entry.name ?? ""} description="アイテムのコピーを作成">
+      <PageHeader
+        title={entry.name ?? ""}
+        description={t("entryForm.copyPage.description")}
+      >
         <SubmitButton
-          name="コピーを作成"
+          name={t("entryForm.copyPage.submitName")}
           disabled={!entries || submitting || submitted}
           isSubmitting={submitting}
           handleSubmit={handleCopy}
@@ -117,9 +121,7 @@ const EntryCopyContent: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
             templateEntry={entry}
           />
         ) : (
-          <Box>
-            アイテム名の登録方法が「利用者が手動で設定」以外の場合はコピーできません
-          </Box>
+          <Box>{t("entryForm.copyPage.cannotCopy")}</Box>
         )}
       </Container>
     </>
@@ -127,10 +129,9 @@ const EntryCopyContent: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
 };
 
 export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
-  const { entityId, entryId } = useTypedParams<{
-    entityId: number;
-    entryId: number;
-  }>();
+  const { entityId, entryId } = useIdParams({
+    required: ["entityId", "entryId"],
+  });
 
   preload(
     ["entity", entityId],

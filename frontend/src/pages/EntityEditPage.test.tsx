@@ -7,11 +7,12 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { createMemoryRouter, RouterProvider } from "react-router";
 
-import { editEntityPath } from "../routes/Routes";
+import { editEntityPath, newEntityPath } from "../routes/Routes";
 
 import { EntityEditPage } from "./EntityEditPage";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
+import i18n from "i18n/config";
 import { ACLType } from "services/ACLUtil";
 
 const entityList: PaginatedEntityListList = {
@@ -75,7 +76,12 @@ describe("EditEntityPage", () => {
   Object.defineProperty(window, "django_context", {
     value: {
       user: {
-        is_superuser: false,
+        id: 1,
+        username: "user1",
+        isSuperuser: false,
+        isReadonly: false,
+        parentUser: null,
+        email: "user1@example.com",
       },
     },
     writable: false,
@@ -103,5 +109,34 @@ describe("EditEntityPage", () => {
     });
 
     expect(result).toMatchSnapshot();
+  });
+
+  test("should render the new entity title in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    const router = createMemoryRouter(
+      [
+        {
+          path: newEntityPath(),
+          element: <EntityEditPage />,
+        },
+      ],
+      {
+        initialEntries: [newEntityPath()],
+      },
+    );
+    await act(async () => {
+      render(<RouterProvider router={router} />, {
+        wrapper: TestWrapperWithoutRoutes,
+      });
+    });
+    await waitFor(() => {
+      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    });
+
+    expect(screen.getByText("Create a new entity")).toBeInTheDocument();
+    expect(screen.getByText("Save")).toBeInTheDocument();
   });
 });

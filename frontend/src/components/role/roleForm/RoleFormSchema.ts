@@ -1,6 +1,7 @@
 import { Role } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { z } from "zod";
 
+import { translate } from "../../../i18n/config";
 import { schemaForType } from "../../../services/ZodSchemaUtil";
 
 type RoleForSchema = Omit<Role, "isEditable">;
@@ -10,7 +11,10 @@ export const schema = schemaForType<RoleForSchema>()(
     .object({
       id: z.number().default(0),
       isActive: z.boolean().optional().default(true),
-      name: z.string().min(1, { message: "ロール名は必須です" }).default(""),
+      name: z
+        .string()
+        .min(1, { message: translate("role.form.nameRequired") })
+        .default(""),
       description: z.string().optional(),
       users: z
         .array(
@@ -55,14 +59,12 @@ export const schema = schemaForType<RoleForSchema>()(
         ctx.addIssue({
           path: ["adminUsers"],
           code: z.ZodIssueCode.custom,
-          message:
-            "管理者ユーザーか管理者グループのどちらかは必ずメンバーを指定してください",
+          message: translate("role.form.adminRequired"),
         });
         ctx.addIssue({
           path: ["adminGroups"],
           code: z.ZodIssueCode.custom,
-          message:
-            "管理者ユーザーか管理者グループのどちらかは必ずメンバーを指定してください",
+          message: translate("role.form.adminRequired"),
         });
       }
 
@@ -72,7 +74,7 @@ export const schema = schemaForType<RoleForSchema>()(
           ctx.addIssue({
             path: ["users", index], // NOTE: Nested path to feedback a concrete error info.
             code: z.ZodIssueCode.custom,
-            message: "管理者と重複しているユーザーがあります",
+            message: translate("role.form.userDuplicateWithAdmin"),
           });
         });
 
@@ -82,7 +84,7 @@ export const schema = schemaForType<RoleForSchema>()(
           ctx.addIssue({
             path: ["groups", index], // NOTE: Nested path to feedback a concrete error info.
             code: z.ZodIssueCode.custom,
-            message: "管理者と重複しているグループがあります",
+            message: translate("role.form.groupDuplicateWithAdmin"),
           });
         });
 
@@ -92,7 +94,7 @@ export const schema = schemaForType<RoleForSchema>()(
           ctx.addIssue({
             path: ["adminUsers", index], // NOTE: Nested path to feedback a concrete error info.
             code: z.ZodIssueCode.custom,
-            message: "メンバーとユーザーが重複しています",
+            message: translate("role.form.memberDuplicateUser"),
           });
         });
 
@@ -102,7 +104,7 @@ export const schema = schemaForType<RoleForSchema>()(
           ctx.addIssue({
             path: ["adminGroups", index], // NOTE: Nested path to feedback a concrete error info.
             code: z.ZodIssueCode.custom,
-            message: "メンバーとグループが重複しています",
+            message: translate("role.form.memberDuplicateGroup"),
           });
         });
     }),

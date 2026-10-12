@@ -1,11 +1,12 @@
 /**
  */
 
-import { act, render } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 
 import { TestWrapper } from "TestWrapper";
+import i18n from "i18n/config";
 import { GroupListPage } from "pages/GroupListPage";
 
 const server = setupServer(
@@ -48,7 +49,12 @@ describe("GroupListPage", () => {
     Object.defineProperty(window, "django_context", {
       value: {
         user: {
+          id: 1,
+          username: "admin",
           isSuperuser: true,
+          isReadonly: false,
+          parentUser: null,
+          email: "admin@example.com",
         },
       },
       writable: false,
@@ -62,5 +68,19 @@ describe("GroupListPage", () => {
     });
 
     expect(result!).toMatchSnapshot();
+  });
+
+  test("renders in English", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    await act(async () => {
+      render(<GroupListPage />, {
+        wrapper: TestWrapper,
+      });
+    });
+
+    expect(screen.getAllByText("Group management").length).toBeGreaterThan(0);
   });
 });

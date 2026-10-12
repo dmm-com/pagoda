@@ -121,6 +121,29 @@ class ViewTest(AironeViewTest):
         self.assertEqual(Group.objects.filter(name="Group1").count(), 1)
         self.assertEqual(Group.objects.filter(name="Group2").count(), 1)
 
+    def test_import_with_invalid_item_returns_list_errors(self):
+        self.admin_login()
+
+        body = yaml.dump([{"name": "Group1"}, {"id": "invalid"}])
+        resp = self.client.post(
+            "/group/api/v2/groups/import", body, content_type="application/yaml"
+        )
+
+        # ListSerializer errors keep the positional list shape (one entry per
+        # item, empty for valid ones) rather than DRF 3.18's index-keyed dict.
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            [
+                {},
+                {
+                    "id": [{"message": "A valid integer is required.", "code": "AE-121000"}],
+                    "name": [{"message": "This field is required.", "code": "AE-113000"}],
+                },
+            ],
+        )
+        self.assertFalse(Group.objects.filter(name="Group1").exists())
+
     def test_export(self):
         self.admin_login()
 

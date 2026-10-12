@@ -12,7 +12,9 @@
   ],
   "ignoreBinaries": [
     // to use `export` command
-    "export"
+    "export",
+    // Python package runner used by the on-demand debt report
+    "uv"
   ],
   // The live suite runs against a real server and has its own config, which is
   // not the one knip discovers on its own.

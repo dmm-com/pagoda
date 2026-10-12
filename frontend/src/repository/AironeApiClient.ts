@@ -57,7 +57,7 @@ import {
   UserToken,
   UserUpdate,
   WebhookCreateUpdate,
-  GroupTree as _GroupTree,
+  GroupTreeV2 as _GroupTree,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 import {
@@ -414,6 +414,7 @@ class AironeApiClient {
         action: row.action as ImportPreviewAction,
         reason: row.reason,
         changes: row.changes,
+        willInvokeTrigger: row.willInvokeTrigger,
       })),
     };
   }
@@ -423,6 +424,26 @@ class AironeApiClient {
       await this.job.jobApiV2PreviewDownloadRetrieve({ id: jobId }),
       filename,
     );
+  }
+
+  async startImportEntriesPreview(
+    data: string | ArrayBuffer,
+  ): Promise<{ jobIds: number[]; errors: string[] }> {
+    const { result } = await this.entry.entryApiV2ImportPreviewCreate(
+      { entryImportEntity: [] },
+      {
+        headers: {
+          "Content-Type": "application/yaml",
+          "X-CSRFToken": getCsrfToken(),
+        },
+        body: new Blob([data]),
+      },
+    );
+
+    return {
+      jobIds: result.jobs.map((job) => job.jobId),
+      errors: result.error,
+    };
   }
 
   async exportEntities(filename: string): Promise<void> {
@@ -1037,7 +1058,7 @@ class AironeApiClient {
 
   async updateTrigger(
     triggerId: number,
-    params: TriggerParentUpdate,
+    params: Omit<TriggerParentUpdate, "id">,
   ): Promise<void> {
     await this.trigger.triggerApiV2Update(
       {
@@ -1053,7 +1074,7 @@ class AironeApiClient {
     );
   }
 
-  async createTrigger(params: TriggerParentUpdate): Promise<void> {
+  async createTrigger(params: Omit<TriggerParentUpdate, "id">): Promise<void> {
     await this.trigger.triggerApiV2Create(
       {
         triggerParentCreate: params,
@@ -1241,11 +1262,13 @@ class AironeApiClient {
   async importEntries(
     data: string | ArrayBuffer,
     force: boolean,
+    previewJobId?: number,
   ): Promise<void> {
     return await this.entry.entryApiV2ImportCreate(
       {
         entryImportEntity: [],
         force: force,
+        previewJobId,
       },
       {
         headers: {

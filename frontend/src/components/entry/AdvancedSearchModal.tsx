@@ -7,6 +7,7 @@ import { Autocomplete, Box, Button, Checkbox, TextField } from "@mui/material";
 import { Dispatch, FC, SetStateAction, useState } from "react";
 import { useNavigate } from "react-router";
 
+import { useTranslation } from "../../hooks/useTranslation";
 import { formatAdvancedSearchParams } from "../../services/entry/AdvancedSearch";
 import { AironeModal } from "../common/AironeModal";
 
@@ -28,6 +29,7 @@ export const AdvancedSearchModal: FC<Props> = ({
   joinAttrs,
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const params = new URLSearchParams(location.search);
 
   const [selectedAttrNames, setSelectedAttrNames] = useState(initialAttrNames);
@@ -68,7 +70,7 @@ export const AdvancedSearchModal: FC<Props> = ({
 
   return (
     <AironeModal
-      title={"検索属性の再設定"}
+      title={t("advancedSearch.modal.resetAttrTitle")}
       open={openModal}
       onClose={() => setOpenModal(false)}
     >
@@ -77,14 +79,18 @@ export const AdvancedSearchModal: FC<Props> = ({
         defaultValue={initialAttrNames}
         onChange={(_, value: Array<string>) => setSelectedAttrNames(value)}
         renderInput={(params) => (
-          <TextField {...params} variant="outlined" placeholder="属性を選択" />
+          <TextField
+            {...params}
+            variant="outlined"
+            placeholder={t("advancedSearch.modal.selectAttrPlaceholder")}
+          />
         )}
         multiple
         sx={{ width: "100%", margin: "20px 0" }}
       />
       <Box display="flex" justifyContent="center">
         <Box>
-          参照アイテムも含める
+          {t("advancedSearch.modal.includeReferral")}
           <Checkbox
             checked={hasReferral}
             onChange={(e) => setHasReferral(e.target.checked)}
@@ -98,7 +104,7 @@ export const AdvancedSearchModal: FC<Props> = ({
           sx={{ mx: "4px" }}
           onClick={handleUpdatePageURL}
         >
-          保存
+          {t("common.save")}
         </Button>
         <Button
           variant="outlined"
@@ -106,7 +112,7 @@ export const AdvancedSearchModal: FC<Props> = ({
           sx={{ mx: "4px" }}
           onClick={() => setOpenModal(false)}
         >
-          キャンセル
+          {t("common.cancel")}
         </Button>
       </Box>
     </AironeModal>

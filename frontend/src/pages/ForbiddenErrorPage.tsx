@@ -1,14 +1,16 @@
 import { FC } from "react";
 
 import { ErrorPageBase } from "../components/common/ErrorPageBase";
+import { useTranslation } from "../hooks/useTranslation";
 
 export const ForbiddenErrorPage: FC = () => {
+  const { t } = useTranslation();
   return (
     <ErrorPageBase
-      title="権限がありません… (|| ﾟДﾟ)"
+      title={t("errorPage.forbidden.title")}
       description={[
-        "あなたはこのページを閲覧する権限を持っていません。",
-        "ページの管理者がアクセス権を付与できる可能性があります。",
+        t("errorPage.forbidden.description1"),
+        t("errorPage.forbidden.description2"),
       ]}
     />
   );

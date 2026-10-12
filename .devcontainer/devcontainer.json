@@ -21,7 +21,9 @@
         "ms-python.python",
         "ms-python.debugpy",
         "charliermarsh.ruff",
-        "anthropic.claude-code"
+        "anthropic.claude-code",
+        "GitHub.copilot-chat",
+        "openai.chatgpt"
       ],
       "settings": {
         "python.defaultInterpreterPath": "/workspace/airone/.venv/bin/python"

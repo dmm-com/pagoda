@@ -4,6 +4,7 @@ import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import { FC, useCallback, useState } from "react";
 
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 const StyledModal = styled(Modal)(({}) => ({
@@ -34,32 +35,32 @@ export const ChangeUserAuthModal: FC<Props> = ({
   closeModal,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
+  const { t } = useTranslation();
 
   const [ldapPassword, setLdapPassword] = useState("");
 
   const handleSubmit = useCallback(async () => {
     try {
       await aironeApiClient.updateUserAuth(user.id, ldapPassword);
-      enqueueSnackbar("認証方法の変更に成功しました", {
+      enqueueSnackbar(t("user.changeAuthModal.updateSuccess"), {
         variant: "success",
       });
       closeModal();
     } catch (e) {
-      enqueueSnackbar("認証方法の変更に失敗しました", {
+      enqueueSnackbar(t("user.changeAuthModal.updateFailure"), {
         variant: "error",
       });
     }
-  }, [user, ldapPassword, closeModal, enqueueSnackbar]);
+  }, [user, ldapPassword, closeModal, enqueueSnackbar, t]);
 
   return (
     <StyledModal open={openModal} onClose={closeModal}>
       <Paper>
         <Typography variant={"h6"} my="8px">
-          LDAP への認証方法の変更
+          {t("user.changeAuthModal.title")}
         </Typography>
         <Typography variant={"caption"} my="4px">
-          認証を LDAP のパスワードで行うことができます。（注：ユーザ &quot;
-          {user.username}&quot; が LDAPに登録されていない場合は変更できません）
+          {t("user.changeAuthModal.description", { username: user.username })}
         </Typography>
         <Input
           placeholder="Password for LDAP user"
@@ -75,7 +76,7 @@ export const ChangeUserAuthModal: FC<Props> = ({
               onClick={handleSubmit}
               sx={{ m: "4px" }}
             >
-              送信
+              {t("common.submit")}
             </Button>
             <Button
               variant="contained"
@@ -83,7 +84,7 @@ export const ChangeUserAuthModal: FC<Props> = ({
               onClick={closeModal}
               sx={{ m: "4px" }}
             >
-              キャンセル
+              {t("common.cancel")}
             </Button>
           </Box>
         </Box>

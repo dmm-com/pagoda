@@ -9,9 +9,10 @@ import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntityControlMenu } from "components/entity/EntityControlMenu";
 import { EntityHistoryList } from "components/entity/EntityHistoryList";
 import { EntryImportModal } from "components/entry/EntryImportModal";
+import { useIdParams } from "hooks/useIdParams";
 import { usePage } from "hooks/usePage";
 import { usePagodaSWR, wrapFetcher } from "hooks/usePagodaSWR";
-import { useTypedParams } from "hooks/useTypedParams";
+import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 const EntityHistoryContent: FC<{
@@ -19,6 +20,7 @@ const EntityHistoryContent: FC<{
   page: number;
   changePage: (page: number) => void;
 }> = ({ entityId, page, changePage }) => {
+  const { t } = useTranslation();
   const [entityAnchorEl, setEntityAnchorEl] =
     useState<HTMLButtonElement | null>(null);
   const [openImportModal, setOpenImportModal] = useState(false);
@@ -36,9 +38,15 @@ const EntityHistoryContent: FC<{
 
   return (
     <>
-      <EntityBreadcrumbs entity={entity} title="変更履歴" />
+      <EntityBreadcrumbs
+        entity={entity}
+        title={t("entity.controlMenu.history")}
+      />
 
-      <PageHeader title={entity.name} description="変更履歴">
+      <PageHeader
+        title={entity.name}
+        description={t("entity.controlMenu.history")}
+      >
         <Box width="50px">
           <IconButton
             id="entity_menu"
@@ -75,7 +83,7 @@ const EntityHistoryContent: FC<{
 };
 
 export const EntityHistoryPage: FC = () => {
-  const { entityId } = useTypedParams<{ entityId: number }>();
+  const { entityId } = useIdParams({ required: ["entityId"] });
   const { page, changePage } = usePage();
 
   preload(

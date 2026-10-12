@@ -29,6 +29,32 @@ export const apiGet = async <T>(page: Page, url: string): Promise<T> =>
     return response.json();
   }, url);
 
+export const postJson = async (
+  page: Page,
+  url: string,
+  body: unknown,
+): Promise<void> =>
+  page.evaluate(
+    async ({ target, payload }) => {
+      const csrfToken =
+        document.cookie.match(/(?:^|;\s*)csrftoken=([^;]*)/)?.[1] ?? "";
+      const response = await fetch(target, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": decodeURIComponent(csrfToken),
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        throw new Error(
+          `POST ${target} failed with ${response.status}: ${await response.text()}`,
+        );
+      }
+    },
+    { target: url, payload: body },
+  );
+
 export const postYaml = async (
   page: Page,
   url: string,

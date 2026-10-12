@@ -99,4 +99,25 @@ describe("schema", () => {
 
     expect(schema.parse(partialValue)).toEqual(expectedValue);
   });
+
+  test("validation fails with Japanese message by default", () => {
+    const result = schema.safeParse({ ...baseValue, name: "" });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.message).toEqual("カテゴリ名は必須です");
+  });
+
+  test("validation fails with English message when language is English", async () => {
+    vi.resetModules();
+    const { default: i18n } = await import("i18n/config");
+    await i18n.changeLanguage("en");
+    const { schema } = await import("./CategoryFormSchema");
+    const result = schema.safeParse({ ...baseValue, name: "" });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.message).toEqual(
+      "Category name is required",
+    );
+
+    // restore for later tests in the file
+    vi.resetModules();
+  });
 });

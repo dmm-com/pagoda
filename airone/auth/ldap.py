@@ -11,7 +11,10 @@ from user.models import User
 class LDAPBackend(object):
     # This method is called by Django to authenticate user by specified username and password.
     def authenticate(
-        self, request: HttpRequest, username: Optional[str] = None, password: Optional[str] = None
+        self,
+        request: Optional[HttpRequest],
+        username: Optional[str] = None,
+        password: Optional[str] = None,
     ) -> Optional[User]:
         # Return None if username or password is None
         if username is None or password is None:

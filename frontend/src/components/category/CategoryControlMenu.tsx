@@ -11,6 +11,8 @@ import { FC } from "react";
 import { Link, useNavigate } from "react-router";
 
 import { Confirmable } from "components/common/Confirmable";
+import { useTranslation } from "hooks/useTranslation";
+import { translate } from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 import {
   aclPath,
@@ -35,6 +37,7 @@ export const CategoryControlMenu: FC<Props> = ({
   setToggle,
   permission,
 }) => {
+  const { t } = useTranslation();
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
@@ -42,7 +45,7 @@ export const CategoryControlMenu: FC<Props> = ({
     await aironeApiClient
       .deleteCategory(categoryId)
       .then(() => {
-        enqueueSnackbar("カテゴリの削除が完了しました", {
+        enqueueSnackbar(translate("category.menu.deleteSuccess"), {
           variant: "success",
         });
         // A magic to reload the category list with keeping snackbar
@@ -51,7 +54,7 @@ export const CategoryControlMenu: FC<Props> = ({
         setToggle && setToggle();
       })
       .catch(() => {
-        enqueueSnackbar("カテゴリの削除が失敗しました", {
+        enqueueSnackbar(translate("category.menu.deleteFailed"), {
           variant: "error",
         });
       });
@@ -73,25 +76,25 @@ export const CategoryControlMenu: FC<Props> = ({
     >
       {(permission === undefined || canEdit(permission)) && (
         <MenuItem component={Link} to={editCategoryPath(categoryId)}>
-          <Typography>編集</Typography>
+          <Typography>{t("common.edit")}</Typography>
         </MenuItem>
       )}
       {(permission === undefined || canModifyACL(permission)) && (
         <MenuItem component={Link} to={aclPath(categoryId)}>
-          <Typography>ACL 設定</Typography>
+          <Typography>{t("category.menu.acl")}</Typography>
         </MenuItem>
       )}
       {(permission === undefined || canModifyACL(permission)) && (
         <Confirmable
           componentGenerator={(handleOpen) => (
             <MenuItem onClick={handleOpen}>
-              <ListItemText>削除</ListItemText>
+              <ListItemText>{t("common.delete")}</ListItemText>
               <ListItemIcon>
                 <DeleteOutlineIcon />
               </ListItemIcon>
             </MenuItem>
           )}
-          dialogTitle="本当に削除しますか？"
+          dialogTitle={t("category.menu.confirmDelete")}
           onClickYes={() => handleDelete(categoryId)}
         />
       )}

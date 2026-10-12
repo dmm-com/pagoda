@@ -34,6 +34,8 @@ import { RateLimitedClickable } from "components/common/RateLimitedClickable";
 import { AdvancedSearchModal } from "components/entry/AdvancedSearchModal";
 import { SearchResults } from "components/entry/SearchResults";
 import { usePage } from "hooks/usePage";
+import { useTranslation } from "hooks/useTranslation";
+import { translate } from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { advancedSearchPath, topPath } from "routes/Routes";
 import { AdvancedSerarchResultListParam } from "services/Constants";
@@ -60,15 +62,19 @@ function DeleteAllLabel(attrinfo: Array<AdvancedSearchResultAttrInfo>) {
   const renderLabel = (info: AdvancedSearchResultAttrInfo) => {
     switch (info.filterKey) {
       case AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY:
-        return "(空白)";
+        return translate("advancedSearch.resultsPage.filterLabelEmpty");
       case AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY:
-        return "(空白ではない)";
+        return translate("advancedSearch.resultsPage.filterLabelNonEmpty");
       case AdvancedSearchResultAttrInfoFilterKeyEnum.DUPLICATED:
-        return "(重複している)";
+        return translate("advancedSearch.resultsPage.filterLabelDuplicated");
       case AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED:
-        return `「${info.keyword}」を含む`;
+        return translate("advancedSearch.resultsPage.filterLabelContains", {
+          keyword: info.keyword ?? "",
+        });
       case AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED:
-        return `「${info.keyword}」を含まない`;
+        return translate("advancedSearch.resultsPage.filterLabelNotContains", {
+          keyword: info.keyword ?? "",
+        });
       default:
         return "";
     }
@@ -78,10 +84,10 @@ function DeleteAllLabel(attrinfo: Array<AdvancedSearchResultAttrInfo>) {
     return (
       <>
         <Typography>
-          以下の条件にマッチする未選択の全てのアイテムを削除する
+          {translate("advancedSearch.resultsPage.deleteAllMatchedItems")}
         </Typography>
         <Typography variant="caption" color="warning">
-          （↑のチェックを入れない場合、一覧で選択したアイテムのみ削除されます）
+          {translate("advancedSearch.resultsPage.deleteAllMatchedItemsCaption")}
         </Typography>
         <Table size="small">
           <TableBody>
@@ -90,7 +96,11 @@ function DeleteAllLabel(attrinfo: Array<AdvancedSearchResultAttrInfo>) {
                 return (
                   <TableRow key={index}>
                     <TableCell>
-                      <Typography>属性「{info.name}」の値が</Typography>
+                      <Typography>
+                        {translate("advancedSearch.resultsPage.attrValueIs", {
+                          attrName: info.name,
+                        })}
+                      </Typography>
                     </TableCell>
                     <TableCell>{renderLabel(info)}</TableCell>
                   </TableRow>
@@ -102,7 +112,9 @@ function DeleteAllLabel(attrinfo: Array<AdvancedSearchResultAttrInfo>) {
       </>
     );
   } else {
-    return <>未選択の全てのアイテムもまとめて削除する</>;
+    return (
+      <>{translate("advancedSearch.resultsPage.deleteAllUnselectedItems")}</>
+    );
   }
 }
 
@@ -135,6 +147,7 @@ interface AirOneAdvancedSearchResult extends AdvancedSearchResult {
 export const AdvancedSearchResultsPage: FC = () => {
   const location = useLocation();
   const { enqueueSnackbar } = useSnackbar();
+  const { t } = useTranslation();
   const { page, changePage } = usePage();
   const requestIdRef = useRef(0);
 
@@ -248,12 +261,12 @@ export const AdvancedSearchResultsPage: FC = () => {
         referralIncludeModelIds,
         referralExcludeModelIds,
       );
-      enqueueSnackbar(NotificationMessages.jobRegistered("エクスポート"), {
+      enqueueSnackbar(NotificationMessages.jobRegistered(t("common.export")), {
         variant: "info",
       });
     } catch (e) {
       enqueueSnackbar(
-        NotificationMessages.jobRegistrationFailed("エクスポート"),
+        NotificationMessages.jobRegistrationFailed(t("common.export")),
         {
           variant: "error",
         },
@@ -275,13 +288,13 @@ export const AdvancedSearchResultsPage: FC = () => {
         // disable isDeleteAllItems when join-attrs are specified
         isDeleteAllItems && joinAttrs.length == 0,
       );
-      enqueueSnackbar("複数アイテムの削除に成功しました", {
+      enqueueSnackbar(t("advancedSearch.resultsPage.bulkDeleteSucceeded"), {
         variant: "success",
       });
       setBulkOperationEntryIds([]);
       setToggle(!toggle);
     } catch (e) {
-      enqueueSnackbar("複数アイテムの削除に失敗しました", {
+      enqueueSnackbar(t("advancedSearch.resultsPage.bulkDeleteFailed"), {
         variant: "error",
       });
     }
@@ -289,11 +302,16 @@ export const AdvancedSearchResultsPage: FC = () => {
 
   const getSearchProgress = () => {
     if (searchResults.isInProcessing) {
-      return "検索中...";
+      return t("advancedSearch.resultsPage.searchInProgress");
     } else if (searchResults.count < searchResults.totalCount) {
-      return `${searchResults.count ?? 0} / ${searchResults.totalCount} 件`;
+      return t("advancedSearch.resultsPage.searchCountProgress", {
+        count: searchResults.count ?? 0,
+        totalCount: searchResults.totalCount,
+      });
     } else {
-      return `${searchResults.count ?? 0} 件`;
+      return t("advancedSearch.resultsPage.searchCount", {
+        count: searchResults.count ?? 0,
+      });
     }
   };
 
@@ -304,12 +322,17 @@ export const AdvancedSearchResultsPage: FC = () => {
           Top
         </Typography>
         <Typography component={AironeLink} to={advancedSearchPath()}>
-          高度な検索
+          {t("advancedSearch.resultsPage.breadcrumb")}
         </Typography>
-        <Typography color="textPrimary">検索結果</Typography>
+        <Typography color="textPrimary">
+          {t("advancedSearch.resultsPage.title")}
+        </Typography>
       </AironeBreadcrumbs>
 
-      <PageHeader title="検索結果" description={getSearchProgress()}>
+      <PageHeader
+        title={t("advancedSearch.resultsPage.title")}
+        description={getSearchProgress()}
+      >
         <Box display="flex" justifyContent="center">
           <Button
             variant="contained"
@@ -320,7 +343,7 @@ export const AdvancedSearchResultsPage: FC = () => {
               setOpenModal(true);
             }}
           >
-            属性の再設定
+            {t("advancedSearch.resultsPage.resetAttr")}
           </Button>
           <RateLimitedClickable
             intervalSec={5}
@@ -332,7 +355,7 @@ export const AdvancedSearchResultsPage: FC = () => {
               color="info"
               disabled={joinAttrs.length > 0}
             >
-              YAML 出力
+              {t("advancedSearch.resultsPage.exportYaml")}
             </Button>
           </RateLimitedClickable>
           <RateLimitedClickable
@@ -344,7 +367,7 @@ export const AdvancedSearchResultsPage: FC = () => {
               variant="contained"
               color="info"
             >
-              CSV 出力
+              {t("advancedSearch.resultsPage.exportCsv")}
             </Button>
           </RateLimitedClickable>
           <Confirmable
@@ -357,10 +380,10 @@ export const AdvancedSearchResultsPage: FC = () => {
                 disabled={bulkOperationEntryIds.length === 0}
                 onClick={handleOpen}
               >
-                まとめて削除
+                {t("advancedSearch.resultsPage.bulkDelete")}
               </Button>
             )}
-            dialogTitle="本当に削除しますか？"
+            dialogTitle={t("advancedSearch.resultsPage.confirmDeleteTitle")}
             onClickYes={handleBulkDelete}
             content={
               bulkOperationEntryIds.length ==
@@ -459,12 +482,14 @@ export const AdvancedSearchResultsPage: FC = () => {
                     <ArrowDropDownIcon />
                   </IconButton>
                   <Typography>
-                    {getDisplayedSearchResultCount(
-                      page,
-                      searchResults.totalCount,
-                      AdvancedSerarchResultListParam.MAX_ROW_COUNT,
-                    )}{" "}
-                    / {searchResults.totalCount} 件
+                    {t("advancedSearch.resultsPage.searchCountProgress", {
+                      count: getDisplayedSearchResultCount(
+                        page,
+                        searchResults.totalCount,
+                        AdvancedSerarchResultListParam.MAX_ROW_COUNT,
+                      ),
+                      totalCount: searchResults.totalCount,
+                    })}
                   </Typography>
                 </CenterAlignedBox>
               )}

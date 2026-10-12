@@ -3,6 +3,7 @@ import { styled } from "@mui/material/styles";
 import { FC, MouseEventHandler } from "react";
 
 import { CenterAlignedBox } from "components/common/FlexBox";
+import { useTranslation } from "hooks/useTranslation";
 
 const StyledButton = styled(Button)({
   margin: "0 4px",
@@ -23,6 +24,7 @@ export const SubmitButton: FC<Props> = ({
   handleSubmit,
   handleCancel,
 }) => {
+  const { t } = useTranslation();
   return (
     <CenterAlignedBox>
       <StyledButton
@@ -36,7 +38,7 @@ export const SubmitButton: FC<Props> = ({
       </StyledButton>
       {handleCancel && (
         <StyledButton variant="contained" color="info" onClick={handleCancel}>
-          キャンセル
+          {t("common.cancel")}
         </StyledButton>
       )}
     </CenterAlignedBox>

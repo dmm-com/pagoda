@@ -151,6 +151,7 @@ export const JobStatuses = {
   TIMEOUT: 4,
   PROCESSING: 5,
   CANCELED: 6,
+  WARNING: 7,
 };
 
 // TODO manage it in the API side
@@ -184,6 +185,7 @@ export const JobOperations = {
   CREATE_ENTRY_V2: 27,
   EDIT_ENTRY_V2: 28,
   DELETE_ENTRY_V2: 29,
+  IMPORT_ROLE_V2: 30,
   BULK_EDIT_ENTRY: 31,
 };
 

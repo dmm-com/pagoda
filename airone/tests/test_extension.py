@@ -9,7 +9,7 @@ settings.AIRONE["EXTENSIONS"] = ["airone.tests.fixtures.example_extension1"]
 class AirOneExttensionTest(AironeViewTest):
     def test_extension_request_handler(self):
         # send request to test airone extension
-        resp = self.client.get("/extension/airone.tests.fixtures.example_extension1")
+        resp = self.client.get("/extension/airone.tests.fixtures.example_extension1/")
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.content, b"test extension response")

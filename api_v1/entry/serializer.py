@@ -1,5 +1,7 @@
 from typing import Any
 
+from drf_spectacular.helpers import lazy_serializer
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -637,3 +639,105 @@ class EntrySearchChainSerializer(serializers.Serializer[dict[str, Any]]):
         # In opposiet, this returns True when "is_any" parameter is False (it means AND condition)
         # because, result matches all specified conditions.
         return not is_any
+
+
+class ReferredEntitySerializer(serializers.Serializer[Any]):
+    id = serializers.IntegerField(required=False)
+    name = serializers.CharField(required=False)
+
+
+class ReferralEntrySerializer(serializers.Serializer[Any]):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    entity = ReferredEntitySerializer(required=False)
+
+
+class ReferredEntrySerializer(serializers.Serializer[Any]):
+    id = serializers.IntegerField()
+    entity = ReferredEntitySerializer()
+    referral = ReferralEntrySerializer(many=True)
+
+
+class EntryReferredResponseSerializer(serializers.Serializer[Any]):
+    result = ReferredEntrySerializer(many=True)
+
+
+@extend_schema_field({"oneOf": [{"type": "integer"}, {"type": "string"}]})
+class SearchEntityIdentifierField(serializers.JSONField):
+    pass
+
+
+class EntrySearchRequestSerializer(serializers.Serializer[Any]):
+    entities = serializers.ListField(child=SearchEntityIdentifierField(), min_length=1)
+    entry_name = serializers.CharField(
+        default="",
+        allow_blank=True,
+        max_length=CONFIG.MAX_QUERY_SIZE,
+    )
+    referral = serializers.CharField(default=None, allow_null=True, allow_blank=True)
+    attrinfo = serializers.ListField(child=serializers.JSONField(), required=False)
+    is_output_all = serializers.BooleanField(default=True)
+    entry_limit = serializers.IntegerField(default=CONFIG.MAX_LIST_ENTRIES, min_value=1)
+
+
+@extend_schema_field(lazy_serializer("api_v1.entry.serializer.SearchIdNameSerializer")())
+class SearchIdNameField(serializers.JSONField):
+    pass
+
+
+class SearchIdNameSerializer(serializers.Serializer[Any]):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    schema = SearchIdNameField(required=False)
+
+
+class SearchAttributeSerializer(serializers.Serializer[Any]):
+    type = serializers.IntegerField(required=False)
+    value = serializers.JSONField(required=False, allow_null=True)
+    is_readable = serializers.BooleanField(required=False)
+
+
+class SearchRecordSerializer(serializers.Serializer[Any]):
+    entity = SearchIdNameSerializer()
+    entry = SearchIdNameSerializer()
+    attrs = serializers.DictField(child=SearchAttributeSerializer())
+    is_readable = serializers.BooleanField()
+    referrals = SearchIdNameSerializer(many=True, allow_null=True)
+
+
+class EntrySearchResultsSerializer(serializers.Serializer[Any]):
+    ret_count = serializers.IntegerField()
+    ret_values = SearchRecordSerializer(many=True)
+
+
+class EntrySearchResponseSerializer(serializers.Serializer[Any]):
+    result = EntrySearchResultsSerializer()
+
+
+class UpdateHistoryEntitySerializer(serializers.Serializer[Any]):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+
+
+class UpdateHistoryEntrySerializer(serializers.Serializer[Any]):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+
+
+class UpdateHistoryValueSerializer(serializers.Serializer[Any]):
+    value = serializers.JSONField(allow_null=True)
+    updated_at = serializers.DateTimeField()
+    updated_username = serializers.CharField()
+    updated_userid = serializers.IntegerField()
+
+
+class UpdateHistoryAttributeSerializer(serializers.Serializer[Any]):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    history = UpdateHistoryValueSerializer(many=True)
+
+
+class UpdateHistoryItemSerializer(serializers.Serializer[Any]):
+    entity = UpdateHistoryEntitySerializer()
+    entry = UpdateHistoryEntrySerializer()
+    attribute = UpdateHistoryAttributeSerializer()

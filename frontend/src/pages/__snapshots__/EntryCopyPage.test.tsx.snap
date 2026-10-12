@@ -65,8 +65,10 @@ exports[`should match snapshot 1`] = `
                       class="MuiBox-root css-162tvoi"
                     >
                       <a
+                        aria-label="test entity"
                         class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                         data-discover="true"
+                        data-mui-internal-clone-element="true"
                         href="/ui/entities/2/entries"
                       >
                         test entity
@@ -97,8 +99,10 @@ exports[`should match snapshot 1`] = `
                       class="MuiBox-root css-162tvoi"
                     >
                       <a
+                        aria-label="test entry"
                         class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                         data-discover="true"
+                        data-mui-internal-clone-element="true"
                         href="/ui/entities/2/entries/1/details"
                       >
                         test entry
@@ -126,7 +130,9 @@ exports[`should match snapshot 1`] = `
                     class="MuiBreadcrumbs-li"
                   >
                     <p
+                      aria-label="コピー"
                       class="MuiTypography-root MuiTypography-body1 css-1bgbmvw-MuiTypography-root"
+                      data-mui-internal-clone-element="true"
                     >
                       コピー
                     </p>
@@ -250,8 +256,8 @@ exports[`should match snapshot 1`] = `
               <label
                 class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeMedium MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-disabled MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeMedium MuiInputLabel-outlined css-113d811-MuiFormLabel-root-MuiInputLabel-root"
                 data-shrink="true"
-                for="_r_3_"
-                id="_r_3_-label"
+                for="_r_6_"
+                id="_r_6_-label"
               >
                 コピーするアイテム名
               </label>
@@ -262,7 +268,7 @@ exports[`should match snapshot 1`] = `
                   aria-invalid="false"
                   class="MuiInputBase-input MuiOutlinedInput-input Mui-disabled MuiInputBase-inputMultiline css-w4nesw-MuiInputBase-input-MuiOutlinedInput-input"
                   disabled=""
-                  id="_r_3_"
+                  id="_r_6_"
                   style="height: 0px; overflow: hidden;"
                 >
                   vm0001
@@ -359,8 +365,10 @@ vm0006
                     class="MuiBox-root css-162tvoi"
                   >
                     <a
+                      aria-label="test entity"
                       class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                       data-discover="true"
+                      data-mui-internal-clone-element="true"
                       href="/ui/entities/2/entries"
                     >
                       test entity
@@ -391,8 +399,10 @@ vm0006
                     class="MuiBox-root css-162tvoi"
                   >
                     <a
+                      aria-label="test entry"
                       class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                       data-discover="true"
+                      data-mui-internal-clone-element="true"
                       href="/ui/entities/2/entries/1/details"
                     >
                       test entry
@@ -420,7 +430,9 @@ vm0006
                   class="MuiBreadcrumbs-li"
                 >
                   <p
+                    aria-label="コピー"
                     class="MuiTypography-root MuiTypography-body1 css-1bgbmvw-MuiTypography-root"
+                    data-mui-internal-clone-element="true"
                   >
                     コピー
                   </p>
@@ -544,8 +556,8 @@ vm0006
             <label
               class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeMedium MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-disabled MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeMedium MuiInputLabel-outlined css-113d811-MuiFormLabel-root-MuiInputLabel-root"
               data-shrink="true"
-              for="_r_3_"
-              id="_r_3_-label"
+              for="_r_6_"
+              id="_r_6_-label"
             >
               コピーするアイテム名
             </label>
@@ -556,7 +568,7 @@ vm0006
                 aria-invalid="false"
                 class="MuiInputBase-input MuiOutlinedInput-input Mui-disabled MuiInputBase-inputMultiline css-w4nesw-MuiInputBase-input-MuiOutlinedInput-input"
                 disabled=""
-                id="_r_3_"
+                id="_r_6_"
                 style="height: 0px; overflow: hidden;"
               >
                 vm0001

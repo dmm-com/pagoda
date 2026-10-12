@@ -2,6 +2,8 @@ import { Box, Button, Typography } from "@mui/material";
 import { DateTimePicker, DesktopDatePicker } from "@mui/x-date-pickers";
 import { FC, useState } from "react";
 
+import { useTranslation } from "../../hooks/useTranslation";
+
 interface BaseDateRangePickerProps {
   initialStart?: string;
   initialEnd?: string;
@@ -23,6 +25,7 @@ export const BaseDateRangePicker: FC<BaseDateRangePickerProps> = ({
   ampm = false,
   isDateTime = false,
 }) => {
+  const { t } = useTranslation();
   const [draftDates, setDraftDates] = useState<{
     start: Date | null;
     end: Date | null;
@@ -51,8 +54,8 @@ export const BaseDateRangePicker: FC<BaseDateRangePickerProps> = ({
   const validationError =
     draftDates.start && draftDates.end && draftDates.start > draftDates.end
       ? isDateTime
-        ? "終了日時は開始日時以降を指定してください"
-        : "終了日は開始日以降を指定してください"
+        ? t("dateRangePicker.invalidDateTimeRange")
+        : t("dateRangePicker.invalidDateRange")
       : null;
 
   const handleDateChange = (type: "start" | "end", date: Date | null) => {
@@ -82,8 +85,12 @@ export const BaseDateRangePicker: FC<BaseDateRangePickerProps> = ({
     setIsEditing(false);
   };
 
-  const startLabel = isDateTime ? "開始日時" : "開始日";
-  const endLabel = isDateTime ? "終了日時" : "終了日";
+  const startLabel = isDateTime
+    ? t("dateRangePicker.startDateTime")
+    : t("dateRangePicker.startDate");
+  const endLabel = isDateTime
+    ? t("dateRangePicker.endDateTime")
+    : t("dateRangePicker.endDate");
 
   const DatePickerComponent = isDateTime ? DateTimePicker : DesktopDatePicker;
 
@@ -127,7 +134,7 @@ export const BaseDateRangePicker: FC<BaseDateRangePickerProps> = ({
       {isEditing && (
         <Box display="flex" gap={1}>
           <Button variant="outlined" size="small" onClick={onCancel}>
-            キャンセル
+            {t("common.cancel")}
           </Button>
           <Button
             variant="contained"
@@ -140,7 +147,7 @@ export const BaseDateRangePicker: FC<BaseDateRangePickerProps> = ({
               disabled
             }
           >
-            適用
+            {t("common.apply")}
           </Button>
         </Box>
       )}

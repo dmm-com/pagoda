@@ -5,4 +5,4 @@ class AclConfig(AppConfig):
     name = "acl"
 
     def ready(self) -> None:
-        from . import signals  # noqa
+        from . import signals  # noqa: F401

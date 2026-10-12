@@ -65,8 +65,10 @@ exports[`EntryEditPage > should match snapshot 1`] = `
                       class="MuiBox-root css-162tvoi"
                     >
                       <a
+                        aria-label="test entity"
                         class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                         data-discover="true"
+                        data-mui-internal-clone-element="true"
                         href="/ui/entities/2/entries"
                       >
                         test entity
@@ -97,8 +99,10 @@ exports[`EntryEditPage > should match snapshot 1`] = `
                       class="MuiBox-root css-162tvoi"
                     >
                       <a
+                        aria-label="test entry"
                         class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                         data-discover="true"
+                        data-mui-internal-clone-element="true"
                         href="/ui/entities/2/entries/1/details"
                       >
                         test entry
@@ -126,7 +130,9 @@ exports[`EntryEditPage > should match snapshot 1`] = `
                     class="MuiBreadcrumbs-li"
                   >
                     <p
+                      aria-label="編集"
                       class="MuiTypography-root MuiTypography-body1 css-1bgbmvw-MuiTypography-root"
+                      data-mui-internal-clone-element="true"
                     >
                       編集
                     </p>
@@ -362,7 +368,7 @@ exports[`EntryEditPage > should match snapshot 1`] = `
                         <input
                           aria-invalid="false"
                           class="MuiInputBase-input MuiInput-input css-1yrc8ca-MuiInputBase-input-MuiInput-input"
-                          id="_r_3_"
+                          id="_r_6_"
                           name="attrs.1.value.asString"
                           type="text"
                           value=""
@@ -476,8 +482,10 @@ exports[`EntryEditPage > should match snapshot 1`] = `
                     class="MuiBox-root css-162tvoi"
                   >
                     <a
+                      aria-label="test entity"
                       class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                       data-discover="true"
+                      data-mui-internal-clone-element="true"
                       href="/ui/entities/2/entries"
                     >
                       test entity
@@ -508,8 +516,10 @@ exports[`EntryEditPage > should match snapshot 1`] = `
                     class="MuiBox-root css-162tvoi"
                   >
                     <a
+                      aria-label="test entry"
                       class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                       data-discover="true"
+                      data-mui-internal-clone-element="true"
                       href="/ui/entities/2/entries/1/details"
                     >
                       test entry
@@ -537,7 +547,9 @@ exports[`EntryEditPage > should match snapshot 1`] = `
                   class="MuiBreadcrumbs-li"
                 >
                   <p
+                    aria-label="編集"
                     class="MuiTypography-root MuiTypography-body1 css-1bgbmvw-MuiTypography-root"
+                    data-mui-internal-clone-element="true"
                   >
                     編集
                   </p>
@@ -773,7 +785,7 @@ exports[`EntryEditPage > should match snapshot 1`] = `
                       <input
                         aria-invalid="false"
                         class="MuiInputBase-input MuiInput-input css-1yrc8ca-MuiInputBase-input-MuiInput-input"
-                        id="_r_3_"
+                        id="_r_6_"
                         name="attrs.1.value.asString"
                         type="text"
                         value=""
