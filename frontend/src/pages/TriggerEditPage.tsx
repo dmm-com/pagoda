@@ -16,7 +16,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
@@ -111,7 +111,19 @@ export const TriggerEditPage: FC = () => {
     },
   );
 
-  const [entityId, setEntityId] = useState<number>();
+  // entityId is derived from the loaded trigger unless the user selects a
+  // different entity in the form. Keying the selection to actionTrigger resets
+  // it as soon as another trigger is loaded.
+  const [entityIdState, setEntityIdState] = useState<{
+    base: typeof actionTrigger;
+    value: number;
+  } | null>(null);
+  const entityId =
+    entityIdState != null && entityIdState.base === actionTrigger
+      ? entityIdState.value
+      : actionTrigger?.entity.id;
+  const setEntityId = (value: number) =>
+    setEntityIdState({ base: actionTrigger, value });
   const { data: entity } = usePagodaSWR(
     entityId ? ["entity", entityId] : null,
     () => aironeApiClient.getEntity(entityId!),
@@ -245,30 +257,27 @@ export const TriggerEditPage: FC = () => {
     });
   };
 
-  const handleSubmitOnValid = useCallback(
-    async (trigger: Schema) => {
-      const triggerCreateUpdate: Omit<TriggerParentUpdate, "id"> = {
-        entityId: trigger.entity.id,
-        conditions: convertConditions2ServerFormat(trigger) ?? [],
-        actions: convertActions2ServerFormat(trigger) ?? [],
-      };
-      try {
-        if (triggerId !== undefined) {
-          await aironeApiClient.updateTrigger(triggerId, triggerCreateUpdate);
-          enqueueSubmitResult(true);
-        } else {
-          await aironeApiClient.createTrigger(triggerCreateUpdate);
-          enqueueSubmitResult(true);
-        }
-      } catch (e) {
-        const errMsg = "Failed to submit trigger";
-
-        enqueueSubmitResult(false, errMsg);
-        setError("conditions", { message: errMsg });
+  const handleSubmitOnValid = async (trigger: Schema) => {
+    const triggerCreateUpdate: Omit<TriggerParentUpdate, "id"> = {
+      entityId: trigger.entity.id,
+      conditions: convertConditions2ServerFormat(trigger) ?? [],
+      actions: convertActions2ServerFormat(trigger) ?? [],
+    };
+    try {
+      if (triggerId !== undefined) {
+        await aironeApiClient.updateTrigger(triggerId, triggerCreateUpdate);
+        enqueueSubmitResult(true);
+      } else {
+        await aironeApiClient.createTrigger(triggerCreateUpdate);
+        enqueueSubmitResult(true);
       }
-    },
-    [triggerId, entity],
-  );
+    } catch (e) {
+      const errMsg = "Failed to submit trigger";
+
+      enqueueSubmitResult(false, errMsg);
+      setError("conditions", { message: errMsg });
+    }
+  };
 
   const handleCancel = async () => {
     navigate(-1);
@@ -278,8 +287,6 @@ export const TriggerEditPage: FC = () => {
     if (actionTrigger != null) {
       // set defult value to React-hook-form
       reset(actionTrigger);
-
-      setEntityId(actionTrigger.entity.id);
 
       trigger();
     }

@@ -27,7 +27,6 @@ import {
   ChangeEvent,
   FC,
   useCallback,
-  useEffect,
   useMemo,
   useReducer,
   useState,
@@ -186,9 +185,18 @@ export const SearchResultsTableHead: FC<Props> = ({
       (_state: Array<number>, value: Array<number>) => value,
       defaultReferralExcludeModelIds ?? [],
     );
-  const [attrsFilter, setAttrsFilter] = useState<AttrsFilter>(
-    defaultAttrsFilter ?? {},
-  );
+  // The locally edited filters are kept together with the default filters they
+  // were derived from. As soon as the defaults change (for example because the
+  // search conditions in the URL changed) the local edits are discarded, which
+  // is the same behaviour an effect used to implement.
+  const [attrsFilterOverride, setAttrsFilterOverride] = useState<{
+    base: AttrsFilter;
+    value: AttrsFilter;
+  } | null>(null);
+  const attrsFilter =
+    attrsFilterOverride?.base === defaultAttrsFilter
+      ? attrsFilterOverride.value
+      : (defaultAttrsFilter ?? {});
 
   const [joinAttrName, setJoinAttrname] = useState<string>("");
   const [attributeMenuEls, setAttributeMenuEls] = useState<{
@@ -214,10 +222,6 @@ export const SearchResultsTableHead: FC<Props> = ({
       ),
     [defaultAttrsFilter],
   );
-
-  useEffect(() => {
-    setAttrsFilter(defaultAttrsFilter ?? {});
-  }, [defaultAttrsFilter]);
 
   const handleSelectFilterConditions =
     (attrName?: string) =>
@@ -283,10 +287,16 @@ export const SearchResultsTableHead: FC<Props> = ({
 
   const handleUpdateAttrFilter =
     (attrName: string) => (attrFilter: AttrFilter) => {
-      setAttrsFilter((attrsFilter) => ({
-        ...attrsFilter,
-        [attrName]: attrFilter,
-      }));
+      setAttrsFilterOverride((prev) => {
+        const current =
+          prev?.base === defaultAttrsFilter
+            ? prev.value
+            : (defaultAttrsFilter ?? {});
+        return {
+          base: defaultAttrsFilter,
+          value: { ...current, [attrName]: attrFilter },
+        };
+      });
     };
 
   const handleSort = (targetAttrname: string) => {

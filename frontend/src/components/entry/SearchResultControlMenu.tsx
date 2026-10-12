@@ -23,7 +23,7 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { ChangeEvent, FC, KeyboardEvent, useEffect, useState } from "react";
+import { ChangeEvent, FC, KeyboardEvent, useState } from "react";
 
 import { useTranslation } from "../../hooks/useTranslation";
 import { AttrFilter } from "../../services/entry/AdvancedSearch";
@@ -150,17 +150,18 @@ export const SearchResultControlMenu: FC<Props> = ({
     attrFilter?.filterKey ?? AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED;
   const keyword = attrFilter?.keyword ?? "";
 
-  // State management for the date range selection
-  const [isRange, setIsRange] = useState(false);
-
-  // Set the initial state
-  useEffect(() => {
-    if (keyword && keyword.includes("~")) {
-      setIsRange(true);
-    } else {
-      setIsRange(false);
-    }
-  }, [keyword]);
+  // State management for the date range selection. The value falls back to
+  // whether the keyword contains "~" whenever the keyword changes, and a user
+  // toggle is only remembered for the current keyword.
+  const [rangeOverride, setRangeOverride] = useState<{
+    keyword: string;
+    value: boolean;
+  } | null>(null);
+  const isRange =
+    rangeOverride?.keyword === keyword
+      ? rangeOverride.value
+      : Boolean(keyword && keyword.includes("~"));
+  const setIsRange = (value: boolean) => setRangeOverride({ keyword, value });
 
   return (
     <>

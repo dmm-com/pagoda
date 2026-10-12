@@ -64,6 +64,26 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-expressions": "off",
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
+      // React Compiler powered rules. They are enabled to keep the code base
+      // ready for the React Compiler and to catch the same correctness issues
+      // the compiler would bail out on. Enumerated explicitly (instead of
+      // spreading the plugin preset) so a plugin minor upgrade cannot silently
+      // change the lint gate.
+      "react-hooks/static-components": "error",
+      "react-hooks/use-memo": "error",
+      "react-hooks/component-hook-factories": "error",
+      "react-hooks/preserve-manual-memoization": "error",
+      "react-hooks/incompatible-library": "warn",
+      "react-hooks/immutability": "error",
+      "react-hooks/globals": "error",
+      "react-hooks/refs": "error",
+      "react-hooks/set-state-in-effect": "error",
+      "react-hooks/error-boundaries": "error",
+      "react-hooks/purity": "error",
+      "react-hooks/set-state-in-render": "error",
+      "react-hooks/unsupported-syntax": "warn",
+      "react-hooks/config": "error",
+      "react-hooks/gating": "error",
       "react-you-might-not-need-an-effect/no-empty-effect": "warn",
       "react-you-might-not-need-an-effect/no-adjust-state-on-prop-change": "warn",
       "react-you-might-not-need-an-effect/no-reset-all-state-on-prop-change": "warn",

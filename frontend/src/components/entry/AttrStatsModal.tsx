@@ -98,21 +98,48 @@ export const AttrStatsModal: FC<Props> = ({
 }) => {
   const { t } = useTranslation();
   const location = useLocation();
-  const [counts, setCounts] = useState<Map<string, number>>(new Map());
-  const [loadedCount, setLoadedCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadFailed, setLoadFailed] = useState(false);
+  // The aggregation result is kept together with the request key it belongs to.
+  // A key change (closing the modal or changing the search conditions) makes
+  // the derived values fall back to the initial state, which removes the need
+  // to reset state synchronously from within the effect.
+  const requestKey = [
+    String(open),
+    location.search,
+    attrname,
+    String(attrType),
+    String(totalCount),
+  ].join("\u0000");
+
+  const [statsState, setStatsState] = useState<{
+    key: string;
+    counts: Map<string, number>;
+    loadedCount: number;
+    done: boolean;
+    loadFailed: boolean;
+  }>({
+    key: "",
+    counts: new Map(),
+    loadedCount: 0,
+    done: false,
+    loadFailed: false,
+  });
+
+  const currentStats =
+    statsState.key === requestKey
+      ? statsState
+      : {
+          counts: new Map<string, number>(),
+          loadedCount: 0,
+          done: false,
+          loadFailed: false,
+        };
+  const counts = currentStats.counts;
+  const loadedCount = currentStats.loadedCount;
+  const isLoading = open && totalCount > 0 && !currentStats.done;
+  const loadFailed = currentStats.loadFailed;
 
   useEffect(() => {
-    if (!open) {
-      setCounts(new Map());
-      setLoadedCount(0);
-      setIsLoading(false);
-      setLoadFailed(false);
-      return;
-    }
-
-    if (totalCount === 0) return;
+    if (!open || totalCount === 0) return;
 
     const params = new URLSearchParams(location.search);
     const {
@@ -126,11 +153,6 @@ export const AttrStatsModal: FC<Props> = ({
       referralExcludeModelIds,
       referralIncludeModelIds,
     } = extractAdvancedSearchParams(params);
-
-    setCounts(new Map());
-    setLoadedCount(0);
-    setIsLoading(true);
-    setLoadFailed(false);
 
     let cancelled = false;
     const totalPages = Math.ceil(totalCount / PAGE_SIZE);
@@ -156,33 +178,57 @@ export const AttrStatsModal: FC<Props> = ({
 
         if (cancelled) break;
 
-        setCounts((prev) => {
-          const next = new Map(prev);
+        setStatsState((prev) => {
+          const base =
+            prev.key === requestKey
+              ? prev
+              : {
+                  key: requestKey,
+                  counts: new Map<string, number>(),
+                  loadedCount: 0,
+                  done: false,
+                  loadFailed: false,
+                };
+
+          const nextCounts = new Map(base.counts);
           for (const row of results.values) {
             const attr = row.attrs[attrname];
             if (!attr || !attr.isReadable) continue;
             const key =
               attrValueToKey(attr.value, attrType) ||
               translate("entry.attrStats.blank");
-            next.set(key, (next.get(key) ?? 0) + 1);
+            nextCounts.set(key, (nextCounts.get(key) ?? 0) + 1);
           }
-          return next;
+
+          return {
+            key: requestKey,
+            counts: nextCounts,
+            loadedCount: base.loadedCount + results.values.length,
+            done: false,
+            loadFailed: false,
+          };
         });
-        setLoadedCount((prev) => prev + results.values.length);
       }
 
-      if (!cancelled) setIsLoading(false);
+      if (!cancelled) {
+        setStatsState((prev) =>
+          prev.key === requestKey ? { ...prev, done: true } : prev,
+        );
+      }
     })().catch(() => {
       if (!cancelled) {
-        setLoadFailed(true);
-        setIsLoading(false);
+        setStatsState((prev) =>
+          prev.key === requestKey
+            ? { ...prev, done: true, loadFailed: true }
+            : prev,
+        );
       }
     });
 
     return () => {
       cancelled = true;
     };
-  }, [open, location.search, attrname, attrType, totalCount]);
+  }, [open, location.search, attrname, attrType, totalCount, requestKey]);
 
   const stats = useMemo(
     () =>
