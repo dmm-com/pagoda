@@ -318,8 +318,13 @@ const html = `<!doctype html>
       };
     </script>
   </head>
-  <body>
-    <div id="app"></div>
+  <!-- Mirrors templates/frontend/index.html so layout checks match production. -->
+  <body style="margin: 0px; overflow-y: scroll">
+    <div
+      id="app"
+      class="columns"
+      style="min-height: 100vh; display: flex; flex-direction: column"
+    ></div>
     <script src="/static/js/ui.js"></script>
   </body>
 </html>`;
@@ -360,6 +365,32 @@ const handleApi = async (req, res, parsed) => {
             { id: 2, name: "Switch" },
           ],
           priority: 10,
+          permission: ACL_FULL,
+        },
+        // Extra categories without models so the dashboard grid spans more
+        // than one row, which the responsive layout checks rely on.
+        {
+          id: 2,
+          name: "Network",
+          note: "",
+          models: [],
+          priority: 20,
+          permission: ACL_FULL,
+        },
+        {
+          id: 3,
+          name: "Facilities",
+          note: "",
+          models: [],
+          priority: 30,
+          permission: ACL_FULL,
+        },
+        {
+          id: 4,
+          name: "Long category name used to check text wrapping",
+          note: "",
+          models: [],
+          priority: 40,
           permission: ACL_FULL,
         },
       ]),
@@ -659,6 +690,21 @@ const handleApi = async (req, res, parsed) => {
       200,
       state.groups.map(({ id, name }) => ({ id, name, children: [] })),
     );
+    return true;
+  }
+  if (req.method === "GET" && pathname === "/entry/api/v2/search") {
+    const query = (parsed.query.query ?? "").toString().toLowerCase();
+    const serverSchema = { id: 1, name: "Server" };
+    const results = [
+      { id: 1, name: "web-01", schema: serverSchema },
+      { id: 101, name: "web-02", schema: serverSchema },
+      {
+        id: 102,
+        name: "web-server-with-a-very-long-hostname-for-layout-checks.example.test",
+        schema: serverSchema,
+      },
+    ].filter(({ name }) => name.toLowerCase().includes(query));
+    json(res, 200, results);
     return true;
   }
   if (req.method === "POST" && pathname === "/entry/api/v2/advanced_search") {
