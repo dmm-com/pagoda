@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box } from "@mui/material";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
@@ -57,8 +57,6 @@ export const EntryEditPage: FC<Props> = ({
     willCreate,
   );
 
-  const [initialized, setInitialized] = useState(false);
-
   const {
     formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
     handleSubmit,
@@ -87,19 +85,22 @@ export const EntryEditPage: FC<Props> = ({
     entryId != undefined ? () => aironeApiClient.getEntry(entryId) : null,
   );
 
+  // Whether the form has been initialized with the loaded entity/entry.
+  const initialized = willCreate
+    ? !entityLoading && entity != null
+    : !entityLoading && entity != null && !entryLoading && entry != null;
+
   useEffect(() => {
     if (willCreate) {
       if (!entityLoading && entity != null) {
         const entryInfo = formalizeEntryInfo(undefined, entity, excludeAttrs);
         entryInfo.name = useUUID ? crypto.randomUUID() : "";
         reset(entryInfo);
-        setInitialized(true);
       }
     } else {
       if (!entityLoading && entity != null && !entryLoading && entry != null) {
         const entryInfo = formalizeEntryInfo(entry, entity, excludeAttrs);
         reset(entryInfo);
-        setInitialized(true);
       }
     }
   }, [willCreate, entity, entry]);
