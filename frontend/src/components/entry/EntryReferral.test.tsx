@@ -10,6 +10,8 @@ import {
 } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 
+import type { Mock } from "vitest";
+
 import { TestWrapperWithoutRoutes } from "TestWrapper";
 import { EntryReferral } from "components/entry/EntryReferral";
 import i18n from "i18n/config";
@@ -22,7 +24,7 @@ vi.mock("repository/AironeApiClient", () => ({
   },
 }));
 
-const mockGetEntryReferral = aironeApiClient.getEntryReferral as vi.Mock;
+const mockGetEntryReferral = aironeApiClient.getEntryReferral as Mock;
 
 const createMockReferrals = (count: number) => ({
   results: Array.from({ length: count }, (_, i) => ({

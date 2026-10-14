@@ -48,8 +48,8 @@ const StyledTypography = styled(Typography)(({}) => ({
 
 interface Props {
   attrname: string;
-  attrFilter: AttrFilter;
-  anchorElem: HTMLButtonElement | null;
+  attrFilter?: AttrFilter;
+  anchorElem: HTMLButtonElement | null | undefined;
   handleUpdateAttrFilter: (filter: AttrFilter) => void;
   handleSelectFilterConditions: (
     params: handleSelectFilterConditionsParams,
@@ -83,12 +83,20 @@ export const SearchResultControlMenu: FC<Props> = ({
 }) => {
   const { t } = useTranslation();
   const [openStatsModal, setOpenStatsModal] = useState(false);
+
+  // attrFilter is undefined when no filter has been set yet for this attr;
+  // treat that the same as an empty/cleared filter.
+  const safeAttrFilter: AttrFilter = attrFilter ?? {
+    filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+    keyword: "",
+  };
+
   const handleClick = (key: AdvancedSearchResultAttrInfoFilterKeyEnum) => {
     // If the selected filter is the same, remove the filter.
-    if (attrFilter.filterKey === key) {
+    if (safeAttrFilter.filterKey === key) {
       handleSelectFilterConditions({
         attrFilter: {
-          ...attrFilter,
+          ...safeAttrFilter,
           filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
         },
       });
@@ -96,7 +104,7 @@ export const SearchResultControlMenu: FC<Props> = ({
     }
 
     handleUpdateAttrFilter({
-      ...attrFilter,
+      ...safeAttrFilter,
       filterKey: key,
     });
 
@@ -106,7 +114,7 @@ export const SearchResultControlMenu: FC<Props> = ({
       case AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY:
         handleSelectFilterConditions({
           attrFilter: {
-            ...attrFilter,
+            ...safeAttrFilter,
             filterKey: key,
           },
         });
@@ -114,7 +122,7 @@ export const SearchResultControlMenu: FC<Props> = ({
       case AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED:
         handleSelectFilterConditions({
           attrFilter: {
-            ...attrFilter,
+            ...safeAttrFilter,
             filterKey: key,
             keyword: "",
           },
@@ -127,7 +135,7 @@ export const SearchResultControlMenu: FC<Props> = ({
     (filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum) =>
     (e: ChangeEvent<HTMLInputElement>) => {
       handleUpdateAttrFilter({
-        ...attrFilter,
+        ...safeAttrFilter,
         keyword: e.target.value,
         filterKey,
       });
@@ -139,16 +147,15 @@ export const SearchResultControlMenu: FC<Props> = ({
       if (e.key === "Enter") {
         handleSelectFilterConditions({
           attrFilter: {
-            ...attrFilter,
+            ...safeAttrFilter,
             filterKey,
           },
         });
       }
     };
 
-  const filterKey =
-    attrFilter?.filterKey ?? AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED;
-  const keyword = attrFilter?.keyword ?? "";
+  const filterKey = safeAttrFilter.filterKey;
+  const keyword = safeAttrFilter.keyword;
 
   // State management for the date range selection
   const [isRange, setIsRange] = useState(false);
@@ -278,11 +285,11 @@ export const SearchResultControlMenu: FC<Props> = ({
                     }
                     onChange={(date: Date | null) => {
                       const settingDateValue = date
-                        ? new Date(
+                        ? (new Date(
                             date.getTime() - date.getTimezoneOffset() * 60000,
                           )
                             .toISOString()
-                            .split("T")[0]
+                            .split("T")[0] ?? "")
                         : "";
                       handleSelectFilterConditions({
                         attrFilter: {
@@ -340,11 +347,11 @@ export const SearchResultControlMenu: FC<Props> = ({
                     }
                     onChange={(date: Date | null) => {
                       const settingDateValue = date
-                        ? new Date(
+                        ? (new Date(
                             date.getTime() - date.getTimezoneOffset() * 60000,
                           )
                             .toISOString()
-                            .split("T")[0]
+                            .split("T")[0] ?? "")
                         : "";
                       handleSelectFilterConditions({
                         attrFilter: {

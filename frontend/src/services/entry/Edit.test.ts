@@ -181,6 +181,7 @@ test("formalizeEntryInfo should return expect value", () => {
     isActive: true,
     deletedUser: null,
     permission: ACLType.Full,
+    hasOngoingChanges: false,
     attrs: [
       {
         id: 20,
@@ -404,6 +405,7 @@ test("formalizeEntryInfo should use defaultValue when creating new entry", () =>
       isActive: true,
       deletedUser: null,
       permission: ACLType.Full,
+      hasOngoingChanges: false,
       attrs: [],
     },
     entity,
@@ -499,6 +501,7 @@ test("formalizeEntryInfo should not prefill defaultValue when editing an existin
     isActive: true,
     deletedUser: null,
     permission: ACLType.Full,
+    hasOngoingChanges: false,
     attrs: [],
   };
 
