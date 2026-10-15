@@ -19,7 +19,7 @@ import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository";
 import { entryDetailsPath } from "routes";
 
-const SEARCH_PAGE_SIZE = 20;
+const SEARCH_PAGE_SIZE = 30;
 
 const StyledContainer = styled(Container)({
   marginTop: "16px",
