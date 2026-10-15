@@ -8,6 +8,7 @@ import requests
 import yaml
 from django.conf import settings
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
@@ -17,7 +18,7 @@ from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrType
 from entity import tasks
 from entity.models import Entity, EntityAttr, ItemNameType
-from entry.models import Entry
+from entry.models import AttributeValue, Entry
 from entry.tasks import create_entry_v2
 from group.models import Group
 from role.models import Role
@@ -4846,3 +4847,48 @@ class ReadonlyUserPermissionTest(AironeViewTest):
             content_type="application/yaml",
         )
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class EntityDiffAPITest(AironeViewTest):
+    def setUp(self):
+        super().setUp()
+        self.user = self.guest_login()
+        self.entity = self.create_entity(
+            self.user, "diff-entity", attrs=[{"name": "str", "type": AttrType.STRING}]
+        )
+
+    def _set_value(self, entry, value, at):
+        attr = entry.attrs.get(schema__name="str")
+        attr.add_value(self.user, value)
+        AttributeValue.objects.filter(parent_attr=attr, is_latest=True).update(created_time=at)
+
+    def test_diff(self):
+        t = timezone.now()
+        t0, t1 = t - datetime.timedelta(days=2), t - datetime.timedelta(days=1)
+        changed = self.add_entry(self.user, "changed", self.entity)
+        same = self.add_entry(self.user, "same", self.entity)
+        self._set_value(changed, "a", t0 - datetime.timedelta(hours=1))
+        self._set_value(changed, "b", t0 + datetime.timedelta(hours=1))
+        self._set_value(same, "x", t0 - datetime.timedelta(hours=1))
+
+        resp = self.client.get(
+            "/entity/api/v2/diff",
+            {"model": "diff-entity", "attr": "str", "t0": t0.isoformat(), "t1": t1.isoformat()},
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], 1)
+        attribute = resp.json()["attributes"][0]
+        self.assertEqual(attribute["name"], "str")
+        self.assertEqual(attribute["type"], AttrType.STRING)
+        self.assertEqual(attribute["entry"]["name"], "changed")
+        self.assertEqual(attribute["value0"], "a")
+        self.assertEqual(attribute["value1"], "b")
+
+    def test_diff_invalid_params(self):
+        params = {"model": "nothing", "attr": "str", "t0": "2024-01-01", "t1": "2024-01-02"}
+        self.assertEqual(self.client.get("/entity/api/v2/diff", params).status_code, 404)
+        params["model"] = "diff-entity"
+        params["attr"] = "nothing"
+        self.assertEqual(self.client.get("/entity/api/v2/diff", params).status_code, 404)
+        del params["t1"]
+        self.assertEqual(self.client.get("/entity/api/v2/diff", params).status_code, 400)

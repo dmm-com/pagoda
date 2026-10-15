@@ -26,6 +26,8 @@ from entity.api_v2.serializers import (
     EntityAttrNameSerializer,
     EntityCreateSerializer,
     EntityDetailSerializer,
+    EntityDiffQuerySerializer,
+    EntityDiffSerializer,
     EntityHistorySerializer,
     EntityImportExportRootSerializer,
     EntityListSerializer,
@@ -33,7 +35,7 @@ from entity.api_v2.serializers import (
 )
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import EntryBaseSerializer, EntryCreateSerializer
-from entry.models import Entry
+from entry.models import Attribute, AttributeValue, Entry
 from job.api_v2.serializers import ImportPreviewJobSerializer
 from job.models import Job
 from user.models import History, User
@@ -618,3 +620,73 @@ class EntityAttrNameAPI(generics.GenericAPIView[EntityAttr]):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset)
         return Response(serializer.data)
+
+
+class EntityDiffAPI(generics.GenericAPIView[Entity]):
+    """Report entries whose attribute value differs between two points in time."""
+
+    serializer_class = EntityDiffQuerySerializer
+
+    @staticmethod
+    def _value_at(attr: Attribute, at: Any) -> Any:
+        attrv = (
+            AttributeValue.objects.filter(
+                parent_attr=attr, parent_attrv__isnull=True, created_time__lte=at
+            )
+            .prefetch_related("data_array")
+            .order_by("-created_time", "-id")
+            .first()
+        )
+        if attrv is None:
+            return None
+        # with_metainfo wraps the value as {"type": ..., "value": ...}; keep only the value
+        return attrv.get_value(with_metainfo=True, serialize=True)["value"]
+
+    @extend_schema(
+        parameters=[EntityDiffQuerySerializer],
+        responses=EntityDiffSerializer,
+    )
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        user = cast("User", request.user)
+        query = EntityDiffQuerySerializer(data=request.query_params)
+        query.is_valid(raise_exception=True)
+        model = query.validated_data["model"]
+        attr_name = query.validated_data["attr"]
+        t0 = query.validated_data["t0"]
+        t1 = query.validated_data["t1"]
+
+        entity = Entity.objects.filter(name=model, is_active=True).first()
+        if entity is None or not user.has_permission(entity, ACLType.Readable):
+            raise NotFound("Target Entity doesn't exist")
+        entity_attr = EntityAttr.objects.filter(
+            parent_entity=entity, name=attr_name, is_active=True
+        ).first()
+        if entity_attr is None:
+            raise NotFound("Target attribute doesn't exist in the Entity")
+
+        attributes: list[dict[str, Any]] = []
+        for attr in Attribute.objects.filter(
+            schema=entity_attr, parent_entry__is_active=True, is_active=True
+        ).select_related("parent_entry"):
+            entry = attr.parent_entry
+            if not user.has_permission(entry, ACLType.Readable) or not user.has_permission(
+                attr, ACLType.Readable
+            ):
+                continue
+
+            value0 = self._value_at(attr, t0)
+            value1 = self._value_at(attr, t1)
+            if value0 == value1:
+                continue
+            attributes.append(
+                {
+                    "id": attr.id,
+                    "name": entity_attr.name,
+                    "type": entity_attr.type,
+                    "entry": {"id": entry.id, "name": entry.name},
+                    "value0": value0,
+                    "value1": value1,
+                }
+            )
+
+        return Response({"count": len(attributes), "attributes": attributes})
