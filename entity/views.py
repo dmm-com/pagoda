@@ -125,7 +125,7 @@ def edit(request: HttpRequest, entity_id: int) -> HttpResponse:
         {
             "name": "name",
             "type": str,
-            "checker": lambda x: (x["name"] and len(x["name"]) <= _ENTITY_NAME_MAX_LENGTH),
+            "checker": lambda x: x["name"] and len(x["name"]) <= _ENTITY_NAME_MAX_LENGTH,
         },
         {"name": "note", "type": str},
         {"name": "is_toplevel", "type": bool},
@@ -145,16 +145,14 @@ def edit(request: HttpRequest, entity_id: int) -> HttpResponse:
                 {
                     "name": "type",
                     "type": str,
-                    "checker": lambda x: (
-                        any([y == int(x["type"]) for y in AttrTypeValue.values()])
-                    ),
+                    "checker": lambda x: any([y == int(x["type"]) for y in AttrTypeValue.values()]),
                 },
                 {"name": "is_mandatory", "type": bool},
                 {"name": "is_delete_in_chain", "type": bool},
                 {
                     "name": "row_index",
                     "type": str,
-                    "checker": lambda x: (re.match(r"^[0-9]*$", x["row_index"])),
+                    "checker": lambda x: re.match(r"^[0-9]*$", x["row_index"]),
                 },
             ],
         },
@@ -229,7 +227,7 @@ def do_edit(request: HttpRequest, entity_id: int, recv_data: dict[str, Any]) -> 
         {
             "name": "name",
             "type": str,
-            "checker": lambda x: (x["name"] and len(x["name"]) <= _ENTITY_NAME_MAX_LENGTH),
+            "checker": lambda x: x["name"] and len(x["name"]) <= _ENTITY_NAME_MAX_LENGTH,
         },
         {"name": "note", "type": str},
         {"name": "is_toplevel", "type": bool},
@@ -249,16 +247,14 @@ def do_edit(request: HttpRequest, entity_id: int, recv_data: dict[str, Any]) -> 
                 {
                     "name": "type",
                     "type": str,
-                    "checker": lambda x: (
-                        any([y == int(x["type"]) for y in AttrTypeValue.values()])
-                    ),
+                    "checker": lambda x: any([y == int(x["type"]) for y in AttrTypeValue.values()]),
                 },
                 {"name": "is_mandatory", "type": bool},
                 {"name": "is_delete_in_chain", "type": bool},
                 {
                     "name": "row_index",
                     "type": str,
-                    "checker": lambda x: (re.match(r"^[0-9]*$", x["row_index"])),
+                    "checker": lambda x: re.match(r"^[0-9]*$", x["row_index"]),
                 },
             ],
         },

@@ -1761,3 +1761,24 @@ class EntityAttrIDandNameSerializer(serializers.Serializer[dict[str, Any]]):
 
 class EntityAttrNameSerializer(serializers.ListSerializer[dict[str, Any]]):
     child = EntityAttrIDandNameSerializer()
+
+
+class EntityDiffQuerySerializer(serializers.Serializer[Any]):
+    model = serializers.CharField(help_text="Name of the Entity (model) to compare")
+    attr = serializers.CharField(help_text="Name of the attribute to compare")
+    t0 = serializers.DateTimeField(help_text="Earlier point in time")
+    t1 = serializers.DateTimeField(help_text="Later point in time")
+
+
+class EntityDiffAttributeSerializer(serializers.Serializer[Any]):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    type = serializers.IntegerField()
+    entry = serializers.DictField(child=serializers.CharField())
+    value0 = serializers.JSONField(allow_null=True)
+    value1 = serializers.JSONField(allow_null=True)
+
+
+class EntityDiffSerializer(serializers.Serializer[Any]):
+    count = serializers.IntegerField()
+    attributes = EntityDiffAttributeSerializer(many=True)
