@@ -24,6 +24,7 @@ import {
   listAliasPath,
   topPath,
   entityEntriesPath,
+  entityDifferencePath,
   aclHistoryPath,
 } from "routes/Routes";
 import { canEdit, canModifyACL } from "services/ACLUtil";
@@ -70,12 +71,12 @@ export const EntityControlMenu: FC<Props> = ({
       const detail =
         e instanceof Error && isResponseError(e)
           ? await toReportableNonFieldErrors(e).catch((parseErr) => {
-              console.error(
-                "Failed to extract error detail from delete response",
-                parseErr,
-              );
-              return null;
-            })
+            console.error(
+              "Failed to extract error detail from delete response",
+              parseErr,
+            );
+            return null;
+          })
           : null;
       enqueueSnackbar(
         detail
@@ -129,6 +130,9 @@ export const EntityControlMenu: FC<Props> = ({
           <Typography>{t("common.edit")}</Typography>
         </MenuItem>
       )}
+      <MenuItem component={Link} to={entityDifferencePath(entityId)}>
+        <Typography>{t("entity.controlMenu.difference")}</Typography>
+      </MenuItem>
       {(permission === undefined || canModifyACL(permission)) && (
         <MenuItem component={Link} to={aclPath(entityId)}>
           <Typography>{t("entity.controlMenu.aclSettings")}</Typography>

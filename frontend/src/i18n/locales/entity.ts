@@ -8,6 +8,14 @@ export const entityMessages = defineMessages({
     "entity.list.createButton": "新規モデルを作成",
     "entity.list.actionsTooltip": "モデルの操作",
 
+    // Entity difference
+    "entity.difference.attr": "属性",
+    "entity.difference.startDateTime": "始点",
+    "entity.difference.endDateTime": "終点",
+    "entity.difference.endBeforeStartError":
+      "終点は始点より後になるように入力してください",
+    "entity.difference.show": "表示する",
+
     // Entity control menu
     "entity.controlMenu.entryList": "アイテム一覧",
     "entity.controlMenu.aliasList": "エイリアス一覧",
@@ -21,6 +29,7 @@ export const entityMessages = defineMessages({
     "entity.controlMenu.deleteFailed": "モデルの削除が失敗しました",
     "entity.controlMenu.deleteFailedWithDetail":
       "モデルの削除が失敗しました: {{detail}}",
+    "entity.controlMenu.difference": "差分の表示",
 
     // Entity form: basic fields
     "entity.form.basicInfoTitle": "基本情報",
@@ -162,6 +171,14 @@ export const entityMessages = defineMessages({
     "entity.list.createButton": "Create entity",
     "entity.list.actionsTooltip": "Entity actions",
 
+    // Entity difference
+    "entity.difference.attr": "Attribute",
+    "entity.difference.startDateTime": "Start",
+    "entity.difference.endDateTime": "End",
+    "entity.difference.endBeforeStartError":
+      "Enter an end that is later than the start",
+    "entity.difference.show": "Show",
+
     // Entity control menu
     "entity.controlMenu.entryList": "Entries",
     "entity.controlMenu.aliasList": "Aliases",
@@ -175,6 +192,7 @@ export const entityMessages = defineMessages({
     "entity.controlMenu.deleteFailed": "Failed to delete the entity",
     "entity.controlMenu.deleteFailedWithDetail":
       "Failed to delete the entity: {{detail}}",
+    "entity.controlMenu.difference": "Difference",
 
     // Entity form: basic fields
     "entity.form.basicInfoTitle": "Basic information",

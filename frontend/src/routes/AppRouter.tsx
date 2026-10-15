@@ -26,6 +26,7 @@ import {
   editTriggerPath,
   entitiesPath,
   entityEntriesPath,
+  entityDifferencePath,
   entityHistoryPath,
   entryDetailsPath,
   entryEditPath,
@@ -117,6 +118,11 @@ const EntryRestorePage = lazy(() =>
 );
 const EntityEditPage = lazy(() =>
   import("pages/EntityEditPage").then((m) => ({ default: m.EntityEditPage })),
+);
+const EntityDifferencePage = lazy(() =>
+  import("pages/EntityDifferencePage").then((m) => ({
+    default: m.EntityDifferencePage,
+  })),
 );
 const EntityHistoryPage = lazy(() =>
   import("pages/EntityHistoryPage").then((m) => ({
@@ -282,6 +288,10 @@ export const AppRouter: FC<Props> = ({
                 pluginMap={pluginMap}
               />
             }
+          />
+          <Route
+            path={entityDifferencePath(":entityId")}
+            element={<EntityDifferencePage />}
           />
           <Route
             path={entityHistoryPath(":entityId")}
