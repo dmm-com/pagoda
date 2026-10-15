@@ -197,7 +197,7 @@ export const Header: FC = () => {
   const serverContext = ServerContext.getInstance();
 
   const { t } = useTranslation();
-  const [query, submitQuery] = useSimpleSearch();
+  const [query, , submitQuery] = useSimpleSearch();
 
   const [userAnchorEl, setUserAnchorEl] = useState<HTMLButtonElement | null>();
   const [jobAnchorEl, setJobAnchorEl] = useState<HTMLButtonElement | null>();

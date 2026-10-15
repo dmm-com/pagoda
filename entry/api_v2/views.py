@@ -377,6 +377,8 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet[Entry]):
 @extend_schema(
     parameters=[
         OpenApiParameter("query", OpenApiTypes.STR, OpenApiParameter.QUERY),
+        OpenApiParameter("limit", OpenApiTypes.INT, OpenApiParameter.QUERY),
+        OpenApiParameter("offset", OpenApiTypes.INT, OpenApiParameter.QUERY),
     ],
 )
 class searchAPI(viewsets.ReadOnlyModelViewSet[Any]):
@@ -389,8 +391,22 @@ class searchAPI(viewsets.ReadOnlyModelViewSet[Any]):
         if not query:
             return queryset
 
+        try:
+            offset = max(int(self.request.query_params.get("offset", "0")), 0)
+        except ValueError:
+            offset = 0
+        try:
+            requested_limit = int(
+                self.request.query_params.get("limit", str(ENTRY_CONFIG.MAX_SEARCH_ENTRIES))
+            )
+        except ValueError:
+            requested_limit = ENTRY_CONFIG.MAX_SEARCH_ENTRIES
+        limit = min(max(requested_limit, 1), ENTRY_CONFIG.MAX_SEARCH_ENTRIES + 1)
+
         results = AdvancedSearchService.search_entries_for_simple(
-            query, limit=ENTRY_CONFIG.MAX_SEARCH_ENTRIES
+            query,
+            limit=limit,
+            offset=offset,
         )
         return list(results["ret_values"])
 

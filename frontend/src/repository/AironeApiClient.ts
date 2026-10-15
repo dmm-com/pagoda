@@ -882,10 +882,26 @@ class AironeApiClient {
     });
   }
 
-  async getSearchEntries(query: string): Promise<EntrySearch[]> {
-    return await this.entry.entryApiV2SearchList({
-      query: query,
+  async getSearchEntries(
+    query: string,
+    offset = 0,
+    limit?: number,
+  ): Promise<EntrySearch[]> {
+    const params = new URLSearchParams({
+      query,
+      offset: offset.toString(),
     });
+    if (limit != null) {
+      params.set("limit", limit.toString());
+    }
+
+    const response = await fetch(`/entry/api/v2/search/?${params}`, {
+      credentials: "same-origin",
+    });
+    if (!response.ok) {
+      throw new Error(`Simple search failed: ${response.status}`);
+    }
+    return (await response.json()) as EntrySearch[];
   }
 
   async exportEntries(entityId: number, format: string): Promise<void> {
