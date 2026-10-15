@@ -10,10 +10,9 @@ import { act, render, renderHook, screen } from "@testing-library/react";
 import { useForm } from "react-hook-form";
 
 import { TestWrapper } from "../../TestWrapper";
-import { schema } from "../entry/entryForm/EntryFormSchema";
 
 import { UserForm } from "./UserForm";
-import { Schema } from "./userForm/UserFormSchema";
+import { Schema, schema } from "./userForm/UserFormSchema";
 
 import i18n from "i18n/config";
 
@@ -48,6 +47,7 @@ describe("UserForm", () => {
     authenticateType: UserRetrieveAuthenticateTypeEnum.AUTH_TYPE_LOCAL,
     groups: [],
     roles: [],
+    coUsers: [],
   };
 
   const renderUserForm = (user: UserRetrieve, isCreateMode: boolean) => {

@@ -227,7 +227,7 @@ const ElemAccessToken: FC<ReadonlyProps> = ({ user }) => {
         variant: "error",
       });
     }
-  }, [enqueueSnackbar, user.token?.value, t]);
+  }, [enqueueSnackbar, user.token, t]);
 
   return (
     <StyledTableRow>

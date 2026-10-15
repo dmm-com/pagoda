@@ -3,6 +3,8 @@
 
 import { fileDownload, getCsrfToken } from "./AironeApiClient";
 
+import type { Mock } from "vitest";
+
 describe("fileDownload", () => {
   const originalCreateObjectURL = URL.createObjectURL;
   const originalRevokeObjectURL = URL.revokeObjectURL;
@@ -33,7 +35,7 @@ describe("fileDownload", () => {
 
     // Verify Blob was created and passed to createObjectURL
     expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
-    const blob = (URL.createObjectURL as vi.Mock).mock.calls[0][0] as Blob;
+    const blob = (URL.createObjectURL as Mock).mock.calls[0][0] as Blob;
     expect(blob).toBeInstanceOf(Blob);
     expect(blob.type).toBe("text/plain");
 
@@ -66,7 +68,7 @@ describe("fileDownload", () => {
     fileDownload("", "empty.txt");
 
     expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
-    const blob = (URL.createObjectURL as vi.Mock).mock.calls[0][0] as Blob;
+    const blob = (URL.createObjectURL as Mock).mock.calls[0][0] as Blob;
     expect(blob.size).toBe(0);
     expect(clickMock).toHaveBeenCalledTimes(1);
     expect(URL.revokeObjectURL).toHaveBeenCalledTimes(1);

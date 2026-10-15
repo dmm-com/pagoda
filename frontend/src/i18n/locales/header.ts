@@ -19,6 +19,7 @@ export const headerMessages = defineMessages({
     noRunningJobs: "実行タスクなし",
     jobs: "ジョブ一覧",
     "header.unknownUser": "不明なユーザ",
+    "header.openNavigationMenu": "ナビゲーションメニューを開く",
   },
   en: {
     categories: "Categories",
@@ -36,5 +37,6 @@ export const headerMessages = defineMessages({
     noRunningJobs: "No running jobs",
     jobs: "Jobs",
     "header.unknownUser": "Unknown user",
+    "header.openNavigationMenu": "Open navigation menu",
   },
 });

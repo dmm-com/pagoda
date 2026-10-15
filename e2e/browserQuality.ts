@@ -51,25 +51,54 @@ export const expectUiQualityGate = async (page: Page, testInfo: TestInfo) => {
   }));
   expect(pageSize.scrollWidth).toBeLessThanOrEqual(pageSize.clientWidth + 1);
 
+  // Controls must be fully inside the viewport horizontally. Checking the
+  // document scroll width alone is not enough: content overflowing a fixed
+  // header or an `overflow: hidden` box is clipped without making the page
+  // scrollable, so partially clipped controls are reported here as well.
+  // Controls inside horizontally scrollable containers stay reachable by
+  // scrolling that container, and hidden controls have no box to check.
+  // The document itself is not such a container: `body { overflow-y: scroll }`
+  // makes its computed overflow-x `auto`, and page-level overflow is already
+  // covered by the scroll width check above.
   const offscreenControls = await page
     .locator("button, a[href], input, select, textarea, [role='button']")
-    .evaluateAll((elements) =>
-      elements
-        .map((element) => {
-          const rect = element.getBoundingClientRect();
-          return {
-            text:
-              element.getAttribute("aria-label") ??
-              element.textContent?.trim() ??
-              element.tagName,
-            left: rect.left,
-            right: rect.right,
-            top: rect.top,
-            bottom: rect.bottom,
-          };
-        })
-        .filter((rect) => rect.right < -1 || rect.left > window.innerWidth + 1),
-    );
+    .evaluateAll((elements) => {
+      // Excludes the vertical scrollbar, which covers content beneath it.
+      const viewportWidth = document.documentElement.clientWidth;
+      const inScrollableContainer = (element: Element) => {
+        for (
+          let parent = element.parentElement;
+          parent != null &&
+          parent !== document.body &&
+          parent !== document.documentElement;
+          parent = parent.parentElement
+        ) {
+          const { overflowX } = window.getComputedStyle(parent);
+          if (overflowX === "auto" || overflowX === "scroll") return true;
+        }
+        return false;
+      };
+
+      return elements
+        .map((element) => ({ element, rect: element.getBoundingClientRect() }))
+        .filter(
+          ({ element, rect }) =>
+            rect.width > 0 &&
+            rect.height > 0 &&
+            (rect.left < -1 || rect.right > viewportWidth + 1) &&
+            !inScrollableContainer(element),
+        )
+        .map(({ element, rect }) => ({
+          text:
+            element.getAttribute("aria-label") ??
+            element.textContent?.trim() ??
+            element.tagName,
+          left: rect.left,
+          right: rect.right,
+          top: rect.top,
+          bottom: rect.bottom,
+        }));
+    });
   expect(offscreenControls).toEqual([]);
 
   const axeResults = await new AxeBuilder({ page })

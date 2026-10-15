@@ -42,23 +42,28 @@ export const LoginPage: FC = () => {
   const [agreeWithServiceContract, setAgreeWithServiceContract] =
     useState(false);
   const [openPasswordResetModal, setOpenPasswordResetModal] = useState(false);
-  const [uidb64, setUidb64] = useState<string>("");
-  const [token, setToken] = useState<string>("");
+
+  // Capture the password reset parameters once on mount. They are kept in
+  // state (instead of being derived from the URL) because the token is removed
+  // from the location right after, to avoid leaking it via the Referer header.
+  const [resetParams] = useState(() => {
+    const params = new URLSearchParams(location.search);
+    return {
+      uidb64: params.get("uidb64") ?? "",
+      token: params.get("token") ?? "",
+    };
+  });
   const [openPasswordResetConfirmModal, setOpenPasswordResetConfirmModal] =
-    useState(false);
+    useState(() => {
+      const params = new URLSearchParams(location.search);
+      return params.get("uidb64") != null && params.get("token") != null;
+    });
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
 
-    const _uidb64 = params.get("uidb64");
-    if (_uidb64 != null) {
-      setUidb64(_uidb64);
-    }
-
     // get token from query parameter, then delete it to avoid leaking via Referer header(a similar logic to Django auth module).
-    const _token = params.get("token");
-    if (_token != null) {
-      setToken(_token);
+    if (params.get("token") != null) {
       params.delete("token");
       navigate(
         {
@@ -67,10 +72,6 @@ export const LoginPage: FC = () => {
         },
         { replace: true },
       );
-    }
-
-    if (_uidb64 != null && _token != null) {
-      setOpenPasswordResetConfirmModal(true);
     }
   }, [location.pathname, location.search, navigate]);
 
@@ -342,8 +343,8 @@ export const LoginPage: FC = () => {
       <PasswordResetConfirmModal
         openModal={openPasswordResetConfirmModal}
         closeModal={handleClosePasswordResetConfirmModal}
-        uidb64={uidb64}
-        token={token}
+        uidb64={resetParams.uidb64}
+        token={resetParams.token}
       />
     </Box>
   );

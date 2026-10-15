@@ -113,7 +113,7 @@ export const UserEditPage: FC = () => {
         serverContext?.user?.id != null &&
         user.parentUser === serverContext.user.id,
     ];
-  }, [user?.id, user?.parentUser]);
+  }, [user]);
 
   const handleSubmitOnValid = async (user: Schema) => {
     try {

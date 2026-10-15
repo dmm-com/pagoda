@@ -10,7 +10,9 @@
     "jsx": "react-jsx",
     "lib": ["dom", "dom.iterable", "es2022"],
     "esModuleInterop": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitReturns": true
   },
   "include": ["./frontend/src/**/*"],
   "exclude": [
