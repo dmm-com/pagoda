@@ -57,6 +57,17 @@ export const ReferralsAutocomplete: FC<Props> = ({
     {},
   );
 
+  // The edit form resets after the API response arrives. At that point this
+  // component is already mounted, so the initial useState value is stale.
+  const selected = !multiple && !Array.isArray(value) ? value : null;
+  const selectedId = selected?.id;
+  const selectedLabel = labelOf(selected);
+  useEffect(() => {
+    if (!multiple) {
+      setInputValue(selectedLabel ?? "");
+    }
+  }, [multiple, selectedId, selectedLabel]);
+
   useEffect(() => {
     const selectedValues = Array.isArray(value) ? value : value ? [value] : [];
     // ID-only defaults need an API label before the controlled input can render them.
