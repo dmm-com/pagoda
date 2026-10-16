@@ -44,6 +44,7 @@ import {
   newRolePath,
   newTriggerPath,
   newUserPath,
+  networkPath,
   restoreEntryPath,
   rolePath,
   rolesPath,
@@ -90,6 +91,9 @@ const CategoryListPage = lazy(() =>
 );
 const DashboardPage = lazy(() =>
   import("pages/DashboardPage").then((m) => ({ default: m.DashboardPage })),
+);
+const NetworkPage = lazy(() =>
+  import("pages/NetworkPage").then((m) => ({ default: m.NetworkPage })),
 );
 const EntryCopyPage = lazy(() =>
   import("pages/EntryCopyPage").then((m) => ({ default: m.EntryCopyPage })),
@@ -319,6 +323,7 @@ export const AppRouter: FC<Props> = ({
           <Route path={rolePath(":roleId")} element={<RoleEditPage />} />
           <Route path={rolesPath()} element={<RoleListPage />} />
           <Route path={topPath()} element={<DashboardPage />} />
+          <Route path={networkPath()} element={<NetworkPage />} />
           <Route path="*" element={<NotFoundErrorPage />} />
         </Route>
       </Route>,

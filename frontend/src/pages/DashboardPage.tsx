@@ -37,7 +37,7 @@ const ResultEntityForEntry = styled(Typography)(({}) => ({
 
 export const DashboardPage: FC = () => {
   const navigate = useNavigate();
-  const [query, submitQuery] = useSimpleSearch();
+  const [query, , submitQuery] = useSimpleSearch();
 
   const entries = useAsync(async () => {
     if (query != null) {
