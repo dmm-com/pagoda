@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router";
 
-import { topPath } from "../routes/Routes";
+import { networkPath, topPath } from "../routes/Routes";
 
 type Query = string | undefined;
 
@@ -13,6 +13,8 @@ export const useSimpleSearch = (): [
 ] => {
   const location = useLocation();
   const navigate = useNavigate();
+  const isNetworkPage = location.pathname === networkPath();
+  const searchPath = isNetworkPage ? networkPath() : topPath();
 
   const query = useMemo(() => {
     const params = new URLSearchParams(location.search);
@@ -28,23 +30,23 @@ export const useSimpleSearch = (): [
   const submitQuery = useCallback(
     (query: Query) => {
       navigate({
-        pathname: topPath(),
+        pathname: searchPath,
         search:
           query != null
-            ? `simple_search_query=${encodeURIComponent(query)}&simple_search_page=1`
+            ? `simple_search_query=${encodeURIComponent(query)}${isNetworkPage ? "&simple_search_page=1" : ""}`
             : undefined,
       });
     },
-    [navigate],
+    [navigate, searchPath, isNetworkPage],
   );
 
   const changePage = useCallback(
     (page: number) => {
       const params = new URLSearchParams(location.search);
       params.set("simple_search_page", page.toString());
-      navigate({ pathname: topPath(), search: params.toString() });
+      navigate({ pathname: searchPath, search: params.toString() });
     },
-    [location.search, navigate],
+    [location.search, navigate, searchPath],
   );
 
   return [query, page, submitQuery, changePage];

@@ -887,6 +887,10 @@ class AironeApiClient {
     offset = 0,
     limit?: number,
   ): Promise<EntrySearch[]> {
+    if (offset === 0 && limit == null) {
+      return await this.entry.entryApiV2SearchList({ query });
+    }
+
     const params = new URLSearchParams({
       query,
       offset: offset.toString(),

@@ -1,11 +1,4 @@
-import {
-  Box,
-  Container,
-  Pagination,
-  Stack,
-  Typography,
-  TypographyTypeMap,
-} from "@mui/material";
+import { Box, Container, Typography, TypographyTypeMap } from "@mui/material";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
 import { FC } from "react";
@@ -15,11 +8,8 @@ import { Loading, SearchBox } from "components";
 import { CategoryList } from "components/category/CategoryList";
 import { useSimpleSearch } from "hooks";
 import { useAsync } from "hooks/useAsync";
-import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository";
 import { entryDetailsPath } from "routes";
-
-const SEARCH_PAGE_SIZE = 30;
 
 const StyledContainer = styled(Container)({
   marginTop: "16px",
@@ -47,26 +37,17 @@ const ResultEntityForEntry = styled(Typography)(({}) => ({
 
 export const DashboardPage: FC = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
-  const [query, page, submitQuery, changePage] = useSimpleSearch();
+  const [query, , submitQuery] = useSimpleSearch();
 
   const entries = useAsync(async () => {
     if (query != null) {
-      return await aironeApiClient.getSearchEntries(
-        query,
-        (page - 1) * SEARCH_PAGE_SIZE,
-        SEARCH_PAGE_SIZE + 1,
-      );
+      return await aironeApiClient.getSearchEntries(query);
     }
     return undefined;
-  }, [query, page]);
+  }, [query]);
 
-  const hasMore = (entries.value?.length ?? 0) > SEARCH_PAGE_SIZE;
-  const visibleEntries = entries.value?.slice(0, SEARCH_PAGE_SIZE) ?? [];
-  const firstEntry =
-    page === 1 && !hasMore && visibleEntries.length === 1
-      ? visibleEntries[0]
-      : undefined;
+  // If there is only one search result, move to entry details page.
+  const firstEntry = entries.value?.length === 1 ? entries.value[0] : undefined;
   if (!entries.loading && firstEntry != null) {
     navigate(entryDetailsPath(firstEntry.schema?.id ?? 0, firstEntry.id));
   }
@@ -86,37 +67,21 @@ export const DashboardPage: FC = () => {
             autoFocus
           />
           <ResultBox id="entry_list">
-            {visibleEntries.map((entry) => (
-              <Box id="entry" key={entry.id}>
-                <Result
-                  component={Link}
-                  to={entryDetailsPath(entry.schema?.id ?? 0, entry.id)}
-                >
-                  {entry.name}
-                </Result>
-                <ResultEntityForEntry>
-                  {entry.schema?.name}
-                </ResultEntityForEntry>
-              </Box>
-            ))}
+            {entries.value &&
+              entries.value.map((entry) => (
+                <Box id="entry" key={entry.id}>
+                  <Result
+                    component={Link}
+                    to={entryDetailsPath(entry.schema?.id ?? 0, entry.id)}
+                  >
+                    {entry.name}
+                  </Result>
+                  <ResultEntityForEntry>
+                    {entry.schema?.name}
+                  </ResultEntityForEntry>
+                </Box>
+              ))}
           </ResultBox>
-          <Stack spacing={1} alignItems="center" mt={3}>
-            <Typography>
-              {t("simpleSearch.range", {
-                from: SEARCH_PAGE_SIZE * (page - 1) + 1,
-                to: SEARCH_PAGE_SIZE * (page - 1) + visibleEntries.length,
-                more: hasMore ? t("simpleSearch.more") : "",
-              })}
-            </Typography>
-            <Pagination
-              count={page + (hasMore ? 1 : 0)}
-              page={page}
-              onChange={(_, newPage) => changePage(newPage)}
-              siblingCount={1}
-              boundaryCount={1}
-              color="primary"
-            />
-          </Stack>
         </>
       ) : (
         <CategoryList />
