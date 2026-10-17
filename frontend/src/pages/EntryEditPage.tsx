@@ -78,11 +78,13 @@ export const EntryEditPage: FC<Props> = ({
   const { data: entity, isLoading: entityLoading } = usePagodaSWR(
     ["entity", entityId],
     () => aironeApiClient.getEntity(entityId),
+    { refreshInterval: 15_000 },
   );
 
   const { data: entry, isLoading: entryLoading } = usePagodaSWR(
     entryId != undefined ? ["entry", entryId] : null,
     entryId != undefined ? () => aironeApiClient.getEntry(entryId) : null,
+    { refreshInterval: 15_000 },
   );
 
   // Whether the form has been initialized with the loaded entity/entry.
@@ -95,12 +97,12 @@ export const EntryEditPage: FC<Props> = ({
       if (!entityLoading && entity != null) {
         const entryInfo = formalizeEntryInfo(undefined, entity, excludeAttrs);
         entryInfo.name = useUUID ? crypto.randomUUID() : "";
-        reset(entryInfo);
+        reset(entryInfo, { keepDirtyValues: true });
       }
     } else {
       if (!entityLoading && entity != null && !entryLoading && entry != null) {
         const entryInfo = formalizeEntryInfo(entry, entity, excludeAttrs);
-        reset(entryInfo);
+        reset(entryInfo, { keepDirtyValues: true });
       }
     }
   }, [willCreate, entity, entry]);
@@ -211,6 +213,11 @@ export const EntryEditPage: FC<Props> = ({
         }
         description={
           entry != null ? t("entryForm.editPage.editDescription") : undefined
+        }
+        targetId={entryId ?? entityId}
+        targetKind={entryId != null ? "item" : "model"}
+        hasOngoingProcess={
+          entry?.hasOngoingChanges ?? (willCreate && entity?.hasOngoingChanges)
         }
       >
         <SubmitButton

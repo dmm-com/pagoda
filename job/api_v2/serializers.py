@@ -7,7 +7,7 @@ from rest_framework import serializers
 
 from airone.lib.acl import ACLObjType
 from entry.models import Entry
-from job.models import Job
+from job.models import Job, JobStatus
 from user.models import User
 
 
@@ -83,6 +83,14 @@ class JobSerializers(serializers.ModelSerializer[Job]):
             return math.floor((obj.updated_at - obj.created_at).total_seconds())
         else:
             return math.floor((datetime.now(timezone.utc) - obj.created_at).total_seconds())
+
+    def to_representation(self, instance: Job) -> dict[str, Any]:
+        data: dict[str, Any] = super().to_representation(instance)
+        if instance.status in (JobStatus.PREPARING, JobStatus.PROCESSING) and instance.is_timeout(
+            with_refresh=False
+        ):
+            data["status"] = JobStatus.TIMEOUT
+        return data
 
 
 class ImportPreviewChangeSerializer(serializers.Serializer[dict[str, Any]]):
