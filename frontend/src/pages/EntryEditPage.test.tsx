@@ -11,12 +11,14 @@ import {
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { createMemoryRouter, RouterProvider } from "react-router";
+import { useSWRConfig } from "swr";
 
 import { EntryDetailsPage } from "./EntryDetailsPage";
 import { EntryEditPage } from "./EntryEditPage";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
 import i18n from "i18n/config";
+import { aironeApiClient } from "repository/AironeApiClient";
 import { entryDetailsPath, entryEditPath, newEntryPath } from "routes/Routes";
 
 const mockEntity = {
@@ -89,6 +91,21 @@ const server = setupServer(
     });
   }),
 );
+
+const RefreshEntry = () => {
+  const { mutate } = useSWRConfig();
+  return (
+    <button
+      onClick={() =>
+        mutate(["entry", 1], aironeApiClient.getEntry(1), {
+          revalidate: false,
+        })
+      }
+    >
+      再取得
+    </button>
+  );
+};
 
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
@@ -168,6 +185,45 @@ describe("EntryEditPage", () => {
     });
 
     expect(result).toMatchSnapshot();
+  });
+
+  test("keeps local edits when a background refresh brings newer entry data", async () => {
+    let serverName = "test entry";
+    server.use(
+      http.get("http://localhost/entry/api/v2/1/", () =>
+        HttpResponse.json({ ...mockEntry, name: serverName }),
+      ),
+    );
+    const router = createMemoryRouter(
+      [
+        {
+          path: entryEditPath(":entityId", ":entryId"),
+          element: (
+            <>
+              <EntryEditPage />
+              <RefreshEntry />
+            </>
+          ),
+        },
+      ],
+      { initialEntries: ["/ui/entities/2/entries/1/edit"] },
+    );
+    render(<RouterProvider router={router} />, {
+      wrapper: TestWrapperWithoutRoutes,
+    });
+
+    const name = await screen.findByRole("textbox", { name: "アイテム名" });
+    await waitFor(() => expect(name).toHaveValue("test entry"));
+    fireEvent.change(name, { target: { value: "local draft" } });
+    serverName = "new server name";
+    fireEvent.click(screen.getByRole("button", { name: "再取得" }));
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole("heading", { name: "new server name" }),
+      ).toBeVisible(),
+    );
+    expect(name).toHaveValue("local draft");
   });
 
   describe("rendering (edit mode)", () => {

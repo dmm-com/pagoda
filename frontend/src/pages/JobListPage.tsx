@@ -35,7 +35,7 @@ const JobListContent: FC<{
   const { data: jobs, mutate: refreshJobs } = usePagodaSWR(
     ["jobs", page, targetId, allUsers],
     () => aironeApiClient.getJobs(page, targetId, undefined, allUsers),
-    { suspense: true },
+    { suspense: true, refreshInterval: 15_000 },
   );
 
   return (

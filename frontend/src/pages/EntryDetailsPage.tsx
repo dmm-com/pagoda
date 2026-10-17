@@ -93,7 +93,7 @@ const EntryDetailsContent: FC<Props> = ({
   const { data: entry } = usePagodaSWR(
     ["entry", entryId],
     () => aironeApiClient.getEntry(entryId),
-    { suspense: true },
+    { suspense: true, refreshInterval: 15_000 },
   );
 
   const { data: triggers } = usePagodaSWR(["triggers"], () =>
@@ -140,6 +140,7 @@ const EntryDetailsContent: FC<Props> = ({
         title={entry.name ?? ""}
         description={t("entry.details.pageDescription")}
         targetId={entryId}
+        targetKind="item"
         hasOngoingProcess={entry.hasOngoingChanges}
       >
         <ChipBox>

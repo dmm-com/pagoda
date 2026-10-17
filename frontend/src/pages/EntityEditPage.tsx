@@ -43,6 +43,7 @@ export const EntityEditPage: FC = () => {
   const { data: entity, isLoading: entityLoading } = usePagodaSWR(
     entityId !== undefined ? ["entity", entityId] : null,
     entityId !== undefined ? () => aironeApiClient.getEntity(entityId) : null,
+    { refreshInterval: 15_000 },
   );
 
   const { data: referralEntities, isLoading: referralEntitiesLoading } =
@@ -274,6 +275,7 @@ export const EntityEditPage: FC = () => {
         description={entity && t("entity.edit.description")}
         targetId={entity?.id}
         hasOngoingProcess={entity?.hasOngoingChanges}
+        targetKind="model"
       >
         <SubmitButton
           name={t("common.save")}
