@@ -139,7 +139,9 @@ runs:
     - name: Install dependencies (uv sync)
       shell: bash
       working-directory: ${{ inputs.base-dir }}
-      run: uv sync --extra dev
+      # --locked fails fast when uv.lock is out of sync with pyproject.toml
+      # instead of silently re-resolving, which keeps CI reproducible.
+      run: uv sync --extra dev --locked
 
     - name: Editable installs
       if: ${{ inputs.editable-installs != '' }}
