@@ -11,11 +11,10 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from airone.lib.drf import YAMLParser, YAMLRenderer
-from airone.lib.http import timestamped_filename
+from airone.lib.configuration_export import ConfigurationExportAPI
+from airone.lib.drf import YAMLParser
 from group.api_v2.serializers import (
     GroupCreateUpdateSerializer,
-    GroupExportSerializer,
     GroupImportSerializer,
     GroupSerializer,
     GroupTreeV2Serializer,
@@ -129,15 +128,6 @@ class GroupImportAPI(generics.GenericAPIView[Any]):
         return Response(status=status.HTTP_200_OK)
 
 
-class GroupExportAPI(generics.ListAPIView[Group]):
-    queryset = Group.objects.filter(is_active=True)
-    serializer_class = GroupExportSerializer
-    renderer_classes = [YAMLRenderer]
-
-    def finalize_response(
-        self, request: Request, response: Response, *args: Any, **kwargs: Any
-    ) -> Response:
-        response["Content-Disposition"] = 'attachment; filename="%s"' % timestamped_filename(
-            "group.yaml"
-        )
-        return super().finalize_response(request, response, *args, **kwargs)
+@extend_schema(operation_id="group_api_v2_groups_export_list")
+class GroupExportAPI(ConfigurationExportAPI):
+    export_kind = "group"

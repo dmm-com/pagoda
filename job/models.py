@@ -99,6 +99,7 @@ class JobOperation(BaseIntEnum):
     BULK_EDIT_ENTRY = 31
     IMPORT_ENTITY_PREVIEW = 32
     IMPORT_ENTRY_PREVIEW = 33
+    EXPORT_CONFIGURATION_V2 = 34
 
 
 # Core operation additions must never silently fall through to the untyped
@@ -166,6 +167,7 @@ class Job(models.Model):
     ] + CUSTOM_HIDDEN_OPERATIONS
 
     CANCELABLE_OPERATIONS: list[JobOperation | JobOperationCustom] = [
+        JobOperation.EXPORT_CONFIGURATION_V2,
         JobOperation.CREATE_ENTRY,
         JobOperation.COPY_ENTRY,
         JobOperation.IMPORT_ENTRY,
@@ -182,6 +184,7 @@ class Job(models.Model):
     ] + CUSTOM_CANCELABLE_OPERATIONS
 
     PARALLELIZABLE_OPERATIONS: list[JobOperation | JobOperationCustom] = [
+        JobOperation.EXPORT_CONFIGURATION_V2,
         JobOperation.NOTIFY_CREATE_ENTRY,
         JobOperation.NOTIFY_UPDATE_ENTRY,
         JobOperation.NOTIFY_DELETE_ENTRY,
@@ -204,6 +207,7 @@ class Job(models.Model):
     ]
 
     DOWNLOADABLE_OPERATIONS: list[JobOperation | JobOperationCustom] = [
+        JobOperation.EXPORT_CONFIGURATION_V2,
         JobOperation.EXPORT_ENTRY,
         JobOperation.EXPORT_ENTRY_V2,
         JobOperation.EXPORT_SEARCH_RESULT,
@@ -639,6 +643,19 @@ class Job(models.Model):
             operation=JobOperation.IMPORT_ENTRY_PREVIEW,
             text="Preparing to build the import preview",
             params=params,
+        )
+
+    @classmethod
+    def new_export_configuration_v2(kls, user: User, kind: str) -> "Job":
+        # http imports the job enums, so defer this import until model initialization is done.
+        from airone.lib.http import timestamped_filename
+
+        return kls._create_new_job(
+            user=user,
+            target=None,
+            operation=JobOperation.EXPORT_CONFIGURATION_V2,
+            text=timestamped_filename(f"{kind}.yaml"),
+            params={"kind": kind},
         )
 
     @classmethod

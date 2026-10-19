@@ -522,6 +522,10 @@ def _build_core_registry(entries: list[tuple[int, ParamsContract]]) -> dict[int,
     return registry
 
 
+class ConfigurationExportParams(JobParamsModel):
+    kind: Literal["entity", "user", "group", "role"]
+
+
 CORE_JOB_PARAMS: dict[int, ParamsContract] = _build_core_registry(
     [
         (1, LegacyCreateEntryParams),
@@ -559,6 +563,7 @@ CORE_JOB_PARAMS: dict[int, ParamsContract] = _build_core_registry(
         # Same payload shape as IMPORT_ENTRY_V2 (and the optional approved-preview
         # linkage, which an import job carries but a preview job never sets).
         (33, ImportEntryParams),
+        (34, ConfigurationExportParams),
     ]
 )
 

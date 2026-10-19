@@ -19,6 +19,7 @@ from airone.lib.types import (
 from entry import tasks as entry_tasks
 from entry.models import Entry
 from group.models import Group
+from job.models import Job, JobStatus
 from role.models import Role
 from user.api_v2.views import UserActivityAPI
 from user.models import User
@@ -457,7 +458,16 @@ class ViewTest(AironeViewTest):
         user2 = self._create_user("user2")
         user2.groups.add(group1)
 
-        resp = self.client.get("/user/api/v2/export/")
+        with patch.object(Job, "run") as enqueue:
+            resp = self.client.get("/user/api/v2/export/")
+        enqueue.assert_called_once_with()
+        self.assertEqual(resp.status_code, 202)
+        self.assertNotIn("Content-Disposition", resp)
+        job = Job.objects.get(id=resp.json()["id"])
+        job.run(will_delay=False)
+        job.refresh_from_db()
+        self.assertEqual(job.status, JobStatus.DONE)
+        resp = self.client.get(f"/job/api/v2/{job.id}/download")
         self.assertEqual(resp.status_code, 200)
         self.assertRegex(
             resp["Content-Disposition"],
