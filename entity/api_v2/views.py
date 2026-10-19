@@ -2,7 +2,7 @@ import copy
 import logging
 from typing import Any, List, cast
 
-from django.db.models import F, Prefetch, QuerySet
+from django.db.models import F, OuterRef, Prefetch, QuerySet, Subquery
 from django.db.models.functions import Lower
 from django.http import Http404, HttpRequest
 from django.http.response import HttpResponse, JsonResponse
@@ -629,9 +629,7 @@ class EntityDiffAPI(generics.GenericAPIView[Entity]):
     serializer_class = EntityDiffQuerySerializer
 
     @staticmethod
-    def _value_at(attrvs: list[AttributeValue], at: Any) -> Any:
-        """Value of the newest entry in attrvs (sorted newest first) created at or before `at`"""
-        attrv = next((v for v in attrvs if v.created_time <= at), None)
+    def _value_of(attrv: AttributeValue | None) -> Any:
         if attrv is None:
             return None
         # with_metainfo wraps the value as {"type": ..., "value": ...}; keep only the value
@@ -676,40 +674,59 @@ class EntityDiffAPI(generics.GenericAPIView[Entity]):
         if any(name not in entity_attrs for name in attr_names):
             raise NotFound("Target attribute doesn't exist in the Entity")
 
-        # fetch every candidate AttributeValue at once instead of two queries per attribute
+        # AttributeValue accumulates a row per update, so never load the history. The id of
+        # the value in effect at t0/t1 is resolved by index-backed subqueries (one row each).
+        def latest_value_id(at: Any) -> Subquery:
+            return Subquery(
+                AttributeValue.objects.filter(
+                    parent_attr=OuterRef("pk"), parent_attrv__isnull=True, created_time__lte=at
+                )
+                .order_by("-created_time", "-id")
+                .values("id")[:1]
+            )
+
         attrs = (
             Attribute.objects.filter(
                 schema__in=entity_attrs.values(), parent_entry__is_active=True, is_active=True
             )
             .select_related("parent_entry", "schema")
-            .prefetch_related(
-                Prefetch(
-                    "attributevalue_set",
-                    queryset=AttributeValue.objects.filter(
-                        parent_attrv__isnull=True, created_time__lte=max(t0, t1)
-                    )
-                    .prefetch_related("data_array")
-                    .order_by("-created_time", "-id"),
-                    to_attr="diff_candidates",
-                )
-            )
+            .annotate(attrv_id_t0=latest_value_id(t0), attrv_id_t1=latest_value_id(t1))
         )
         attr_order = {name: i for i, name in enumerate(attr_names)}
 
+        # Drop attributes whose value did not change (same row at both points, or none at all)
+        # and the ones the user may not read, before loading any value.
+        targets = []
+        for attr in sorted(attrs, key=lambda a: (attr_order[a.schema.name], a.id)):
+            id_t0: int | None = attr.attrv_id_t0  # type: ignore[attr-defined]
+            id_t1: int | None = attr.attrv_id_t1  # type: ignore[attr-defined]
+            if id_t0 == id_t1:
+                continue
+            if not user.has_permission(
+                attr.parent_entry, ACLType.Readable
+            ) or not user.has_permission(attr, ACLType.Readable):
+                continue
+            targets.append((attr, id_t0, id_t1))
+
+        attrvs = (
+            AttributeValue.objects.select_related("referral", "group", "role")
+            .prefetch_related(
+                Prefetch(
+                    "data_array",
+                    queryset=AttributeValue.objects.select_related("referral", "group", "role"),
+                )
+            )
+            .in_bulk({i for _, id_t0, id_t1 in targets for i in (id_t0, id_t1) if i is not None})
+        )
+
         # entry id -> item, so that every entry appears once with all of its differing attrs
         items: dict[int, dict[str, Any]] = {}
-        for attr in sorted(attrs, key=lambda a: (attr_order[a.schema.name], a.id)):
-            entry = attr.parent_entry
-            if not user.has_permission(entry, ACLType.Readable) or not user.has_permission(
-                attr, ACLType.Readable
-            ):
-                continue
-
-            candidates: list[AttributeValue] = attr.diff_candidates  # type: ignore[attr-defined]
-            value_t0 = self._value_at(candidates, t0)
-            value_t1 = self._value_at(candidates, t1)
+        for attr, id_t0, id_t1 in targets:
+            value_t0 = self._value_of(attrvs.get(id_t0) if id_t0 is not None else None)
+            value_t1 = self._value_of(attrvs.get(id_t1) if id_t1 is not None else None)
             if value_t0 == value_t1:
                 continue
+            entry = attr.parent_entry
             item = items.setdefault(entry.id, {"id": entry.id, "name": entry.name, "attrs": []})
             item["attrs"].append(
                 {
