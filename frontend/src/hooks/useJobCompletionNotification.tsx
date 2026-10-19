@@ -11,18 +11,11 @@ import {
 } from "../repository/LocalStorageUtil";
 
 import { jobsPath } from "routes/Routes";
-import { JobOperations, JobStatuses } from "services/Constants";
-import { jobOperationLabel } from "services/JobUtil";
+import { JobStatuses } from "services/Constants";
+import { isExportJob, jobOperationLabel } from "services/JobUtil";
 import { NotificationMessages } from "services/NotificationMessages";
 
 const NOTIFICATION_AUTO_HIDE_DURATION_MS = 8000;
-
-const EXPORT_OPERATIONS = new Set([
-  JobOperations.EXPORT_ENTRY,
-  JobOperations.EXPORT_SEARCH_RESULT,
-  JobOperations.EXPORT_ENTRY_V2,
-  JobOperations.EXPORT_SEARCH_RESULT_V2,
-]);
 
 const isTerminalStatus = (status: number | undefined): boolean =>
   status === JobStatuses.DONE ||
@@ -52,20 +45,23 @@ export const useJobCompletionNotification = (
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const notifiedIdsRef = useRef<Set<number>>(loadNotifiedIds());
   const isFirstLoadRef = useRef(true);
+  const mountedAtRef = useRef(new Date());
 
   useEffect(() => {
     if (recentJobs.length === 0) return;
 
-    // On first load, mark all existing terminal jobs as notified without showing toasts
+    // Ignore historical completions, including after remounting the header.
     if (isFirstLoadRef.current) {
       isFirstLoadRef.current = false;
       for (const job of recentJobs) {
-        if (isTerminalStatus(job.status)) {
+        if (
+          isTerminalStatus(job.status) &&
+          job.createdAt <= mountedAtRef.current
+        ) {
           notifiedIdsRef.current.add(job.id);
         }
       }
       saveNotifiedIds(notifiedIdsRef.current);
-      return;
     }
 
     const newlyNotified: number[] = [];
@@ -74,7 +70,11 @@ export const useJobCompletionNotification = (
       if (!isTerminalStatus(job.status)) continue;
       if (notifiedIdsRef.current.has(job.id)) continue;
 
-      const targetName = job.target?.name ?? jobOperationLabel(job.operation);
+      const targetName =
+        job.target?.name ??
+        (isExportJob(job.operation)
+          ? job.text
+          : jobOperationLabel(job.operation));
 
       const closeAction = (snackbarId: SnackbarKey) => (
         <IconButton
@@ -87,7 +87,13 @@ export const useJobCompletionNotification = (
       );
 
       if (job.status === JobStatuses.DONE) {
-        if (EXPORT_OPERATIONS.has(job.operation ?? 0)) {
+        if (isExportJob(job.operation)) {
+          const link = document.createElement("a");
+          link.href = `/job/api/v2/${job.id}/download?encode=utf-8`;
+          link.download = "";
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
           enqueueSnackbar(NotificationMessages.exportReady(targetName), {
             variant: "success",
             persist: true,

@@ -24,7 +24,11 @@ import { aironeApiClient } from "../../repository/AironeApiClient";
 import { entityEntriesPath, entryDetailsPath } from "../../routes/Routes";
 import { JobOperations, JobStatuses } from "../../services/Constants";
 import { formatDateTime } from "../../services/DateUtil";
-import { jobOperationLabel, jobStatusLabel } from "../../services/JobUtil";
+import {
+  isExportJob,
+  jobOperationLabel,
+  jobStatusLabel,
+} from "../../services/JobUtil";
 import { AironeTableHeadCell } from "../common/AironeTableHeadCell";
 import { AironeTableHeadRow } from "../common/AironeTableHeadRow";
 import { Confirmable } from "../common/Confirmable";
@@ -298,11 +302,7 @@ export const JobList: FC<Props> = ({ jobs, showUser }) => {
               <Typography>{formatDateTime(job.createdAt)}</Typography>
             </TableCell>
             <TableCell>
-              {(job.operation == JobOperations.EXPORT_ENTRY ||
-                job.operation == JobOperations.EXPORT_SEARCH_RESULT ||
-                job.operation == JobOperations.EXPORT_ENTRY_V2 ||
-                job.operation == JobOperations.EXPORT_SEARCH_RESULT_V2) &&
-              job.status == JobStatuses.DONE ? (
+              {isExportJob(job.operation) && job.status == JobStatuses.DONE ? (
                 <Box display="flex" gap="4px" alignItems="center">
                   <Select
                     defaultValue="utf-8"

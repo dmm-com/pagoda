@@ -43,12 +43,12 @@ describe("JobList", () => {
       }),
     ).toHaveLength(35);
 
-    // 4 export operations should have a download link
+    // All five export operations should have a download link.
     expect(
       screen.queryAllByRole("link", {
         name: (content) => content.includes("Download"),
       }),
-    ).toHaveLength(4);
+    ).toHaveLength(5);
   });
 
   test("should show operation buttons based on job status", async () => {

@@ -6,6 +6,7 @@ export * from "./AironeTableHeadRow";
 export * from "./AutocompleteWithAllSelector";
 export * from "./ClipboardCopyButton";
 export * from "./Confirmable";
+export * from "./ExportButton";
 export * from "./FlexBox";
 export * from "./ImportForm";
 export * from "./ImportPreview";
