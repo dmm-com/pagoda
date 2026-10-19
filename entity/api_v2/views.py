@@ -2,7 +2,7 @@ import copy
 import logging
 from typing import Any, List, cast
 
-from django.db.models import F, QuerySet
+from django.db.models import F, Prefetch, QuerySet
 from django.db.models.functions import Lower
 from django.http import Http404, HttpRequest
 from django.http.response import HttpResponse, JsonResponse
@@ -22,6 +22,7 @@ from airone.lib.drf import EntryIsNotEmptyError, ObjectNotExistsError, YAMLParse
 from airone.lib.http import http_get, timestamped_filename
 from airone.lib.plugin_dispatch import PluginOverrideMixin
 from airone.lib.text import normalize_search_text
+from airone.lib.types import AttrType
 from entity.api_v2.serializers import (
     EntityAttrNameSerializer,
     EntityCreateSerializer,
@@ -628,19 +629,27 @@ class EntityDiffAPI(generics.GenericAPIView[Entity]):
     serializer_class = EntityDiffQuerySerializer
 
     @staticmethod
-    def _value_at(attr: Attribute, at: Any) -> Any:
-        attrv = (
-            AttributeValue.objects.filter(
-                parent_attr=attr, parent_attrv__isnull=True, created_time__lte=at
-            )
-            .prefetch_related("data_array")
-            .order_by("-created_time", "-id")
-            .first()
-        )
+    def _value_at(attrvs: list[AttributeValue], at: Any) -> Any:
+        """Value of the newest entry in attrvs (sorted newest first) created at or before `at`"""
+        attrv = next((v for v in attrvs if v.created_time <= at), None)
         if attrv is None:
             return None
         # with_metainfo wraps the value as {"type": ..., "value": ...}; keep only the value
-        return attrv.get_value(with_metainfo=True, serialize=True)["value"]
+        value = attrv.get_value(with_metainfo=True, serialize=True)["value"]
+
+        # An unset value is represented differently per type; normalize it to None so that
+        # it compares equal to "no value" (e.g. an attribute that has never been set).
+        data_type = attrv.data_type
+        if data_type & AttrType._ARRAY:
+            # array_* and multi-select
+            is_empty = value == []
+        elif data_type in (AttrType.NAMED_OBJECT, AttrType.NAMED_OBJECT_BOOLEAN):
+            is_empty = value == {"": None}
+        elif data_type == AttrType.DATE:
+            is_empty = value is None
+        else:
+            is_empty = False
+        return None if is_empty else value
 
     @extend_schema(
         parameters=[EntityDiffQuerySerializer],
@@ -667,32 +676,49 @@ class EntityDiffAPI(generics.GenericAPIView[Entity]):
         if any(name not in entity_attrs for name in attr_names):
             raise NotFound("Target attribute doesn't exist in the Entity")
 
+        # fetch every candidate AttributeValue at once instead of two queries per attribute
+        attrs = (
+            Attribute.objects.filter(
+                schema__in=entity_attrs.values(), parent_entry__is_active=True, is_active=True
+            )
+            .select_related("parent_entry", "schema")
+            .prefetch_related(
+                Prefetch(
+                    "attributevalue_set",
+                    queryset=AttributeValue.objects.filter(
+                        parent_attrv__isnull=True, created_time__lte=max(t0, t1)
+                    )
+                    .prefetch_related("data_array")
+                    .order_by("-created_time", "-id"),
+                    to_attr="diff_candidates",
+                )
+            )
+        )
+        attr_order = {name: i for i, name in enumerate(attr_names)}
+
         # entry id -> item, so that every entry appears once with all of its differing attrs
         items: dict[int, dict[str, Any]] = {}
-        for name in attr_names:
-            entity_attr = entity_attrs[name]
-            for attr in Attribute.objects.filter(
-                schema=entity_attr, parent_entry__is_active=True, is_active=True
-            ).select_related("parent_entry"):
-                entry = attr.parent_entry
-                if not user.has_permission(entry, ACLType.Readable) or not user.has_permission(
-                    attr, ACLType.Readable
-                ):
-                    continue
+        for attr in sorted(attrs, key=lambda a: (attr_order[a.schema.name], a.id)):
+            entry = attr.parent_entry
+            if not user.has_permission(entry, ACLType.Readable) or not user.has_permission(
+                attr, ACLType.Readable
+            ):
+                continue
 
-                value_t0 = self._value_at(attr, t0)
-                value_t1 = self._value_at(attr, t1)
-                if value_t0 == value_t1:
-                    continue
-                item = items.setdefault(entry.id, {"id": entry.id, "name": entry.name, "attrs": []})
-                item["attrs"].append(
-                    {
-                        "id": attr.id,
-                        "name": entity_attr.name,
-                        "type": entity_attr.type,
-                        "value_t0": value_t0,
-                        "value_t1": value_t1,
-                    }
-                )
+            candidates: list[AttributeValue] = attr.diff_candidates  # type: ignore[attr-defined]
+            value_t0 = self._value_at(candidates, t0)
+            value_t1 = self._value_at(candidates, t1)
+            if value_t0 == value_t1:
+                continue
+            item = items.setdefault(entry.id, {"id": entry.id, "name": entry.name, "attrs": []})
+            item["attrs"].append(
+                {
+                    "id": attr.id,
+                    "name": attr.schema.name,
+                    "type": attr.schema.type,
+                    "value_t0": value_t0,
+                    "value_t1": value_t1,
+                }
+            )
 
         return Response({"count": len(items), "items": list(items.values())})

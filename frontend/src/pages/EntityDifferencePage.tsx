@@ -53,7 +53,25 @@ const isObjectValue = (
   "id" in value &&
   (typeof value.id === "number" || typeof value.id === "string");
 
-const isEmptyValue = (value: unknown): boolean => value == null || value === "";
+// NAMED_* values are serialized as {"<name>": <object | null>}; an unset one is {"": null}
+const isEmptyNamedValue = (value: unknown): boolean => {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return false;
+  }
+  const keys = Object.keys(value);
+  return (
+    keys.length === 1 &&
+    keys[0] === "" &&
+    (value as Record<string, unknown>)[""] == null
+  );
+};
+
+// null, "", [] and {"": null} are all treated as an empty value
+const isEmptyValue = (value: unknown): boolean =>
+  value == null ||
+  value === "" ||
+  (Array.isArray(value) && value.length === 0) ||
+  isEmptyNamedValue(value);
 
 const formatValue = (value: unknown): string =>
   value == null
@@ -62,16 +80,60 @@ const formatValue = (value: unknown): string =>
       ? value
       : JSON.stringify(value);
 
-const renderValue = (value: unknown, type: number | undefined): ReactNode => {
-  if (type === EntryAttributeTypeTypeEnum.OBJECT && isObjectValue(value)) {
-    // the value is an entry, so link to it (the entity id is not needed to resolve it)
-    return (
-      <Link to={entryDetailsPath(0, value.id)}>
-        {value.name ?? String(value.id)}
-      </Link>
-    );
+const renderScalar = (value: unknown, type: number | undefined): ReactNode => {
+  if (isObjectValue(value)) {
+    if (type === EntryAttributeTypeTypeEnum.OBJECT) {
+      // the value is an entry, so link to it (the entity id is not needed to resolve it)
+      return (
+        <Link to={entryDetailsPath(0, value.id)}>
+          {value.name ?? String(value.id)}
+        </Link>
+      );
+    }
+    return value.name ?? String(value.id);
+  }
+  if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+    // named value: {"<name>": <object | scalar>}
+    return Object.entries(value).map(([key, v], i) => (
+      <Fragment key={key}>
+        {i > 0 && ", "}
+        {key}: {renderScalar(v, EntryAttributeTypeTypeEnum.OBJECT)}
+      </Fragment>
+    ));
   }
   return formatValue(value);
+};
+
+const ARRAY_TYPES: number[] = [
+  EntryAttributeTypeTypeEnum.ARRAY_STRING,
+  EntryAttributeTypeTypeEnum.ARRAY_OBJECT,
+  EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT,
+  EntryAttributeTypeTypeEnum.ARRAY_GROUP,
+  EntryAttributeTypeTypeEnum.ARRAY_ROLE,
+];
+
+const renderValue = (value: unknown, type: number | undefined): ReactNode => {
+  if (isEmptyValue(value)) {
+    return "";
+  }
+  if (
+    type !== undefined &&
+    ARRAY_TYPES.includes(type) &&
+    Array.isArray(value)
+  ) {
+    const itemType =
+      type === EntryAttributeTypeTypeEnum.ARRAY_OBJECT
+        ? EntryAttributeTypeTypeEnum.OBJECT
+        : undefined;
+    return (
+      <ul style={{ margin: 0, paddingLeft: "1.2em" }}>
+        {value.map((v, i) => (
+          <li key={i}>{renderScalar(v, itemType)}</li>
+        ))}
+      </ul>
+    );
+  }
+  return renderScalar(value, type);
 };
 
 const EntityDifferenceContent: FC<{ entityId: number }> = ({ entityId }) => {
