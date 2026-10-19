@@ -9,8 +9,14 @@ on:
       - "**/*.py"
       - "templates/**/*.html"
       - ".github/workflows/build-core.yml"
+      - ".github/actions/setup-pagoda-env/action.yml"
       - "pyproject.toml"
+      - "plugin/**/pyproject.toml"
       - "uv.lock"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   lint:
@@ -48,9 +54,21 @@ jobs:
           # Use the same configuration as npm run generate:client
           export DJANGO_CONFIGURATION=DRFSpectacularExcludeCustomView
 
-          # Check for errors (fail the build)
-          # grep for actual error lines like "Error [ViewName]: ..." (not summary lines)
-          errors=$(uv run python manage.py spectacular 2>&1 > /dev/null | grep "Error \[" || true)
+          # Generate the schema once and capture stderr so that both hard
+          # failures and per-view errors can be inspected.
+          spec_err=$(mktemp)
+          if ! uv run python manage.py spectacular > /dev/null 2>"$spec_err"; then
+            echo "::error::OpenAPI schema generation crashed:"
+            cat "$spec_err"
+            exit 1
+          fi
+
+          # Spectacular reports per-view errors on stderr without failing the
+          # command itself. Match both "Error [ViewName]: ..." (with
+          # breadcrumbs) and plain "Error: ..." lines, allowing the optional
+          # "source:line: " prefix Spectacular adds. Requiring a boundary before
+          # "Error" avoids matching exception names such as "ImportError:".
+          errors=$(grep -E '(^|[[:space:]])Error(:| \[)' "$spec_err" || true)
           if [ -n "$errors" ]; then
             echo "::error::OpenAPI schema generation errors:"
             echo "$errors"
@@ -58,7 +76,7 @@ jobs:
           fi
 
           # Check for warnings (report but don't fail - for gradual cleanup)
-          warnings=$(uv run python manage.py spectacular 2>&1 > /dev/null | grep -i WARN || true)
+          warnings=$(grep -i 'warn' "$spec_err" || true)
           if [ -n "$warnings" ]; then
             echo "::warning::OpenAPI schema generation warnings:"
             echo "$warnings"
