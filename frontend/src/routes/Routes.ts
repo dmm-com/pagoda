@@ -2,7 +2,6 @@ export const basePath = "/ui/";
 
 export const loginPath = () => "/auth/login/";
 export const topPath = () => basePath;
-export const networkPath = () => basePath + "network/";
 export const iframePath = () => basePath + "iframe/";
 export const iframeLoginCompletePath = () => iframePath() + "login-complete/";
 export const advancedSearchPath = () => basePath + "advanced_search";

@@ -401,9 +401,7 @@ class searchAPI(viewsets.ReadOnlyModelViewSet[Any]):
             )
         except ValueError:
             requested_limit = ENTRY_CONFIG.MAX_SEARCH_ENTRIES
-        # The network page requests one extra result to detect another page.
-        max_limit = ENTRY_CONFIG.MAX_NETWORK_SEARCH_ENTRIES + 1
-        limit = min(max(requested_limit, 1), max_limit)
+        limit = min(max(requested_limit, 1), ENTRY_CONFIG.MAX_SEARCH_ENTRIES + 1)
 
         results = AdvancedSearchService.search_entries_for_simple(
             query,
