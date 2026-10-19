@@ -1,4 +1,5 @@
 import json
+from unittest.mock import patch
 
 import yaml
 from django.db import connection
@@ -7,6 +8,7 @@ from rest_framework import status
 
 from airone.lib.test import AironeViewTest
 from group.models import Group
+from job.models import Job, JobStatus
 from user.models import User
 
 
@@ -150,7 +152,16 @@ class ViewTest(AironeViewTest):
         self._create_group("group1")
         self._create_group("group2")
 
-        resp = self.client.get("/group/api/v2/groups/export")
+        with patch.object(Job, "run") as enqueue:
+            resp = self.client.get("/group/api/v2/groups/export")
+        enqueue.assert_called_once_with()
+        self.assertEqual(resp.status_code, 202)
+        self.assertNotIn("Content-Disposition", resp)
+        job = Job.objects.get(id=resp.json()["id"])
+        job.run(will_delay=False)
+        job.refresh_from_db()
+        self.assertEqual(job.status, JobStatus.DONE)
+        resp = self.client.get(f"/job/api/v2/{job.id}/download")
         self.assertEqual(resp.status_code, 200)
         self.assertRegex(
             resp["Content-Disposition"],

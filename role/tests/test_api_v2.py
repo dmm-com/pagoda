@@ -439,7 +439,16 @@ class ViewTest(AironeViewTest):
         user.delete()
         group.delete()
 
-        resp = self.client.get("/role/api/v2/export")
+        with patch.object(Job, "run") as enqueue:
+            resp = self.client.get("/role/api/v2/export")
+        enqueue.assert_called_once_with()
+        self.assertEqual(resp.status_code, 202)
+        self.assertNotIn("Content-Disposition", resp)
+        job = Job.objects.get(id=resp.json()["id"])
+        job.run(will_delay=False)
+        job.refresh_from_db()
+        self.assertEqual(job.status, JobStatus.DONE)
+        resp = self.client.get(f"/job/api/v2/{job.id}/download")
         self.assertEqual(resp.status_code, 200)
         self.assertRegex(
             resp["Content-Disposition"],
@@ -622,7 +631,16 @@ class ViewTest(AironeViewTest):
         role_not_related.users.add(self.user1)
 
         # Request role export
-        resp = self.client.get("/role/api/v2/export")
+        with patch.object(Job, "run") as enqueue:
+            resp = self.client.get("/role/api/v2/export")
+        enqueue.assert_called_once_with()
+        self.assertEqual(resp.status_code, 202)
+        self.assertNotIn("Content-Disposition", resp)
+        job = Job.objects.get(id=resp.json()["id"])
+        job.run(will_delay=False)
+        job.refresh_from_db()
+        self.assertEqual(job.status, JobStatus.DONE)
+        resp = self.client.get(f"/job/api/v2/{job.id}/download")
         self.assertEqual(resp.status_code, 200)
 
         data = yaml.safe_load(resp.content.decode("utf-8"))
@@ -646,7 +664,16 @@ class ViewTest(AironeViewTest):
         role2.users.add(self.user2)
 
         # Request role export
-        resp = self.client.get("/role/api/v2/export")
+        with patch.object(Job, "run") as enqueue:
+            resp = self.client.get("/role/api/v2/export")
+        enqueue.assert_called_once_with()
+        self.assertEqual(resp.status_code, 202)
+        self.assertNotIn("Content-Disposition", resp)
+        job = Job.objects.get(id=resp.json()["id"])
+        job.run(will_delay=False)
+        job.refresh_from_db()
+        self.assertEqual(job.status, JobStatus.DONE)
+        resp = self.client.get(f"/job/api/v2/{job.id}/download")
         self.assertEqual(resp.status_code, 200)
 
         data = yaml.safe_load(resp.content.decode("utf-8"))

@@ -17,9 +17,10 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from airone.lib.acl import ACLType, get_permitted_objects
-from airone.lib.drf import EntryIsNotEmptyError, ObjectNotExistsError, YAMLParser, YAMLRenderer
-from airone.lib.http import http_get, timestamped_filename
+from airone.lib.acl import ACLType
+from airone.lib.configuration_export import ConfigurationExportAPI
+from airone.lib.drf import EntryIsNotEmptyError, ObjectNotExistsError, YAMLParser
+from airone.lib.http import http_get
 from airone.lib.plugin_dispatch import PluginOverrideMixin
 from airone.lib.text import normalize_search_text
 from entity.api_v2.serializers import (
@@ -529,31 +530,8 @@ class EntityImportPreviewAPI(generics.GenericAPIView[Entity]):
         return Response({"job_id": job.id}, status=status.HTTP_202_ACCEPTED)
 
 
-class EntityExportAPI(generics.RetrieveAPIView[Entity]):
-    # EntityImportExportRootSerializer is Serializer[dict], not Serializer[Entity],
-    # so the tighter drf-stubs annotation on serializer_class does not fit here.
-    serializer_class = EntityImportExportRootSerializer  # type: ignore[assignment]
-    renderer_classes = [YAMLRenderer]
-
-    def finalize_response(
-        self, request: Request, response: Response, *args: Any, **kwargs: Any
-    ) -> Response:
-        response["Content-Disposition"] = 'attachment; filename="%s"' % timestamped_filename(
-            "entity.yaml"
-        )
-        return super().finalize_response(request, response, *args, **kwargs)
-
-    # Overrides get_object to return a dict payload (Entity+EntityAttr collections)
-    # for the YAML export instead of the single-instance shape expected by the base.
-    def get_object(self) -> dict[str, Any]:  # type: ignore[override]
-        user = cast(User, self.request.user)
-        entities = get_permitted_objects(user, Entity, ACLType.Readable)
-        attrs = get_permitted_objects(user, EntityAttr, ACLType.Readable)
-
-        return {
-            "Entity": entities,
-            "EntityAttr": attrs,
-        }
+class EntityExportAPI(ConfigurationExportAPI):
+    export_kind = "entity"
 
 
 @extend_schema(
