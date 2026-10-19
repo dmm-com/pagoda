@@ -89,6 +89,25 @@ export function fileDownload(data: string, filename: string): void {
 }
 
 // Get CSRF Token from Cookie set by Django
+export interface EntityDiffAttribute {
+  id: number;
+  name: string;
+  type: number;
+  value_t0: unknown;
+  value_t1: unknown;
+}
+
+export interface EntityDiffItem {
+  id: number;
+  name: string;
+  attrs: EntityDiffAttribute[];
+}
+
+export interface EntityDiff {
+  count: number;
+  items: EntityDiffItem[];
+}
+
 // see https://docs.djangoproject.com/en/3.2/ref/csrf/
 export function getCsrfToken(): string {
   const match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]*)/);
@@ -454,6 +473,25 @@ class AironeApiClient {
       /filename="?([^";]+)"?/i,
     )?.[1];
     fileDownload(data, downloadedFilename ?? filename);
+  }
+
+  // The diff endpoint is not part of the generated client yet.
+  // t0 must be the earlier point in time and t1 the later one.
+  async getEntityDiff(
+    model: string,
+    attrs: string[],
+    t0: Date,
+    t1: Date,
+  ): Promise<EntityDiff> {
+    const params = new URLSearchParams({ model });
+    attrs.forEach((attr) => params.append("attr", attr));
+    params.set("t0", t0.toISOString());
+    params.set("t1", t1.toISOString());
+    const resp = await fetch(`/entity/api/v2/diff?${params.toString()}`);
+    if (!resp.ok) {
+      throw new Error(`Failed to get difference (status: ${resp.status})`);
+    }
+    return await resp.json();
   }
 
   async getEntityAttrs(

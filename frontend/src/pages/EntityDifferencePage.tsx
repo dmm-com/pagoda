@@ -1,16 +1,25 @@
+import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Alert,
   Autocomplete,
   Box,
   Button,
   Container,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
   Typography,
 } from "@mui/material";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { FC, Suspense, useState } from "react";
+import { FC, Fragment, ReactNode, Suspense, useState } from "react";
+import { Link } from "react-router";
 import { preload } from "swr";
 
 import { Loading } from "components/common/Loading";
@@ -19,7 +28,51 @@ import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { useIdParams } from "hooks/useIdParams";
 import { usePagodaSWR, wrapFetcher } from "hooks/usePagodaSWR";
 import { useTranslation } from "hooks/useTranslation";
-import { aironeApiClient } from "repository/AironeApiClient";
+import { aironeApiClient, EntityDiff } from "repository/AironeApiClient";
+import { entryDetailsPath } from "routes/Routes";
+
+const HEADER_GRAY_COLOR = "#F9FAFA";
+const START_HEADER_COLOR = "#FFF3F3";
+const END_HEADER_COLOR = "#F0FFF0";
+const START_VALUE_COLOR = "#FFF6F6";
+const END_VALUE_COLOR = "#F6FFF6";
+const EMPTY_VALUE_COLOR = "#F6F6F6";
+const WHITE = "#FFFFFF";
+
+// The table fills the available width and the value columns share the space
+// equally. Once a value column would get narrower than MIN_VALUE_WIDTH (px),
+// the table keeps that width and scrolls horizontally instead.
+const ITEM_NAME_WIDTH = 200;
+const MIN_VALUE_WIDTH = 250;
+
+const isObjectValue = (
+  value: unknown,
+): value is { id: number | string; name?: string } =>
+  typeof value === "object" &&
+  value !== null &&
+  "id" in value &&
+  (typeof value.id === "number" || typeof value.id === "string");
+
+const isEmptyValue = (value: unknown): boolean => value == null || value === "";
+
+const formatValue = (value: unknown): string =>
+  value == null
+    ? ""
+    : typeof value === "string"
+      ? value
+      : JSON.stringify(value);
+
+const renderValue = (value: unknown, type: number | undefined): ReactNode => {
+  if (type === EntryAttributeTypeTypeEnum.OBJECT && isObjectValue(value)) {
+    // the value is an entry, so link to it (the entity id is not needed to resolve it)
+    return (
+      <Link to={entryDetailsPath(0, value.id)}>
+        {value.name ?? String(value.id)}
+      </Link>
+    );
+  }
+  return formatValue(value);
+};
 
 const EntityDifferenceContent: FC<{ entityId: number }> = ({ entityId }) => {
   const { t } = useTranslation();
@@ -27,6 +80,49 @@ const EntityDifferenceContent: FC<{ entityId: number }> = ({ entityId }) => {
   const [startDateTime, setStartDateTime] = useState<Date | null>(null);
   const [endDateTime, setEndDateTime] = useState<Date | null>(() => new Date());
   const [showRangeError, setShowRangeError] = useState(false);
+  const [diff, setDiff] = useState<EntityDiff | null>(null);
+  // attribute names used for the displayed result (the form may change afterwards)
+  const [diffAttrNames, setDiffAttrNames] = useState<string[]>([]);
+  const [fetchError, setFetchError] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleShow = async () => {
+    const invalidRange =
+      startDateTime != null &&
+      endDateTime != null &&
+      endDateTime.getTime() <= startDateTime.getTime();
+    setShowRangeError(invalidRange);
+    if (
+      invalidRange ||
+      attrs.length === 0 ||
+      startDateTime == null ||
+      endDateTime == null
+    ) {
+      return;
+    }
+
+    setLoading(true);
+    setFetchError(false);
+    // drop the previous result while the new one is being fetched
+    setDiff(null);
+    try {
+      const attrNames = attrs.map((a) => a.name);
+      setDiff(
+        await aironeApiClient.getEntityDiff(
+          entity.name,
+          attrNames,
+          startDateTime,
+          endDateTime,
+        ),
+      );
+      setDiffAttrNames(attrNames);
+    } catch {
+      setDiff(null);
+      setFetchError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const { data: entity } = usePagodaSWR(
     ["entity", entityId],
@@ -36,11 +132,11 @@ const EntityDifferenceContent: FC<{ entityId: number }> = ({ entityId }) => {
 
   return (
     <>
-      <EntityBreadcrumbs entity={entity} title={t("entity.difference.show")} />
+      <EntityBreadcrumbs entity={entity} title={t("entity.difference.title")} />
 
       <PageHeader
         title={entity.name}
-        description={t("entity.difference.show")}
+        description={t("entity.difference.desc")}
       />
 
       <Container>
@@ -48,7 +144,8 @@ const EntityDifferenceContent: FC<{ entityId: number }> = ({ entityId }) => {
           <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
             <Autocomplete
               multiple
-              sx={{ width: 300 }}
+              disabled={loading}
+              sx={{ flexGrow: 1, minWidth: 300 }}
               size="small"
               options={entity.attrs.map((a) => ({ id: a.id, name: a.name }))}
               getOptionLabel={(o) => o.name}
@@ -65,6 +162,7 @@ const EntityDifferenceContent: FC<{ entityId: number }> = ({ entityId }) => {
               value={startDateTime}
               onChange={setStartDateTime}
               slotProps={{ textField: { size: "small" } }}
+              disabled={loading}
             />
             <Typography>-</Typography>
             <DateTimePicker
@@ -73,17 +171,14 @@ const EntityDifferenceContent: FC<{ entityId: number }> = ({ entityId }) => {
               value={endDateTime}
               onChange={setEndDateTime}
               slotProps={{ textField: { size: "small" } }}
+              disabled={loading}
             />
             <Button
               variant="contained"
               color="secondary"
-              onClick={() => {
-                setShowRangeError(
-                  startDateTime != null &&
-                    endDateTime != null &&
-                    endDateTime.getTime() <= startDateTime.getTime(),
-                );
-              }}
+              onClick={handleShow}
+              disabled={loading}
+              sx={{ ml: "auto" }}
             >
               {t("entity.difference.show")}
             </Button>
@@ -94,6 +189,120 @@ const EntityDifferenceContent: FC<{ entityId: number }> = ({ entityId }) => {
             {t("entity.difference.endBeforeStartError")}
           </Alert>
         )}
+        {fetchError && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {t("entity.difference.fetchError")}
+          </Alert>
+        )}
+        {diff != null &&
+          (diff.count === 0 ? (
+            <Typography sx={{ mt: 2 }}>
+              {t("entity.difference.noDifference")}
+            </Typography>
+          ) : (
+            <Box sx={{ mt: 2 }}>
+              <Typography sx={{ mb: 1 }}>
+                {t("entity.difference.count", { count: diff.count })}
+              </Typography>
+              <TableContainer component={Paper}>
+                <Table
+                  size="small"
+                  sx={{
+                    tableLayout: "fixed",
+                    width: "100%",
+                    minWidth:
+                      ITEM_NAME_WIDTH +
+                      diffAttrNames.length * 2 * MIN_VALUE_WIDTH,
+                    "& td, & th": {
+                      overflowWrap: "anywhere",
+                      whiteSpace: "pre-wrap",
+                    },
+                  }}
+                >
+                  <colgroup>
+                    <col style={{ width: ITEM_NAME_WIDTH }} />
+                    {diffAttrNames.flatMap((name) => [
+                      <col key={`${name}-0`} />,
+                      <col key={`${name}-1`} />,
+                    ])}
+                  </colgroup>
+                  <TableHead
+                    sx={{ "& .MuiTableCell-head": { fontWeight: "bold" } }}
+                  >
+                    <TableRow>
+                      <TableCell
+                        rowSpan={2}
+                        sx={{ bgcolor: HEADER_GRAY_COLOR }}
+                      >
+                        {t("entity.difference.entry")}
+                      </TableCell>
+                      {diffAttrNames.map((name, i) => (
+                        <TableCell
+                          key={name}
+                          colSpan={2}
+                          align="center"
+                          // even-numbered (2nd, 4th, ...) attributes are shaded
+                          sx={{
+                            bgcolor: i % 2 === 1 ? HEADER_GRAY_COLOR : WHITE,
+                          }}
+                        >
+                          {name}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                    <TableRow>
+                      {diffAttrNames.map((name) => (
+                        <Fragment key={name}>
+                          <TableCell sx={{ bgcolor: START_HEADER_COLOR }}>
+                            {t("entity.difference.startValue")}
+                          </TableCell>
+                          <TableCell sx={{ bgcolor: END_HEADER_COLOR }}>
+                            {t("entity.difference.endValue")}
+                          </TableCell>
+                        </Fragment>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {diff.items.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell sx={{ bgcolor: WHITE }}>
+                          <Link to={entryDetailsPath(entityId, item.id)}>
+                            {item.name}
+                          </Link>
+                        </TableCell>
+                        {diffAttrNames.map((name) => {
+                          const a = item.attrs.find((x) => x.name === name);
+                          return (
+                            <Fragment key={name}>
+                              <TableCell
+                                sx={{
+                                  bgcolor: isEmptyValue(a?.value_t0)
+                                    ? EMPTY_VALUE_COLOR
+                                    : START_VALUE_COLOR,
+                                }}
+                              >
+                                {renderValue(a?.value_t0, a?.type)}
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  bgcolor: isEmptyValue(a?.value_t1)
+                                    ? EMPTY_VALUE_COLOR
+                                    : END_VALUE_COLOR,
+                                }}
+                              >
+                                {renderValue(a?.value_t1, a?.type)}
+                              </TableCell>
+                            </Fragment>
+                          );
+                        })}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          ))}
       </Container>
     </>
   );

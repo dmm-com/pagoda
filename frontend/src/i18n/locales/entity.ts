@@ -14,7 +14,15 @@ export const entityMessages = defineMessages({
     "entity.difference.endDateTime": "終点",
     "entity.difference.endBeforeStartError":
       "終点は始点より後になるように入力してください",
+    "entity.difference.entry": "アイテム名",
+    "entity.difference.startValue": "起点の値",
+    "entity.difference.endValue": "終点の値",
+    "entity.difference.count": "差分のあるアイテム: {{count}} 件",
+    "entity.difference.noDifference": "差分はありません",
+    "entity.difference.fetchError": "差分の取得に失敗しました",
     "entity.difference.show": "表示する",
+    "entity.difference.desc": "２つの時点において、差分のあるアイテムを表示する",
+    "entity.difference.title": "差分表示",
 
     // Entity control menu
     "entity.controlMenu.entryList": "アイテム一覧",
@@ -177,7 +185,15 @@ export const entityMessages = defineMessages({
     "entity.difference.endDateTime": "End",
     "entity.difference.endBeforeStartError":
       "Enter an end that is later than the start",
+    "entity.difference.entry": "Item name",
+    "entity.difference.startValue": "Start value",
+    "entity.difference.endValue": "End value",
+    "entity.difference.count": "Items with differences: {{count}}",
+    "entity.difference.noDifference": "There is no difference",
+    "entity.difference.fetchError": "Failed to get the difference",
     "entity.difference.show": "Show",
+    "entity.difference.desc": "Show item contents with differences between two points in time.",
+    "entity.difference.title": "Item Comparison",
 
     // Entity control menu
     "entity.controlMenu.entryList": "Entries",

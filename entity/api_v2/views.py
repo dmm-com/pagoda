@@ -651,42 +651,48 @@ class EntityDiffAPI(generics.GenericAPIView[Entity]):
         query = EntityDiffQuerySerializer(data=request.query_params)
         query.is_valid(raise_exception=True)
         model = query.validated_data["model"]
-        attr_name = query.validated_data["attr"]
+        attr_names = list(dict.fromkeys(query.validated_data["attr"]))
         t0 = query.validated_data["t0"]
         t1 = query.validated_data["t1"]
 
         entity = Entity.objects.filter(name=model, is_active=True).first()
         if entity is None or not user.has_permission(entity, ACLType.Readable):
             raise NotFound("Target Entity doesn't exist")
-        entity_attr = EntityAttr.objects.filter(
-            parent_entity=entity, name=attr_name, is_active=True
-        ).first()
-        if entity_attr is None:
+        entity_attrs = {
+            ea.name: ea
+            for ea in EntityAttr.objects.filter(
+                parent_entity=entity, name__in=attr_names, is_active=True
+            )
+        }
+        if any(name not in entity_attrs for name in attr_names):
             raise NotFound("Target attribute doesn't exist in the Entity")
 
-        attributes: list[dict[str, Any]] = []
-        for attr in Attribute.objects.filter(
-            schema=entity_attr, parent_entry__is_active=True, is_active=True
-        ).select_related("parent_entry"):
-            entry = attr.parent_entry
-            if not user.has_permission(entry, ACLType.Readable) or not user.has_permission(
-                attr, ACLType.Readable
-            ):
-                continue
+        # entry id -> item, so that every entry appears once with all of its differing attrs
+        items: dict[int, dict[str, Any]] = {}
+        for name in attr_names:
+            entity_attr = entity_attrs[name]
+            for attr in Attribute.objects.filter(
+                schema=entity_attr, parent_entry__is_active=True, is_active=True
+            ).select_related("parent_entry"):
+                entry = attr.parent_entry
+                if not user.has_permission(entry, ACLType.Readable) or not user.has_permission(
+                    attr, ACLType.Readable
+                ):
+                    continue
 
-            value0 = self._value_at(attr, t0)
-            value1 = self._value_at(attr, t1)
-            if value0 == value1:
-                continue
-            attributes.append(
-                {
-                    "id": attr.id,
-                    "name": entity_attr.name,
-                    "type": entity_attr.type,
-                    "entry": {"id": entry.id, "name": entry.name},
-                    "value0": value0,
-                    "value1": value1,
-                }
-            )
+                value_t0 = self._value_at(attr, t0)
+                value_t1 = self._value_at(attr, t1)
+                if value_t0 == value_t1:
+                    continue
+                item = items.setdefault(entry.id, {"id": entry.id, "name": entry.name, "attrs": []})
+                item["attrs"].append(
+                    {
+                        "id": attr.id,
+                        "name": entity_attr.name,
+                        "type": entity_attr.type,
+                        "value_t0": value_t0,
+                        "value_t1": value_t1,
+                    }
+                )
 
-        return Response({"count": len(attributes), "attributes": attributes})
+        return Response({"count": len(items), "items": list(items.values())})

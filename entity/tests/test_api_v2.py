@@ -4854,11 +4854,16 @@ class EntityDiffAPITest(AironeViewTest):
         super().setUp()
         self.user = self.guest_login()
         self.entity = self.create_entity(
-            self.user, "diff-entity", attrs=[{"name": "str", "type": AttrType.STRING}]
+            self.user,
+            "diff-entity",
+            attrs=[
+                {"name": "str", "type": AttrType.STRING},
+                {"name": "other", "type": AttrType.STRING},
+            ],
         )
 
-    def _set_value(self, entry, value, at):
-        attr = entry.attrs.get(schema__name="str")
+    def _set_value(self, entry, value, at, attr_name="str"):
+        attr = entry.attrs.get(schema__name=attr_name)
         attr.add_value(self.user, value)
         AttributeValue.objects.filter(parent_attr=attr, is_latest=True).update(created_time=at)
 
@@ -4877,12 +4882,45 @@ class EntityDiffAPITest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["count"], 1)
-        attribute = resp.json()["attributes"][0]
+        item = resp.json()["items"][0]
+        self.assertEqual(item["id"], changed.id)
+        self.assertEqual(item["name"], "changed")
+        self.assertEqual(len(item["attrs"]), 1)
+        attribute = item["attrs"][0]
         self.assertEqual(attribute["name"], "str")
         self.assertEqual(attribute["type"], AttrType.STRING)
-        self.assertEqual(attribute["entry"]["name"], "changed")
-        self.assertEqual(attribute["value0"], "a")
-        self.assertEqual(attribute["value1"], "b")
+        self.assertEqual(attribute["value_t0"], "a")
+        self.assertEqual(attribute["value_t1"], "b")
+
+    def test_diff_multiple_attrs(self):
+        t = timezone.now()
+        t0, t1 = t - datetime.timedelta(days=2), t - datetime.timedelta(days=1)
+        both = self.add_entry(self.user, "both", self.entity)
+        only_other = self.add_entry(self.user, "only_other", self.entity)
+        same = self.add_entry(self.user, "same", self.entity)
+        before, after = t0 - datetime.timedelta(hours=1), t0 + datetime.timedelta(hours=1)
+        for entry in (both, only_other):
+            self._set_value(entry, "a", before, "other")
+            self._set_value(entry, "b", after, "other")
+        self._set_value(both, "a", before)
+        self._set_value(both, "b", after)
+        self._set_value(same, "x", before)
+
+        resp = self.client.get(
+            "/entity/api/v2/diff",
+            {
+                "model": "diff-entity",
+                "attr": ["str", "other"],
+                "t0": t0.isoformat(),
+                "t1": t1.isoformat(),
+            },
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], 2)
+        attrs_by_entry = {
+            item["name"]: sorted(a["name"] for a in item["attrs"]) for item in resp.json()["items"]
+        }
+        self.assertEqual(attrs_by_entry, {"both": ["other", "str"], "only_other": ["other"]})
 
     def test_diff_invalid_params(self):
         params = {"model": "nothing", "attr": "str", "t0": "2024-01-01", "t1": "2024-01-02"}
@@ -4890,5 +4928,8 @@ class EntityDiffAPITest(AironeViewTest):
         params["model"] = "diff-entity"
         params["attr"] = "nothing"
         self.assertEqual(self.client.get("/entity/api/v2/diff", params).status_code, 404)
+        params["attr"] = ["str", "nothing"]
+        self.assertEqual(self.client.get("/entity/api/v2/diff", params).status_code, 404)
+        params["attr"] = "str"
         del params["t1"]
         self.assertEqual(self.client.get("/entity/api/v2/diff", params).status_code, 400)
