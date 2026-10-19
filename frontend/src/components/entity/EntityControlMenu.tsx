@@ -71,12 +71,12 @@ export const EntityControlMenu: FC<Props> = ({
       const detail =
         e instanceof Error && isResponseError(e)
           ? await toReportableNonFieldErrors(e).catch((parseErr) => {
-            console.error(
-              "Failed to extract error detail from delete response",
-              parseErr,
-            );
-            return null;
-          })
+              console.error(
+                "Failed to extract error detail from delete response",
+                parseErr,
+              );
+              return null;
+            })
           : null;
       enqueueSnackbar(
         detail

@@ -21,7 +21,8 @@ export const entityMessages = defineMessages({
     "entity.difference.noDifference": "差分はありません",
     "entity.difference.fetchError": "差分の取得に失敗しました",
     "entity.difference.show": "表示する",
-    "entity.difference.desc": "２つの時点において、差分のあるアイテムを表示する",
+    "entity.difference.desc":
+      "２つの時点において、差分のあるアイテムを表示する",
     "entity.difference.title": "差分表示",
 
     // Entity control menu
@@ -192,7 +193,8 @@ export const entityMessages = defineMessages({
     "entity.difference.noDifference": "There is no difference",
     "entity.difference.fetchError": "Failed to get the difference",
     "entity.difference.show": "Show",
-    "entity.difference.desc": "Show item contents with differences between two points in time.",
+    "entity.difference.desc":
+      "Show item contents with differences between two points in time.",
     "entity.difference.title": "Item Comparison",
 
     // Entity control menu
