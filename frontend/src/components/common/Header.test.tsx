@@ -65,7 +65,7 @@ vi.mock("../../hooks/useTranslation", () => ({
 // Mock useSimpleSearch
 const { mockSubmitQuery } = vi.hoisted(() => ({ mockSubmitQuery: vi.fn() }));
 vi.mock("../../hooks/useSimpleSearch", () => ({
-  useSimpleSearch: () => [undefined, mockSubmitQuery],
+  useSimpleSearch: () => [undefined, 1, mockSubmitQuery, vi.fn()],
 }));
 
 // Mock aironeApiClient

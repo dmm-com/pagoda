@@ -111,6 +111,8 @@ export const commonMessages = defineMessages({
     "pageHeader.staleData":
       "未処理の変更があります。現在表示されているデータは最新でない可能性があります。",
     "pagination.range": "{{from}} - {{to}} / {{count}} 件",
+    "simpleSearch.range": "{{from}} - {{to}} 件を表示{{more}}",
+    "simpleSearch.more": "（続きあり）",
 
     // Import preview
     "importPreview.action.create": "新規作成",
@@ -251,6 +253,8 @@ export const commonMessages = defineMessages({
     "pageHeader.staleData":
       "There are pending changes. The data currently displayed may be out of date.",
     "pagination.range": "{{from}} - {{to}} of {{count}}",
+    "simpleSearch.range": "Showing {{from}} - {{to}} results{{more}}",
+    "simpleSearch.more": " (more available)",
 
     // Import preview
     "importPreview.action.create": "Create",
