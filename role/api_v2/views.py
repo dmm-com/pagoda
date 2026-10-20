@@ -2,7 +2,7 @@ from typing import Any, cast
 
 from django.db.models import Prefetch, Q, QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import filters, generics, serializers, status, viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.request import Request
@@ -114,6 +114,6 @@ class RoleImportAPI(generics.GenericAPIView[Any]):
         return Response([], status=status.HTTP_200_OK)
 
 
-@extend_schema(operation_id="role_api_v2_export_list")
+@extend_schema_view(get=extend_schema(operation_id="role_api_v2_export_list"))
 class RoleExportAPI(ConfigurationExportAPI):
     export_kind = "role"
