@@ -11,7 +11,7 @@ from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import filters, generics, status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import get_object_or_404
@@ -545,7 +545,7 @@ class UserImportAPI(generics.GenericAPIView[Any]):
         return Response()
 
 
-@extend_schema(operation_id="user_api_v2_export_list")
+@extend_schema_view(get=extend_schema(operation_id="user_api_v2_export_list"))
 class UserExportAPI(ConfigurationExportAPI):
     export_kind = "user"
 

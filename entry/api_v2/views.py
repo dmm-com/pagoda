@@ -59,6 +59,7 @@ from entry.api_v2.serializers import (
     EntryExportSerializer,
     EntryHistoryAttributeValueSerializer,
     EntryImportSerializer,
+    EntryNetworkSearchResponseSerializer,
     EntryRetrieveSerializer,
     EntrySearchSerializer,
     EntrySelfHistoryRestoreSerializer,
@@ -402,13 +403,95 @@ class searchAPI(viewsets.ReadOnlyModelViewSet[Any]):
         except ValueError:
             requested_limit = ENTRY_CONFIG.MAX_SEARCH_ENTRIES
         limit = min(max(requested_limit, 1), ENTRY_CONFIG.MAX_SEARCH_ENTRIES + 1)
-
         results = AdvancedSearchService.search_entries_for_simple(
             query,
             limit=limit,
             offset=offset,
         )
         return list(results["ret_values"])
+
+
+class EntryNetworkSearchAPI(generics.GenericAPIView[Any]):
+    serializer_class = EntryNetworkSearchResponseSerializer
+
+    @extend_schema(
+        operation_id="entry_api_v2_search_attribute_matches_list",
+        parameters=[
+            OpenApiParameter("query", OpenApiTypes.STR, OpenApiParameter.QUERY, required=True),
+            OpenApiParameter("limit", OpenApiTypes.INT, OpenApiParameter.QUERY),
+            OpenApiParameter("offset", OpenApiTypes.INT, OpenApiParameter.QUERY),
+        ],
+        responses=EntryNetworkSearchResponseSerializer,
+    )
+    def get(self, request: Request) -> Response:
+        query = request.query_params.get("query", "")
+        try:
+            offset = max(int(request.query_params.get("offset", "0")), 0)
+        except ValueError:
+            offset = 0
+        try:
+            page_size = int(request.query_params.get("limit", str(ENTRY_CONFIG.MAX_SEARCH_ENTRIES)))
+        except ValueError:
+            page_size = ENTRY_CONFIG.MAX_SEARCH_ENTRIES
+        page_size = min(max(page_size, 1), ENTRY_CONFIG.MAX_SEARCH_ENTRIES)
+
+        results = (
+            AdvancedSearchService.search_entries_for_simple(
+                query,
+                limit=page_size + 1,
+                offset=offset,
+                include_matches=True,
+            )
+            if query
+            else {"ret_count": 0, "ret_values": []}
+        )
+
+        total_hits = results["ret_count"]
+        has_more = len(results["ret_values"]) > page_size
+        entries_to_check = results["ret_values"][:page_size]
+        user = cast("User", request.user)
+
+        # Elasticsearch does not store the requesting user's ACL. Check both
+        # entry and attribute permissions before returning matched values.
+        entries = {
+            entry.id: entry
+            for entry in Entry.objects.filter(
+                id__in=[int(result["id"]) for result in entries_to_check],
+                is_active=True,
+                schema__is_active=True,
+            ).select_related("schema")
+        }
+        attrs = {
+            (attr.parent_entry_id, attr.schema.name): attr
+            for attr in Attribute.objects.filter(
+                parent_entry_id__in=entries,
+                is_active=True,
+                schema__is_active=True,
+            ).select_related("schema")
+        }
+        readable_results = []
+        for result in entries_to_check:
+            entry = entries.get(int(result["id"]))
+            if entry is None or not (
+                user.has_permission(entry.schema, ACLType.Readable)
+                and user.has_permission(entry, ACLType.Readable)
+            ):
+                continue
+            result["matches"] = [
+                match
+                for match in result.get("matches", [])
+                if (attr := attrs.get((entry.id, match["name"]))) is not None
+                and user.has_permission(attr.schema, ACLType.Readable)
+                and user.has_permission(attr, ACLType.Readable)
+            ]
+            readable_results.append(result)
+
+        response_data = {
+            "results": readable_results,
+            "has_more": has_more,
+            "total_hits": total_hits,
+        }
+        return Response(self.get_serializer(response_data).data)
 
 
 @db_readonly

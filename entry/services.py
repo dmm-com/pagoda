@@ -246,6 +246,7 @@ class AdvancedSearchService:
         exclude_entity_names: list[str] = [],
         limit: int = CONFIG.MAX_LIST_ENTRIES,
         offset: int = 0,
+        include_matches: bool = False,
     ) -> SimpleSearchResults:
         """Method called from simple search.
         Returns the count and values of entries with hint_attr_value.
@@ -288,12 +289,12 @@ class AdvancedSearchService:
             }
 
         query = make_query_for_simple(
-            hint_attr_value, hint_entity_name, exclude_entity_names, offset
+            hint_attr_value, hint_entity_name, exclude_entity_names, offset, include_matches
         )
 
         resp = cast(SimpleSearchResponse, execute_query(query, limit))
 
-        return make_search_results_for_simple(resp)
+        return make_search_results_for_simple(resp, include_matches)
 
     @classmethod
     def _extract_ref_ids(kls, attr: AdvancedSearchResultRecordAttr) -> list[int]:
