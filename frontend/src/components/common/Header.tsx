@@ -48,13 +48,10 @@ import {
   userPath,
   usersPath,
 } from "routes/Routes";
-import {
-  JobOperations,
-  JobRefreshIntervalMilliSec,
-  JobStatuses,
-} from "services/Constants";
+import { JobRefreshIntervalMilliSec, JobStatuses } from "services/Constants";
 import {
   getLatestCheckDate,
+  isExportJob,
   jobTargetLabel,
   updateLatestCheckDate,
 } from "services/JobUtil";
@@ -462,11 +459,7 @@ export const Header: FC = () => {
                 {recentJobs.length > 0 ? (
                   recentJobs.map((job) => (
                     <MenuItem key={job.id}>
-                      {(job.operation == JobOperations.EXPORT_ENTRY ||
-                        job.operation == JobOperations.EXPORT_SEARCH_RESULT ||
-                        job.operation == JobOperations.EXPORT_ENTRY_V2 ||
-                        job.operation ==
-                          JobOperations.EXPORT_SEARCH_RESULT_V2) &&
+                      {isExportJob(job.operation) &&
                       job.status == JobStatuses.DONE ? (
                         <a href={`/job/api/v2/${job.id}/download?encode=utf-8`}>
                           {jobTargetLabel(job)}

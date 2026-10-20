@@ -9,7 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { FC, Suspense, useCallback, useMemo, useState } from "react";
+import { FC, Suspense, useMemo, useState } from "react";
 import { Link } from "react-router";
 
 import { GroupControlMenu } from "../components/group/GroupControlMenu";
@@ -18,6 +18,7 @@ import { GroupTreeRoot } from "../components/group/GroupTreeRoot";
 
 import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { ExportButton } from "components/common/ExportButton";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SearchBox } from "components/common/SearchBox";
@@ -141,10 +142,6 @@ export const GroupListPage: FC = () => {
   const { t } = useTranslation();
   const [openImportModal, setOpenImportModal] = useState(false);
 
-  const handleExport = useCallback(async () => {
-    await aironeApiClient.exportGroups("group.yaml");
-  }, []);
-
   const isSuperuser = ServerContext.getInstance()?.user?.isSuperuser ?? false;
   const isReadonly = ServerContext.getInstance()?.user?.isReadonly ?? false;
 
@@ -160,14 +157,7 @@ export const GroupListPage: FC = () => {
       </AironeBreadcrumbs>
 
       <PageHeader title={t("group.list.pageTitle")}>
-        <Button
-          variant="contained"
-          color="info"
-          sx={{ margin: "0 4px" }}
-          onClick={handleExport}
-        >
-          {t("common.export")}
-        </Button>
+        <ExportButton onExport={() => aironeApiClient.exportGroups()} />
         <Button
           variant="contained"
           color="info"

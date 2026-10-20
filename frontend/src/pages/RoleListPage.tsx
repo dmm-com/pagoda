@@ -1,6 +1,6 @@
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Button, Container, Typography } from "@mui/material";
-import { FC, useCallback, useState } from "react";
+import { FC, useState } from "react";
 import { Link } from "react-router";
 
 import { RoleImportModal } from "../components/role/RoleImportModal";
@@ -8,6 +8,7 @@ import { RoleList } from "../components/role/RoleList";
 
 import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { ExportButton } from "components/common/ExportButton";
 import { PageHeader } from "components/common/PageHeader";
 import { usePageTitle } from "hooks/usePageTitle";
 import { useTranslation } from "hooks/useTranslation";
@@ -20,10 +21,6 @@ export const RoleListPage: FC = () => {
   const [openImportModal, setOpenImportModal] = useState(false);
 
   const isReadonly = ServerContext.getInstance()?.user?.isReadonly ?? false;
-
-  const handleExport = useCallback(async () => {
-    await aironeApiClient.exportRoles("role.yaml");
-  }, []);
 
   usePageTitle(TITLE_TEMPLATES.roleList);
 
@@ -39,14 +36,7 @@ export const RoleListPage: FC = () => {
       </AironeBreadcrumbs>
 
       <PageHeader title={t("role.listPage.pageTitle")}>
-        <Button
-          variant="contained"
-          color="info"
-          sx={{ margin: "0 4px" }}
-          onClick={handleExport}
-        >
-          {t("common.export")}
-        </Button>
+        <ExportButton onExport={() => aironeApiClient.exportRoles()} />
         <Button
           variant="contained"
           color="info"
