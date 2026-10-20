@@ -585,7 +585,7 @@ class EntrySearchSerializer(EntryBaseSerializer):
         ]
 
 
-class EntryNetworkSearchMatchSerializer(serializers.Serializer):
+class EntryNetworkSearchMatchSerializer(serializers.Serializer[Any]):
     name = serializers.CharField(read_only=True)
     value = serializers.CharField(read_only=True, allow_blank=True)
 
@@ -597,7 +597,7 @@ class EntryNetworkSearchSerializer(EntrySearchSerializer):
         fields = [*EntrySearchSerializer.Meta.fields, "matches"]
 
 
-class EntryNetworkSearchResponseSerializer(serializers.Serializer):
+class EntryNetworkSearchResponseSerializer(serializers.Serializer[Any]):
     results = EntryNetworkSearchSerializer(many=True, read_only=True)
     has_more = serializers.BooleanField(read_only=True)
     total_hits = serializers.IntegerField(read_only=True)
