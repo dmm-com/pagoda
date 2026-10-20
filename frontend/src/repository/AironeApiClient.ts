@@ -26,6 +26,7 @@ import {
   EntryBase,
   EntryCopy,
   EntryHint,
+  EntryNetworkSearchResponse,
   EntryRetrieve,
   EntrySearch,
   EntrySearchChain,
@@ -884,6 +885,18 @@ class AironeApiClient {
       throw new Error(`Simple search failed: ${response.status}`);
     }
     return (await response.json()) as EntrySearch[];
+  }
+
+  async getNetworkSearchEntries(
+    query: string,
+    offset = 0,
+    limit = 30,
+  ): Promise<EntryNetworkSearchResponse> {
+    return await this.entry.entryApiV2SearchAttributeMatchesList({
+      query,
+      offset,
+      limit,
+    });
   }
 
   async exportEntries(entityId: number, format: string): Promise<void> {
