@@ -45,7 +45,7 @@ class AdvancedSearchResultRecord(BaseModel):
 
     @model_serializer(mode="wrap")
     def omit_empty_joined_attrs(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
-        data = handler(self)
+        data = cast(dict[str, Any], handler(self))
         if not self.joined_attrs:
             data.pop("joined_attrs", None)
         return data
