@@ -72,59 +72,96 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, 200)
 
-        # prepare comparison data with returned result
-        expected_results = [
-            ("Entry0", {"refs.val": {"as_string": ""}}),
-            ("Entry1", {"refs.val": {"as_string": ""}}),
-            ("Entry2", {"refs.val": {"as_string": ""}}),
-            ("Entry3", {"refs.val": {"as_string": "hoge-0"}}),
-            ("Entry3", {"refs.val": {"as_string": ""}}),
-        ]
-        # check returned processing has expected values
-        for index, result in enumerate(resp.json()["values"]):
-            (e_name, e_attrinfo) = expected_results[index]
-            self.assertEqual(result["entry"]["name"], e_name)
-
-            for attrname, attrvalue in e_attrinfo.items():
-                self.assertEqual(result["attrs"][attrname]["value"], attrvalue)
+        self.assertEqual(resp.json()["count"], 4)
+        self.assertEqual(len(resp.json()["values"]), 4)
+        for result in resp.json()["values"]:
+            expected = ["hoge-0", ""] if result["entry"]["name"] == "Entry3" else []
+            self.assertEqual(
+                [
+                    attr["value"]["as_string"]
+                    for attr in result["joined_attrs"]["refs.val"]["values"]
+                ],
+                expected,
+            )
+            self.assertEqual(
+                len(result["attrs"]["refs"]["value"]["as_array_object"]), len(expected)
+            )
 
     def test_join_attr_for_array_named_object(self):
         params = {
             "entities": [self.entity.id],
-            "attrinfo": [
-                {
-                    "name": "names",
-                }
-            ],
+            "attrinfo": [{"name": "names"}],
+            "join_attrs": [{"name": "names", "attrinfo": [{"name": "val"}]}],
+        }
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.json()["values"]), 4)
+        for result in resp.json()["values"]:
+            expected = ["hoge-0", ""] if result["entry"]["name"] == "Entry3" else []
+            self.assertEqual(
+                [
+                    attr["value"]["as_string"]
+                    for attr in result["joined_attrs"]["names.val"]["values"]
+                ],
+                expected,
+            )
+
+    def test_array_join_filter_preserves_source_slots(self):
+        params = {
+            "entities": [self.entity.id],
+            "attrinfo": [{"name": "refs"}],
+            "join_attrs": [{"name": "refs", "attrinfo": [{"name": "val", "keyword": "hoge"}]}],
+        }
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], 1)
+        result = resp.json()["values"][0]
+        self.assertEqual(result["entry"]["name"], "Entry3")
+        self.assertEqual(len(result["attrs"]["refs"]["value"]["as_array_object"]), 2)
+        self.assertEqual(
+            [attr["value"]["as_string"] for attr in result["joined_attrs"]["refs.val"]["values"]],
+            ["hoge-0", ""],
+        )
+
+    def test_multiple_array_joins_do_not_multiply_rows(self):
+        params = {
+            "entities": [self.entity.id],
+            "attrinfo": [{"name": "refs"}, {"name": "names"}],
             "join_attrs": [
-                {
-                    "name": "names",
-                    "attrinfo": [
-                        {"name": "val"},
-                    ],
-                },
+                {"name": name, "attrinfo": [{"name": "val"}]} for name in ["refs", "names"]
             ],
         }
         resp = self.client.post(
             "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.json()["values"]), 4)
+        result = next(r for r in resp.json()["values"] if r["entry"]["name"] == "Entry3")
+        self.assertEqual(
+            result["joined_attrs"]["refs.val"]["values"],
+            result["joined_attrs"]["names.val"]["values"],
+        )
+        self.assertEqual(len(result["joined_attrs"]["refs.val"]["values"]), 2)
 
-        # prepare comparison data with returned result
-        expected_results = [
-            ("Entry0", {"names.val": {"as_string": ""}}),
-            ("Entry1", {"names.val": {"as_string": ""}}),
-            ("Entry2", {"names.val": {"as_string": ""}}),
-            ("Entry3", {"names.val": {"as_string": "hoge-0"}}),
-            ("Entry3", {"names.val": {"as_string": ""}}),
-        ]
-        # check returned processing has expected values
-        for index, result in enumerate(resp.json()["values"]):
-            (e_name, e_attrinfo) = expected_results[index]
-            self.assertEqual(result["entry"]["name"], e_name)
-
-            for attrname, attrvalue in e_attrinfo.items():
-                self.assertEqual(result["attrs"][attrname]["value"], attrvalue)
+    def test_array_join_pagination_keeps_parent_and_all_values_together(self):
+        params = {
+            "entities": [self.entity.id],
+            "attrinfo": [{"name": "refs"}],
+            "join_attrs": [{"name": "refs", "attrinfo": [{"name": "val"}]}],
+            "entry_limit": 1,
+            "entry_offset": 3,
+        }
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], 1)
+        self.assertEqual(resp.json()["total_count"], 4)
+        self.assertEqual(len(resp.json()["values"][0]["joined_attrs"]["refs.val"]["values"]), 2)
 
     def test_basic_join_attr_feature(self):
         # send request to search Entries with join_attrs

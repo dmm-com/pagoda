@@ -31,11 +31,16 @@ class AdvancedSearchResultRecordAttr(TypedDict, total=False):
     is_readable: bool
 
 
+class AdvancedSearchResultJoinedAttr(TypedDict):
+    values: list[AdvancedSearchResultRecordAttr]
+
+
 class AdvancedSearchResultRecord(BaseModel):
     entity: AdvancedSearchResultRecordIdNamePair
     entry: AdvancedSearchResultRecordIdNamePair
     attrs: dict[str, AdvancedSearchResultRecordAttr]
     is_readable: bool
+    joined_attrs: dict[str, AdvancedSearchResultJoinedAttr] = {}
     referrals: list[AdvancedSearchResultRecordIdNamePair] | None = None
 
 
