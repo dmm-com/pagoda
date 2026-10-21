@@ -7,7 +7,7 @@ from typing import Any, Generic, Literal, NotRequired, TypeVar, cast
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch.dsl.query import Bool, Exists, Ids, Match, Nested, Query, Range, Regexp, Term
-from pydantic import BaseModel
+from pydantic import BaseModel, SerializerFunctionWrapHandler, model_serializer
 from typing_extensions import TypedDict
 
 from airone.lib.acl import ACLType
@@ -42,6 +42,13 @@ class AdvancedSearchResultRecord(BaseModel):
     is_readable: bool
     joined_attrs: dict[str, AdvancedSearchResultJoinedAttr] = {}
     referrals: list[AdvancedSearchResultRecordIdNamePair] | None = None
+
+    @model_serializer(mode="wrap")
+    def omit_empty_joined_attrs(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data = handler(self)
+        if not self.joined_attrs:
+            data.pop("joined_attrs", None)
+        return data
 
 
 class AdvancedSearchResults(BaseModel):
