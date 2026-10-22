@@ -8,10 +8,10 @@ import {
   Typography,
 } from "@mui/material";
 import { useSnackbar } from "notistack";
-import { FC } from "react";
+import { FC, useState } from "react";
 import { Link, useNavigate } from "react-router";
 
-import { Confirmable } from "components/common/Confirmable";
+import { useEntryDeletionConfirmation } from "hooks/useEntryDeletionConfirmation";
 import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
 import {
@@ -62,9 +62,21 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
   const { t } = useTranslation();
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { confirmEntryDeletion, deletionConfirmationDialog } =
+    useEntryDeletionConfirmation();
 
   const handleDelete = async (entryId: number) => {
+    if (isDeleting) return;
+    setIsDeleting(true);
     try {
+      if (
+        !(await confirmEntryDeletion(
+          [entryId],
+          t("entry.control.confirmDelete"),
+        ))
+      )
+        return;
       await aironeApiClient.destroyEntry(entryId);
       enqueueSnackbar(t("entry.control.deleteSuccess"), {
         variant: "success",
@@ -76,99 +88,106 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
       enqueueSnackbar(t("entry.control.deleteFailure"), {
         variant: "error",
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   return (
-    <Menu
-      id={`entryControlMenu-${entryId}`}
-      open={Boolean(anchorElem)}
-      onClose={() => handleClose(entryId)}
-      anchorEl={anchorElem}
-      anchorOrigin={{
-        vertical: "bottom",
-        horizontal: "right",
-      }}
-      transformOrigin={{
-        vertical: "top",
-        horizontal: "right",
-      }}
-    >
-      <Box sx={{ width: 150 }}>
-        <MenuItem
-          component={Link}
-          to={
-            customDetailPath
-              ? customDetailPath
-              : entryDetailsPath(entityId, entryId)
-          }
-        >
-          <Typography>{t("common.details")}</Typography>
-        </MenuItem>
-        {(permission === undefined || canEdit(permission)) && (
+    <>
+      {deletionConfirmationDialog}
+      <Menu
+        id={`entryControlMenu-${entryId}`}
+        open={Boolean(anchorElem)}
+        onClose={() => handleClose(entryId)}
+        anchorEl={anchorElem}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "right",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+      >
+        <Box sx={{ width: 150 }}>
           <MenuItem
             component={Link}
             to={
-              customEditPath ? customEditPath : entryEditPath(entityId, entryId)
+              customDetailPath
+                ? customDetailPath
+                : entryDetailsPath(entityId, entryId)
             }
           >
-            <Typography>{t("common.edit")}</Typography>
+            <Typography>{t("common.details")}</Typography>
           </MenuItem>
-        )}
-        {(entityPermission === undefined || canEdit(entityPermission)) && (
+          {(permission === undefined || canEdit(permission)) && (
+            <MenuItem
+              component={Link}
+              to={
+                customEditPath
+                  ? customEditPath
+                  : entryEditPath(entityId, entryId)
+              }
+            >
+              <Typography>{t("common.edit")}</Typography>
+            </MenuItem>
+          )}
+          {(entityPermission === undefined || canEdit(entityPermission)) && (
+            <MenuItem
+              component={Link}
+              to={
+                customCopyPath
+                  ? customCopyPath
+                  : copyEntryPath(entityId, entryId)
+              }
+            >
+              <Typography>{t("common.copy")}</Typography>
+            </MenuItem>
+          )}
+          {(permission === undefined || canModifyACL(permission)) && (
+            <MenuItem
+              component={Link}
+              to={customACLPath ? customACLPath : aclPath(entryId)}
+            >
+              <Typography>{t("entry.control.aclSettings")}</Typography>
+            </MenuItem>
+          )}
           <MenuItem
             component={Link}
             to={
-              customCopyPath ? customCopyPath : copyEntryPath(entityId, entryId)
+              customHistoryPath
+                ? customHistoryPath
+                : showEntryHistoryPath(entityId, entryId)
             }
+            disabled={disableChangeHistory}
           >
-            <Typography>{t("common.copy")}</Typography>
+            <Typography>{t("entry.common.changeHistory")}</Typography>
           </MenuItem>
-        )}
-        {(permission === undefined || canModifyACL(permission)) && (
           <MenuItem
             component={Link}
-            to={customACLPath ? customACLPath : aclPath(entryId)}
+            to={
+              customACLHistoryPath
+                ? customACLHistoryPath
+                : aclHistoryPath(entryId)
+            }
           >
-            <Typography>{t("entry.control.aclSettings")}</Typography>
+            <Typography>{t("entry.control.aclChangeHistory")}</Typography>
           </MenuItem>
-        )}
-        <MenuItem
-          component={Link}
-          to={
-            customHistoryPath
-              ? customHistoryPath
-              : showEntryHistoryPath(entityId, entryId)
-          }
-          disabled={disableChangeHistory}
-        >
-          <Typography>{t("entry.common.changeHistory")}</Typography>
-        </MenuItem>
-        <MenuItem
-          component={Link}
-          to={
-            customACLHistoryPath
-              ? customACLHistoryPath
-              : aclHistoryPath(entryId)
-          }
-        >
-          <Typography>{t("entry.control.aclChangeHistory")}</Typography>
-        </MenuItem>
-        {(permission === undefined || canEdit(permission)) && (
-          <Confirmable
-            componentGenerator={(handleOpen) => (
-              <MenuItem onClick={handleOpen} sx={{ justifyContent: "end" }}>
-                <ListItemText>{t("common.delete")}</ListItemText>
-                <ListItemIcon>
-                  <DeleteOutlineIcon />
-                </ListItemIcon>
-              </MenuItem>
-            )}
-            dialogTitle={t("entry.control.confirmDelete")}
-            onClickYes={() => handleDelete(entryId)}
-          />
-        )}
-      </Box>
-    </Menu>
+          {(permission === undefined || canEdit(permission)) && (
+            <MenuItem
+              onClick={() => void handleDelete(entryId)}
+              disabled={isDeleting}
+              sx={{ justifyContent: "end" }}
+            >
+              <ListItemText>{t("common.delete")}</ListItemText>
+              <ListItemIcon>
+                <DeleteOutlineIcon />
+              </ListItemIcon>
+            </MenuItem>
+          )}
+        </Box>
+      </Menu>
+    </>
   );
 };

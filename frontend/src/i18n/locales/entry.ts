@@ -38,6 +38,14 @@ export const entryMessages = defineMessages({
     "entry.control.aclSettings": "ACL 設定",
     "entry.control.aclChangeHistory": "ACL 変更履歴",
     "entry.control.confirmDelete": "本当に削除しますか？",
+    "entry.control.referenceWarningTitle": "参照されているアイテムの削除",
+    "entry.control.checkingReferences": "参照を確認しています…",
+    "entry.control.referenceCheckFailure":
+      "参照情報を取得できませんでした。削除は実行していません。もう一度お試しください。",
+    "entry.control.referenceWarning":
+      "このアイテムは他のアイテムから参照されています。削除すると参照元に影響する可能性があります。参照元を確認してから削除してください。",
+    "entry.control.referenceCount": "参照元: {{count}}件（一覧は先頭ページ）",
+    "entry.control.deleteAnyway": "影響を理解して削除",
 
     // EntryHistoryList
     "entry.history.beforeHeader": "変更前",
@@ -133,6 +141,14 @@ export const entryMessages = defineMessages({
     "entry.control.aclSettings": "ACL settings",
     "entry.control.aclChangeHistory": "ACL change history",
     "entry.control.confirmDelete": "Are you sure you want to delete this?",
+    "entry.control.referenceWarningTitle": "Delete referenced items",
+    "entry.control.checkingReferences": "Checking references…",
+    "entry.control.referenceCheckFailure":
+      "Could not check references. Nothing was deleted. Please try again.",
+    "entry.control.referenceWarning":
+      "Other items reference this item. Deleting it may affect those items. Review the references before deleting.",
+    "entry.control.referenceCount": "References: {{count}} (first page shown)",
+    "entry.control.deleteAnyway": "Delete anyway",
 
     // EntryHistoryList
     "entry.history.beforeHeader": "Before change",

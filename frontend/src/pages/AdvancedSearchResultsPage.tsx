@@ -26,13 +26,13 @@ import { usePagodaSWR } from "../hooks/usePagodaSWR";
 
 import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
-import { Confirmable } from "components/common/Confirmable";
 import { CenterAlignedBox } from "components/common/FlexBox";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { RateLimitedClickable } from "components/common/RateLimitedClickable";
 import { AdvancedSearchModal } from "components/entry/AdvancedSearchModal";
 import { SearchResults } from "components/entry/SearchResults";
+import { useEntryDeletionConfirmation } from "hooks/useEntryDeletionConfirmation";
 import { usePage } from "hooks/usePage";
 import { useTranslation } from "hooks/useTranslation";
 import { translate } from "i18n/config";
@@ -158,6 +158,7 @@ export const AdvancedSearchResultsPage: FC = () => {
   >([]);
   const [toggle, setToggle] = useState(false);
   const [isDeleteAllItems, setIsDeleteAllItems] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const {
     entityIds,
@@ -275,8 +276,51 @@ export const AdvancedSearchResultsPage: FC = () => {
     }
   };
 
+  const { confirmEntryDeletion, deletionConfirmationDialog } =
+    useEntryDeletionConfirmation();
+
   const handleBulkDelete = async () => {
+    if (isDeleting) return;
+    setIsDeleting(true);
     try {
+      let targetIds = bulkOperationEntryIds;
+      if (isDeleteAllItems && joinAttrs.length === 0) {
+        const selectedEntries = await Promise.all(
+          bulkOperationEntryIds.map((id) => aironeApiClient.getEntry(id)),
+        );
+        const firstEntry = [...selectedEntries].sort((a, b) => a.id - b.id)[0];
+        if (!firstEntry) return;
+        // Match the bulk-delete API's model, attribute filters and internal limit.
+        const remaining = await aironeApiClient.advancedSearch(
+          [...new Set(selectedEntries.map((entry) => entry.schema.id))],
+          attrInfo,
+          [],
+          false,
+          "",
+          false,
+          1,
+          10000 + bulkOperationEntryIds.length,
+        );
+        targetIds = [
+          ...new Set([
+            ...targetIds,
+            ...remaining.values
+              .filter(
+                (value) => !bulkOperationEntryIds.includes(value.entry.id),
+              )
+              .slice(0, 10000)
+              .filter((value) => value.entity.id === firstEntry.schema.id)
+              .map((value) => value.entry.id),
+          ]),
+        ];
+      }
+      if (
+        !(await confirmEntryDeletion(
+          targetIds,
+          t("advancedSearch.resultsPage.confirmDeleteTitle"),
+        ))
+      )
+        return;
       await aironeApiClient.destroyEntries(
         bulkOperationEntryIds,
         JSON.stringify(
@@ -293,11 +337,14 @@ export const AdvancedSearchResultsPage: FC = () => {
         variant: "success",
       });
       setBulkOperationEntryIds([]);
+      setIsDeleteAllItems(false);
       setToggle(!toggle);
     } catch (e) {
       enqueueSnackbar(t("advancedSearch.resultsPage.bulkDeleteFailed"), {
         variant: "error",
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -318,6 +365,7 @@ export const AdvancedSearchResultsPage: FC = () => {
 
   return (
     <Box className="container-fluid">
+      {deletionConfirmationDialog}
       <AironeBreadcrumbs>
         <Typography component={AironeLink} to={topPath()}>
           Top
@@ -371,41 +419,39 @@ export const AdvancedSearchResultsPage: FC = () => {
               {t("advancedSearch.resultsPage.exportCsv")}
             </Button>
           </RateLimitedClickable>
-          <Confirmable
-            componentGenerator={(handleOpen) => (
-              <Button
-                sx={{ marginLeft: "40px" }}
-                variant="contained"
-                color="info"
-                startIcon={<DeleteOutlineIcon />}
-                disabled={bulkOperationEntryIds.length === 0}
-                onClick={handleOpen}
-              >
-                {t("advancedSearch.resultsPage.bulkDelete")}
-              </Button>
-            )}
-            dialogTitle={t("advancedSearch.resultsPage.confirmDeleteTitle")}
-            onClickYes={handleBulkDelete}
-            content={
-              bulkOperationEntryIds.length ==
-                AdvancedSerarchResultListParam.MAX_ROW_COUNT &&
-              joinAttrs.length == 0 ? (
-                <FormControlLabel
-                  sx={
-                    attrInfo.some((x) => isAttrInfoSet(x))
-                      ? { alignItems: "flex-start" }
-                      : {}
+          {bulkOperationEntryIds.length ==
+            AdvancedSerarchResultListParam.MAX_ROW_COUNT &&
+          joinAttrs.length == 0 ? (
+            <FormControlLabel
+              sx={
+                attrInfo.some((x) => isAttrInfoSet(x))
+                  ? { alignItems: "flex-start" }
+                  : {}
+              }
+              control={
+                <Checkbox
+                  disabled={isDeleting}
+                  checked={isDeleteAllItems}
+                  onChange={(event) =>
+                    setIsDeleteAllItems(event.target.checked)
                   }
-                  control={
-                    <Checkbox onChange={() => setIsDeleteAllItems(true)} />
-                  }
-                  label={DeleteAllLabel(attrInfo)}
                 />
-              ) : (
-                <></>
-              )
-            }
-          />
+              }
+              label={DeleteAllLabel(attrInfo)}
+            />
+          ) : (
+            <></>
+          )}
+          <Button
+            sx={{ marginLeft: "40px" }}
+            variant="contained"
+            color="info"
+            startIcon={<DeleteOutlineIcon />}
+            disabled={bulkOperationEntryIds.length === 0 || isDeleting}
+            onClick={() => void handleBulkDelete()}
+          >
+            {t("advancedSearch.resultsPage.bulkDelete")}
+          </Button>
         </Box>
       </PageHeader>
 
