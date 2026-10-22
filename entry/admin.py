@@ -34,15 +34,11 @@ class AttrValueResource(AironeModelResource):
         "resource_module": "entry.admin",
         "resource_model_name": "AttrValueResource",
     }
-    COMPARING_KEYS: list[str] = []
-    DISALLOW_UPDATE_KEYS: list[str] = [
-        "created_time",
-        "created_user",
-        "parent_attr",
-        "value",
-        "referral",
-        "status",
-    ]
+    # A row overwrites the AttributeValue of the same id whatever it holds: saving the
+    # imported Entries and Attributes creates AttributeValues on the fly, which take the
+    # ids that the rows after them carry. Such an update is still checked to be
+    # writable both where the value is and where the row puts it.
+    DISALLOW_UPDATE_KEYS: list[str] = []
 
     attr_id = fields.Field(
         column_name="attribute_id",
@@ -80,6 +76,11 @@ class AttrValueResource(AironeModelResource):
         )
         skip_unchanged = True
         instance_loader_class = CachedInstanceLoader
+
+    def get_permission_targets(self, instance: AttributeValue) -> list[ACLBase]:
+        # AttributeValue has no ACL of its own; writing it means writing its Attribute
+        parent_attr = Attribute.objects.filter(id=instance.parent_attr_id).first()
+        return [parent_attr] if parent_attr else []
 
     def after_save_instance(
         self, instance: AttributeValue, row: dict[str, Any], **kwargs: Any
@@ -138,8 +139,8 @@ class AttrResource(AironeModelResource):
         "resource_module": "entry.admin",
         "resource_model_name": "AttrResource",
     }
-    COMPARING_KEYS = ["name", "created_user"]
-    DISALLOW_UPDATE_KEYS = ["created_user"]
+    # An Attribute belongs to one Entry and one EntityAttr for good
+    DISALLOW_UPDATE_KEYS = ["created_user", "parent_entry", "schema"]
 
     entry = fields.Field(
         column_name="entry_id",
@@ -181,7 +182,8 @@ class EntryResource(AironeModelResource):
         "resource_module": "entry.admin",
         "resource_model_name": "EntryResource",
     }
-    COMPARING_KEYS = ["name"]
+    # An Entry cannot be moved to another Entity by import
+    DISALLOW_UPDATE_KEYS = ["created_user", "schema"]
 
     entity = fields.Field(
         column_name="entity",

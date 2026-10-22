@@ -3802,6 +3802,36 @@ class ViewTest(AironeViewTest):
             ],
         )
 
+    def test_import_new_attr_into_unwritable_entity_is_skipped(self):
+        owner = User.objects.create(username="owner")
+        self.create_entity(owner, "private-entity", is_public=False)
+
+        payload = yaml.dump(
+            {
+                "Entity": [],
+                "EntityAttr": [
+                    {
+                        "name": "injected",
+                        "entity": "private-entity",
+                        "type": int(AttrType.STRING),
+                        "refer": "",
+                        "created_user": self.user.username,
+                        "is_mandatory": False,
+                    }
+                ],
+            }
+        )
+
+        # the preview reports the row the way the import treats it
+        body = self._preview_import(payload)
+        row = next(x for x in body["rows"] if x["name"] == "injected")
+        self.assertEqual(row["action"], "skip")
+        self.assertEqual(row["reason"], "permission_denied")
+
+        resp = self.client.post("/entity/api/v2/import", payload, content_type="application/yaml")
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(EntityAttr.objects.filter(name="injected").exists())
+
     def test_import_preview_pages_its_rows(self):
         self.admin_login()
         self._clear_entities()
