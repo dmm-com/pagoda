@@ -29,7 +29,7 @@ import { useIdParams } from "hooks/useIdParams";
 import { usePagodaSWR, wrapFetcher } from "hooks/usePagodaSWR";
 import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient, EntityDiff } from "repository/AironeApiClient";
-import { entryDetailsPath } from "routes/Routes";
+import { entryDetailsPath, groupPath, rolePath } from "routes/Routes";
 
 const HEADER_GRAY_COLOR = "#F9FAFA";
 const START_HEADER_COLOR = "#FFF3F3";
@@ -42,10 +42,19 @@ const WHITE = "#FFFFFF";
 // The table fills the available width and the value columns share the space
 // equally. Once a value column would get narrower than MIN_VALUE_WIDTH (px),
 // the table keeps that width and scrolls horizontally instead.
-const ITEM_NAME_WIDTH = 200;
+const ITEM_NAME_WIDTH = 150;
 const MIN_VALUE_WIDTH = 150;
 // a value column whose rows are all empty is shrunk to this width (px)
 const EMPTY_COLUMN_WIDTH = 50;
+
+// keeps the item name column visible while the table is scrolled horizontally
+// (the background must be opaque so scrolled cells do not show through)
+const STICKY_FIRST_COLUMN_SX = {
+  position: "sticky",
+  left: 0,
+  zIndex: 1,
+  borderRight: "1px solid rgba(224, 224, 224, 1)",
+} as const;
 
 const isObjectValue = (
   value: unknown,
@@ -92,7 +101,23 @@ const renderScalar = (value: unknown, type: number | undefined): ReactNode => {
         </Link>
       );
     }
-    return value.name ?? String(value.id);
+    const label = value.name ?? String(value.id);
+    if (type === EntryAttributeTypeTypeEnum.GROUP) {
+      return <Link to={groupPath(value.id)}>{label}</Link>;
+    }
+    if (type === EntryAttributeTypeTypeEnum.ROLE) {
+      return <Link to={rolePath(value.id)}>{label}</Link>;
+    }
+    return label;
+  }
+  if (
+    type === EntryAttributeTypeTypeEnum.SELECT &&
+    typeof value === "object" &&
+    value !== null &&
+    "label" in value
+  ) {
+    // choice value: {"value": <raw value>, "label": <display label>}
+    return String(value.label);
   }
   if (typeof value === "object" && value !== null && !Array.isArray(value)) {
     // named value: {"<name>": <object | scalar>}
@@ -106,27 +131,22 @@ const renderScalar = (value: unknown, type: number | undefined): ReactNode => {
   return formatValue(value);
 };
 
-const ARRAY_TYPES: number[] = [
-  EntryAttributeTypeTypeEnum.ARRAY_STRING,
-  EntryAttributeTypeTypeEnum.ARRAY_OBJECT,
-  EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT,
-  EntryAttributeTypeTypeEnum.ARRAY_GROUP,
-  EntryAttributeTypeTypeEnum.ARRAY_ROLE,
-];
+// array type -> element type (undefined when elements need no special rendering)
+const ARRAY_ITEM_TYPES: Record<number, number | undefined> = {
+  [EntryAttributeTypeTypeEnum.ARRAY_STRING]: undefined,
+  [EntryAttributeTypeTypeEnum.ARRAY_OBJECT]: EntryAttributeTypeTypeEnum.OBJECT,
+  [EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT]: undefined,
+  [EntryAttributeTypeTypeEnum.ARRAY_GROUP]: EntryAttributeTypeTypeEnum.GROUP,
+  [EntryAttributeTypeTypeEnum.ARRAY_ROLE]: EntryAttributeTypeTypeEnum.ROLE,
+  [EntryAttributeTypeTypeEnum.MULTI_SELECT]: EntryAttributeTypeTypeEnum.SELECT,
+};
 
 const renderValue = (value: unknown, type: number | undefined): ReactNode => {
   if (isEmptyValue(value)) {
     return "";
   }
-  if (
-    type !== undefined &&
-    ARRAY_TYPES.includes(type) &&
-    Array.isArray(value)
-  ) {
-    const itemType =
-      type === EntryAttributeTypeTypeEnum.ARRAY_OBJECT
-        ? EntryAttributeTypeTypeEnum.OBJECT
-        : undefined;
+  if (type !== undefined && type in ARRAY_ITEM_TYPES && Array.isArray(value)) {
+    const itemType = ARRAY_ITEM_TYPES[type];
     return (
       <ul style={{ margin: 0, paddingLeft: "1.2em" }}>
         {value.map((v, i) => (
@@ -317,7 +337,10 @@ const EntityDifferenceContent: FC<{ entityId: number }> = ({ entityId }) => {
                     <TableRow>
                       <TableCell
                         rowSpan={2}
-                        sx={{ bgcolor: HEADER_GRAY_COLOR }}
+                        sx={{
+                          ...STICKY_FIRST_COLUMN_SX,
+                          bgcolor: HEADER_GRAY_COLOR,
+                        }}
                       >
                         {t("entity.difference.entry")}
                       </TableCell>
@@ -351,7 +374,9 @@ const EntityDifferenceContent: FC<{ entityId: number }> = ({ entityId }) => {
                   <TableBody>
                     {diff.items.map((item) => (
                       <TableRow key={item.id}>
-                        <TableCell sx={{ bgcolor: WHITE }}>
+                        <TableCell
+                          sx={{ ...STICKY_FIRST_COLUMN_SX, bgcolor: WHITE }}
+                        >
                           <Link to={entryDetailsPath(entityId, item.id)}>
                             {item.name}
                           </Link>

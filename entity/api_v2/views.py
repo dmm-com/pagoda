@@ -640,13 +640,14 @@ class EntityDiffAPI(generics.GenericAPIView[Entity]):
         data_type = attrv.data_type
         if data_type & AttrType._ARRAY:
             # array_* and multi-select
-            is_empty = value == []
+            is_empty = value == [] or [x for x in value if x is not None] == []
         elif data_type in (AttrType.NAMED_OBJECT, AttrType.NAMED_OBJECT_BOOLEAN):
             is_empty = value == {"": None}
         elif data_type == AttrType.DATE:
             is_empty = value is None or value == "None"
         else:
             is_empty = False
+
         return None if is_empty else value
 
     @extend_schema(
