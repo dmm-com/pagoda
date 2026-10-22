@@ -138,6 +138,9 @@ def http_file_upload(func: Callable[..., HttpResponse]) -> Callable[..., HttpRes
         if request.method != "POST":
             return HttpResponse("Invalid HTTP method is specified", status=400)
 
+        if not request.user.is_authenticated:
+            return HttpResponse("You have to login to execute this operation", status=401)
+
         kwargs["context"] = get_uploaded_file_content(request)
         if not kwargs["context"]:
             return HttpResponse("Uploaded file is invalid", status=400)

@@ -7,6 +7,7 @@ from unittest.mock import Mock, patch
 
 import yaml
 from django.conf import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from elasticsearch import NotFoundError
 
@@ -596,6 +597,19 @@ class ViewImportExportTest(BaseViewTest):
         resp = self.client.post(reverse("entry:do_import", args=[entity.id]), {"file": fp})
         fp.close()
         self.assertEqual(resp.status_code, 303)
+
+    def test_import_entry_rejects_python_yaml_tag(self):
+        user: User = self.admin_login()
+        entity: Entity = Entity.objects.create(name="Entity", created_user=user)
+
+        content = "Entity: !!python/name:airone.settings_common.Common\n"
+        resp = self.client.post(
+            reverse("entry:do_import", args=[entity.id]),
+            {"file": SimpleUploadedFile("import.yaml", content.encode("utf-8"))},
+        )
+
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b"Couldn't parse uploaded file")
 
     def test_import_entry_invalid_param_other_entity(self):
         user: User = self.guest_login()

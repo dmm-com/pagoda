@@ -2,6 +2,8 @@ import logging
 import re
 from unittest import mock
 
+import yaml
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 
 from acl.models import ACLBase
@@ -53,6 +55,30 @@ class ImportTest(AironeViewTest):
         self.assertTrue(entity.attrs.get(name="attr-obj").is_mandatory)
         self.assertEqual(entity.attrs.get(name="attr-obj").referral.count(), 1)
         self.assertEqual(entity.attrs.get(name="attr-arr-obj").referral.count(), 2)
+
+    def test_import_without_login_is_rejected(self):
+        user = User.objects.create(username="owner")
+        entity_count = Entity.objects.count()
+
+        content = yaml.dump({"Entity": [{"name": "injected", "created_user": user.username}]})
+        resp = self.client.post(
+            reverse("dashboard:do_import"),
+            {"file": SimpleUploadedFile("import.yaml", content.encode("utf-8"))},
+        )
+
+        self.assertEqual(resp.status_code, 401)
+        self.assertEqual(Entity.objects.count(), entity_count)
+
+    def test_import_rejects_python_yaml_tag(self):
+        self.admin_login()
+
+        content = "Entity: !!python/name:airone.settings_common.Common\n"
+        resp = self.client.post(
+            reverse("dashboard:do_import"),
+            {"file": SimpleUploadedFile("import.yaml", content.encode("utf-8"))},
+        )
+
+        self.assertEqual(resp.status_code, 400)
 
     def test_import_entity_with_unnecessary_param(self):
         self.admin_login()
