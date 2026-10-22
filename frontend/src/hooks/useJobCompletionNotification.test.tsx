@@ -33,9 +33,106 @@ const makeJob = (
 
 beforeEach(() => {
   localStorage.clear();
+  vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe("useJobCompletionNotification", () => {
+  test.each([
+    JobOperations.EXPORT_ENTRY,
+    JobOperations.EXPORT_ENTRY_V2,
+    JobOperations.EXPORT_SEARCH_RESULT,
+    JobOperations.EXPORT_SEARCH_RESULT_V2,
+    JobOperations.EXPORT_CONFIGURATION_V2,
+  ])("automatically downloads completed export operation %s once", (operation) => {
+    const job = makeJob({ id: 301, operation, status: JobStatuses.PROCESSING });
+    const { rerender } = renderHook(
+      ({ recentJobs }) => useJobCompletionNotification(recentJobs),
+      { wrapper, initialProps: { recentJobs: [job] } },
+    );
+    const clicks: string[] = [];
+    vi.mocked(HTMLAnchorElement.prototype.click).mockImplementation(function (
+      this: HTMLAnchorElement,
+    ) {
+      clicks.push(this.getAttribute("href") ?? "");
+    });
+    rerender({ recentJobs: [{ ...job, status: JobStatuses.DONE }] });
+    rerender({ recentJobs: [{ ...job, status: JobStatuses.DONE }] });
+    expect(clicks).toEqual(["/job/api/v2/301/download?encode=utf-8"]);
+  });
+
+  test("configuration export downloads automatically and keeps a download link", async () => {
+    const job = makeJob({
+      id: 302,
+      operation: JobOperations.EXPORT_CONFIGURATION_V2,
+      status: JobStatuses.PROCESSING,
+      target: undefined,
+      text: "entity.yaml",
+    });
+    const { rerender } = renderHook(
+      ({ recentJobs }) => useJobCompletionNotification(recentJobs),
+      { wrapper, initialProps: { recentJobs: [job] } },
+    );
+    rerender({ recentJobs: [{ ...job, status: JobStatuses.DONE }] });
+    expect(HTMLAnchorElement.prototype.click).toHaveBeenCalledTimes(1);
+    expect(
+      await screen.findByRole("link", { name: /ダウンロード|Download/ }),
+    ).toHaveAttribute("href", "/job/api/v2/302/download?encode=utf-8");
+  });
+
+  test.each([
+    JobStatuses.ERROR,
+    JobStatuses.TIMEOUT,
+    JobStatuses.CANCELED,
+  ])("does not download unsuccessful export with status %s", (status) => {
+    const job = makeJob({
+      id: 303,
+      operation: JobOperations.EXPORT_ENTRY_V2,
+      status: JobStatuses.PROCESSING,
+    });
+    const { rerender } = renderHook(
+      ({ recentJobs }) => useJobCompletionNotification(recentJobs),
+      { wrapper, initialProps: { recentJobs: [job] } },
+    );
+    rerender({ recentJobs: [{ ...job, status }] });
+    expect(HTMLAnchorElement.prototype.click).not.toHaveBeenCalled();
+  });
+
+  test("downloads a new export that finishes before the first poll returns", () => {
+    const { rerender } = renderHook(
+      ({ recentJobs }) => useJobCompletionNotification(recentJobs),
+      { wrapper, initialProps: { recentJobs: [] as JobSerializers[] } },
+    );
+    rerender({
+      recentJobs: [
+        makeJob({
+          id: 304,
+          operation: JobOperations.EXPORT_ENTRY_V2,
+          createdAt: new Date(Date.now() + 1000),
+        }),
+      ],
+    });
+    expect(HTMLAnchorElement.prototype.click).toHaveBeenCalledTimes(1);
+  });
+
+  test("does not download historical exports on page load", () => {
+    renderHook(
+      () =>
+        useJobCompletionNotification([
+          makeJob({
+            id: 305,
+            operation: JobOperations.EXPORT_ENTRY_V2,
+            createdAt: new Date(Date.now() - 10000),
+          }),
+        ]),
+      { wrapper },
+    );
+    expect(HTMLAnchorElement.prototype.click).not.toHaveBeenCalled();
+  });
+
   test("should not show toasts on first load for already-terminal jobs", () => {
     const jobs = [
       makeJob({ id: 1, status: JobStatuses.DONE }),

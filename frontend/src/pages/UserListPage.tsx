@@ -1,8 +1,9 @@
 import { Box, Button, Container, Typography } from "@mui/material";
-import { FC, useCallback, useState } from "react";
+import { FC, useState } from "react";
 
 import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { ExportButton } from "components/common/ExportButton";
 import { PageHeader } from "components/common/PageHeader";
 import { UserImportModal } from "components/user/UserImportModal";
 import { UserList } from "components/user/UserList";
@@ -18,10 +19,6 @@ export const UserListPage: FC = () => {
 
   const isReadonly = ServerContext.getInstance()?.user?.isReadonly ?? false;
 
-  const handleExport = useCallback(async () => {
-    await aironeApiClient.exportUsers("user.yaml");
-  }, []);
-
   usePageTitle(TITLE_TEMPLATES.userList);
 
   return (
@@ -35,14 +32,7 @@ export const UserListPage: FC = () => {
 
       <PageHeader title={t("user.list.pageTitle")}>
         <Box display="flex" alignItems="center">
-          <Button
-            variant="contained"
-            color="info"
-            sx={{ margin: "0 4px" }}
-            onClick={handleExport}
-          >
-            {t("common.export")}
-          </Button>
+          <ExportButton onExport={() => aironeApiClient.exportUsers()} />
           <Button
             variant="contained"
             color="info"

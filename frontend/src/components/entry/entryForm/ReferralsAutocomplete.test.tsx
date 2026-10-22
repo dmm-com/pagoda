@@ -136,6 +136,33 @@ describe("ReferralsAutocomplete", () => {
     expect(aironeApiClient.getEntry).toHaveBeenCalledWith(42);
   });
 
+  test("shows a referral supplied after the edit form loads", async () => {
+    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue({
+      results: options,
+      hasRestrictedItems: false,
+    });
+    const handleChange = vi.fn();
+    const { rerender } = render(
+      <ReferralsAutocomplete
+        attrId={7}
+        value={null}
+        handleChange={handleChange}
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByRole("combobox")).toHaveValue("");
+    rerender(
+      <ReferralsAutocomplete
+        attrId={7}
+        value={options[0]}
+        handleChange={handleChange}
+      />,
+    );
+    expect(screen.getByRole("combobox")).toHaveValue("Display one");
+    expect(handleChange).not.toHaveBeenCalled();
+  });
+
   test("queries by input and clears the single value", async () => {
     const fetchSpy = vi
       .spyOn(aironeApiClient, "getEntryAttrReferrals")

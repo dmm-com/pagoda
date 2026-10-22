@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 from unittest import mock
+from unittest.mock import patch
 from urllib.parse import urlencode
 
 import requests
@@ -21,6 +22,7 @@ from entity.models import Entity, EntityAttr, ItemNameType
 from entry.models import AttributeValue, Entry
 from entry.tasks import create_entry_v2
 from group.models import Group
+from job.models import Job, JobStatus
 from role.models import Role
 from trigger import tasks as trigger_tasks
 from trigger.models import TriggerCondition
@@ -3967,7 +3969,16 @@ class ViewTest(AironeViewTest):
     def test_export(self):
         self.admin_login()
 
-        resp = self.client.get("/entity/api/v2/export")
+        with patch.object(Job, "run") as enqueue:
+            resp = self.client.get("/entity/api/v2/export")
+        enqueue.assert_called_once_with()
+        self.assertEqual(resp.status_code, 202)
+        self.assertNotIn("Content-Disposition", resp)
+        job = Job.objects.get(id=resp.json()["id"])
+        job.run(will_delay=False)
+        job.refresh_from_db()
+        self.assertEqual(job.status, JobStatus.DONE)
+        resp = self.client.get(f"/job/api/v2/{job.id}/download")
         self.assertEqual(resp.status_code, 200)
         self.assertRegex(
             resp["Content-Disposition"],

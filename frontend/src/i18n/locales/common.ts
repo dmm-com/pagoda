@@ -111,6 +111,15 @@ export const commonMessages = defineMessages({
     "pageHeader.staleData":
       "未処理の変更があります。現在表示されているデータは最新でない可能性があります。",
     "pagination.range": "{{from}} - {{to}} / {{count}} 件",
+    "simpleSearch.range": "{{from}} - {{to}} 件を表示{{more}}",
+    "simpleSearch.more": "（続きあり）",
+    "networkSearch.model": "検索結果のモデル名",
+    "networkSearch.item": "検索結果のアイテム名",
+    "networkSearch.attribute": "条件にマッチした属性名",
+    "networkSearch.value": "条件にマッチした属性値",
+    "networkSearch.empty": "検索結果はありません",
+    "networkSearch.summary":
+      "全{{totalHits}}件のヒット・全{{totalPages}}ページ",
 
     // Import preview
     "importPreview.action.create": "新規作成",
@@ -251,6 +260,14 @@ export const commonMessages = defineMessages({
     "pageHeader.staleData":
       "There are pending changes. The data currently displayed may be out of date.",
     "pagination.range": "{{from}} - {{to}} of {{count}}",
+    "simpleSearch.range": "Showing {{from}} - {{to}} results{{more}}",
+    "simpleSearch.more": " (more available)",
+    "networkSearch.model": "Model name",
+    "networkSearch.item": "Item name",
+    "networkSearch.attribute": "Matched attribute name",
+    "networkSearch.value": "Matched attribute value",
+    "networkSearch.empty": "No search results",
+    "networkSearch.summary": "{{totalHits}} hits across {{totalPages}} pages",
 
     // Import preview
     "importPreview.action.create": "Create",

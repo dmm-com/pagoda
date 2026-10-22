@@ -246,6 +246,7 @@ class AdvancedSearchService:
         exclude_entity_names: list[str] = [],
         limit: int = CONFIG.MAX_LIST_ENTRIES,
         offset: int = 0,
+        include_matches: bool = False,
     ) -> SimpleSearchResults:
         """Method called from simple search.
         Returns the count and values of entries with hint_attr_value.
@@ -288,12 +289,12 @@ class AdvancedSearchService:
             }
 
         query = make_query_for_simple(
-            hint_attr_value, hint_entity_name, exclude_entity_names, offset
+            hint_attr_value, hint_entity_name, exclude_entity_names, offset, include_matches
         )
 
         resp = cast(SimpleSearchResponse, execute_query(query, limit))
 
-        return make_search_results_for_simple(resp)
+        return make_search_results_for_simple(resp, include_matches)
 
     @classmethod
     def _extract_ref_ids(kls, attr: AdvancedSearchResultRecordAttr) -> list[int]:
@@ -365,6 +366,8 @@ class AdvancedSearchService:
         user: User | None,
         resp: AdvancedSearchResults,
         join_attrs: list["AdvancedSearchJoinAttrInfo"],
+        *,
+        expand_arrays: bool = True,
     ) -> AdvancedSearchResults:
         """Join referred Entry attributes based on join_attrs and filter/expand the results.
 
@@ -376,7 +379,8 @@ class AdvancedSearchService:
         2. Group by Entity in the DB and apply filters via search_entries()
         3. Attach attributes of entries that passed the filter under the key
            join_attr.name.subattr_name
-        4. Expand ARRAY-type attrs into one row per referral
+        4. Expand ARRAY-type attrs into one row per referral for exports, or
+           retain one row with aligned joined_attrs for the search table.
         """
         for join_attr in join_attrs:
             has_filter = any(a.keyword or a.filter_key for a in join_attr.attrinfo)
@@ -430,7 +434,36 @@ class AdvancedSearchService:
                 is_array = bool(attr_type and (attr_type & AttrType._ARRAY))
                 ref_ids = kls._extract_ref_ids(attr) if attr else []
 
-                if is_array:
+                if is_array and not expand_arrays:
+                    # Keep a slot for every source reference, including unmatched and
+                    # missing references, so filters cannot shift the displayed values.
+                    if has_filter and not any(ref_id in matched_results for ref_id in ref_ids):
+                        continue
+                    new_info = entry_info.model_copy(deep=True)
+                    source_slots = (
+                        [
+                            next(
+                                iter(
+                                    kls._extract_ref_ids({"type": attr["type"], "value": [value]})
+                                ),
+                                None,
+                            )
+                            for value in attr.get("value", [])
+                        ]
+                        if attr
+                        else []
+                    )
+                    for a in join_attr.attrinfo:
+                        new_info.joined_attrs[f"{join_attr.name}.{a.name}"] = {
+                            "values": [
+                                matched_results[ref_id].attrs.get(a.name, kls._EMPTY_ATTR).copy()
+                                if ref_id is not None and ref_id in matched_results
+                                else kls._EMPTY_ATTR.copy()
+                                for ref_id in source_slots
+                            ]
+                        }
+                    new_ret_values.append(new_info)
+                elif is_array:
                     # ARRAY type: expand into one row per referral
                     expanded = False
                     for ref_id in ref_ids:

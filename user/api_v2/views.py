@@ -11,7 +11,7 @@ from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import filters, generics, status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import get_object_or_404
@@ -24,8 +24,8 @@ from rest_framework.views import APIView
 
 from airone.exceptions.model import UnexpectedAttributeType
 from airone.lib.acl import ACLType
-from airone.lib.drf import YAMLParser, YAMLRenderer
-from airone.lib.http import timestamped_filename
+from airone.lib.configuration_export import ConfigurationExportAPI
+from airone.lib.drf import YAMLParser
 from airone.lib.text import normalize_search_text
 from airone.lib.types import AttrType
 from entry.models import AttributeValue, Entry
@@ -36,7 +36,6 @@ from user.api_v2.serializers import (
     UserActivitySerializer,
     UserAuthSerializer,
     UserCreateSerializer,
-    UserExportSerializer,
     UserImportSerializer,
     UserListSerializer,
     UserMeSerializer,
@@ -546,18 +545,9 @@ class UserImportAPI(generics.GenericAPIView[Any]):
         return Response()
 
 
-class UserExportAPI(generics.ListAPIView[User]):
-    queryset = User.objects.filter(is_active=True)
-    serializer_class = UserExportSerializer
-    renderer_classes = [YAMLRenderer]
-
-    def finalize_response(
-        self, request: Request, response: Response, *args: Any, **kwargs: Any
-    ) -> Response:
-        response["Content-Disposition"] = 'attachment; filename="%s"' % timestamped_filename(
-            "user.yaml"
-        )
-        return super().finalize_response(request, response, *args, **kwargs)
+@extend_schema_view(get=extend_schema(operation_id="user_api_v2_export_list"))
+class UserExportAPI(ConfigurationExportAPI):
+    export_kind = "user"
 
 
 class UserPasswordAPI(generics.UpdateAPIView[User]):

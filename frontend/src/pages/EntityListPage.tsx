@@ -1,8 +1,9 @@
 import { Box, Button, Container, Typography } from "@mui/material";
-import { FC, Suspense, useCallback, useState } from "react";
+import { FC, Suspense, useState } from "react";
 
 import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { ExportButton } from "components/common/ExportButton";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { EntityImportModal } from "components/entity/EntityImportModal";
@@ -46,10 +47,6 @@ export const EntityListPage: FC = () => {
 
   const isReadonly = ServerContext.getInstance()?.user?.isReadonly ?? false;
 
-  const handleExport = useCallback(async () => {
-    await aironeApiClient.exportEntities("entity.yaml");
-  }, []);
-
   return (
     <Box className="container-fluid">
       <AironeBreadcrumbs>
@@ -63,14 +60,7 @@ export const EntityListPage: FC = () => {
 
       <PageHeader title={t("entity.list.pageTitle")}>
         <Box display="flex" alignItems="center">
-          <Button
-            variant="contained"
-            color="info"
-            sx={{ margin: "0 4px" }}
-            onClick={handleExport}
-          >
-            {t("common.export")}
-          </Button>
+          <ExportButton onExport={() => aironeApiClient.exportEntities()} />
           <Button
             variant="contained"
             color="info"

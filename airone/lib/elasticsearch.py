@@ -7,7 +7,7 @@ from typing import Any, Generic, Literal, NotRequired, TypeVar, cast
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch.dsl.query import Bool, Exists, Ids, Match, Nested, Query, Range, Regexp, Term
-from pydantic import BaseModel
+from pydantic import BaseModel, SerializerFunctionWrapHandler, model_serializer
 from typing_extensions import TypedDict
 
 from airone.lib.acl import ACLType
@@ -31,12 +31,24 @@ class AdvancedSearchResultRecordAttr(TypedDict, total=False):
     is_readable: bool
 
 
+class AdvancedSearchResultJoinedAttr(TypedDict):
+    values: list[AdvancedSearchResultRecordAttr]
+
+
 class AdvancedSearchResultRecord(BaseModel):
     entity: AdvancedSearchResultRecordIdNamePair
     entry: AdvancedSearchResultRecordIdNamePair
     attrs: dict[str, AdvancedSearchResultRecordAttr]
     is_readable: bool
+    joined_attrs: dict[str, AdvancedSearchResultJoinedAttr] = {}
     referrals: list[AdvancedSearchResultRecordIdNamePair] | None = None
+
+    @model_serializer(mode="wrap")
+    def omit_empty_joined_attrs(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data = cast(dict[str, Any], handler(self))
+        if not self.joined_attrs:
+            data.pop("joined_attrs", None)
+        return data
 
 
 class AdvancedSearchResults(BaseModel):
@@ -112,6 +124,7 @@ class SimpleSearchResultRecord(TypedDict):
     name: str
     schema: IdNameDocument
     attr: NotRequired[str]
+    matches: NotRequired[list[dict[str, str]]]
 
 
 class SimpleSearchResults(TypedDict):
@@ -705,7 +718,11 @@ def make_query(
 
 
 def make_query_for_simple(
-    hint_string: str, hint_entity_name: str | None, exclude_entity_names: list[str], offset: int
+    hint_string: str,
+    hint_entity_name: str | None,
+    exclude_entity_names: list[str],
+    offset: int,
+    include_matches: bool = False,
 ) -> dict[str, Any]:
     """Create a search query for Elasticsearch.
 
@@ -729,7 +746,7 @@ def make_query_for_simple(
         should=[
             _field_query(Match, EntryIndexField.NAME, hint_string),
             _make_entry_name_query(hint_string),
-            _make_attr_query_for_simple(hint_string),
+            _make_attr_query_for_simple(hint_string, include_matches),
         ]
     )
     must.append(hint_query)
@@ -972,7 +989,7 @@ def _make_referral_entity_query(referral_entity_id: int) -> Query:
     )
 
 
-def _make_attr_query_for_simple(hint_string: str) -> Query:
+def _make_attr_query_for_simple(hint_string: str, include_matches: bool = False) -> Query:
     """Create a search query for the AttributeValue in simple search.
 
     Divides the search string with OR.
@@ -1006,11 +1023,18 @@ def _make_attr_query_for_simple(hint_string: str) -> Query:
             )
         attr_or_queries.append(Bool(filter=attr_and_queries))
 
+    inner_hits: dict[str, Any] = {"_source": [EntryIndexField.ATTR_NAME.value]}
+    if include_matches:
+        inner_hits = {
+            "_source": [EntryIndexField.ATTR_NAME.value, EntryIndexField.ATTR_VALUE.value],
+            "size": 100,
+        }
+
     return Bool(
         filter=Nested(
             path=EntryIndexPath.ATTR.value,
             query=Bool(should=attr_or_queries),
-            inner_hits={"_source": [EntryIndexField.ATTR_NAME.value]},
+            inner_hits=inner_hits,
         )
     )
 
@@ -1584,7 +1608,9 @@ def make_search_results(
     return results
 
 
-def make_search_results_for_simple(res: SimpleSearchResponse) -> SimpleSearchResults:
+def make_search_results_for_simple(
+    res: SimpleSearchResponse, include_matches: bool = False
+) -> SimpleSearchResults:
     result: SimpleSearchResults = {
         "ret_count": res["hits"]["total"]["value"],
         "ret_values": [],
@@ -1597,9 +1623,22 @@ def make_search_results_for_simple(res: SimpleSearchResponse) -> SimpleSearchRes
             "schema": resp_entry["_source"]["entity"],
         }
 
-        for resp_entry_attr in resp_entry["inner_hits"]["attr"]["hits"]["hits"]:
-            ret_value["attr"] = resp_entry_attr["_source"]["name"]
-            break
+        inner_hits = (
+            resp_entry.get("inner_hits", {}).get("attr", {}).get("hits", {}).get("hits", [])
+        )
+        if inner_hits:
+            ret_value["attr"] = inner_hits[0]["_source"]["name"]
+        if include_matches:
+            # Values remain internal until the API checks the requesting user's ACL.
+            ret_value["matches"] = [
+                {
+                    "name": hit["_source"]["name"],
+                    "value": str(value)
+                    if (value := hit["_source"].get("value")) is not None
+                    else "",
+                }
+                for hit in inner_hits
+            ]
 
         result["ret_values"].append(ret_value)
 

@@ -102,6 +102,10 @@ urlpatterns = [
         ),
     ),
     path(
+        "search/attribute_matches/",
+        views.EntryNetworkSearchAPI.as_view(),
+    ),
+    path(
         "advanced_search_result_export/",
         views.AdvancedSearchResultAPI.as_view(),
     ),

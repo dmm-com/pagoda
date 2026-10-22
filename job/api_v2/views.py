@@ -266,6 +266,7 @@ class JobListAPI(viewsets.ModelViewSet[Job]):
         )
 
         targetless_visible_operations: list[JobOperation] = [
+            JobOperation.EXPORT_CONFIGURATION_V2,
             JobOperation.EXPORT_ENTRY,
             JobOperation.EXPORT_ENTRY_V2,
             JobOperation.EXPORT_SEARCH_RESULT,

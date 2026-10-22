@@ -210,9 +210,10 @@ export const JobOperations = {
   DELETE_ENTRY_V2: 29,
   IMPORT_ROLE_V2: 30,
   BULK_EDIT_ENTRY: 31,
+  EXPORT_CONFIGURATION_V2: 34,
 };
 
-export const JobRefreshIntervalMilliSec = 60 * 1000;
+export const JobRefreshIntervalMilliSec = 5 * 1000;
 
 export const TITLE_TEMPLATES = {
   userList: "User List",

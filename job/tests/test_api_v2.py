@@ -186,6 +186,7 @@ class ViewTest(AironeViewTest):
 
     def test_get_exporting_job(self):
         user = self.guest_login()
+        Job.new_export_configuration_v2(user, "entity")
 
         # create jobs which are related with export
         (Job.new_export(user, params={"export_format": "yaml", "target_id": 0}),)
@@ -198,7 +199,7 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get(f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0")
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json()["count"], 2)
+        self.assertEqual(resp.json()["count"], 3)
 
     def test_get_recent_job(self):
         user = self.guest_login()

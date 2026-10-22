@@ -33,6 +33,7 @@ from airone.lib.drf import (
 from airone.lib.elasticsearch import (
     ENTRY_NAME_SORT_TARGET,
     AdvancedSearchResultRecord,
+    AdvancedSearchResultRecordAttr,
     AdvancedSearchResults,
     AttrHint,
     EntryHint,
@@ -59,6 +60,7 @@ from entry.api_v2.serializers import (
     EntryExportSerializer,
     EntryHistoryAttributeValueSerializer,
     EntryImportSerializer,
+    EntryNetworkSearchResponseSerializer,
     EntryRetrieveSerializer,
     EntrySearchSerializer,
     EntrySelfHistoryRestoreSerializer,
@@ -377,6 +379,8 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet[Entry]):
 @extend_schema(
     parameters=[
         OpenApiParameter("query", OpenApiTypes.STR, OpenApiParameter.QUERY),
+        OpenApiParameter("limit", OpenApiTypes.INT, OpenApiParameter.QUERY),
+        OpenApiParameter("offset", OpenApiTypes.INT, OpenApiParameter.QUERY),
     ],
 )
 class searchAPI(viewsets.ReadOnlyModelViewSet[Any]):
@@ -389,10 +393,106 @@ class searchAPI(viewsets.ReadOnlyModelViewSet[Any]):
         if not query:
             return queryset
 
+        try:
+            offset = max(int(self.request.query_params.get("offset", "0")), 0)
+        except ValueError:
+            offset = 0
+        try:
+            requested_limit = int(
+                self.request.query_params.get("limit", str(ENTRY_CONFIG.MAX_SEARCH_ENTRIES))
+            )
+        except ValueError:
+            requested_limit = ENTRY_CONFIG.MAX_SEARCH_ENTRIES
+        limit = min(max(requested_limit, 1), ENTRY_CONFIG.MAX_SEARCH_ENTRIES + 1)
         results = AdvancedSearchService.search_entries_for_simple(
-            query, limit=ENTRY_CONFIG.MAX_SEARCH_ENTRIES
+            query,
+            limit=limit,
+            offset=offset,
         )
         return list(results["ret_values"])
+
+
+class EntryNetworkSearchAPI(generics.GenericAPIView[Any]):
+    serializer_class = EntryNetworkSearchResponseSerializer
+
+    @extend_schema(
+        operation_id="entry_api_v2_search_attribute_matches_list",
+        parameters=[
+            OpenApiParameter("query", OpenApiTypes.STR, OpenApiParameter.QUERY, required=True),
+            OpenApiParameter("limit", OpenApiTypes.INT, OpenApiParameter.QUERY),
+            OpenApiParameter("offset", OpenApiTypes.INT, OpenApiParameter.QUERY),
+        ],
+        responses=EntryNetworkSearchResponseSerializer,
+    )
+    def get(self, request: Request) -> Response:
+        query = request.query_params.get("query", "")
+        try:
+            offset = max(int(request.query_params.get("offset", "0")), 0)
+        except ValueError:
+            offset = 0
+        try:
+            page_size = int(request.query_params.get("limit", str(ENTRY_CONFIG.MAX_SEARCH_ENTRIES)))
+        except ValueError:
+            page_size = ENTRY_CONFIG.MAX_SEARCH_ENTRIES
+        page_size = min(max(page_size, 1), ENTRY_CONFIG.MAX_SEARCH_ENTRIES)
+
+        results = (
+            AdvancedSearchService.search_entries_for_simple(
+                query,
+                limit=page_size + 1,
+                offset=offset,
+                include_matches=True,
+            )
+            if query
+            else {"ret_count": 0, "ret_values": []}
+        )
+
+        total_hits = results["ret_count"]
+        has_more = len(results["ret_values"]) > page_size
+        entries_to_check = results["ret_values"][:page_size]
+        user = cast("User", request.user)
+
+        # Elasticsearch does not store the requesting user's ACL. Check both
+        # entry and attribute permissions before returning matched values.
+        entries = {
+            entry.id: entry
+            for entry in Entry.objects.filter(
+                id__in=[int(result["id"]) for result in entries_to_check],
+                is_active=True,
+                schema__is_active=True,
+            ).select_related("schema")
+        }
+        attrs = {
+            (attr.parent_entry_id, attr.schema.name): attr
+            for attr in Attribute.objects.filter(
+                parent_entry_id__in=entries,
+                is_active=True,
+                schema__is_active=True,
+            ).select_related("schema")
+        }
+        readable_results = []
+        for result in entries_to_check:
+            entry = entries.get(int(result["id"]))
+            if entry is None or not (
+                user.has_permission(entry.schema, ACLType.Readable)
+                and user.has_permission(entry, ACLType.Readable)
+            ):
+                continue
+            result["matches"] = [
+                match
+                for match in result.get("matches", [])
+                if (attr := attrs.get((entry.id, match["name"]))) is not None
+                and user.has_permission(attr.schema, ACLType.Readable)
+                and user.has_permission(attr, ACLType.Readable)
+            ]
+            readable_results.append(result)
+
+        response_data = {
+            "results": readable_results,
+            "has_more": has_more,
+            "total_hits": total_hits,
+        }
+        return Response(self.get_serializer(response_data).data)
 
 
 @db_readonly
@@ -529,7 +629,9 @@ class AdvancedSearchAPI(generics.GenericAPIView[Any]):
                 sort_target_attr_type=sort_target_attr_type,
             )
             total_count = deepcopy(resp.ret_count)
-            resp = AdvancedSearchService.apply_join_attrs(user, resp, join_attrs)
+            resp = AdvancedSearchService.apply_join_attrs(
+                user, resp, join_attrs, expand_arrays=False
+            )
         else:
             # Join filters are applied after the initial ES search. Continue
             # scanning candidates until the requested page is full.
@@ -561,7 +663,7 @@ class AdvancedSearchAPI(generics.GenericAPIView[Any]):
                     exhausted = True
                     break
                 joined_resp = AdvancedSearchService.apply_join_attrs(
-                    user, candidate_resp, join_attrs
+                    user, candidate_resp, join_attrs, expand_arrays=False
                 )
                 joined_values.extend(joined_resp.ret_values)
                 candidate_count = len(candidate_resp.ret_values)
@@ -580,79 +682,86 @@ class AdvancedSearchAPI(generics.GenericAPIView[Any]):
 
         # convert field values to fit entry retrieve API data type, as a workaround.
         # FIXME should be replaced with DRF serializer etc
-        for entry in resp.ret_values:
-            for name, attr in entry.attrs.items():
-
-                def _get_typed_value(type: int) -> str:
-                    if type & AttrType._ARRAY:
-                        if type & AttrType.STRING:
-                            return "as_array_string"
-                        elif type & AttrType._NAMED:
-                            return "as_array_named_object"
-                        elif type & AttrType.OBJECT:
-                            return "as_array_object"
-                        elif type & AttrType.GROUP:
-                            return "as_array_group"
-                        elif type & AttrType.ROLE:
-                            return "as_array_role"
-                        elif type & AttrType.NUMBER:
-                            return "as_array_number"
-                        elif type & AttrType.SELECT:
-                            return "as_multi_select"
-                    elif type & AttrType.STRING or type & AttrType.TEXT:
-                        return "as_string"
-                    elif type & AttrType.NUMBER:
-                        return "as_number"
+        def convert_attr(attr: AdvancedSearchResultRecordAttr) -> AdvancedSearchResultRecordAttr:
+            def _get_typed_value(type: int) -> str:
+                if type & AttrType._ARRAY:
+                    if type & AttrType.STRING:
+                        return "as_array_string"
                     elif type & AttrType._NAMED:
-                        return "as_named_object"
+                        return "as_array_named_object"
                     elif type & AttrType.OBJECT:
-                        return "as_object"
-                    elif type & AttrType.BOOLEAN:
-                        return "as_boolean"
-                    elif type & AttrType.DATE:
-                        return "as_string"
+                        return "as_array_object"
                     elif type & AttrType.GROUP:
-                        return "as_group"
+                        return "as_array_group"
                     elif type & AttrType.ROLE:
-                        return "as_role"
-                    elif type & AttrType.DATETIME:
-                        return "as_string"
+                        return "as_array_role"
+                    elif type & AttrType.NUMBER:
+                        return "as_array_number"
                     elif type & AttrType.SELECT:
-                        return "as_select"
-                    raise IncorrectTypeError(f"unexpected type: {type}")
+                        return "as_multi_select"
+                elif type & AttrType.STRING or type & AttrType.TEXT:
+                    return "as_string"
+                elif type & AttrType.NUMBER:
+                    return "as_number"
+                elif type & AttrType._NAMED:
+                    return "as_named_object"
+                elif type & AttrType.OBJECT:
+                    return "as_object"
+                elif type & AttrType.BOOLEAN:
+                    return "as_boolean"
+                elif type & AttrType.DATE:
+                    return "as_string"
+                elif type & AttrType.GROUP:
+                    return "as_group"
+                elif type & AttrType.ROLE:
+                    return "as_role"
+                elif type & AttrType.DATETIME:
+                    return "as_string"
+                elif type & AttrType.SELECT:
+                    return "as_select"
+                raise IncorrectTypeError(f"unexpected type: {type}")
 
-                entry.attrs[name] = {
-                    "is_readable": attr["is_readable"],
-                    "type": attr["type"],
-                    "value": {
-                        _get_typed_value(attr["type"]): attr.get("value", ""),
-                    },
+            converted: AdvancedSearchResultRecordAttr = {
+                "is_readable": attr["is_readable"],
+                "type": attr["type"],
+                "value": {
+                    _get_typed_value(attr["type"]): attr.get("value", ""),
+                },
+            }
+
+            # "asString" is a string type and does not allow None
+            if (
+                _get_typed_value(attr["type"]) == "as_string"
+                and converted["value"]["as_string"] is None
+            ):
+                converted["value"]["as_string"] = ""
+
+            # "asNamedObject", "as_array_named_object" converts types
+            if _get_typed_value(attr["type"]) == "as_named_object":
+                value = converted["value"]["as_named_object"]
+                converted["value"]["as_named_object"] = {
+                    "name": list(value.keys())[0],
+                    "object": list(value.values())[0],
                 }
 
-                # "asString" is a string type and does not allow None
-                if (
-                    _get_typed_value(attr["type"]) == "as_string"
-                    and entry.attrs[name]["value"]["as_string"] is None
-                ):
-                    entry.attrs[name]["value"]["as_string"] = ""
-
-                # "asNamedObject", "as_array_named_object" converts types
-                if _get_typed_value(attr["type"]) == "as_named_object":
-                    value = entry.attrs[name]["value"]["as_named_object"]
-                    entry.attrs[name]["value"]["as_named_object"] = {
+            if _get_typed_value(attr["type"]) == "as_array_named_object":
+                values = converted["value"]["as_array_named_object"]
+                converted["value"]["as_array_named_object"] = [
+                    {
                         "name": list(value.keys())[0],
                         "object": list(value.values())[0],
                     }
+                    for value in values
+                ]
 
-                if _get_typed_value(attr["type"]) == "as_array_named_object":
-                    values = entry.attrs[name]["value"]["as_array_named_object"]
-                    entry.attrs[name]["value"]["as_array_named_object"] = [
-                        {
-                            "name": list(value.keys())[0],
-                            "object": list(value.values())[0],
-                        }
-                        for value in values
-                    ]
+            return converted
+
+        for entry in resp.ret_values:
+            entry.attrs = {name: convert_attr(attr) for name, attr in entry.attrs.items()}
+            entry.joined_attrs = {
+                name: {"values": [convert_attr(attr) for attr in attrs["values"]]}
+                for name, attrs in entry.joined_attrs.items()
+            }
 
         serializer = AdvancedSearchResultSerializer(
             data={

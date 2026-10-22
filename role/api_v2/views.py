@@ -2,18 +2,18 @@ from typing import Any, cast
 
 from django.db.models import Prefetch, Q, QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import filters, generics, serializers, status, viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from airone.lib.drf import YAMLParser, YAMLRenderer
-from airone.lib.http import timestamped_filename
+from airone.lib.configuration_export import ConfigurationExportAPI
+from airone.lib.drf import YAMLParser
 from group.models import Group
 from job.models import Job, JobStatus
 from role.api_v2.serializers import (
     RoleCreateUpdateSerializer,
-    RoleImportExportChildSerializer,
     RoleImportSerializer,
     RoleSerializer,
 )
@@ -114,20 +114,6 @@ class RoleImportAPI(generics.GenericAPIView[Any]):
         return Response([], status=status.HTTP_200_OK)
 
 
-class RoleExportAPI(generics.ListAPIView[Role]):
-    queryset = Role.objects.filter(is_active=True)
-    serializer_class = RoleImportExportChildSerializer
-    renderer_classes = [YAMLRenderer]
-
-    def finalize_response(
-        self, request: Request, response: Response, *args: Any, **kwargs: Any
-    ) -> Response:
-        response["Content-Disposition"] = 'attachment; filename="%s"' % timestamped_filename(
-            "role.yaml"
-        )
-        return super().finalize_response(request, response, *args, **kwargs)
-
-    def get_queryset(self) -> QuerySet[Role]:
-        return get_permitted_roles(
-            cast(User, self.request.user), Role.objects.filter(is_active=True)
-        )
+@extend_schema_view(get=extend_schema(operation_id="role_api_v2_export_list"))
+class RoleExportAPI(ConfigurationExportAPI):
+    export_kind = "role"

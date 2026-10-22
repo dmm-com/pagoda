@@ -585,6 +585,24 @@ class EntrySearchSerializer(EntryBaseSerializer):
         ]
 
 
+class EntryNetworkSearchMatchSerializer(serializers.Serializer[Any]):
+    name = serializers.CharField(read_only=True)
+    value = serializers.CharField(read_only=True, allow_blank=True)
+
+
+class EntryNetworkSearchSerializer(EntrySearchSerializer):
+    matches = EntryNetworkSearchMatchSerializer(many=True, read_only=True)
+
+    class Meta(EntrySearchSerializer.Meta):
+        fields = [*EntrySearchSerializer.Meta.fields, "matches"]
+
+
+class EntryNetworkSearchResponseSerializer(serializers.Serializer[Any]):
+    results = EntryNetworkSearchSerializer(many=True, read_only=True)
+    has_more = serializers.BooleanField(read_only=True)
+    total_hits = serializers.IntegerField(read_only=True)
+
+
 # Pydantic models for request validation
 class AttributeData(BaseModel):
     """Pydantic model for attribute data validation."""
@@ -1918,8 +1936,15 @@ class AdvancedSearchResultValueReferralSerializer(serializers.Serializer[Any]):
     schema = EntityAttributeTypeSerializer()
 
 
+class AdvancedSearchResultJoinedAttrSerializer(serializers.Serializer[Any]):
+    values = AdvancedSearchResultValueAttrSerializer(many=True)
+
+
 class AdvancedSearchResultValueSerializer(serializers.Serializer[Any]):
     attrs = serializers.DictField(child=AdvancedSearchResultValueAttrSerializer())
+    joined_attrs = serializers.DictField(
+        child=AdvancedSearchResultJoinedAttrSerializer(), required=False
+    )
     entry = AdvancedSearchResultValueEntrySerializer()
     entity = AdvancedSearchResultValueEntitySerializer()
     referrals = AdvancedSearchResultValueReferralSerializer(many=True, required=False)

@@ -45,6 +45,7 @@ import {
   newRolePath,
   newTriggerPath,
   newUserPath,
+  networkPath,
   restoreEntryPath,
   rolePath,
   rolesPath,
@@ -91,6 +92,9 @@ const CategoryListPage = lazy(() =>
 );
 const DashboardPage = lazy(() =>
   import("pages/DashboardPage").then((m) => ({ default: m.DashboardPage })),
+);
+const NetworkPage = lazy(() =>
+  import("pages/NetworkPage").then((m) => ({ default: m.NetworkPage })),
 );
 const EntryCopyPage = lazy(() =>
   import("pages/EntryCopyPage").then((m) => ({ default: m.EntryCopyPage })),
@@ -254,6 +258,7 @@ export const AppRouter: FC<Props> = ({
           />
           <Route path={listCategoryPath()} element={<CategoryListPage />} />
           <Route path={advancedSearchPath()} element={<AdvancedSearchPage />} />
+          <Route path={networkPath()} element={<NetworkPage />} />
           <Route
             path={advancedSearchResultPath()}
             element={<AdvancedSearchResultsPage />}

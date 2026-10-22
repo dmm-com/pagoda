@@ -26,6 +26,7 @@ import {
   EntryBase,
   EntryCopy,
   EntryHint,
+  EntryNetworkSearchResponse,
   EntryRetrieve,
   EntrySearch,
   EntrySearchChain,
@@ -465,14 +466,8 @@ class AironeApiClient {
     };
   }
 
-  async exportEntities(filename: string): Promise<void> {
-    const resp = await this.entity.entityApiV2ExportRetrieveRaw();
-    const data = await resp.raw.text();
-    const contentDisposition = resp.raw.headers.get("content-disposition");
-    const downloadedFilename = contentDisposition?.match(
-      /filename="?([^";]+)"?/i,
-    )?.[1];
-    fileDownload(data, downloadedFilename ?? filename);
+  async exportEntities(): Promise<void> {
+    await this.entity.entityApiV2ExportRetrieveRaw();
   }
 
   // The diff endpoint is not part of the generated client yet.
@@ -746,14 +741,8 @@ class AironeApiClient {
     );
   }
 
-  async exportGroups(filename: string): Promise<void> {
-    const resp = await this.group.groupApiV2GroupsExportListRaw();
-    const data = await resp.raw.text();
-    const contentDisposition = resp.raw.headers.get("content-disposition");
-    const downloadedFilename = contentDisposition?.match(
-      /filename="?([^";]+)"?/i,
-    )?.[1];
-    fileDownload(data, downloadedFilename ?? filename);
+  async exportGroups(): Promise<void> {
+    await this.group.groupApiV2GroupsExportListRaw();
   }
 
   async getRoles(keyword?: string): Promise<Role[]> {
@@ -823,14 +812,8 @@ class AironeApiClient {
     );
   }
 
-  async exportRoles(filename: string): Promise<void> {
-    const resp = await this.role.roleApiV2ExportListRaw();
-    const data = await resp.raw.text();
-    const contentDisposition = resp.raw.headers.get("content-disposition");
-    const downloadedFilename = contentDisposition?.match(
-      /filename="?([^";]+)"?/i,
-    )?.[1];
-    fileDownload(data, downloadedFilename ?? filename);
+  async exportRoles(): Promise<void> {
+    await this.role.roleApiV2ExportListRaw();
   }
 
   async getCategories(
@@ -920,9 +903,37 @@ class AironeApiClient {
     });
   }
 
-  async getSearchEntries(query: string): Promise<EntrySearch[]> {
-    return await this.entry.entryApiV2SearchList({
-      query: query,
+  async getSearchEntries(
+    query: string,
+    offset = 0,
+    limit?: number,
+  ): Promise<EntrySearch[]> {
+    const params = new URLSearchParams({
+      query,
+      offset: offset.toString(),
+    });
+    if (limit != null) {
+      params.set("limit", limit.toString());
+    }
+
+    const response = await fetch(`/entry/api/v2/search/?${params}`, {
+      credentials: "same-origin",
+    });
+    if (!response.ok) {
+      throw new Error(`Simple search failed: ${response.status}`);
+    }
+    return (await response.json()) as EntrySearch[];
+  }
+
+  async getNetworkSearchEntries(
+    query: string,
+    offset = 0,
+    limit = 30,
+  ): Promise<EntryNetworkSearchResponse> {
+    return await this.entry.entryApiV2SearchAttributeMatchesList({
+      query,
+      offset,
+      limit,
     });
   }
 
@@ -1181,14 +1192,8 @@ class AironeApiClient {
     );
   }
 
-  async exportUsers(filename: string): Promise<void> {
-    const resp = await this.user.userApiV2ExportListRaw();
-    const data = await resp.raw.text();
-    const contentDisposition = resp.raw.headers.get("content-disposition");
-    const downloadedFilename = contentDisposition?.match(
-      /filename="?([^";]+)"?/i,
-    )?.[1];
-    fileDownload(data, downloadedFilename ?? filename);
+  async exportUsers(): Promise<void> {
+    await this.user.userApiV2ExportListRaw();
   }
 
   async updateUserPassword(

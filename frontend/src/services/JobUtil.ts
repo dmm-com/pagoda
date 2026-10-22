@@ -8,6 +8,13 @@ import {
 
 import { JobOperations, JobStatuses } from "./Constants";
 
+export const isExportJob = (operation: number | undefined): boolean =>
+  operation === JobOperations.EXPORT_ENTRY ||
+  operation === JobOperations.EXPORT_SEARCH_RESULT ||
+  operation === JobOperations.EXPORT_ENTRY_V2 ||
+  operation === JobOperations.EXPORT_SEARCH_RESULT_V2 ||
+  operation === JobOperations.EXPORT_CONFIGURATION_V2;
+
 export const jobStatusLabel = (jobStatus: number | undefined): string => {
   switch (jobStatus) {
     case JobStatuses.PREPARING:
@@ -70,6 +77,7 @@ export const jobOperationLabel = (jobOperation: number | undefined): string => {
     case JobOperations.IMPORT_ROLE_V2:
       return translate("job.operation.import");
     case JobOperations.EXPORT_ENTRY:
+    case JobOperations.EXPORT_CONFIGURATION_V2:
     case JobOperations.EXPORT_SEARCH_RESULT:
     case JobOperations.EXPORT_ENTRY_V2:
     case JobOperations.EXPORT_SEARCH_RESULT_V2:
@@ -88,7 +96,7 @@ export const jobOperationLabel = (jobOperation: number | undefined): string => {
 
 export const jobTargetLabel = (job: JobSerializers): string => {
   return `[${jobStatusLabel(job.status)}/${jobOperationLabel(job.operation)}] ${
-    job.target?.name ?? ""
+    job.target?.name ?? (isExportJob(job.operation) ? job.text : "")
   }`;
 };
 
