@@ -123,6 +123,40 @@ class ViewTest(AironeViewTest):
         self.assertEqual(Group.objects.filter(name="Group1").count(), 1)
         self.assertEqual(Group.objects.filter(name="Group2").count(), 1)
 
+    def test_create_group(self):
+        self.admin_login()
+
+        params = {"name": "hoge", "parent_group": None, "members": []}
+        resp = self.client.post("/group/api/v2/groups", json.dumps(params), "application/json")
+
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(Group.objects.filter(name="hoge").exists())
+
+    def test_create_group_by_non_superuser_is_forbidden(self):
+        # a child group inherits the roles of its parent group
+        parent = self._create_group("privileged")
+        self.guest_login()
+
+        params = {"name": "hoge", "parent_group": parent.id, "members": []}
+        resp = self.client.post("/group/api/v2/groups", json.dumps(params), "application/json")
+
+        self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertFalse(Group.objects.filter(name="hoge").exists())
+
+    def test_import_by_non_superuser_is_forbidden(self):
+        group = self._create_group("Group1")
+        self.guest_login()
+
+        body = yaml.dump([{"id": group.id, "name": "renamed"}, {"name": "Group2"}])
+        resp = self.client.post(
+            "/group/api/v2/groups/import", body, content_type="application/yaml"
+        )
+
+        self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+        group.refresh_from_db()
+        self.assertEqual(group.name, "Group1")
+        self.assertFalse(Group.objects.filter(name="Group2").exists())
+
     def test_import_with_invalid_item_returns_list_errors(self):
         self.admin_login()
 

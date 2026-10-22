@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from airone.lib.configuration_export import ConfigurationExportAPI
-from airone.lib.drf import YAMLParser
+from airone.lib.drf import IsSuperuser, YAMLParser
 from group.api_v2.serializers import (
     GroupCreateUpdateSerializer,
     GroupImportSerializer,
@@ -24,6 +24,12 @@ from user.models import User
 
 
 class UserPermission(BasePermission):
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        # create has no object, so has_object_permission() never runs for it
+        if getattr(view, "action", "") == "create":
+            return cast(User, request.user).is_superuser
+        return True
+
     def has_object_permission(self, request: Request, view: APIView, obj: User) -> bool:
         current_user = cast(User, request.user)
         permisson = {
@@ -86,6 +92,7 @@ class GroupTreeAPI(viewsets.ReadOnlyModelViewSet[Group]):
 class GroupImportAPI(generics.GenericAPIView[Any]):
     parser_classes = [YAMLParser]
     serializer_class = GroupImportSerializer
+    permission_classes = [IsAuthenticated & IsSuperuser]
 
     @extend_schema(responses={200: None})
     def post(self, request: Request) -> Response:

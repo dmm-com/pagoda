@@ -25,7 +25,7 @@ from rest_framework.views import APIView
 from airone.exceptions.model import UnexpectedAttributeType
 from airone.lib.acl import ACLType
 from airone.lib.configuration_export import ConfigurationExportAPI
-from airone.lib.drf import YAMLParser
+from airone.lib.drf import IsSuperuser, YAMLParser
 from airone.lib.text import normalize_search_text
 from airone.lib.types import AttrType
 from entry.models import AttributeValue, Entry
@@ -484,6 +484,7 @@ class UserTokenAPI(viewsets.ModelViewSet[Token]):
 class UserImportAPI(generics.GenericAPIView[Any]):
     parser_classes = [YAMLParser]
     serializer_class = UserImportSerializer
+    permission_classes = [IsAuthenticated & IsSuperuser]
 
     @extend_schema(responses={200: None})
     def post(self, request: Request) -> Response:

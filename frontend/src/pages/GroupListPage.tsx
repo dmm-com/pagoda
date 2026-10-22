@@ -163,7 +163,7 @@ export const GroupListPage: FC = () => {
           color="info"
           sx={{ margin: "0 4px" }}
           onClick={() => setOpenImportModal(true)}
-          disabled={isReadonly}
+          disabled={!isSuperuser || isReadonly}
         >
           {t("common.import")}
         </Button>
