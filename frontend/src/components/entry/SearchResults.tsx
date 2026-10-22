@@ -28,10 +28,15 @@ import { FC, useMemo } from "react";
 import { Link } from "react-router";
 
 import { SearchResultsTableHead } from "./SearchResultsTableHead";
+import { useJoinedAttributeRowHeights } from "./useJoinedAttributeRowHeights";
 
 import { AironeLink } from "components/common";
 import { PaginationFooter } from "components/common/PaginationFooter";
-import { AttributeValue } from "components/entry/AttributeValue";
+import {
+  AttributeValue,
+  AttributeValueList,
+  AttributeValueListItem,
+} from "components/entry/AttributeValue";
 import { entryDetailsPath, entryEditPath } from "routes/Routes";
 import { AdvancedSerarchResultListParam } from "services/Constants";
 import { AttrsFilter } from "services/entry/AdvancedSearch";
@@ -119,11 +124,36 @@ export const SearchResults: FC<Props> = ({
       _attrNames.map((attrName) => [
         attrName,
         entityAttrs.find((a) => a.name === attrName)?.type ??
-          results.values[0]?.attrs[attrName]?.type,
+          results.values[0]?.attrs[attrName]?.type ??
+          results.values.find(
+            (result) => result.joinedAttrs?.[attrName]?.values.length,
+          )?.joinedAttrs?.[attrName]?.values[0]?.type,
       ]),
     );
     return [_attrNames, _attrTypes];
   }, [defaultAttrsFilter, results.values, entityAttrs]);
+
+  const joinedAttrSources = useMemo(
+    () => ({
+      ...Object.fromEntries(
+        Object.entries(defaultAttrsFilter)
+          .filter(([, filter]) => filter.baseAttrname != null)
+          .map(([name, filter]) => [name, filter.baseAttrname!]),
+      ),
+      ...Object.fromEntries(
+        joinAttrs.flatMap((join) =>
+          join.attrinfo.map((attr) => [`${join.name}.${attr.name}`, join.name]),
+        ),
+      ),
+    }),
+    [defaultAttrsFilter, joinAttrs],
+  );
+  const arraySourceNames = new Set(Object.values(joinedAttrSources));
+  const bodyRef = useJoinedAttributeRowHeights(
+    results,
+    attrNames,
+    joinedAttrSources,
+  );
 
   const handleChangeBulkOperationEntryId = (id: number, checked: boolean) => {
     if (checked) {
@@ -167,7 +197,7 @@ export const SearchResults: FC<Props> = ({
               omitHeadline={omitHeadline}
               totalCount={results.count}
             />
-            <TableBody>
+            <TableBody ref={bodyRef}>
               {results.values?.map((result) => (
                 <StyledTableRow key={result.entry.id}>
                   {/* Bulk operation checkbox would be invisible when Readonly mode is true */}
@@ -207,8 +237,77 @@ export const SearchResults: FC<Props> = ({
                     )}
                   </TableCell>
                   {attrNames.map((attrName) => (
-                    <TableCell key={attrName}>
+                    <TableCell
+                      key={attrName}
+                      data-search-attribute={attrName}
+                      sx={
+                        result.joinedAttrs?.[attrName] != null ||
+                        joinedAttrSources[attrName] != null ||
+                        arraySourceNames.has(attrName)
+                          ? { verticalAlign: "top" }
+                          : undefined
+                      }
+                    >
                       {(() => {
+                        const joined = result.joinedAttrs?.[attrName]?.values;
+                        const baseAttrName = joinedAttrSources[attrName];
+                        const source = baseAttrName
+                          ? result.attrs[baseAttrName]?.value
+                          : undefined;
+                        const sourceLength =
+                          source?.asArrayObject?.length ??
+                          source?.asArrayNamedObject?.length ??
+                          source?.asArrayGroup?.length ??
+                          source?.asArrayRole?.length ??
+                          0;
+                        if (joined != null || sourceLength > 0) {
+                          return (
+                            <AttributeValueList
+                              data-source-attribute={baseAttrName}
+                            >
+                              {Array.from(
+                                {
+                                  length: Math.max(
+                                    joined?.length ?? 0,
+                                    sourceLength,
+                                  ),
+                                },
+                                (_, index) => {
+                                  const info = joined?.[index];
+                                  return (
+                                    <AttributeValueListItem
+                                      key={index}
+                                      sx={{ boxSizing: "border-box" }}
+                                    >
+                                      <Box
+                                        sx={{
+                                          width: "100%",
+                                          minHeight: 0,
+                                          maxHeight: "100%",
+                                          overflowY: "auto",
+                                          "& > .MuiList-root > .MuiListItem-root":
+                                            {
+                                              padding: 0,
+                                            },
+                                        }}
+                                      >
+                                        {info == null ? (
+                                          "\u00a0"
+                                        ) : info.isReadable ? (
+                                          <AttributeValue attrInfo={info} />
+                                        ) : (
+                                          <Typography>
+                                            Permission denied.
+                                          </Typography>
+                                        )}
+                                      </Box>
+                                    </AttributeValueListItem>
+                                  );
+                                },
+                              )}
+                            </AttributeValueList>
+                          );
+                        }
                         const info = result.attrs[attrName];
                         if (info != null) {
                           return (
