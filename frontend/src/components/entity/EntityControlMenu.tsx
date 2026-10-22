@@ -24,6 +24,7 @@ import {
   listAliasPath,
   topPath,
   entityEntriesPath,
+  entityDifferencePath,
   aclHistoryPath,
 } from "routes/Routes";
 import { canEdit, canModifyACL } from "services/ACLUtil";
@@ -129,6 +130,9 @@ export const EntityControlMenu: FC<Props> = ({
           <Typography>{t("common.edit")}</Typography>
         </MenuItem>
       )}
+      <MenuItem component={Link} to={entityDifferencePath(entityId)}>
+        <Typography>{t("entity.controlMenu.difference")}</Typography>
+      </MenuItem>
       {(permission === undefined || canModifyACL(permission)) && (
         <MenuItem component={Link} to={aclPath(entityId)}>
           <Typography>{t("entity.controlMenu.aclSettings")}</Typography>

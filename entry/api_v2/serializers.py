@@ -413,7 +413,7 @@ def _build_object_payload(referral: ACLBase, display_attr_name: str) -> EntryAtt
     return payload
 
 
-def _make_display_attr_prefetch(display_attr_names: set[str]) -> Prefetch[Any]:
+def _make_display_attr_prefetch(display_attr_names: set[str]) -> "Prefetch[Any]":
     """Build a Prefetch that walks ``Entry.attrs`` -> latest values for the
     nominated display_attr names. Prefetch instances are stateful; callers that
     need to attach the same chain at multiple depths (e.g. once for parent

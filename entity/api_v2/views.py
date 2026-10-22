@@ -2,7 +2,7 @@ import copy
 import logging
 from typing import Any, List, cast
 
-from django.db.models import F, QuerySet
+from django.db.models import F, OuterRef, Prefetch, QuerySet, Subquery
 from django.db.models.functions import Lower
 from django.http import Http404, HttpRequest
 from django.http.response import HttpResponse, JsonResponse
@@ -23,10 +23,13 @@ from airone.lib.drf import EntryIsNotEmptyError, ObjectNotExistsError, YAMLParse
 from airone.lib.http import http_get
 from airone.lib.plugin_dispatch import PluginOverrideMixin
 from airone.lib.text import normalize_search_text
+from airone.lib.types import AttrType
 from entity.api_v2.serializers import (
     EntityAttrNameSerializer,
     EntityCreateSerializer,
     EntityDetailSerializer,
+    EntityDiffQuerySerializer,
+    EntityDiffSerializer,
     EntityHistorySerializer,
     EntityImportExportRootSerializer,
     EntityListSerializer,
@@ -34,7 +37,7 @@ from entity.api_v2.serializers import (
 )
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import EntryBaseSerializer, EntryCreateSerializer
-from entry.models import Entry
+from entry.models import Attribute, AttributeValue, Entry
 from job.api_v2.serializers import ImportPreviewJobSerializer
 from job.models import Job
 from user.models import History, User
@@ -596,3 +599,122 @@ class EntityAttrNameAPI(generics.GenericAPIView[EntityAttr]):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset)
         return Response(serializer.data)
+
+
+class EntityDiffAPI(generics.GenericAPIView[Entity]):
+    """Report entries whose attribute value differs between two points in time."""
+
+    serializer_class = EntityDiffQuerySerializer
+
+    @staticmethod
+    def _value_of(attrv: AttributeValue | None) -> Any:
+        if attrv is None:
+            return None
+        # with_metainfo wraps the value as {"type": ..., "value": ...}; keep only the value
+        value = attrv.get_value(with_metainfo=True, serialize=True)["value"]
+
+        # An unset value is represented differently per type; normalize it to None so that
+        # it compares equal to "no value" (e.g. an attribute that has never been set).
+        data_type = attrv.data_type
+        if data_type & AttrType._ARRAY:
+            # array_* and multi-select
+            is_empty = value == [] or [x for x in value if x is not None] == []
+        elif data_type in (AttrType.NAMED_OBJECT, AttrType.NAMED_OBJECT_BOOLEAN):
+            is_empty = value == {"": None}
+        elif data_type == AttrType.DATE:
+            is_empty = value is None or value == "None"
+        else:
+            is_empty = False
+
+        return None if is_empty else value
+
+    @extend_schema(
+        parameters=[EntityDiffQuerySerializer],
+        responses=EntityDiffSerializer,
+    )
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        user = cast("User", request.user)
+        query = EntityDiffQuerySerializer(data=request.query_params)
+        query.is_valid(raise_exception=True)
+        model = query.validated_data["model"]
+        attr_names = list(dict.fromkeys(query.validated_data["attr"]))
+        t0 = query.validated_data["t0"]
+        t1 = query.validated_data["t1"]
+
+        entity = Entity.objects.filter(name=model, is_active=True).first()
+        if entity is None or not user.has_permission(entity, ACLType.Readable):
+            raise NotFound("Target Entity doesn't exist")
+        entity_attrs = {
+            ea.name: ea
+            for ea in EntityAttr.objects.filter(
+                parent_entity=entity, name__in=attr_names, is_active=True
+            )
+        }
+        if any(name not in entity_attrs for name in attr_names):
+            raise NotFound("Target attribute doesn't exist in the Entity")
+
+        # AttributeValue accumulates a row per update, so never load the history. The id of
+        # the value in effect at t0/t1 is resolved by index-backed subqueries (one row each).
+        def latest_value_id(at: Any) -> Subquery:
+            return Subquery(
+                AttributeValue.objects.filter(
+                    parent_attr=OuterRef("pk"), parent_attrv__isnull=True, created_time__lte=at
+                )
+                .order_by("-created_time", "-id")
+                .values("id")[:1]
+            )
+
+        attrs = (
+            Attribute.objects.filter(
+                schema__in=entity_attrs.values(), parent_entry__is_active=True, is_active=True
+            )
+            .select_related("parent_entry", "schema")
+            .annotate(attrv_id_t0=latest_value_id(t0), attrv_id_t1=latest_value_id(t1))
+        )
+        attr_order = {name: i for i, name in enumerate(attr_names)}
+
+        # Drop attributes whose value did not change (same row at both points, or none at all)
+        # and the ones the user may not read, before loading any value.
+        targets = []
+        for attr in sorted(attrs, key=lambda a: (attr_order[a.schema.name], a.id)):
+            id_t0: int | None = attr.attrv_id_t0
+            id_t1: int | None = attr.attrv_id_t1
+            if id_t0 == id_t1:
+                continue
+            if not user.has_permission(
+                attr.parent_entry, ACLType.Readable
+            ) or not user.has_permission(attr, ACLType.Readable):
+                continue
+            targets.append((attr, id_t0, id_t1))
+
+        attrvs = (
+            AttributeValue.objects.select_related("referral", "group", "role")
+            .prefetch_related(
+                Prefetch(
+                    "data_array",
+                    queryset=AttributeValue.objects.select_related("referral", "group", "role"),
+                )
+            )
+            .in_bulk({i for _, id_t0, id_t1 in targets for i in (id_t0, id_t1) if i is not None})
+        )
+
+        # entry id -> item, so that every entry appears once with all of its differing attrs
+        items: dict[int, dict[str, Any]] = {}
+        for attr, id_t0, id_t1 in targets:
+            value_t0 = self._value_of(attrvs.get(id_t0) if id_t0 is not None else None)
+            value_t1 = self._value_of(attrvs.get(id_t1) if id_t1 is not None else None)
+            if value_t0 == value_t1:
+                continue
+            entry = attr.parent_entry
+            item = items.setdefault(entry.id, {"id": entry.id, "name": entry.name, "attrs": []})
+            item["attrs"].append(
+                {
+                    "id": attr.id,
+                    "name": attr.schema.name,
+                    "type": attr.schema.type,
+                    "value_t0": value_t0,
+                    "value_t1": value_t1,
+                }
+            )
+
+        return Response({"count": len(items), "items": list(items.values())})
