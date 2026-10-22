@@ -1936,8 +1936,15 @@ class AdvancedSearchResultValueReferralSerializer(serializers.Serializer[Any]):
     schema = EntityAttributeTypeSerializer()
 
 
+class AdvancedSearchResultJoinedAttrSerializer(serializers.Serializer[Any]):
+    values = AdvancedSearchResultValueAttrSerializer(many=True)
+
+
 class AdvancedSearchResultValueSerializer(serializers.Serializer[Any]):
     attrs = serializers.DictField(child=AdvancedSearchResultValueAttrSerializer())
+    joined_attrs = serializers.DictField(
+        child=AdvancedSearchResultJoinedAttrSerializer(), required=False
+    )
     entry = AdvancedSearchResultValueEntrySerializer()
     entity = AdvancedSearchResultValueEntitySerializer()
     referrals = AdvancedSearchResultValueReferralSerializer(many=True, required=False)
