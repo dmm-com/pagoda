@@ -699,8 +699,8 @@ class EntityDiffAPI(generics.GenericAPIView[Entity]):
         # and the ones the user may not read, before loading any value.
         targets = []
         for attr in sorted(attrs, key=lambda a: (attr_order[a.schema.name], a.id)):
-            id_t0: int | None = attr.attrv_id_t0  # type: ignore[attr-defined]
-            id_t1: int | None = attr.attrv_id_t1  # type: ignore[attr-defined]
+            id_t0: int | None = attr.attrv_id_t0
+            id_t1: int | None = attr.attrv_id_t1
             if id_t0 == id_t1:
                 continue
             if not user.has_permission(
