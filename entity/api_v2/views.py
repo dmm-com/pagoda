@@ -644,7 +644,7 @@ class EntityDiffAPI(generics.GenericAPIView[Entity]):
         elif data_type in (AttrType.NAMED_OBJECT, AttrType.NAMED_OBJECT_BOOLEAN):
             is_empty = value == {"": None}
         elif data_type == AttrType.DATE:
-            is_empty = value is None
+            is_empty = value is None or value == "None"
         else:
             is_empty = False
         return None if is_empty else value

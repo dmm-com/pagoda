@@ -43,7 +43,9 @@ const WHITE = "#FFFFFF";
 // equally. Once a value column would get narrower than MIN_VALUE_WIDTH (px),
 // the table keeps that width and scrolls horizontally instead.
 const ITEM_NAME_WIDTH = 200;
-const MIN_VALUE_WIDTH = 250;
+const MIN_VALUE_WIDTH = 150;
+// a value column whose rows are all empty is shrunk to this width (px)
+const EMPTY_COLUMN_WIDTH = 50;
 
 const isObjectValue = (
   value: unknown,
@@ -192,6 +194,23 @@ const EntityDifferenceContent: FC<{ entityId: number }> = ({ entityId }) => {
     { suspense: true },
   );
 
+  // whether every row of each value column (start/end of each attribute) is empty
+  const isEmptyColumn = (
+    name: string,
+    side: "value_t0" | "value_t1",
+  ): boolean =>
+    (diff?.items ?? []).every((item) =>
+      isEmptyValue(item.attrs.find((x) => x.name === name)?.[side]),
+    );
+  const columnWidths = diffAttrNames.flatMap((name) =>
+    (["value_t0", "value_t1"] as const).map((side) =>
+      isEmptyColumn(name, side) ? EMPTY_COLUMN_WIDTH : undefined,
+    ),
+  );
+  const minTableWidth =
+    ITEM_NAME_WIDTH +
+    columnWidths.reduce<number>((sum, w) => sum + (w ?? MIN_VALUE_WIDTH), 0);
+
   return (
     <>
       <EntityBreadcrumbs entity={entity} title={t("entity.difference.title")} />
@@ -272,9 +291,7 @@ const EntityDifferenceContent: FC<{ entityId: number }> = ({ entityId }) => {
                   sx={{
                     tableLayout: "fixed",
                     width: "100%",
-                    minWidth:
-                      ITEM_NAME_WIDTH +
-                      diffAttrNames.length * 2 * MIN_VALUE_WIDTH,
+                    minWidth: minTableWidth,
                     "& td, & th": {
                       overflowWrap: "anywhere",
                       whiteSpace: "pre-wrap",
@@ -283,9 +300,15 @@ const EntityDifferenceContent: FC<{ entityId: number }> = ({ entityId }) => {
                 >
                   <colgroup>
                     <col style={{ width: ITEM_NAME_WIDTH }} />
-                    {diffAttrNames.flatMap((name) => [
-                      <col key={`${name}-0`} />,
-                      <col key={`${name}-1`} />,
+                    {diffAttrNames.flatMap((name, i) => [
+                      <col
+                        key={`${name}-0`}
+                        style={{ width: columnWidths[i * 2] }}
+                      />,
+                      <col
+                        key={`${name}-1`}
+                        style={{ width: columnWidths[i * 2 + 1] }}
+                      />,
                     ])}
                   </colgroup>
                   <TableHead
