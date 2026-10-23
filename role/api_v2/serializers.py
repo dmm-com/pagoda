@@ -86,10 +86,14 @@ class RoleSerializer(serializers.ModelSerializer[Role]):
     @extend_schema_field(RolePermissionSerializer(many=True))
     def get_permissions(self, obj: Role) -> list[dict[str, Any]]:
         permissions = list(obj.permissions.all())
-        objects = ACLBase.objects.in_bulk([p.get_objid() for p in permissions])
+        permission_obj_ids = [
+            permission.get_objid()  # type: ignore[attr-defined]
+            for permission in permissions
+        ]
+        objects = ACLBase.objects.in_bulk(permission_obj_ids)
         result = []
-        for permission in permissions:
-            acl_object = objects.get(permission.get_objid())
+        for permission, obj_id in zip(permissions, permission_obj_ids, strict=True):
+            acl_object = objects.get(obj_id)
             if acl_object is None or not acl_object.is_active:
                 continue
             target = cast(Any, acl_object.get_subclass_object())
