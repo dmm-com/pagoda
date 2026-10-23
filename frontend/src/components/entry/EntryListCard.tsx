@@ -72,6 +72,7 @@ export const EntryListCard: FC<Props> = ({ entityId, entry, setToggle }) => {
             <EntryControlMenu
               entityId={entityId}
               entryId={entry.id}
+              entryName={entry.name}
               anchorElem={anchorElem}
               handleClose={() => setAnchorElem(null)}
               setToggle={setToggle}

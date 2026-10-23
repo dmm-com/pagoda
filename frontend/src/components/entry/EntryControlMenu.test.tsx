@@ -19,6 +19,7 @@ import { ACLType } from "services/ACLUtil";
 vi.mock("repository/AironeApiClient", () => ({
   aironeApiClient: {
     destroyEntry: vi.fn(() => Promise.resolve()),
+    getEntryReferral: vi.fn(() => Promise.resolve({ count: 0, results: [] })),
   },
 }));
 
@@ -212,6 +213,67 @@ describe("EntryControlMenu", () => {
   });
 
   describe("delete action", () => {
+    test("cancelling the reference warning leaves the item intact", async () => {
+      vi.mocked(aironeApiClient.getEntryReferral).mockResolvedValueOnce({
+        count: 1,
+        results: [
+          {
+            id: 2,
+            name: "referencing-item",
+            schema: { id: 10, name: "OtherModel" },
+          },
+        ],
+      } as Awaited<ReturnType<typeof aironeApiClient.getEntryReferral>>);
+      render(<EntryControlMenu {...defaultProps} />, { wrapper: TestWrapper });
+      fireEvent.click(screen.getByText("削除"));
+      await screen.findByRole("link", {
+        name: "OtherModel / referencing-item",
+      });
+      expect(
+        screen.queryByText("本当に削除しますか？"),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /yes/i }),
+      ).not.toBeInTheDocument();
+      expect(aironeApiClient.destroyEntry).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole("button", { name: "キャンセル" }));
+      await waitFor(() =>
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+      );
+      expect(aironeApiClient.destroyEntry).not.toHaveBeenCalled();
+    });
+
+    test("requires reference-warning approval before deleting", async () => {
+      vi.mocked(aironeApiClient.getEntryReferral).mockResolvedValueOnce({
+        count: 1,
+        results: [
+          {
+            id: 2,
+            name: "referencing-item",
+            schema: { id: 10, name: "OtherModel" },
+          },
+        ],
+      } as Awaited<ReturnType<typeof aironeApiClient.getEntryReferral>>);
+      render(<EntryControlMenu {...defaultProps} />, { wrapper: TestWrapper });
+      fireEvent.click(screen.getByText("削除"));
+      await screen.findByRole("link", {
+        name: "OtherModel / referencing-item",
+      });
+      expect(
+        screen.queryByText("本当に削除しますか？"),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /yes/i }),
+      ).not.toBeInTheDocument();
+      expect(aironeApiClient.destroyEntry).not.toHaveBeenCalled();
+      fireEvent.click(
+        screen.getByRole("button", { name: "影響を理解して削除" }),
+      );
+      await waitFor(() =>
+        expect(aironeApiClient.destroyEntry).toHaveBeenCalledWith(1),
+      );
+    });
+
     test("should show delete button", () => {
       render(<EntryControlMenu {...defaultProps} />, { wrapper: TestWrapper });
 

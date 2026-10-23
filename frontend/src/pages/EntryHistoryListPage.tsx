@@ -98,6 +98,7 @@ const EntryHistoryListContent: FC = () => {
           <EntryControlMenu
             entityId={entry.schema?.id ?? 0}
             entryId={entryId}
+            entryName={entry.name}
             anchorElem={entryAnchorEl}
             handleClose={() => setEntryAnchorEl(null)}
             permission={entry.permission}
