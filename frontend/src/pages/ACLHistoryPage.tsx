@@ -98,6 +98,7 @@ const ACLHistoryContent: FC<{ objectId: number }> = ({ objectId }) => {
             <EntryControlMenu
               entityId={acl.parent.id}
               entryId={acl.id}
+              entryName={entryRetrieve?.name}
               anchorElem={anchorEl}
               handleClose={() => setAnchorEl(null)}
               permission={entryRetrieve?.permission}

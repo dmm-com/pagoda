@@ -284,10 +284,18 @@ export const AdvancedSearchResultsPage: FC = () => {
     setIsDeleting(true);
     try {
       let targetIds = bulkOperationEntryIds;
+      const targetNames = Object.fromEntries(
+        searchResults.values
+          .filter((value) => bulkOperationEntryIds.includes(value.entry.id))
+          .map((value) => [value.entry.id, value.entry.name]),
+      );
       if (isDeleteAllItems && joinAttrs.length === 0) {
         const selectedEntries = await Promise.all(
           bulkOperationEntryIds.map((id) => aironeApiClient.getEntry(id)),
         );
+        selectedEntries.forEach((entry) => {
+          targetNames[entry.id] = entry.name;
+        });
         const firstEntry = [...selectedEntries].sort((a, b) => a.id - b.id)[0];
         if (!firstEntry) return;
         // Match the bulk-delete API's model, attribute filters and internal limit.
@@ -313,11 +321,17 @@ export const AdvancedSearchResultsPage: FC = () => {
               .map((value) => value.entry.id),
           ]),
         ];
+        remaining.values
+          .filter((value) => targetIds.includes(value.entry.id))
+          .forEach((value) => {
+            targetNames[value.entry.id] = value.entry.name;
+          });
       }
       if (
         !(await confirmEntryDeletion(
           targetIds,
           t("advancedSearch.resultsPage.confirmDeleteTitle"),
+          targetNames,
         ))
       )
         return;

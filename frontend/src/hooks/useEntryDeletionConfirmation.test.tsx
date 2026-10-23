@@ -17,9 +17,11 @@ const reference = {
 const Harness = ({
   ids = [1],
   confirmationTitle,
+  entryNames,
 }: {
   ids?: number[];
   confirmationTitle?: string;
+  entryNames?: Record<number, string>;
 }) => {
   const { confirmEntryDeletion, deletionConfirmationDialog } =
     useEntryDeletionConfirmation();
@@ -27,7 +29,8 @@ const Harness = ({
     <>
       <button
         onClick={async () => {
-          if (await confirmEntryDeletion(ids, confirmationTitle)) onDelete();
+          if (await confirmEntryDeletion(ids, confirmationTitle, entryNames))
+            onDelete();
         }}
       >
         delete
@@ -58,12 +61,14 @@ test("shows incoming references and requires an explicit decision", async () => 
     count: 101,
     results: [reference],
   } as Awaited<ReturnType<typeof aironeApiClient.getEntryReferral>>);
-  render(<Harness />);
+  render(<Harness entryNames={{ 1: "network1" }} />);
   fireEvent.click(screen.getByText("delete"));
   expect(
     await screen.findByRole("link", { name: "Server / server1" }),
   ).toHaveAttribute("href", "/ui/entities/10/entries/2/details");
   expect(screen.getByText(/101/)).toBeInTheDocument();
+  expect(screen.getByText(/network1/)).toBeInTheDocument();
+  expect(screen.queryByText(/#1:/)).not.toBeInTheDocument();
   expect(onDelete).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole("button", { name: "影響を理解して削除" }));
   await waitFor(() => expect(onDelete).toHaveBeenCalledOnce());

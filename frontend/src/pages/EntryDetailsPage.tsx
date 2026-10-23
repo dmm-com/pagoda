@@ -177,6 +177,7 @@ const EntryDetailsContent: FC<Props> = ({
             <EntryControlMenu
               entityId={entityId}
               entryId={entryId}
+              entryName={entry.name}
               anchorElem={entryAnchorEl}
               handleClose={() => setEntryAnchorEl(null)}
               permission={entry.permission}

@@ -29,6 +29,7 @@ import { canEdit, canModifyACL } from "services/ACLUtil";
 interface EntryControlProps {
   entityId: number;
   entryId: number;
+  entryName?: string;
   anchorElem: HTMLButtonElement | null;
   handleClose: (entryId: number) => void;
   setToggle?: () => void;
@@ -46,6 +47,7 @@ interface EntryControlProps {
 export const EntryControlMenu: FC<EntryControlProps> = ({
   entityId,
   entryId,
+  entryName,
   anchorElem,
   handleClose,
   setToggle,
@@ -74,6 +76,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
         !(await confirmEntryDeletion(
           [entryId],
           t("entry.control.confirmDelete"),
+          entryName ? { [entryId]: entryName } : {},
         ))
       )
         return;

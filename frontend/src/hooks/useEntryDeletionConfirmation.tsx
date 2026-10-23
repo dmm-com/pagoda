@@ -16,7 +16,12 @@ import { aironeApiClient } from "repository/AironeApiClient";
 import { entryDetailsPath } from "routes/Routes";
 
 type Referral = Pick<EntryBase, "id" | "name" | "schema">;
-type CheckResult = { entryId: number; count: number; referrals: Referral[] };
+type CheckResult = {
+  entryId: number;
+  entryName?: string;
+  count: number;
+  referrals: Referral[];
+};
 
 export const useEntryDeletionConfirmation = () => {
   const { t } = useTranslation();
@@ -45,6 +50,7 @@ export const useEntryDeletionConfirmation = () => {
   const confirmEntryDeletion = async (
     entryIds: number[],
     confirmationTitle?: string,
+    entryNames: Record<number, string> = {},
   ): Promise<boolean> => {
     if (pending.current) return false;
     if (entryIds.length === 0) return true;
@@ -64,7 +70,13 @@ export const useEntryDeletionConfirmation = () => {
         const count =
           (response.count ?? response.results.length) -
           (response.results.some((entry) => entry.id === entryId) ? 1 : 0);
-        if (count > 0) results.push({ entryId, count, referrals });
+        if (count > 0)
+          results.push({
+            entryId,
+            entryName: entryNames[entryId],
+            count,
+            referrals,
+          });
       }
       if (pending.current === request) {
         if (results.length > 0) setState({ status: "warning", results });
@@ -106,10 +118,11 @@ export const useEntryDeletionConfirmation = () => {
             <Alert severity="warning">
               {t("entry.control.referenceWarning")}
             </Alert>
-            {state.results.map(({ entryId, count, referrals }) => (
+            {state.results.map(({ entryId, entryName, count, referrals }) => (
               <div key={entryId}>
                 <Typography sx={{ mt: 2 }}>
-                  #{entryId}: {t("entry.control.referenceCount", { count })}
+                  {entryName || `#${entryId}`}:{" "}
+                  {t("entry.control.referenceCount", { count })}
                 </Typography>
                 <ul>
                   {referrals.map((entry) => (
