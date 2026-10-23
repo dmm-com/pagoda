@@ -92,7 +92,7 @@ class RoleSerializer(serializers.ModelSerializer[Role]):
             acl_object = objects.get(permission.get_objid())
             if acl_object is None or not acl_object.is_active:
                 continue
-            target = acl_object.get_subclass_object()
+            target = cast(Any, acl_object.get_subclass_object())
             model_name = "-"
             match type(target).__name__:
                 case "EntityAttr":
