@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 import yaml
 
 from airone.lib.test import AironeViewTest
+from entry.models import Attribute, Entry
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus
 from role import tasks
@@ -509,6 +510,74 @@ class ViewTest(AironeViewTest):
         # Assert that the users and groups lists are empty
         self.assertEqual(role_data["users"], [])
         self.assertEqual(role_data["groups"], [])
+
+    def test_retrieve_role_includes_permission_targets(self):
+        admin = self.admin_login()
+        role = self._create_role("test-role")
+        entity = self.create_entity(
+            admin,
+            "Rack",
+            attrs=[{"name": "Monthly cost (C) power adjustment"}],
+        )
+        entity_attr = entity.attrs.get(name="Monthly cost (C) power adjustment")
+        entry = Entry.objects.create(name="rack-01", schema=entity, created_user=admin)
+        entry_attr = Attribute.objects.create(
+            name=entity_attr.name,
+            schema=entity_attr,
+            parent_entry=entry,
+            created_user=admin,
+        )
+        category = self.create_category(admin, "Rack categories")
+        inactive_entity = self.create_entity(admin, "Inactive model")
+        inactive_entity.is_active = False
+        inactive_entity.save(update_fields=["is_active"])
+
+        for target in (entity, entity_attr, entry, entry_attr, category, inactive_entity):
+            target.full.roles.add(role)
+
+        response = self.client.get(f"/role/api/v2/{role.id}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertCountEqual(
+            response.json()["permissions"],
+            [
+                {
+                    "type": "Entity",
+                    "id": entity.id,
+                    "model_name": "-",
+                    "name": "Rack",
+                    "permission": "full",
+                },
+                {
+                    "type": "EntityAttr",
+                    "id": entity_attr.id,
+                    "model_name": "Rack",
+                    "name": "Monthly cost (C) power adjustment",
+                    "permission": "full",
+                },
+                {
+                    "type": "Entry",
+                    "id": entry.id,
+                    "model_name": "Rack",
+                    "name": "rack-01",
+                    "permission": "full",
+                },
+                {
+                    "type": "Attribute",
+                    "id": entry_attr.id,
+                    "model_name": "Rack",
+                    "name": "Monthly cost (C) power adjustment",
+                    "permission": "full",
+                },
+                {
+                    "type": "Category",
+                    "id": category.id,
+                    "model_name": "-",
+                    "name": "Rack categories",
+                    "permission": "full",
+                },
+            ],
+        )
 
     def test_list_roles_with_ordering(self):
         self.admin_login()
