@@ -3,13 +3,14 @@ import {
   AdvancedSearchResultAttrInfo,
   AdvancedSearchResultAttrInfoFilterKeyEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { Autocomplete, Box, Button, Checkbox, TextField } from "@mui/material";
+import { Box, Button, Checkbox, TextField } from "@mui/material";
 import { Dispatch, FC, SetStateAction, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { useTranslation } from "../../hooks/useTranslation";
 import { formatAdvancedSearchParams } from "../../services/entry/AdvancedSearch";
 import { AironeModal } from "../common/AironeModal";
+import { AutocompleteWithAllSelector } from "../common/AutocompleteWithAllSelector";
 
 interface Props {
   openModal: boolean;
@@ -74,9 +75,10 @@ export const AdvancedSearchModal: FC<Props> = ({
       open={openModal}
       onClose={() => setOpenModal(false)}
     >
-      <Autocomplete
+      <AutocompleteWithAllSelector
+        selectAllLabel={t("advancedSearch.page.selectAll")}
         options={attrNames}
-        defaultValue={initialAttrNames}
+        value={selectedAttrNames}
         onChange={(_, value: Array<string>) => setSelectedAttrNames(value)}
         renderInput={(params) => (
           <TextField
