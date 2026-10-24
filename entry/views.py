@@ -553,13 +553,16 @@ def do_import_data(request: HttpRequest, entity_id: int, context: str) -> HttpRe
         return HttpResponse("Failed to get entity of specified id", status=400)
 
     try:
-        data = yaml.load(context, Loader=yaml.FullLoader)
+        data = yaml.safe_load(context)
     except yaml.parser.ParserError:
         return HttpResponse("Couldn't parse uploaded file", status=400)
     except ValueError as e:
         return HttpResponse("Invalid value is found: %s" % e, status=400)
     except yaml.scanner.ScannerError:
         return HttpResponse("Couldn't scan uploaded file", status=400)
+    except yaml.YAMLError:
+        # e.g. a tag that the safe loader does not construct, such as !!python/name
+        return HttpResponse("Couldn't parse uploaded file", status=400)
     except Exception as e:
         return HttpResponse("Unknown exception: %s" % e, status=500)
 
