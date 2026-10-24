@@ -79,3 +79,31 @@ if (!globalThis.BroadcastChannel) {
   globalThis.BroadcastChannel =
     BroadcastChannel as typeof globalThis.BroadcastChannel;
 }
+
+// Fail tests on React warnings that indicate state updates during render.
+// React only logs these, so without this gate they are easy to miss even
+// though they can corrupt form state (e.g. react-hook-form dirty fields).
+const FORBIDDEN_REACT_WARNINGS = [
+  "Cannot update a component (`%s`) while rendering a different component",
+];
+const reactWarnings: string[] = [];
+const originalConsoleError = console.error;
+console.error = (...args: unknown[]) => {
+  const [message] = args;
+  if (
+    typeof message === "string" &&
+    FORBIDDEN_REACT_WARNINGS.some((warning) => message.includes(warning))
+  ) {
+    reactWarnings.push(args.map(String).join(" | "));
+  }
+  originalConsoleError(...args);
+};
+
+afterEach(() => {
+  const warnings = reactWarnings.splice(0);
+  if (warnings.length > 0) {
+    throw new Error(
+      `React warnings treated as test failures:\n${warnings.join("\n")}`,
+    );
+  }
+});

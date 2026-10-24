@@ -2,7 +2,7 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { Box, IconButton, List, ListItem, TextField } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { Control, Controller, useFieldArray } from "react-hook-form";
 
 import { Schema } from "./EntryFormSchema";
@@ -90,7 +90,7 @@ export const ArrayNumberAttributeValueField: FC<CommonProps> = ({
   attrId,
   control,
 }) => {
-  const { fields, insert, remove } = useFieldArray({
+  const { fields, insert, remove, replace } = useFieldArray({
     control,
     name: `attrs.${attrId}.value.asArrayNumber`,
   });
@@ -104,9 +104,14 @@ export const ArrayNumberAttributeValueField: FC<CommonProps> = ({
     fields.length === 1 && handleClickAddListItem(0);
   };
 
-  if (fields.length === 0) {
-    handleClickAddListItem(-1);
-  }
+  // Keep at least one (empty) row. This must not run during render: it
+  // updates form state owned by the parent form component. `replace` keeps
+  // it idempotent when StrictMode runs the effect twice.
+  useEffect(() => {
+    if (fields.length === 0) {
+      replace([{ value: null }]);
+    }
+  }, [fields.length, replace]);
 
   return (
     <StyledList>

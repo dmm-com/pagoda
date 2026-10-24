@@ -12,6 +12,9 @@ import {
   writeE2eReport,
 } from "./reportEvidence";
 
+// Controls are located by their Japanese labels.
+test.use({ locale: "ja-JP" });
+
 const browserFailureMap = new WeakMap<object, string[]>();
 
 const allAttributeNames = [

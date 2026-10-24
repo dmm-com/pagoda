@@ -562,6 +562,22 @@ const handleApi = async (req, res, parsed) => {
     res.end();
     return true;
   }
+  if (
+    req.method === "GET" &&
+    /^\/entry\/api\/v2\/\d+\/attr_referrals$/.test(pathname)
+  ) {
+    // Candidates for object-typed attributes in the entry form.
+    json(res, 200, {
+      has_restricted_items: false,
+      results: [
+        [20, "switch-core-01"],
+        [21, "switch-backup-01"],
+        [22, "switch-uplink-01"],
+        [23, "switch-standby-01"],
+      ].map(([id, name]) => ({ id, name, display_label: name })),
+    });
+    return true;
+  }
   if (req.method === "GET" && pathname === "/entry/api/v2/1/referral") {
     json(res, 200, paginated([]));
     return true;

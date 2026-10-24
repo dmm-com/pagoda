@@ -7,6 +7,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
@@ -224,6 +225,134 @@ describe("EntryEditPage", () => {
       ).toBeVisible(),
     );
     expect(name).toHaveValue("local draft");
+  });
+
+  describe("array attributes", () => {
+    const arrayAttrs = [
+      { id: 11, name: "arrStr", type: 1026 }, // array_string
+      { id: 12, name: "arrNum", type: 1280 }, // array_number
+      { id: 13, name: "arrNamed", type: 3073 }, // array_named_object
+    ];
+    const arrayEntity = {
+      ...mockEntity,
+      attrs: arrayAttrs.map((attr, index) => ({
+        ...mockEntity.attrs[0],
+        ...attr,
+        index,
+      })),
+    };
+    // The API returns snake_case JSON; the generated client maps it.
+    const arrayEntry = (name: string, strings: string[]) => ({
+      ...mockEntry,
+      name,
+      attrs: [
+        { value: { as_array_string: strings } },
+        { value: { as_array_number: [42] } },
+        {
+          value: {
+            as_array_named_object: [{ name: "named-key", object: null }],
+          },
+        },
+      ].map((attr, index) => ({
+        ...arrayAttrs[index],
+        ...attr,
+        is_mandatory: false,
+        is_writable: true,
+        schema: { id: arrayAttrs[index].id, name: arrayAttrs[index].name },
+      })),
+    });
+
+    const listItems = (attrName: string) => {
+      const row = document.getElementById(`attrs-${attrName}`)?.closest("tr");
+      expect(row).not.toBeNull();
+      return within(row as HTMLElement).getAllByRole("listitem");
+    };
+    const rowValues = (attrName: string) =>
+      listItems(attrName).flatMap((item) =>
+        Array.from(item.querySelectorAll("input")).map((input) => input.value),
+      );
+
+    test("loads the item name and array values on first render", async () => {
+      // Regression: array fields inserted placeholder rows during render,
+      // which marked the form dirty before the loaded entry was applied, so
+      // the item name and array values stayed empty.
+      server.use(
+        http.get("http://localhost/entity/api/v2/2/", () =>
+          HttpResponse.json(arrayEntity),
+        ),
+        http.get("http://localhost/entry/api/v2/1/", () =>
+          HttpResponse.json(arrayEntry("array entry", ["a", "b"])),
+        ),
+      );
+      await renderEditPage();
+
+      const name = await screen.findByRole("textbox", { name: "アイテム名" });
+      await waitFor(() => expect(name).toHaveValue("array entry"));
+      // Exactly the stored rows: no placeholder row may be added on top.
+      expect(rowValues("arrStr")).toEqual(["a", "b"]);
+      expect(rowValues("arrNum")).toEqual(["42"]);
+      expect(rowValues("arrNamed")).toContain("named-key");
+      expect(listItems("arrNamed")).toHaveLength(1);
+      expect(screen.getByRole("button", { name: "保存" })).toBeDisabled();
+    });
+
+    test("keeps local array edits and applies untouched server changes on refresh", async () => {
+      let current = arrayEntry("array entry", ["a", "b"]);
+      server.use(
+        http.get("http://localhost/entity/api/v2/2/", () =>
+          HttpResponse.json(arrayEntity),
+        ),
+        http.get("http://localhost/entry/api/v2/1/", () =>
+          HttpResponse.json(current),
+        ),
+      );
+      const router = createMemoryRouter(
+        [
+          {
+            path: entryEditPath(":entityId", ":entryId"),
+            element: (
+              <>
+                <EntryEditPage />
+                <RefreshEntry />
+              </>
+            ),
+          },
+        ],
+        { initialEntries: ["/ui/entities/2/entries/1/edit"] },
+      );
+      render(<RouterProvider router={router} />, {
+        wrapper: TestWrapperWithoutRoutes,
+      });
+
+      const name = await screen.findByRole("textbox", { name: "アイテム名" });
+      await waitFor(() => expect(name).toHaveValue("array entry"));
+      fireEvent.change(screen.getByDisplayValue("a"), {
+        target: { value: "local a" },
+      });
+
+      current = arrayEntry("renamed on server", ["server a", "server b"]);
+      fireEvent.click(screen.getByRole("button", { name: "再取得" }));
+
+      await waitFor(() => expect(name).toHaveValue("renamed on server"));
+      // Only the edited element is kept; untouched ones follow the server.
+      expect(rowValues("arrStr")).toEqual(["local a", "server b"]);
+      expect(rowValues("arrNum")).toEqual(["42"]);
+    });
+
+    test("starts a new item with an empty name and one empty row per array", async () => {
+      server.use(
+        http.get("http://localhost/entity/api/v2/2/", () =>
+          HttpResponse.json(arrayEntity),
+        ),
+      );
+      await renderEditPage("/ui/entities/2/entries/new");
+
+      const name = await screen.findByRole("textbox", { name: "アイテム名" });
+      expect(name).toHaveValue("");
+      for (const attr of ["arrStr", "arrNum", "arrNamed"]) {
+        expect(listItems(attr)).toHaveLength(1);
+      }
+    });
   });
 
   describe("rendering (edit mode)", () => {
