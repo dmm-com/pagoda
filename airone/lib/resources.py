@@ -12,7 +12,6 @@ from user.models import User
 
 
 class AironeModelResource(ModelResource):  # type: ignore[misc]
-    COMPARING_KEYS: list[str] = []
     DISALLOW_UPDATE_KEYS: list[str] = []
 
     def __init__(self, *args: object, **kwargs: object) -> None:
@@ -22,18 +21,28 @@ class AironeModelResource(ModelResource):  # type: ignore[misc]
         # to add/update it by the user who import data.
         self.request_user: User | None = None
 
-    """
-    This private method checks that two instance has same content in each attribute.
-    """
-
-    def _is_updated(self, comp1: ACLBase, comp2: ACLBase) -> bool:
-        return bool(any([getattr(comp1, x) != getattr(comp2, x) for x in self.COMPARING_KEYS]))
-
     def validate_update(self, new: ACLBase, old: ACLBase) -> bool:
         # This cancels update when the value of disallow update key is updated.
         if not all([getattr(new, x) == getattr(old, x) for x in self.DISALLOW_UPDATE_KEYS]):
             return False
         return True
+
+    def get_permission_targets(self, instance: Any) -> list[ACLBase]:
+        """Return the objects the importing user must be able to write to save this row.
+
+        Resources whose model is not an ACLBase override this to return the
+        ACLBase object that owns the instance.
+        """
+        return [instance]
+
+    def _is_writable(self, instance: Any) -> bool:
+        if not self.request_user:
+            return False
+
+        targets = self.get_permission_targets(instance)
+        return bool(targets) and all(
+            self.request_user.has_permission(x, ACLType.Writable) for x in targets
+        )
 
     def skip_row(
         self,
@@ -42,23 +51,28 @@ class AironeModelResource(ModelResource):  # type: ignore[misc]
         row: dict[str, object],
         import_validation_errors: dict[str, list[object]] | None = None,
     ) -> bool:
+        if not self.request_user:
+            return True
+
         # the case of creating new instance
         if not self._meta.model.objects.filter(id=instance.id).exists():
             # Inhibits the spoofing
             if instance.created_user != self.request_user:
                 return True
 
-        # the case of instance is updated
-        elif self._is_updated(instance, original):
-            # the case user try to update but he doen't have writable permition
-            if not self.request_user or not self.request_user.has_permission(
-                instance, ACLType.Writable
-            ):
-                return True
+            # the user has to be able to write where the new instance is created
+            return not self._is_writable(instance)
 
-            # the case user try to change params which are disallow to update
-            if not self.validate_update(instance, original):
-                return True
+        # The case of updating an existing instance. Permission is checked whichever
+        # field the row changes, both for the stored object and for what the row would
+        # turn it into, so that a row cannot move an object under a parent the user
+        # cannot write.
+        if not self._is_writable(original) or not self._is_writable(instance):
+            return True
+
+        # the case user try to change params which are disallow to update
+        if not self.validate_update(instance, original):
+            return True
 
         return False
 

@@ -2,6 +2,8 @@ import logging
 import re
 from unittest import mock
 
+import yaml
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 
 from acl.models import ACLBase
@@ -277,3 +279,122 @@ class ImportTest(AironeViewTest):
         resp = self.client.post(reverse("dashboard:do_import"), {"file": fp})
         self.assertEqual(resp.status_code, 400)
         fp.close()
+
+
+class ImportPermissionTest(AironeViewTest):
+    """The import writes nothing that the importing user could not write through the UI."""
+
+    def setUp(self):
+        super().setUp()
+
+        self.owner = User.objects.create(username="owner", is_superuser=True)
+        attrs = [{"name": "val", "type": AttrType.STRING}]
+
+        self.private_entity = self.create_entity(self.owner, "private", attrs, is_public=False)
+        self.private_entry = self.add_entry(
+            self.owner, "secret", self.private_entity, values={"val": "original"}
+        )
+        self.private_attr = self.private_entry.attrs.get(schema__name="val")
+
+        self.public_entity = self.create_entity(self.owner, "public", attrs)
+        self.public_entry = self.add_entry(
+            self.owner, "open", self.public_entity, values={"val": "original"}
+        )
+        self.public_attr = self.public_entry.attrs.get(schema__name="val")
+
+    def _import(self, data):
+        content = yaml.dump(data)
+        return self.client.post(
+            reverse("dashboard:do_import"),
+            {"file": SimpleUploadedFile("import.yaml", content.encode("utf-8"))},
+        )
+
+    def _attr_value_row(self, id, attr, value, username):
+        return {
+            "id": id,
+            "attribute_id": attr.id,
+            "value": value,
+            "refer": "",
+            "created_time": "2020-01-01 00:00:00",
+            "created_user": username,
+            "status": 0,
+            "parent_attrv": "",
+        }
+
+    def test_import_value_into_unwritable_attribute_is_skipped(self):
+        self.guest_login()
+
+        resp = self._import(
+            {"AttributeValue": [self._attr_value_row(99999, self.private_attr, "x", "guest")]}
+        )
+
+        self.assertEqual(resp.status_code, 303)
+        self.assertFalse(AttributeValue.objects.filter(id=99999).exists())
+        self.assertEqual(self.private_attr.get_latest_value().value, "original")
+
+    def test_overwrite_value_of_unwritable_attribute_is_skipped(self):
+        self.guest_login()
+        attrv = self.private_attr.get_latest_value()
+
+        resp = self._import(
+            {"AttributeValue": [self._attr_value_row(attrv.id, self.private_attr, "x", "owner")]}
+        )
+
+        self.assertEqual(resp.status_code, 303)
+        attrv.refresh_from_db()
+        self.assertEqual(attrv.value, "original")
+
+    def test_move_value_into_unwritable_attribute_is_skipped(self):
+        self.guest_login()
+        attrv = self.public_attr.get_latest_value()
+
+        resp = self._import(
+            {"AttributeValue": [self._attr_value_row(attrv.id, self.private_attr, "x", "owner")]}
+        )
+
+        self.assertEqual(resp.status_code, 303)
+        attrv.refresh_from_db()
+        self.assertEqual(attrv.parent_attr, self.public_attr)
+        self.assertEqual(attrv.value, "original")
+        self.assertEqual(self.private_attr.get_latest_value().value, "original")
+
+    def test_import_value_into_writable_attribute(self):
+        self.guest_login()
+
+        resp = self._import(
+            {"AttributeValue": [self._attr_value_row(99999, self.public_attr, "new", "guest")]}
+        )
+
+        self.assertEqual(resp.status_code, 303)
+        self.assertEqual(self.public_attr.get_latest_value().value, "new")
+
+    def test_create_entry_in_unwritable_entity_is_skipped(self):
+        self.guest_login()
+
+        resp = self._import(
+            {"Entry": [{"name": "injected", "entity": "private", "created_user": "guest"}]}
+        )
+
+        self.assertEqual(resp.status_code, 303)
+        self.assertFalse(Entry.objects.filter(name="injected").exists())
+
+    def test_change_entry_schema_is_skipped(self):
+        self.create_entity(self.owner, "another-public")
+        self.guest_login()
+
+        resp = self._import(
+            {
+                "Entry": [
+                    {
+                        "id": self.public_entry.id,
+                        "name": "open",
+                        "entity": "another-public",
+                        "created_user": "owner",
+                    }
+                ]
+            }
+        )
+
+        self.assertEqual(resp.status_code, 303)
+        self.public_entry.refresh_from_db()
+        self.assertEqual(self.public_entry.schema, self.public_entity)
