@@ -56,6 +56,9 @@ describe("UserListPage", () => {
     });
 
     expect(result!).toMatchSnapshot();
+
+    // importing users is only for superusers
+    expect(screen.getByRole("button", { name: "インポート" })).toBeDisabled();
   });
 
   test("renders in English", async () => {

@@ -8,10 +8,12 @@ from pydantic import ValidationError as PydanticValidationError
 from rest_framework import serializers
 from rest_framework.exceptions import APIException, ErrorDetail, ParseError, ValidationError
 from rest_framework.parsers import BaseParser
+from rest_framework.permissions import BasePermission
 from rest_framework.renderers import BaseRenderer
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.utils.serializer_helpers import ReturnDict, ReturnList
-from rest_framework.views import exception_handler
+from rest_framework.views import APIView, exception_handler
 from yaml import SafeDumper
 
 from airone.lib.log import Logger
@@ -198,6 +200,16 @@ def custom_exception_handler(exc: Exception, context: dict[str, Any]) -> Respons
         response.data = _convert_error_code(response.data)
 
     return response
+
+
+class IsSuperuser(BasePermission):
+    """
+    Lets only superusers through. It is for operations that can rewrite any user,
+    group or role, such as importing them.
+    """
+
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        return bool(request.user.is_authenticated and request.user.is_superuser)
 
 
 class AironeUserDefault(serializers.CurrentUserDefault):

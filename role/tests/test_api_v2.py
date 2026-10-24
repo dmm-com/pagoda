@@ -285,6 +285,33 @@ class ViewTest(AironeViewTest):
         self.assertEqual(Role.objects.filter(name="role1").count(), 1)
 
     @patch("role.tasks.import_role_v2.delay", Mock(side_effect=tasks.import_role_v2))
+    def test_import_by_non_superuser_is_forbidden(self):
+        role = self._create_role("role1")
+        self.guest_login()
+
+        payload = yaml.dump(
+            [
+                {
+                    "id": role.id,
+                    "name": "role1",
+                    "description": "taken over",
+                    "users": ["guest"],
+                    "groups": [],
+                    "admin_users": [],
+                    "admin_groups": [],
+                    "permissions": [],
+                }
+            ]
+        )
+        resp = self.client.post("/role/api/v2/import", payload, content_type="application/yaml")
+
+        self.assertEqual(resp.status_code, 403)
+        self.assertFalse(Job.objects.filter(operation=JobOperation.IMPORT_ROLE_V2).exists())
+        role.refresh_from_db()
+        self.assertEqual(role.description, "")
+        self.assertFalse(role.users.filter(username="guest").exists())
+
+    @patch("role.tasks.import_role_v2.delay", Mock(side_effect=tasks.import_role_v2))
     def test_import_for_update(self):
         self.admin_login()
 
