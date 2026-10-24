@@ -1602,3 +1602,21 @@ class ViewTest(AironeViewTest):
         # Check the response is 400 and the content is "Duplicate name entity is existed"
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.content.decode("utf-8"), "Duplicate name entity is existed")
+
+    def test_history_without_permission(self):
+        user = self.guest_login()
+        entity = Entity.objects.create(name="private-entity", created_user=user)
+        entity.is_public = False
+        entity.save()
+
+        resp = self.client.get(reverse("entity:history", args=[entity.id]))
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.content.decode("utf-8"), "You don't have permission to access this object"
+        )
+
+        # the creator can see the history while the entity stays public
+        entity.is_public = True
+        entity.save()
+        resp = self.client.get(reverse("entity:history", args=[entity.id]))
+        self.assertEqual(resp.status_code, 200)

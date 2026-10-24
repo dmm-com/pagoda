@@ -401,11 +401,11 @@ def do_delete(request: HttpRequest, entity_id: int, recv_data: dict[str, Any]) -
 
 @http_get
 def history(request: HttpRequest, entity_id: int) -> HttpResponse:
-    if not Entity.objects.filter(id=entity_id).exists():
-        return HttpResponse("Failed to get entity of specified id", status=400)
-
-    # entity to be editted is given by url
-    entity = Entity.objects.get(id=entity_id)
+    user = cast(User, request.user)
+    entity, error = get_obj_with_check_perm(user, Entity, entity_id, ACLType.Readable)
+    if entity is None:
+        assert error is not None
+        return error
 
     context = {
         "entity": entity,

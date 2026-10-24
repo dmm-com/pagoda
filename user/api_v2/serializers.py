@@ -155,6 +155,36 @@ class UserUpdateSerializer(UserBaseSerializer):
         model = User
         fields = ["username", "email", "is_superuser", "token_lifetime"]
 
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        """
+        `is_superuser` is an administrator-only field. It must not be writable
+        through this endpoint, otherwise any authenticated user could grant the
+        privilege to oneself (mass assignment).
+
+        A non-superuser self-update always submits the current value, which is
+        False, so it is silently dropped to keep the ordinary profile update
+        working. A truthy value is rejected explicitly.
+        """
+        request = self.context.get("request")
+        if request is not None and not request.user.is_superuser:
+            if attrs.get("is_superuser"):
+                raise PermissionDenied("You don't have permission to change is_superuser")
+            attrs.pop("is_superuser", None)
+
+            # Renaming a user is reserved for administrators (see the legacy
+            # do_edit). It also enables squatting a name that an SSO identity
+            # will later be linked to. The UI submits the current name, so only
+            # an actual change is rejected.
+            current_username = getattr(self.instance, "username", None)
+            if self.instance is not None and attrs.get("username") not in (
+                None,
+                current_username,
+            ):
+                raise PermissionDenied("You don't have permission to change username")
+            attrs.pop("username", None)
+
+        return attrs
+
 
 class UserRetrieveSerializer(UserBaseSerializer):
     @extend_schema_field(
