@@ -7,6 +7,9 @@ import {
 } from "./browserQuality";
 import { captureEvidence } from "./reportEvidence";
 
+// Controls are located by their Japanese labels.
+test.use({ locale: "ja-JP" });
+
 const attributeNames = [
   "hostname",
   "primary_switch",
@@ -44,7 +47,11 @@ test("@attribute-types @entity renders all 18 types in the entity editor", async
   page,
 }, testInfo) => {
   await page.goto("/ui/entities/1");
-  const names = page.getByPlaceholder("属性名");
+  // The display attribute picker of object attributes is a combobox sharing
+  // the same placeholder; only the attribute name fields are counted here.
+  const names = page.locator(
+    'input[placeholder="属性名"]:not([role="combobox"])',
+  );
   await expect(names).toHaveCount(attributeNames.length);
   expect(
     await names.evaluateAll((elements) =>
@@ -121,5 +128,38 @@ test("@attribute-types @entry renders an editable control for all 18 types", asy
     name: "entry-all-attribute-types",
     title: "Entry All Attribute Types",
     note: "Entry form rendered controls for all 18 types and accepted representative values.",
+  });
+});
+
+test("@attribute-types @entry loads stored values into the edit form", async ({
+  page,
+}, testInfo) => {
+  // Regression: array fields used to insert placeholder rows while rendering,
+  // which left the item name and array values empty on the edit page and
+  // logged "Cannot update a component while rendering a different component".
+  await page.goto("/ui/entities/1/entries/1/edit");
+
+  await expect(page.locator("#entry-name")).toHaveValue("web-01");
+  const rowOf = (attributeName: string) =>
+    page.getByRole("row").filter({
+      has: page.getByText(attributeName, { exact: true }),
+    });
+  const aliases = rowOf("aliases").locator("input");
+  await expect(aliases).toHaveCount(2);
+  await expect(aliases.nth(0)).toHaveValue("web-primary");
+  await expect(aliases.nth(1)).toHaveValue("frontend-a");
+  const ports = rowOf("ports").locator('input[type="number"]');
+  await expect(ports).toHaveCount(2);
+  await expect(ports.nth(0)).toHaveValue("80");
+  await expect(ports.nth(1)).toHaveValue("443");
+  await expect(
+    rowOf("named_switches").locator('input[value="standby"]'),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "保存" })).toBeDisabled();
+
+  await captureEvidence(page, testInfo, {
+    name: "entry-edit-stored-values",
+    title: "Entry Edit Stored Values",
+    note: "Entry edit form loaded the stored name and array values without React render warnings.",
   });
 });

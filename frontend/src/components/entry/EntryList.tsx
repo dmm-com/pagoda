@@ -29,7 +29,7 @@ const EntryListContent: FC<Props> = ({ entityId, canCreateEntry = true }) => {
   const { data: entries, mutate: refreshEntries } = usePagodaSWR(
     ["entries", entityId, true, page, query],
     () => aironeApiClient.getEntries(entityId, true, page, query),
-    { suspense: true },
+    { suspense: true, refreshInterval: 15_000 },
   );
 
   const handleChangeQuery = changeQuery;

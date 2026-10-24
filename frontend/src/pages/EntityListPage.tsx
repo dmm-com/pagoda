@@ -22,7 +22,7 @@ const EntityListContent: FC = () => {
   const { data: entities, mutate: refreshEntities } = usePagodaSWR(
     ["entities", page, query],
     () => aironeApiClient.getEntities(page, query),
-    { suspense: true },
+    { suspense: true, refreshInterval: 15_000 },
   );
 
   usePageTitle(TITLE_TEMPLATES.entityList);

@@ -2,6 +2,8 @@ import json
 from datetime import timedelta
 from unittest.mock import Mock, patch
 
+from django.utils import timezone
+
 from airone.lib.test import AironeViewTest
 from entity.models import Entity
 from entry import tasks
@@ -51,6 +53,35 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.json()["count"], _TEST_MAX_LIST_VIEW)
         # user field is present in results
         self.assertIn("user", resp.json()["results"][0])
+
+    def test_expired_job_is_reported_as_timeout_without_changing_terminal_status(self):
+        user = self.guest_login()
+        entity = Entity.objects.create(name="entity", created_user=user)
+        entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
+        job = Job.new_create(user, entry, params={"entry_name": entry.name, "attrs": []})
+        Job.objects.filter(id=job.id).update(updated_at=timezone.now() - timedelta(minutes=10))
+
+        with patch.object(Job, "_get_job_timeout", return_value=60):
+            response = self.client.get(f"/job/api/v2/jobs?target_id={entry.id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["results"][0]["status"], JobStatus.TIMEOUT)
+        with patch.object(Job, "_get_job_timeout", return_value=60):
+            detail = self.client.get(f"/job/api/v2/{job.id}/")
+        self.assertEqual(detail.json()["status"], JobStatus.TIMEOUT)
+        job.refresh_from_db()
+        self.assertEqual(job.status, JobStatus.PREPARING)
+
+        job.update(JobStatus.PROCESSING)
+        Job.objects.filter(id=job.id).update(updated_at=timezone.now() - timedelta(minutes=10))
+        with patch.object(Job, "_get_job_timeout", return_value=60):
+            response = self.client.get(f"/job/api/v2/jobs?target_id={entry.id}")
+        self.assertEqual(response.json()["results"][0]["status"], JobStatus.TIMEOUT)
+
+        job.update(JobStatus.DONE)
+        Job.objects.filter(id=job.id).update(updated_at=timezone.now() - timedelta(minutes=10))
+        with patch.object(Job, "_get_job_timeout", return_value=60):
+            response = self.client.get(f"/job/api/v2/jobs?target_id={entry.id}")
+        self.assertEqual(response.json()["results"][0]["status"], JobStatus.DONE)
 
     def test_get_jobs_includes_role_import_without_target(self):
         user = self.guest_login()

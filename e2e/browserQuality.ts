@@ -31,6 +31,13 @@ export const collectBrowserFailures = (page: Page) => {
     // do not report a request that already received a successful HTTP response.
     if (successfulResponses.has(request)) return;
     const failure = request.failure();
+    // SWR may replace an in-flight GET when polling or navigating away.
+    if (
+      request.method() === "GET" &&
+      failure?.errorText === "net::ERR_ABORTED"
+    ) {
+      return;
+    }
     failures.push(
       `request failed: ${request.method()} ${request.url()} ${failure?.errorText ?? ""}`,
     );
