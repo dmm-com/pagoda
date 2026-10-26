@@ -17,6 +17,7 @@ export const UserListPage: FC = () => {
   const { t } = useTranslation();
   const [openImportModal, setOpenImportModal] = useState(false);
 
+  const isSuperuser = ServerContext.getInstance()?.user?.isSuperuser ?? false;
   const isReadonly = ServerContext.getInstance()?.user?.isReadonly ?? false;
 
   usePageTitle(TITLE_TEMPLATES.userList);
@@ -38,7 +39,7 @@ export const UserListPage: FC = () => {
             color="info"
             sx={{ margin: "0 4px" }}
             onClick={() => setOpenImportModal(true)}
-            disabled={isReadonly}
+            disabled={!isSuperuser || isReadonly}
           >
             {t("common.import")}
           </Button>

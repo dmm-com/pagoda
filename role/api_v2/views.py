@@ -9,7 +9,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from airone.lib.configuration_export import ConfigurationExportAPI
-from airone.lib.drf import YAMLParser
+from airone.lib.drf import IsSuperuser, YAMLParser
 from group.models import Group
 from job.models import Job, JobStatus
 from role.api_v2.serializers import (
@@ -88,6 +88,8 @@ class RoleAPI(viewsets.ModelViewSet[Role]):
 class RoleImportAPI(generics.GenericAPIView[Any]):
     parser_classes = [YAMLParser]
     serializer_class = RoleImportSerializer
+    # An imported role can take over any role and grant any permission on any object
+    permission_classes = [IsAuthenticated & IsSuperuser]
 
     def post(self, request: Request) -> Response:
         import_datas = request.data

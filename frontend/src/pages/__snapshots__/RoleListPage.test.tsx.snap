@@ -85,8 +85,9 @@ exports[`RoleListPage > should match snapshot 1`] = `
                   エクスポート
                 </button>
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-1ep9zj1-MuiButtonBase-root-MuiButton-root"
-                  tabindex="0"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-1ep9zj1-MuiButtonBase-root-MuiButton-root"
+                  disabled=""
+                  tabindex="-1"
                   type="button"
                 >
                   インポート
@@ -323,8 +324,9 @@ exports[`RoleListPage > should match snapshot 1`] = `
                 エクスポート
               </button>
               <button
-                class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-1ep9zj1-MuiButtonBase-root-MuiButton-root"
-                tabindex="0"
+                class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-1ep9zj1-MuiButtonBase-root-MuiButton-root"
+                disabled=""
+                tabindex="-1"
                 type="button"
               >
                 インポート

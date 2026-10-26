@@ -445,6 +445,29 @@ class ViewTest(AironeViewTest):
         self.assertEqual(user1.email, "user1@example.com")
         self.assertEqual(user1.groups.count(), 2)
 
+    def test_import_by_non_superuser_is_forbidden(self):
+        admin = User.objects.create(username="admin", email="admin@example.com", is_superuser=True)
+        group = self._create_group("Group1")
+        self.guest_login()
+
+        body = yaml.dump(
+            [
+                {
+                    "id": admin.id,
+                    "username": "admin",
+                    "email": "attacker@example.com",
+                    "groups": "",
+                },
+                {"username": "guest", "email": "guest@example.com", "groups": "Group1"},
+            ]
+        )
+        resp = self.client.post("/user/api/v2/import/", body, content_type="application/yaml")
+
+        self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+        admin.refresh_from_db()
+        self.assertEqual(admin.email, "admin@example.com")
+        self.assertFalse(group.user_set.exists())
+
     def test_export(self):
         self.admin_login()
 
