@@ -52,7 +52,6 @@ class EntityResource(AironeModelResource):
         "resource_model_name": "EntityResource",
     }
 
-    COMPARING_KEYS = ["name", "note", "created_user", "status"]
     DISALLOW_UPDATE_KEYS = ["created_user"]
 
     user = fields.Field(
@@ -94,13 +93,6 @@ class EntityAttrResource(AironeModelResource):
         "resource_model_name": "EntityAttrResource",
     }
 
-    COMPARING_KEYS = [
-        "name",
-        "is_mandatory",
-        "referral",
-        "parent_entity",
-        "created_user",
-    ]
     DISALLOW_UPDATE_KEYS = ["parent_entity", "created_user"]
 
     user = fields.Field(

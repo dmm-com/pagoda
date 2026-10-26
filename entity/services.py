@@ -204,6 +204,14 @@ def _preview_entity_attr_row(
     if not User.objects.filter(username=_text(row.get("created_user"))).exists():
         return _RowOutcome("error", "created_user does not exist", [])
 
+    # A new attribute is written into its model, which AironeModelResource.skip_row()
+    # checks after the spoofing check that _compare() mirrors. A model that the same
+    # file creates does not exist yet and is the user's own.
+    if instance is None and _text(row.get("created_user")) == user.username:
+        parent_entity = Entity.objects.filter(name=row["entity"]).first()
+        if parent_entity and not user.has_permission(parent_entity, ACLType.Writable):
+            return _RowOutcome("skip", "permission_denied", [])
+
     return _compare(user, EntityAttrResource, ENTITY_ATTR_FIELDS, row, instance)
 
 
