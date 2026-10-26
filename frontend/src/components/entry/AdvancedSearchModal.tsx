@@ -42,7 +42,9 @@ export const AdvancedSearchModal: FC<Props> = ({
   // current search whenever it is opened so stale local state is not shown.
   useEffect(() => {
     if (openModal) {
-      setSelectedAttrNames(initialAttrNamesKey ? initialAttrNamesKey.split("\0") : []);
+      setSelectedAttrNames(
+        initialAttrNamesKey ? initialAttrNamesKey.split("\0") : [],
+      );
       setHasReferral(initialHasReferral);
     }
   }, [openModal, initialAttrNamesKey, initialHasReferral]);
