@@ -24,3 +24,12 @@ class ViewTest(AironeViewTest):
         # never run background processing.
         self.assertEqual(resp.status_code, 404)
         self.assertEqual(User.objects.filter(is_active=True).count(), active_user_count)
+
+    @with_airone_settings({"LEGACY_UI_DISABLED": True})
+    def test_vail_legacy_import_routes_registered_with_trailing_slash(self):
+        self.admin_login()
+
+        for url in [reverse("dashboard:import"), reverse("dashboard:do_import")]:
+            self.assertTrue(url.endswith("/"))
+            resp = self.client.post(url)
+            self.assertEqual(resp.status_code, 404, url)

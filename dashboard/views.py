@@ -74,9 +74,12 @@ def do_import_data(request: HttpRequest, context: str) -> HttpResponse:
         return HttpResponse("File size over", status=400)
 
     try:
-        data = yaml.load(context, Loader=yaml.FullLoader)
-    except yaml.parser.ParserError:
+        data = yaml.safe_load(context)
+    except yaml.YAMLError:
         return HttpResponse("Couldn't parse uploaded file", status=400)
+
+    if not isinstance(data, dict):
+        return HttpResponse("Uploaded file has invalid data structure to import", status=400)
 
     def _do_import(resource: Any, iter_data: list[Any]) -> None:
         results: list[dict[str, Any]] = []

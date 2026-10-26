@@ -13,11 +13,12 @@ class URLGateKeeper:
 
     VEILED_URL_PATTERNS = [
         ## Advanced Search
-        r"^/dashboard/import$",
-        r"^/dashboard/do_import$",
-        r"^/dashboard/advanced_search$",
-        r"^/dashboard/advanced_search_result$",
-        r"^/dashboard/advanced_search_export$",
+        # The trailing slash is optional: the import routes are registered with one
+        r"^/dashboard/import/?$",
+        r"^/dashboard/do_import/?$",
+        r"^/dashboard/advanced_search/?$",
+        r"^/dashboard/advanced_search_result/?$",
+        r"^/dashboard/advanced_search_export/?$",
         ## User
         r"^/user/reset.*$",
         r"^/user/password_reset/$",
