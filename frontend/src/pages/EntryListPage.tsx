@@ -31,7 +31,7 @@ const EntryListContent: FC<Props> = ({ canCreateEntry = true }) => {
   const { data: entity } = usePagodaSWR(
     ["entity", entityId],
     () => aironeApiClient.getEntity(entityId),
-    { suspense: true },
+    { suspense: true, refreshInterval: 15_000 },
   );
 
   usePageTitle(TITLE_TEMPLATES.entryList, {
@@ -46,6 +46,7 @@ const EntryListContent: FC<Props> = ({ canCreateEntry = true }) => {
         title={entity.name}
         description={t("entry.listPage.description")}
         targetId={entity.id}
+        targetKind="model"
         hasOngoingProcess={entity.hasOngoingChanges}
       >
         <Box width="50px">

@@ -36,6 +36,18 @@ import { Confirmable } from "../common/Confirmable";
 import { AironeLink } from "components/common";
 
 const JOB_TEXT_DISPLAY_LIMIT = 300;
+const CANCELABLE_JOB_OPERATIONS = new Set([
+  JobOperations.CREATE_ENTRY,
+  JobOperations.COPY_ENTRY,
+  JobOperations.IMPORT_ENTRY,
+  JobOperations.IMPORT_ENTRY_V2,
+  JobOperations.EXPORT_ENTRY,
+  JobOperations.EXPORT_ENTRY_V2,
+  JobOperations.REGISTER_REFERRALS,
+  JobOperations.EXPORT_SEARCH_RESULT,
+  JobOperations.EXPORT_SEARCH_RESULT_V2,
+  JobOperations.BULK_EDIT_ENTRY,
+]);
 
 const getJobTextForDisplay = (text: string | null | undefined): string => {
   if (!text || text.length <= JOB_TEXT_DISPLAY_LIMIT) return text ?? "";
@@ -115,6 +127,8 @@ const jobStatusIcons = (jobStatus: number | undefined) => {
       return <PreparingIcon />;
     case JobStatuses.CANCELED:
       return <CancelledIcon />;
+    case JobStatuses.WARNING:
+      return <ErrorIcon />;
     default:
       return <UnknownIcon />;
   }
@@ -268,27 +282,25 @@ export const JobList: FC<Props> = ({ jobs, showUser }) => {
                   <Typography>{jobStatusLabel(job.status)}</Typography>
                 </Box>
                 <Box>
-                  {![
-                    JobStatuses.DONE,
-                    JobStatuses.ERROR,
-                    JobStatuses.CANCELED,
-                    JobStatuses.WARNING,
-                  ].includes(job.status ?? 0) && (
-                    <Confirmable
-                      componentGenerator={(handleOpen) => (
-                        <Button
-                          variant="contained"
-                          color="secondary"
-                          sx={{ my: "4px" }}
-                          onClick={handleOpen}
-                        >
-                          {t("common.cancel")}
-                        </Button>
-                      )}
-                      dialogTitle={t("job.list.confirmCancelTitle")}
-                      onClickYes={() => handleCancel(job.id)}
-                    />
-                  )}
+                  {[JobStatuses.PREPARING, JobStatuses.PROCESSING].includes(
+                    job.status ?? 0,
+                  ) &&
+                    CANCELABLE_JOB_OPERATIONS.has(job.operation ?? 0) && (
+                      <Confirmable
+                        componentGenerator={(handleOpen) => (
+                          <Button
+                            variant="contained"
+                            color="secondary"
+                            sx={{ my: "4px" }}
+                            onClick={handleOpen}
+                          >
+                            {t("common.cancel")}
+                          </Button>
+                        )}
+                        dialogTitle={t("job.list.confirmCancelTitle")}
+                        onClickYes={() => handleCancel(job.id)}
+                      />
+                    )}
                 </Box>
               </Box>
             </TableCell>

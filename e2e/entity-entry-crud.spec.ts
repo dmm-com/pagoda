@@ -7,6 +7,9 @@ import {
 } from "./browserQuality";
 import { captureEvidence } from "./reportEvidence";
 
+// Controls are located by their Japanese labels.
+test.use({ locale: "ja-JP" });
+
 const failureMap = new WeakMap<object, string[]>();
 
 test.beforeEach(async ({ page, request }, testInfo) => {

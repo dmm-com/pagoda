@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box } from "@mui/material";
 import { FC, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useNavigate } from "react-router";
 
 import { Loading } from "components/common/Loading";
@@ -61,6 +61,7 @@ export const EntryEditPage: FC<Props> = ({
     formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
     handleSubmit,
     reset,
+    getValues,
     setError,
     setValue,
     control,
@@ -78,31 +79,50 @@ export const EntryEditPage: FC<Props> = ({
   const { data: entity, isLoading: entityLoading } = usePagodaSWR(
     ["entity", entityId],
     () => aironeApiClient.getEntity(entityId),
+    { refreshInterval: 15_000 },
   );
 
   const { data: entry, isLoading: entryLoading } = usePagodaSWR(
     entryId != undefined ? ["entry", entryId] : null,
     entryId != undefined ? () => aironeApiClient.getEntry(entryId) : null,
+    { refreshInterval: 15_000 },
   );
 
-  // Whether the form has been initialized with the loaded entity/entry.
+  // Whether the entity/entry needed to build the form have been loaded.
   const initialized = willCreate
     ? !entityLoading && entity != null
     : !entityLoading && entity != null && !entryLoading && entry != null;
 
+  // Whether the loaded entity/entry have been applied to the form. `schema` is
+  // only set by `reset` (no field registers it), so it tells a form that has
+  // received the loaded data apart from an empty one. The form fields are not
+  // rendered before that: array fields would otherwise add placeholder rows,
+  // marking the form dirty with values the first reset must not keep.
+  const isFormLoaded = useWatch({ control, name: "schema" }) != null;
+
   useEffect(() => {
-    if (willCreate) {
-      if (!entityLoading && entity != null) {
-        const entryInfo = formalizeEntryInfo(undefined, entity, excludeAttrs);
-        entryInfo.name = useUUID ? crypto.randomUUID() : "";
-        reset(entryInfo);
-      }
-    } else {
-      if (!entityLoading && entity != null && !entryLoading && entry != null) {
-        const entryInfo = formalizeEntryInfo(entry, entity, excludeAttrs);
-        reset(entryInfo);
-      }
+    if (!initialized || entity == null) {
+      return;
     }
+    const entryInfo = formalizeEntryInfo(
+      willCreate ? undefined : entry,
+      entity,
+      excludeAttrs,
+    );
+    // Read the form state instead of tracking the first load in a ref, so
+    // that StrictMode running this effect twice gives the same result.
+    if (getValues("schema") == null) {
+      if (willCreate) {
+        entryInfo.name = useUUID ? crypto.randomUUID() : "";
+      }
+      reset(entryInfo);
+      return;
+    }
+    // Background refreshes keep the user's local edits.
+    if (willCreate) {
+      entryInfo.name = getValues("name");
+    }
+    reset(entryInfo, { keepDirtyValues: true });
   }, [willCreate, entity, entry]);
 
   useEffect(() => {
@@ -117,10 +137,10 @@ export const EntryEditPage: FC<Props> = ({
 
   // Show the first validation feedback
   useEffect(() => {
-    if (initialized) {
+    if (isFormLoaded) {
       trigger();
     }
-  }, [initialized, trigger]);
+  }, [isFormLoaded, trigger]);
 
   usePageTitle(
     entityLoading || (entryId && entryLoading)
@@ -212,6 +232,11 @@ export const EntryEditPage: FC<Props> = ({
         description={
           entry != null ? t("entryForm.editPage.editDescription") : undefined
         }
+        targetId={entryId ?? entityId}
+        targetKind={entryId != null ? "item" : "model"}
+        hasOngoingProcess={
+          entry?.hasOngoingChanges ?? (willCreate && entity?.hasOngoingChanges)
+        }
       >
         <SubmitButton
           name={t("common.save")}
@@ -224,7 +249,7 @@ export const EntryEditPage: FC<Props> = ({
         />
       </PageHeader>
 
-      {initialized && entity != null && (
+      {isFormLoaded && entity != null && (
         <EntryForm
           entity={{
             ...entity,
