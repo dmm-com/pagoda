@@ -4,7 +4,7 @@ import {
   AdvancedSearchResultAttrInfoFilterKeyEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Box, Button, Checkbox, TextField } from "@mui/material";
-import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, FC, SetStateAction, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { useTranslation } from "../../hooks/useTranslation";
@@ -21,33 +21,32 @@ interface Props {
   joinAttrs: AdvancedSearchJoinAttrInfo[];
 }
 
-export const AdvancedSearchModal: FC<Props> = ({
+export const AdvancedSearchModal: FC<Props> = (props) => {
+  const initialHasReferral =
+    new URLSearchParams(location.search).get("has_referral") === "true";
+
+  return props.openModal ? (
+    <AdvancedSearchModalForm
+      {...props}
+      key={JSON.stringify([props.initialAttrNames, initialHasReferral])}
+      initialHasReferral={initialHasReferral}
+    />
+  ) : null;
+};
+
+const AdvancedSearchModalForm: FC<Props & { initialHasReferral: boolean }> = ({
   openModal,
   setOpenModal,
   attrNames,
   initialAttrNames,
   attrInfos,
   joinAttrs,
+  initialHasReferral,
 }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const params = new URLSearchParams(location.search);
-  const initialAttrNamesKey = initialAttrNames.join("\0");
-  const initialHasReferral = params.get("has_referral") === "true";
-
   const [selectedAttrNames, setSelectedAttrNames] = useState(initialAttrNames);
   const [hasReferral, setHasReferral] = useState(initialHasReferral);
-
-  // The modal stays mounted while closed. Refresh its selected tags from the
-  // current search whenever it is opened so stale local state is not shown.
-  useEffect(() => {
-    if (openModal) {
-      setSelectedAttrNames(
-        initialAttrNamesKey ? initialAttrNamesKey.split("\0") : [],
-      );
-      setHasReferral(initialHasReferral);
-    }
-  }, [openModal, initialAttrNamesKey, initialHasReferral]);
 
   const handleUpdatePageURL = () => {
     const params = formatAdvancedSearchParams({
