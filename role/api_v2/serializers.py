@@ -30,12 +30,21 @@ class RoleGroupSerializer(serializers.ModelSerializer[Group]):
         ]
 
 
+class RolePermissionSerializer(serializers.Serializer[Any]):
+    type = serializers.CharField()
+    id = serializers.IntegerField()
+    model_name = serializers.CharField()
+    name = serializers.CharField()
+    permission = serializers.CharField()
+
+
 class RoleSerializer(serializers.ModelSerializer[Role]):
     users = serializers.SerializerMethodField()
     groups = serializers.SerializerMethodField()
     admin_users = serializers.SerializerMethodField()
     admin_groups = serializers.SerializerMethodField()
     is_editable = serializers.SerializerMethodField(method_name="get_is_editable", read_only=True)
+    permissions = serializers.SerializerMethodField()
 
     class Meta:
         model = Role
@@ -49,6 +58,7 @@ class RoleSerializer(serializers.ModelSerializer[Role]):
             "admin_users",
             "admin_groups",
             "is_editable",
+            "permissions",
         ]
 
     @extend_schema_field(RoleUserSerializer(many=True))
@@ -72,6 +82,39 @@ class RoleSerializer(serializers.ModelSerializer[Role]):
         return Role.editable(
             current_user, list(obj.admin_users.all()), list(obj.admin_groups.all())
         )
+
+    @extend_schema_field(RolePermissionSerializer(many=True))
+    def get_permissions(self, obj: Role) -> list[dict[str, Any]]:
+        permissions = list(obj.permissions.all())
+        permission_obj_ids = [
+            permission.get_objid()  # type: ignore[attr-defined]
+            for permission in permissions
+        ]
+        objects = ACLBase.objects.in_bulk(permission_obj_ids)
+        result = []
+        for permission, obj_id in zip(permissions, permission_obj_ids, strict=True):
+            acl_object = objects.get(obj_id)
+            if acl_object is None or not acl_object.is_active:
+                continue
+            target = cast(Any, acl_object.get_subclass_object())
+            model_name = "-"
+            match type(target).__name__:
+                case "EntityAttr":
+                    model_name = target.parent_entity.name
+                case "Entry":
+                    model_name = target.schema.name
+                case "Attribute":
+                    model_name = target.schema.parent_entity.name
+            result.append(
+                {
+                    "type": type(target).__name__,
+                    "id": target.pk,
+                    "model_name": model_name,
+                    "name": target.name,
+                    "permission": permission.name,
+                }
+            )
+        return result
 
 
 class RoleCreateUpdateSerializer(serializers.ModelSerializer[Role]):
