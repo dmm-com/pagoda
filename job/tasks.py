@@ -66,9 +66,9 @@ def import_general(self: Task[Any, Any], job: Job) -> tuple[JobStatus, str, None
             serializer.is_valid(raise_exception=True)
             serializer.save()
         elif params.kind == "user":
-            import_users(params.data)  # type: ignore[arg-type]
+            import_users(params.data)
         else:
-            import_groups(params.data)  # type: ignore[arg-type]
+            import_groups(params.data)
     except ImportDataError as e:
         return JobStatus.ERROR, str(e), None
 

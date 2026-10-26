@@ -77,38 +77,38 @@ class CommonImportAPI(generics.GenericAPIView[Any]):
         job_ids: list[int] = []
         error_list: list[str] = []
         if import_type == ImportType.ENTITY:
-            serializer = EntityImportExportRootSerializer(
+            entity_serializer = EntityImportExportRootSerializer(
                 data=request.data, context={"request": request}
             )
-            serializer.is_valid(raise_exception=True)
-            job_ids.append(self._start_general_job(user, "entity", serializer.initial_data))
+            entity_serializer.is_valid(raise_exception=True)
+            job_ids.append(self._start_general_job(user, "entity", entity_serializer.initial_data))
         elif import_type == ImportType.ENTRY:
             preview_job_id = _parse_preview_job_id(request)
-            serializer = EntryImportSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
+            entry_serializer = EntryImportSerializer(data=request.data)
+            entry_serializer.is_valid(raise_exception=True)
             job_ids, error_list = start_entry_import_jobs(
                 user,
-                serializer.validated_data,
+                entry_serializer.validated_data,
                 force=request.query_params.get("force", "") in ["true", "True"],
                 preview_job_id=preview_job_id,
             )
         elif import_type == ImportType.USER:
-            serializer = UserImportSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
+            user_serializer = UserImportSerializer(data=request.data)
+            user_serializer.is_valid(raise_exception=True)
             try:
-                validate_user_import_data(request.data)
+                validate_user_import_data(cast(list[dict[str, Any]], request.data))
             except ImportDataError as e:
                 raise ValidationError(str(e))
             job_ids.append(self._start_general_job(user, "user", request.data))
         elif import_type == ImportType.GROUP:
-            serializer = GroupImportSerializer(data=request.data, many=True)
-            serializer.is_valid(raise_exception=True)
+            group_serializer = GroupImportSerializer(data=request.data, many=True)
+            group_serializer.is_valid(raise_exception=True)
             job_ids.append(self._start_general_job(user, "group", request.data))
         else:
-            serializer = RoleImportSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
+            role_serializer = RoleImportSerializer(data=request.data)
+            role_serializer.is_valid(raise_exception=True)
             job = Job.new_role_import_v2(
-                user, text="Preparing to import role data", params=serializer.validated_data
+                user, text="Preparing to import role data", params=role_serializer.validated_data
             )
             job.run()
             job_ids.append(job.id)
