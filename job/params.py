@@ -526,6 +526,13 @@ class ConfigurationExportParams(JobParamsModel):
     kind: Literal["entity", "user", "group", "role"]
 
 
+class GeneralImportParams(JobParamsModel):
+    # ``data`` is the already validated import document: a dict for models, a list
+    # of records for users and groups.
+    kind: Literal["entity", "user", "group"]
+    data: dict[str, Any] | list[dict[str, Any]]
+
+
 CORE_JOB_PARAMS: dict[int, ParamsContract] = _build_core_registry(
     [
         (1, LegacyCreateEntryParams),
@@ -564,6 +571,7 @@ CORE_JOB_PARAMS: dict[int, ParamsContract] = _build_core_registry(
         # linkage, which an import job carries but a preview job never sets).
         (33, ImportEntryParams),
         (34, ConfigurationExportParams),
+        (35, GeneralImportParams),
     ]
 )
 

@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 
 from airone.lib.configuration_export import ConfigurationExportAPI
 from airone.lib.drf import IsSuperuser, YAMLParser
+from common.lib.import_services import ImportDataError, import_groups
 from group.api_v2.serializers import (
     GroupCreateUpdateSerializer,
     GroupImportSerializer,
@@ -100,37 +101,10 @@ class GroupImportAPI(generics.GenericAPIView[Any]):
         serializer = GroupImportSerializer(data=import_datas, many=True)
         serializer.is_valid(raise_exception=True)
 
-        # TODO better to move the saving logic into the serializer
-        for group_data in import_datas:
-            if "id" in group_data:
-                # update group by id
-                group = Group.objects.filter(id=group_data["id"]).first()
-                if not group:
-                    return Response(
-                        "Specified id group does not exist(id:%s, group:%s)"
-                        % (group_data["id"], group_data["name"]),
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-
-                # check new name is not used
-                if (group.name != group_data["name"]) and (
-                    Group.objects.filter(name=group_data["name"]).count() > 0
-                ):
-                    return Response(
-                        "New group name is already used(id:%s, group:%s->%s)"
-                        % (group_data["id"], group.name, group_data["name"]),
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-
-                group.name = group_data["name"]
-                group.save()
-            else:
-                # update group by name
-                group = Group.objects.filter(name=group_data["name"]).first()
-                if not group:
-                    # create group
-                    group = Group(name=group_data["name"])
-                group.save()
+        try:
+            import_groups(import_datas)
+        except ImportDataError as e:
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
 
         return Response(status=status.HTTP_200_OK)
 

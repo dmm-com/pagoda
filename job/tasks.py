@@ -8,12 +8,14 @@ from airone.celery import app
 from airone.lib.acl import ACLType, get_permitted_objects
 from airone.lib.drf import YAMLRenderer
 from airone.lib.job import may_schedule_until_job_is_ready, register_job_task
+from common.lib.import_services import ImportDataError, import_groups, import_users
 from entity.api_v2.serializers import EntityImportExportRootSerializer
 from entity.models import Entity, EntityAttr
+from entity.tasks import _JobRequest
 from group.api_v2.serializers import GroupExportSerializer
 from group.models import Group
-from job.models import Job, JobOperation
-from job.params import ConfigurationExportParams
+from job.models import Job, JobOperation, JobStatus
+from job.params import ConfigurationExportParams, GeneralImportParams
 from role.api_v2.serializers import RoleImportExportChildSerializer
 from role.api_v2.views import get_permitted_roles
 from role.models import Role
@@ -46,3 +48,26 @@ def export_configuration(self: Task[Any, Any], job: Job) -> None:
 
     if not job.is_canceled():
         job.set_cache(YAMLRenderer().render(data))
+
+
+@register_job_task(JobOperation.IMPORT_GENERAL_V2)
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def import_general(self: Task[Any, Any], job: Job) -> tuple[JobStatus, str, None]:
+    params = job.get_typed_params(GeneralImportParams)
+
+    try:
+        if params.kind == "entity":
+            serializer = EntityImportExportRootSerializer(
+                data=params.data, context={"request": _JobRequest(job.user)}
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+        elif params.kind == "user":
+            import_users(params.data)  # type: ignore[arg-type]
+        else:
+            import_groups(params.data)  # type: ignore[arg-type]
+    except ImportDataError as e:
+        return JobStatus.ERROR, str(e), None
+
+    return JobStatus.DONE, "Imported %s data" % params.kind, None

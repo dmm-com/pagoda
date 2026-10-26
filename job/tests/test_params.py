@@ -57,6 +57,7 @@ class JobParamsTest(SimpleTestCase):
         32: {"Entity": [], "EntityAttr": []},
         33: {"entity": "E", "entries": []},
         34: {"kind": "entity"},
+        35: {"kind": "entity", "data": {"Entity": [], "EntityAttr": []}},
     }
 
     def test_all_core_operations_have_contracts(self) -> None:

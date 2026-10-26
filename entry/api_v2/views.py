@@ -3,7 +3,6 @@ import logging
 import re
 from collections import Counter
 from copy import deepcopy
-from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, cast
 
 from django.db.models import OuterRef, Prefetch, Q, QuerySet, Subquery
@@ -23,7 +22,6 @@ from airone.lib import custom_view
 from airone.lib.acl import ACLType
 from airone.lib.drf import (
     DuplicatedObjectExistsError,
-    FrequentImportError,
     IncorrectTypeError,
     InvalidValueError,
     ObjectNotExistsError,
@@ -72,6 +70,7 @@ from entry.api_v2.serializers import (
     ItemRollbackSerializer,
     _make_display_attr_prefetch,
 )
+from entry.import_service import start_entry_import_jobs
 from entry.models import AliasEntry, Attribute, AttributeValue, Entry
 from entry.services import AdvancedSearchService
 from entry.settings import CONFIG
@@ -1088,55 +1087,16 @@ class EntryImportAPI(generics.GenericAPIView[Entity]):
         if user.is_readonly:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        import_datas = request.data
         preview_job_id = _preview_job_id_param(request)
-        serializer = EntryImportSerializer(data=import_datas)
+        serializer = EntryImportSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        import_datas = serializer.validated_data
-        entities = self.get_queryset()
 
-        # limit import job to deny accidental frequent import for same entity
-        if request.query_params.get("force", "") not in ["true", "True"]:
-            valid_statuses: list[JobStatus] = [
-                JobStatus.PREPARING,
-                JobStatus.PROCESSING,
-                JobStatus.DONE,
-            ]
-            yesterday = datetime.now() - timedelta(days=1)
-            if Job.objects.filter(
-                status__in=valid_statuses,
-                operation=JobOperation.IMPORT_ENTRY_V2,
-                target__in=entities,
-                created_at__gte=yesterday,
-            ).exists():
-                raise FrequentImportError("Import job for each entity can apply once a day.")
-
-        job_ids: list[int] = []
-        error_list: list[str] = []
-        for import_data in import_datas:
-            entity: Entity | None = next(
-                (e for e in entities if e.name == import_data["entity"]), None
-            )
-            if not entity:
-                error_list.append("%s: Entity does not exists." % import_data["entity"])
-                continue
-
-            if not user.has_permission(entity, ACLType.Writable):
-                error_list.append("%s: Entity is permission denied." % import_data["entity"])
-                continue
-
-            job = Job.new_import_v2(
-                user,
-                entity,
-                text="Preparing to import data",
-                params=(
-                    {**import_data, "preview_job_id": preview_job_id}
-                    if preview_job_id is not None
-                    else import_data
-                ),
-            )
-            job.run()
-            job_ids.append(job.id)
+        job_ids, error_list = start_entry_import_jobs(
+            user,
+            serializer.validated_data,
+            force=request.query_params.get("force", "") in ["true", "True"],
+            preview_job_id=preview_job_id,
+        )
 
         return Response(
             {"result": {"job_ids": job_ids, "error": error_list}}, status=status.HTTP_200_OK
