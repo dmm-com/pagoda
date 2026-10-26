@@ -75,6 +75,27 @@ describe("AdvancedSearchModal", () => {
     expect(setOpenModal).toHaveBeenCalledWith(false);
   });
 
+  test("selects every available attribute from the reset modal", async () => {
+    render(
+      <AdvancedSearchModal
+        openModal={true}
+        setOpenModal={vi.fn()}
+        attrNames={attrNames}
+        initialAttrNames={initialAttrNames}
+        attrInfos={attrInfos}
+        joinAttrs={joinAttrs}
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Open" }));
+    fireEvent.click(await screen.findByText("すべて選択"));
+
+    expect(screen.getByText("attrA")).toBeInTheDocument();
+    expect(screen.getByText("attrB")).toBeInTheDocument();
+    expect(screen.getByText("attrC")).toBeInTheDocument();
+  });
+
   test("renders in English", async () => {
     await act(async () => {
       await i18n.changeLanguage("en");
