@@ -8,3 +8,4 @@ export * from "./usePrompt";
 export * from "./useSimpleSearch";
 export * from "./useTranslation";
 export * from "./useTypedParams";
+export * from "./useEntryDeletionConfirmation";
