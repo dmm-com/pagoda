@@ -5,14 +5,15 @@ from typing import Any
 from celery import Task
 
 from airone.celery import app
+from airone.exceptions import ImportDataError
 from airone.lib.acl import ACLType, get_permitted_objects
 from airone.lib.drf import YAMLRenderer
 from airone.lib.job import may_schedule_until_job_is_ready, register_job_task
-from common.lib.import_services import ImportDataError, import_groups, import_users
 from entity.api_v2.serializers import EntityImportExportRootSerializer
 from entity.models import Entity, EntityAttr
 from entity.tasks import _JobRequest
 from group.api_v2.serializers import GroupExportSerializer
+from group.import_service import import_groups
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus
 from job.params import ConfigurationExportParams, GeneralImportParams
@@ -20,6 +21,7 @@ from role.api_v2.serializers import RoleImportExportChildSerializer
 from role.api_v2.views import get_permitted_roles
 from role.models import Role
 from user.api_v2.serializers import UserExportSerializer
+from user.import_service import import_users
 from user.models import User
 
 

@@ -8,10 +8,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from airone.exceptions import ImportDataError
 from airone.lib.drf import InvalidValueError, YAMLParser
 from common.api_v2.serializers import CommonImportJobSerializer
 from common.lib.import_detector import ImportType, UnknownImportFormatError, detect_import_type
-from common.lib.import_services import ImportDataError, validate_user_import_data
 from entity.api_v2.serializers import EntityImportExportRootSerializer
 from entry.api_v2.serializers import EntryImportSerializer
 from entry.import_service import start_entry_import_jobs
@@ -19,6 +19,7 @@ from group.api_v2.serializers import GroupImportSerializer
 from job.models import Job
 from role.api_v2.serializers import RoleImportSerializer
 from user.api_v2.serializers import UserImportSerializer
+from user.import_service import validate_user_import_data
 from user.models import User
 
 

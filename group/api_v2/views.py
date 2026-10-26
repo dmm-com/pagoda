@@ -11,15 +11,16 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from airone.exceptions import ImportDataError
 from airone.lib.configuration_export import ConfigurationExportAPI
 from airone.lib.drf import IsSuperuser, YAMLParser
-from common.lib.import_services import ImportDataError, import_groups
 from group.api_v2.serializers import (
     GroupCreateUpdateSerializer,
     GroupImportSerializer,
     GroupSerializer,
     GroupTreeV2Serializer,
 )
+from group.import_service import import_groups
 from group.models import Group
 from user.models import User
 

@@ -22,13 +22,13 @@ from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer, Serializer
 from rest_framework.views import APIView
 
+from airone.exceptions import ImportDataError
 from airone.exceptions.model import UnexpectedAttributeType
 from airone.lib.acl import ACLType
 from airone.lib.configuration_export import ConfigurationExportAPI
 from airone.lib.drf import IsSuperuser, YAMLParser
 from airone.lib.text import normalize_search_text
 from airone.lib.types import AttrType
-from common.lib.import_services import ImportDataError, import_users
 from entry.models import AttributeValue, Entry
 from user.api_v2.serializers import (
     PasswordResetConfirmSerializer,
@@ -45,6 +45,7 @@ from user.api_v2.serializers import (
     UserTokenSerializer,
     UserUpdateSerializer,
 )
+from user.import_service import import_users
 from user.models import User
 
 
