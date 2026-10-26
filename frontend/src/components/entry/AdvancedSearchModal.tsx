@@ -21,22 +21,32 @@ interface Props {
   joinAttrs: AdvancedSearchJoinAttrInfo[];
 }
 
-export const AdvancedSearchModal: FC<Props> = ({
+export const AdvancedSearchModal: FC<Props> = (props) => {
+  const initialHasReferral =
+    new URLSearchParams(location.search).get("has_referral") === "true";
+
+  return props.openModal ? (
+    <AdvancedSearchModalForm
+      {...props}
+      key={JSON.stringify([props.initialAttrNames, initialHasReferral])}
+      initialHasReferral={initialHasReferral}
+    />
+  ) : null;
+};
+
+const AdvancedSearchModalForm: FC<Props & { initialHasReferral: boolean }> = ({
   openModal,
   setOpenModal,
   attrNames,
   initialAttrNames,
   attrInfos,
   joinAttrs,
+  initialHasReferral,
 }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const params = new URLSearchParams(location.search);
-
   const [selectedAttrNames, setSelectedAttrNames] = useState(initialAttrNames);
-  const [hasReferral, setHasReferral] = useState(
-    params.get("has_referral") === "true",
-  );
+  const [hasReferral, setHasReferral] = useState(initialHasReferral);
 
   const handleUpdatePageURL = () => {
     const params = formatAdvancedSearchParams({
