@@ -7,6 +7,7 @@ import {
   Box,
   Chip,
   FormHelperText,
+  Link as MuiLink,
   Table,
   TableBody,
   TableCell,
@@ -16,6 +17,7 @@ import {
   Typography,
 } from "@mui/material";
 import { FC, useState } from "react";
+import { Link as RouterLink } from "react-router";
 import {
   Control,
   Controller,
@@ -26,22 +28,36 @@ import {
 import { usePagodaSWR } from "../../hooks/usePagodaSWR";
 import { useTranslation } from "../../hooks/useTranslation";
 import { aironeApiClient } from "../../repository/AironeApiClient";
+import type { RolePermission } from "../../repository/AironeApiClient";
+import { aclPath } from "../../routes/Routes";
 
 import { Schema } from "./roleForm/RoleFormSchema";
 
 import { fuzzyMatch } from "services/StringUtil";
+import { ACLType, ACLTypeLabels } from "services/ACLUtil";
 
 interface Props {
   control: Control<Schema>;
   setValue: UseFormSetValue<Schema>;
+  permissions?: RolePermission[];
 }
 
-export const RoleForm: FC<Props> = ({ control, setValue }) => {
+export const RoleForm: FC<Props> = ({
+  control,
+  setValue,
+  permissions = [],
+}) => {
   const { t } = useTranslation();
   const [userKeyword, setUserKeyword] = useState("");
   const [adminUserKeyword, setAdminUserKeyword] = useState("");
   const [groupUserKeyword, setGroupUserKeyword] = useState("");
   const [adminGroupUserKeyword, setGroupAdminUserKeyword] = useState("");
+  const permissionColumns = [
+    { label: t("role.form.permission.type"), key: "type" },
+    { label: t("role.form.permission.modelName"), key: "modelName" },
+    { label: t("role.form.permission.name"), key: "name" },
+    { label: t("role.form.permission.permission"), key: "permission" },
+  ];
 
   // TODO implement pagination and incremental search
   const { data: adminGroups } = usePagodaSWR(
@@ -133,6 +149,51 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                 />
               </TableCell>
             </TableRow>
+          </TableBody>
+        </Table>
+      </Box>
+
+      <Box mt="48px">
+        <Typography variant="h5" my="16px">
+          {t("role.form.permissionsTitle")}
+        </Typography>
+        <Table aria-label={t("role.form.permissionsTitle")}>
+          <TableHead>
+            <TableRow sx={{ backgroundColor: "#455A64" }}>
+              {permissionColumns.map(({ label, key }) => (
+                <TableCell key={key} sx={{ color: "#FFFFFF" }}>
+                  {label}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {permissions.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4}>
+                  {t("role.form.noPermissions")}
+                </TableCell>
+              </TableRow>
+            ) : (
+              permissions.map((permission) => (
+                <TableRow key={`${permission.type}-${permission.id}`}>
+                  <TableCell>{permission.type}</TableCell>
+                  <TableCell>{permission.modelName}</TableCell>
+                  <TableCell>
+                    <MuiLink component={RouterLink} to={aclPath(permission.id)}>
+                      {permission.name}
+                    </MuiLink>
+                  </TableCell>
+                  <TableCell>
+                    {permission.permission === "full"
+                      ? ACLTypeLabels[ACLType.Full]
+                      : permission.permission === "writable"
+                        ? ACLTypeLabels[ACLType.Writable]
+                        : ACLTypeLabels[ACLType.Readable]}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </Box>
