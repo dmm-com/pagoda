@@ -24,6 +24,7 @@ describe("RoleList", () => {
       groups: [],
       adminUsers: [],
       adminGroups: [],
+      permissions: [],
       isEditable: true,
     },
     {
@@ -34,6 +35,7 @@ describe("RoleList", () => {
       groups: [],
       adminUsers: [],
       adminGroups: [],
+      permissions: [],
       isEditable: true,
     },
   ];

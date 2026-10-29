@@ -1,7 +1,7 @@
 /**
  */
 
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 
@@ -12,7 +12,7 @@ import i18n from "i18n/config";
 
 const server = setupServer(
   // getRoles
-  http.get("http://localhost/role/api/v2/", () => {
+  http.get("*/role/api/v2/", () => {
     return HttpResponse.json([
       {
         id: 1,
@@ -43,6 +43,9 @@ describe("RoleListPage", () => {
         wrapper: TestWrapper,
       });
     });
+    await waitFor(() => {
+      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    });
 
     expect(result!).toMatchSnapshot();
   });
@@ -56,6 +59,9 @@ describe("RoleListPage", () => {
       render(<RoleListPage />, {
         wrapper: TestWrapper,
       });
+    });
+    await waitFor(() => {
+      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
     });
 
     expect(screen.getAllByText("Role management").length).toBeGreaterThan(0);

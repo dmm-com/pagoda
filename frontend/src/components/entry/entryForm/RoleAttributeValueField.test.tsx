@@ -85,6 +85,7 @@ describe("RoleAttributeValueField", () => {
       groups: [],
       adminUsers: [],
       adminGroups: [],
+      permissions: [],
       isEditable: true,
     },
     {
@@ -95,6 +96,7 @@ describe("RoleAttributeValueField", () => {
       groups: [],
       adminUsers: [],
       adminGroups: [],
+      permissions: [],
       isEditable: true,
     },
   ];
