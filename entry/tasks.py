@@ -1284,22 +1284,42 @@ def bulk_update_entries(
     params = job.get_typed_params(BulkEditParams)
     job_params = params.model_dump(mode="json", by_alias=True, exclude_unset=True)
 
-    # get target items from ES by job_params.attr_info parameter
+    target_attr = EntityAttr.objects.filter(
+        id=job_params["value"]["id"], parent_entity_id=job_params["modelid"]
+    ).first()
+    if target_attr is None:
+        return JobStatus.ERROR, "The attribute does not belong to the specified model.", None
+    if target_attr.type & AttrType._ARRAY:
+        return JobStatus.ERROR, "Array attributes cannot be bulk updated.", None
+
+    # Selected items are constrained to the user's searchable items in this model.
+    # Without an explicit selection, retain the existing filter-based bulk edit.
     resp = AdvancedSearchService.search_entries(
         user=job.user,
         hint_entity_ids=[job_params["modelid"]],
-        hint_attrs=[AttrHint(**x) for x in job_params.get("attrinfo", [])],
+        hint_attrs=[AttrHint(**x) for x in job_params.get("attrinfo", [])]
+        if job_params.get("entry_ids") is None
+        else [],
         hint_entry=EntryHint(**job_params.get("hint_entry"))
-        if job_params.get("hint_entry")
+        if job_params.get("hint_entry") and job_params.get("entry_ids") is None
         else None,
-        hint_referral=job_params.get("referral_name"),
+        hint_referral=job_params.get("referral_name")
+        if job_params.get("entry_ids") is None
+        else None,
+        entry_ids=job_params.get("entry_ids"),
         retrieve_all=True,
     )
 
     # update each items in accordance with job_params.value parameter
     context = {"request": DRFRequest(job.user)}
-    total_count = resp.ret_count
-    for index, record in enumerate(resp.ret_values):
+    selected_ids = set(job_params["entry_ids"]) if job_params.get("entry_ids") else None
+    records = [
+        record
+        for record in resp.ret_values
+        if selected_ids is None or record.entry["id"] in selected_ids
+    ]
+    total_count = len(records)
+    for index, record in enumerate(records):
         job.text = "Now updating... (progress: [%5d/%5d])" % (index + 1, total_count)
         job.save(update_fields=["text"])
 

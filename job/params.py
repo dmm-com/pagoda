@@ -480,6 +480,7 @@ class TriggerListParams(
 
 class BulkEditParams(JobParamsModel):
     modelid: int
+    entry_ids: list[int] | None = None
     attrinfo: list[AttrHintParams] = Field(default_factory=list)
     hint_entry: dict[str, Any] | None = None
     referral_name: str | None = None
