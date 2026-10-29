@@ -100,6 +100,7 @@ class JobOperation(BaseIntEnum):
     IMPORT_ENTITY_PREVIEW = 32
     IMPORT_ENTRY_PREVIEW = 33
     EXPORT_CONFIGURATION_V2 = 34
+    IMPORT_GENERAL_V2 = 35
 
 
 # Core operation additions must never silently fall through to the untyped
@@ -919,6 +920,16 @@ class Job(models.Model):
             return timeout
         else:
             return kls.DEFAULT_JOB_TIMEOUT
+
+    @classmethod
+    def new_import_general_v2(kls, user: User, kind: str, data: Any) -> "Job":
+        return kls._create_new_job(
+            user=user,
+            target=None,
+            operation=JobOperation.IMPORT_GENERAL_V2,
+            text=f"Preparing to import {kind} data",
+            params={"kind": kind, "data": data},
+        )
 
     @classmethod
     def new_role_import_v2(

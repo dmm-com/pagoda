@@ -7,6 +7,7 @@ from django.test.utils import CaptureQueriesContext
 from rest_framework import status
 
 from airone.lib.test import AironeViewTest
+from common.tests.compat import post_import
 from group.models import Group
 from job.models import Job, JobStatus
 from user.models import User
@@ -114,8 +115,8 @@ class ViewTest(AironeViewTest):
         self.admin_login()
 
         fp = self.open_fixture_file("import_group.yaml")
-        resp = self.client.post(
-            "/group/api/v2/groups/import", fp.read(), content_type="application/yaml"
+        resp = post_import(
+            self, "/group/api/v2/groups/import", fp.read(), content_type="application/yaml"
         )
 
         self.assertEqual(resp.status_code, 200)
@@ -148,8 +149,8 @@ class ViewTest(AironeViewTest):
         self.guest_login()
 
         body = yaml.dump([{"id": group.id, "name": "renamed"}, {"name": "Group2"}])
-        resp = self.client.post(
-            "/group/api/v2/groups/import", body, content_type="application/yaml"
+        resp = post_import(
+            self, "/group/api/v2/groups/import", body, content_type="application/yaml"
         )
 
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
@@ -161,8 +162,8 @@ class ViewTest(AironeViewTest):
         self.admin_login()
 
         body = yaml.dump([{"name": "Group1"}, {"id": "invalid"}])
-        resp = self.client.post(
-            "/group/api/v2/groups/import", body, content_type="application/yaml"
+        resp = post_import(
+            self, "/group/api/v2/groups/import", body, content_type="application/yaml"
         )
 
         # ListSerializer errors keep the positional list shape (one entry per

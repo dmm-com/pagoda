@@ -72,8 +72,8 @@ def edit(request: HttpRequest, group_id: int) -> HttpResponse:
         {
             "name": "users",
             "type": list,
-            "checker": lambda x: (
-                all([User.objects.filter(id=u).exists() for u in x.get("users", [])])
+            "checker": lambda x: all(
+                [User.objects.filter(id=u).exists() for u in x.get("users", [])]
             ),
         },
         {"name": "parent_group", "type": str, "omittable": True},
@@ -168,13 +168,13 @@ def create(request: HttpRequest) -> HttpResponse:
         {
             "name": "name",
             "type": str,
-            "checker": lambda x: (x["name"] and not Group.objects.filter(name=x["name"]).exists()),
+            "checker": lambda x: x["name"] and not Group.objects.filter(name=x["name"]).exists(),
         },
         {
             "name": "users",
             "type": list,
-            "checker": lambda x: (
-                all([User.objects.filter(id=u).exists() for u in x.get("users", [])])
+            "checker": lambda x: all(
+                [User.objects.filter(id=u).exists() for u in x.get("users", [])]
             ),
         },
         {"name": "parent_group", "type": str, "omittable": True},

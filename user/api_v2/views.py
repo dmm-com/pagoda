@@ -22,6 +22,7 @@ from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer, Serializer
 from rest_framework.views import APIView
 
+from airone.exceptions import ImportDataError
 from airone.exceptions.model import UnexpectedAttributeType
 from airone.lib.acl import ACLType
 from airone.lib.configuration_export import ConfigurationExportAPI
@@ -29,7 +30,6 @@ from airone.lib.drf import IsSuperuser, YAMLParser
 from airone.lib.text import normalize_search_text
 from airone.lib.types import AttrType
 from entry.models import AttributeValue, Entry
-from group.models import Group
 from user.api_v2.serializers import (
     PasswordResetConfirmSerializer,
     PasswordResetSerializer,
@@ -45,6 +45,7 @@ from user.api_v2.serializers import (
     UserTokenSerializer,
     UserUpdateSerializer,
 )
+from user.import_service import import_users
 from user.models import User
 
 
@@ -492,56 +493,10 @@ class UserImportAPI(generics.GenericAPIView[Any]):
         serializer = UserImportSerializer(data=import_datas)
         serializer.is_valid(raise_exception=True)
 
-        # TODO better to move the saving logic into the serializer
-        for user_data in import_datas:
-            for param in ["username", "groups", "email"]:
-                if param not in user_data:
-                    return Response("'%s' is required" % param, status=400)
-
-            user: User | None = None
-            if "id" in user_data:
-                # update user by id when id is specified
-                user = User.objects.filter(id=user_data["id"]).first()
-                if not user:
-                    return Response(
-                        "Specified id user does not exist(id:%s, user:%s)"
-                        % (user_data["id"], user_data["username"]),
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-                if (user.username != user_data["username"]) and (
-                    User.objects.filter(username=user_data["username"]).count() > 0
-                ):
-                    return Response(
-                        "New username is already used(id:%s, user:%s->%s)"
-                        % (user_data["id"], user.username, user_data["username"]),
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-            else:
-                # update user by username
-                user = User.objects.filter(username=user_data["username"]).first()
-                if not user:
-                    # create user
-                    user = User(username=user_data["username"])
-                    user.save()
-
-            user.username = user_data["username"]
-            user.email = user_data["email"]
-
-            new_groups: list[Group] = []
-            for group_name in user_data["groups"].split(","):
-                if group_name == "":
-                    continue
-                new_group: Group | None = Group.objects.filter(name=group_name).first()
-                if not new_group:
-                    return Response(
-                        "Specified group does not exist(user:%s, group:%s)"
-                        % (user_data["username"], group_name),
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-                new_groups.append(new_group)
-
-            user.groups.set(new_groups)
-            user.save()
+        try:
+            import_users(import_datas)
+        except ImportDataError as e:
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
 
         return Response()
 
