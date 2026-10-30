@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch
 import yaml
 from rest_framework import status
 
+from acl.models import ACLType
 from airone.lib.elasticsearch import EntryFilterKey, FilterKey
 from airone.lib.types import (
     AttrType,
@@ -15,6 +16,7 @@ from entry import tasks
 from entry.models import Entry
 from entry.tests.test_api_v2 import BaseViewTest
 from job.models import Job, JobOperation, JobStatus
+from user.models import User
 
 
 class ViewTest(BaseViewTest):
@@ -827,6 +829,133 @@ class ViewTest(BaseViewTest):
         for itemname, expected_value in expected_values:
             item = Entry.objects.get(name=itemname, schema=self.entity)
             self.assertEqual(item.get_attrv("val").value, expected_value)
+
+    def test_bulk_update_rejects_array_attributes(self):
+        original_job_count = Job.objects.filter(operation=JobOperation.BULK_EDIT_ENTRY).count()
+        for attr_type in (AttrType.ARRAY_STRING, AttrType.MULTI_SELECT):
+            with self.subTest(attr_type=attr_type):
+                attr = EntityAttr.objects.create(
+                    name=f"array-{attr_type}",
+                    type=attr_type,
+                    parent_entity=self.entity,
+                    created_user=self.user,
+                )
+                response = self.client.put(
+                    "/entry/api/v2/bulk/",
+                    {
+                        "value": {"id": attr.id, "value": ["unsafe"]},
+                        "modelid": self.entity.id,
+                        "attrinfo": [],
+                    },
+                    "application/json",
+                )
+                self.assertEqual(response.status_code, 400)
+        wrong_model_response = self.client.put(
+            "/entry/api/v2/bulk/",
+            {
+                "value": {"id": 999999, "value": ["unsafe"]},
+                "modelid": self.entity.id,
+                "attrinfo": [],
+            },
+            "application/json",
+        )
+        self.assertEqual(wrong_model_response.status_code, 400)
+        self.assertEqual(
+            Job.objects.filter(operation=JobOperation.BULK_EDIT_ENTRY).count(),
+            original_job_count,
+        )
+
+    def test_bulk_update_job_rejects_array_attribute(self):
+        attr = self.entity.attrs.get(name="vals")
+        job = Job.new_bulk_edit_entry_v2(
+            self.user,
+            self.entity,
+            params={
+                "modelid": self.entity.id,
+                "value": {"id": attr.id, "value": ["unsafe"]},
+            },
+        )
+
+        job.run(will_delay=False)
+        job.refresh_from_db()
+        self.assertEqual(job.status, JobStatus.ERROR)
+        self.assertIn("Array attributes cannot be bulk updated", job.text)
+
+    @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))
+    def test_bulk_update_only_selected_items(self):
+        entries = [
+            self.add_entry(self.user, f"selected-{index}", self.entity, values={"val": "old"})
+            for index in range(3)
+        ]
+        updating_attr = self.entity.attrs.get(name="val")
+        response = self.client.put(
+            "/entry/api/v2/bulk/",
+            {
+                "value": {"id": updating_attr.id, "value": "updated"},
+                "modelid": self.entity.id,
+                "entry_ids": [entries[1].id],
+                "attrinfo": [],
+            },
+            "application/json",
+        )
+        self.assertEqual(response.status_code, 202)
+        for index, entry in enumerate(entries):
+            entry.refresh_from_db()
+            self.assertEqual(
+                entry.get_attrv("val").value,
+                "updated" if index == 1 else "old",
+            )
+
+    @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))
+    def test_bulk_update_selected_items_excludes_other_model_and_unreadable_entry(self):
+        selected = self.add_entry(self.user, "selected", self.entity, values={"val": "old"})
+        other_entity = self.create_entity(
+            self.user, "other-model", attrs=[{"name": "val", "type": AttrType.STRING}]
+        )
+        other_model_entry = self.add_entry(
+            self.user, "other-model-entry", other_entity, values={"val": "old"}
+        )
+        other_user = User.objects.create(username="bulk-update-private-owner")
+        unreadable = self.add_entry(
+            other_user, "unreadable", self.entity, values={"val": "old"}, is_public=False
+        )
+        self.assertFalse(self.user.has_permission(unreadable, ACLType.Readable))
+
+        response = self.client.put(
+            "/entry/api/v2/bulk/",
+            {
+                "value": {"id": self.entity.attrs.get(name="val").id, "value": "updated"},
+                "modelid": self.entity.id,
+                "entry_ids": [selected.id, other_model_entry.id, unreadable.id],
+            },
+            "application/json",
+        )
+        self.assertEqual(response.status_code, 202)
+        job = Job.objects.filter(operation=JobOperation.BULK_EDIT_ENTRY).last()
+        self.assertEqual(job.status, JobStatus.DONE, job.text)
+        self.assertEqual(selected.get_attrv("val").value, "updated")
+        self.assertEqual(other_model_entry.get_attrv("val").value, "old")
+        self.assertEqual(unreadable.get_attrv("val").value, "old")
+
+    @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))
+    def test_bulk_update_without_selection_updates_all_matching_items(self):
+        # The search UI shows 30 entries per page; an empty selection targets every page.
+        entries = [
+            self.add_entry(self.user, f"all-{index}", self.entity, values={"val": "old"})
+            for index in range(31)
+        ]
+        response = self.client.put(
+            "/entry/api/v2/bulk/",
+            {
+                "value": {"id": self.entity.attrs.get(name="val").id, "value": "updated"},
+                "modelid": self.entity.id,
+                "hint_entry": {"filter_key": EntryFilterKey.TEXT_CONTAINED, "keyword": "all-"},
+            },
+            "application/json",
+        )
+        self.assertEqual(response.status_code, 202)
+        for entry in entries:
+            self.assertEqual(entry.get_attrv("val").value, "updated")
 
     @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))
     def test_bulk_update_items_with_referral_name_filter(self):
