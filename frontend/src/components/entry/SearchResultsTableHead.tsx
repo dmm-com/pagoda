@@ -114,6 +114,9 @@ interface Props {
   omitHeadline?: boolean;
   entityAttrs: EntityAttrIDandName[];
   totalCount: number;
+  matchedCount?: number;
+  allVisibleSelected?: boolean;
+  selectedEntries?: Array<{ id: number; name: string; modelId: number }>;
 }
 
 export interface handleSelectFilterConditionsParams {
@@ -142,11 +145,13 @@ export const SearchResultsTableHead: FC<Props> = ({
   omitHeadline = false,
   entityAttrs = [],
   totalCount,
+  matchedCount = 0,
+  allVisibleSelected = false,
+  selectedEntries = [],
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [checked, setChecked] = useState(false);
 
   /* These are used for AdvancedSearchEditModal component */
   const [openEditModal, setOpenEditModal] = useState(false);
@@ -336,11 +341,10 @@ export const SearchResultsTableHead: FC<Props> = ({
           <TableCell sx={{ witdh: "80px" }}>
             <StyledIconButton
               onClick={() => {
-                setChecked(!checked);
-                handleChangeAllBulkOperationEntryIds(!checked);
+                handleChangeAllBulkOperationEntryIds(!allVisibleSelected);
               }}
             >
-              {checked ? (
+              {allVisibleSelected ? (
                 <CheckBoxOutlinedIcon />
               ) : (
                 <CheckBoxOutlineBlankOutlinedIcon />
@@ -492,7 +496,7 @@ export const SearchResultsTableHead: FC<Props> = ({
                     attrType={attrTypes[attrName]}
                     setOpenEditModal={setOpenEditModal}
                     isDisabledEditModal={
-                      searchAllEntities || joinAttrs.length > 0
+                      joinAttrs.length > 0 || searchAllEntities
                     }
                     entityAttrs={entityAttrs}
                     setEditTargetAttrID={setEditTargetAttrID}
@@ -555,11 +559,17 @@ export const SearchResultsTableHead: FC<Props> = ({
             });
           }
         }}
-        modelIds={entityIds}
+        modelIds={
+          selectedEntries.length > 0
+            ? [...new Set(selectedEntries.map((entry) => entry.modelId))]
+            : entityIds
+        }
         attrsFilter={attrsFilter}
         targetAttrID={editTargetAttrID}
         targetAttrname={editTargetAttrname}
         targetAttrtype={editTargetAttrtype}
+        selectedEntries={selectedEntries}
+        matchedCount={matchedCount}
       ></AdvancedSearchEditModal>
     </TableHead>
   );

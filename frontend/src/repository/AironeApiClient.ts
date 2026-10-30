@@ -24,6 +24,7 @@ import {
   EntryAlias,
   EntryApi,
   EntryBase,
+  EntryBulkUpdateToJSON,
   EntryCopy,
   EntryHint,
   EntryNetworkSearchResponse,
@@ -594,18 +595,25 @@ class AironeApiClient {
     attrinfo?: Array<AdvancedSearchResultAttrInfo>,
     referralName?: string,
     hintEntry?: EntryHint,
+    entryIds?: number[],
   ): Promise<void> {
-    await this.entry.entryApiV2BulkUpdate(
-      {
-        entryBulkUpdate: { modelid, value, attrinfo, referralName, hintEntry },
+    const body = EntryBulkUpdateToJSON({
+      modelid,
+      value,
+      attrinfo,
+      referralName,
+      hintEntry,
+    });
+    const response = await fetch("/entry/api/v2/bulk/", {
+      method: "PUT",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json;charset=utf-8",
+        "X-CSRFToken": getCsrfToken(),
       },
-      {
-        headers: {
-          "Content-Type": "application/json;charset=utf-8",
-          "X-CSRFToken": getCsrfToken(),
-        },
-      },
-    );
+      body: JSON.stringify({ ...body, entry_ids: entryIds }),
+    });
+    if (!response.ok) throw new Error(`Bulk update failed: ${response.status}`);
   }
 
   async restoreEntry(id: number): Promise<void> {
@@ -784,7 +792,7 @@ class AironeApiClient {
 
   async getRole(
     roleId: number,
-  ): Promise<Role & { permissions: RolePermission[] }> {
+  ): Promise<Omit<Role, "permissions"> & { permissions: RolePermission[] }> {
     const response = await fetch(`/role/api/v2/${roleId}`, {
       credentials: "same-origin",
     });
