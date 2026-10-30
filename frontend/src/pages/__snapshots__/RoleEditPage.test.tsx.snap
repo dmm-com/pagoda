@@ -222,6 +222,66 @@ exports[`EditRolePage > should match snapshot 1`] = `
               </table>
             </div>
             <div
+              class="MuiBox-root css-1hnm6b6"
+            >
+              <h5
+                class="MuiTypography-root MuiTypography-h5 css-3e2kkb-MuiTypography-root"
+              >
+                このロールが利用する対象
+              </h5>
+              <table
+                aria-label="このロールが利用する対象"
+                class="MuiTable-root css-1xwxv7r-MuiTable-root"
+              >
+                <thead
+                  class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
+                >
+                  <tr
+                    class="MuiTableRow-root MuiTableRow-head css-1wnroms-MuiTableRow-root"
+                  >
+                    <th
+                      class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-16h3rs8-MuiTableCell-root"
+                      scope="col"
+                    >
+                      種別
+                    </th>
+                    <th
+                      class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-16h3rs8-MuiTableCell-root"
+                      scope="col"
+                    >
+                      モデル名
+                    </th>
+                    <th
+                      class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-16h3rs8-MuiTableCell-root"
+                      scope="col"
+                    >
+                      名前
+                    </th>
+                    <th
+                      class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-16h3rs8-MuiTableCell-root"
+                      scope="col"
+                    >
+                      権限
+                    </th>
+                  </tr>
+                </thead>
+                <tbody
+                  class="MuiTableBody-root css-gmh7jj-MuiTableBody-root"
+                >
+                  <tr
+                    class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+                  >
+                    <td
+                      class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
+                      colspan="4"
+                    >
+                      権限対象はありません
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div
               class="MuiBox-root css-h8m1q6"
             >
               <div
@@ -868,6 +928,66 @@ exports[`EditRolePage > should match snapshot 1`] = `
                         />
                       </div>
                     </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div
+            class="MuiBox-root css-1hnm6b6"
+          >
+            <h5
+              class="MuiTypography-root MuiTypography-h5 css-3e2kkb-MuiTypography-root"
+            >
+              このロールが利用する対象
+            </h5>
+            <table
+              aria-label="このロールが利用する対象"
+              class="MuiTable-root css-1xwxv7r-MuiTable-root"
+            >
+              <thead
+                class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
+              >
+                <tr
+                  class="MuiTableRow-root MuiTableRow-head css-1wnroms-MuiTableRow-root"
+                >
+                  <th
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-16h3rs8-MuiTableCell-root"
+                    scope="col"
+                  >
+                    種別
+                  </th>
+                  <th
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-16h3rs8-MuiTableCell-root"
+                    scope="col"
+                  >
+                    モデル名
+                  </th>
+                  <th
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-16h3rs8-MuiTableCell-root"
+                    scope="col"
+                  >
+                    名前
+                  </th>
+                  <th
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-16h3rs8-MuiTableCell-root"
+                    scope="col"
+                  >
+                    権限
+                  </th>
+                </tr>
+              </thead>
+              <tbody
+                class="MuiTableBody-root css-gmh7jj-MuiTableBody-root"
+              >
+                <tr
+                  class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+                >
+                  <td
+                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
+                    colspan="4"
+                  >
+                    権限対象はありません
                   </td>
                 </tr>
               </tbody>

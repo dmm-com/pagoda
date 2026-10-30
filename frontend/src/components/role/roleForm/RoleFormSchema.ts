@@ -4,7 +4,7 @@ import { z } from "zod";
 import { translate } from "../../../i18n/config";
 import { schemaForType } from "../../../services/ZodSchemaUtil";
 
-type RoleForSchema = Omit<Role, "isEditable">;
+type RoleForSchema = Omit<Role, "isEditable" | "permissions">;
 
 export const schema = schemaForType<RoleForSchema>()(
   z

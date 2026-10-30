@@ -25,6 +25,12 @@ export const roleMessages = defineMessages({
       "管理者と重複しているグループがあります",
     "role.form.memberDuplicateUser": "メンバーとユーザーが重複しています",
     "role.form.memberDuplicateGroup": "メンバーとグループが重複しています",
+    "role.form.permissionsTitle": "このロールが利用する対象",
+    "role.form.permission.type": "種別",
+    "role.form.permission.modelName": "モデル名",
+    "role.form.permission.name": "名前",
+    "role.form.permission.permission": "権限",
+    "role.form.noPermissions": "権限対象はありません",
 
     // RoleImportModal
     "role.importModal.title": "ロールのインポート",
@@ -86,6 +92,12 @@ export const roleMessages = defineMessages({
       "There are members that overlap with the users",
     "role.form.memberDuplicateGroup":
       "There are members that overlap with the groups",
+    "role.form.permissionsTitle": "Objects used by this role",
+    "role.form.permission.type": "Type",
+    "role.form.permission.modelName": "Model name",
+    "role.form.permission.name": "Name",
+    "role.form.permission.permission": "Permission",
+    "role.form.noPermissions": "No permission targets",
 
     // RoleImportModal
     "role.importModal.title": "Import roles",

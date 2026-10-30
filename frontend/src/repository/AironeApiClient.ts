@@ -49,6 +49,7 @@ import {
   Role,
   RoleApi,
   RoleCreateUpdate,
+  RoleFromJSON,
   TriggerApi,
   TriggerParent,
   TriggerParentUpdate,
@@ -78,6 +79,14 @@ import {
 export type GroupTree = Pick<_GroupTree, "id" | "name"> & {
   children: Array<GroupTree>;
 };
+
+export interface RolePermission {
+  type: string;
+  id: number;
+  modelName: string;
+  name: string;
+  permission: string;
+}
 
 export function fileDownload(data: string, filename: string): void {
   const blob = new Blob([data], { type: "text/plain" });
@@ -746,14 +755,57 @@ class AironeApiClient {
   }
 
   async getRoles(keyword?: string): Promise<Role[]> {
-    return await this.role.roleApiV2List({
-      ordering: "name",
-      search: keyword,
+    const query = new URLSearchParams({ ordering: "name" });
+    if (keyword != null) {
+      query.set("search", keyword);
+    }
+
+    const response = await fetch(`/role/api/v2/?${query.toString()}`, {
+      credentials: "same-origin",
     });
+    if (!response.ok) {
+      throw new Error(`Role list retrieval failed: ${response.status}`);
+    }
+
+    const data: unknown = await response.json();
+    if (!Array.isArray(data)) {
+      throw new Error("Role list API returned an unexpected response");
+    }
+
+    return data.map((roleData: Record<string, unknown>) =>
+      RoleFromJSON({
+        ...roleData,
+        permissions: Array.isArray(roleData.permissions)
+          ? roleData.permissions
+          : [],
+      }),
+    );
   }
 
-  async getRole(roleId: number): Promise<Role> {
-    return await this.role.roleApiV2Retrieve({ id: roleId });
+  async getRole(
+    roleId: number,
+  ): Promise<Role & { permissions: RolePermission[] }> {
+    const response = await fetch(`/role/api/v2/${roleId}`, {
+      credentials: "same-origin",
+    });
+    if (!response.ok) {
+      throw new Error(`Role retrieval failed: ${response.status}`);
+    }
+
+    const data = (await response.json()) as {
+      permissions?: Array<
+        Omit<RolePermission, "modelName"> & { model_name: string }
+      >;
+    };
+    const permissions = Array.isArray(data.permissions) ? data.permissions : [];
+    const role = RoleFromJSON({ ...data, permissions });
+    return {
+      ...role,
+      permissions: permissions.map((permission) => ({
+        ...permission,
+        modelName: permission.model_name,
+      })),
+    };
   }
 
   async createRole(role: RoleCreateUpdate): Promise<void> {
