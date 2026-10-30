@@ -104,7 +104,13 @@ describe("AdvancedSearchEditModal", () => {
       .mockResolvedValue({ count: 0, results: [] });
     const attrs = vi
       .spyOn(aironeApiClient, "getEntityAttrs")
-      .mockResolvedValue([{ id: 10, name: "attrA" }]);
+      .mockResolvedValue([
+        {
+          id: 10,
+          name: "attrA",
+          type: EntryAttributeTypeTypeEnum.STRING,
+        },
+      ]);
     const update = vi
       .spyOn(aironeApiClient, "bulkUpdateEntries")
       .mockResolvedValue();
@@ -180,7 +186,7 @@ describe("AdvancedSearchEditModal", () => {
           {
             id: 20,
             name: "依存アイテム",
-            schema: { id: 3, name: "参照モデル" },
+            schema: { id: 3, name: "参照モデル", permission: 1 },
           },
         ],
       });
