@@ -1,8 +1,11 @@
 /**
  */
 
-import { AdvancedSearchResultAttrInfoFilterKeyEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { act, render, screen } from "@testing-library/react";
+import {
+  AdvancedSearchResultAttrInfoFilterKeyEnum,
+  EntryAttributeTypeTypeEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 
 import { SearchResultControlMenu } from "./SearchResultControlMenu";
 
@@ -41,6 +44,24 @@ describe("SearchResultControlMenu", () => {
     expect(screen.getByText("クリア")).toBeInTheDocument();
     expect(screen.getByText("その他機能")).toBeInTheDocument();
     expect(screen.getByText("一括更新")).toBeInTheDocument();
+  });
+
+  test.each([
+    EntryAttributeTypeTypeEnum.ARRAY_STRING,
+    EntryAttributeTypeTypeEnum.MULTI_SELECT,
+  ])("opens bulk update for array attribute type %s", (attrType) => {
+    render(
+      <SearchResultControlMenu
+        {...defaultProps}
+        anchorElem={document.createElement("button")}
+        attrType={attrType}
+      />,
+      { wrapper: TestWrapper },
+    );
+    const button = screen.getByRole("button", { name: "一括更新" });
+    expect(button).toBeEnabled();
+    fireEvent.click(button);
+    expect(defaultProps.setOpenEditModal).toHaveBeenCalledWith(true);
   });
 
   test("should not render menu when anchorElem is null", () => {

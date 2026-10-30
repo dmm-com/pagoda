@@ -11,6 +11,8 @@ const StyledModal = styled(Modal)(({}) => ({
 const Paper = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
+  boxSizing: "border-box",
+  maxHeight: "calc(100vh - 32px)",
   backgroundColor: theme.palette.background.paper,
   border: "2px solid #000",
   boxShadow: theme.shadows[5],
@@ -52,7 +54,7 @@ export const AironeModal: FC<Props> = ({
           </Typography>
         )}
 
-        <Box>{children}</Box>
+        <Box sx={{ minHeight: 0, overflowY: "auto" }}>{children}</Box>
       </Paper>
     </StyledModal>
   );

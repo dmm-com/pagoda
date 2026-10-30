@@ -32,7 +32,7 @@ import { PageHeader } from "components/common/PageHeader";
 import { RateLimitedClickable } from "components/common/RateLimitedClickable";
 import { AdvancedSearchModal } from "components/entry/AdvancedSearchModal";
 import { SearchResults } from "components/entry/SearchResults";
-import { useEntryDeletionConfirmation } from "hooks/useEntryDeletionConfirmation";
+import { useAdvancedSearchDeletionConfirmation } from "hooks/useAdvancedSearchDeletionConfirmation";
 import { usePage } from "hooks/usePage";
 import { useTranslation } from "hooks/useTranslation";
 import { translate } from "i18n/config";
@@ -151,11 +151,15 @@ export const AdvancedSearchResultsPage: FC = () => {
   const { t } = useTranslation();
   const { page, changePage } = usePage();
   const requestIdRef = useRef(0);
+  const searchCriteriaKeyRef = useRef("");
 
   const [openModal, setOpenModal] = useState(false);
   const [bulkOperationEntryIds, setBulkOperationEntryIds] = useState<
     Array<number>
   >([]);
+  const [selectedEntryMap, setSelectedEntryMap] = useState<
+    Record<number, { id: number; name: string; modelId: number }>
+  >({});
   const [toggle, setToggle] = useState(false);
   const [isDeleteAllItems, setIsDeleteAllItems] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -175,6 +179,11 @@ export const AdvancedSearchResultsPage: FC = () => {
     const params = new URLSearchParams(location.search);
     return extractAdvancedSearchParams(params);
   }, [location.search]);
+  const searchCriteriaKey = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    params.delete("page");
+    return params.toString();
+  }, [location.search]);
 
   const [searchResults, setSearchResults] =
     useState<AirOneAdvancedSearchResult>({
@@ -192,6 +201,12 @@ export const AdvancedSearchResultsPage: FC = () => {
 
   useEffect(() => {
     const myId = ++requestIdRef.current;
+    if (searchCriteriaKeyRef.current !== searchCriteriaKey) {
+      searchCriteriaKeyRef.current = searchCriteriaKey;
+      setBulkOperationEntryIds([]);
+      setSelectedEntryMap({});
+      setIsDeleteAllItems(false);
+    }
     setSearchResults((prev) => ({ ...prev, isInProcessing: true }));
 
     aironeApiClient
@@ -212,7 +227,6 @@ export const AdvancedSearchResultsPage: FC = () => {
       )
       .then((results) => {
         if (myId !== requestIdRef.current) return;
-
         if (joinAttrs.length > 0) {
           setSearchResults((prev) => {
             if (page === 1) {
@@ -276,8 +290,8 @@ export const AdvancedSearchResultsPage: FC = () => {
     }
   };
 
-  const { confirmEntryDeletion, deletionConfirmationDialog } =
-    useEntryDeletionConfirmation();
+  const { confirmDeletion, deletionConfirmationDialog } =
+    useAdvancedSearchDeletionConfirmation();
 
   const handleBulkDelete = async () => {
     if (isDeleting) return;
@@ -285,9 +299,10 @@ export const AdvancedSearchResultsPage: FC = () => {
     try {
       let targetIds = bulkOperationEntryIds;
       const targetNames = Object.fromEntries(
-        searchResults.values
-          .filter((value) => bulkOperationEntryIds.includes(value.entry.id))
-          .map((value) => [value.entry.id, value.entry.name]),
+        bulkOperationEntryIds
+          .map((id) => selectedEntryMap[id])
+          .filter((entry) => entry != null)
+          .map((entry) => [entry.id, entry.name]),
       );
       if (isDeleteAllItems && joinAttrs.length === 0) {
         const selectedEntries = await Promise.all(
@@ -307,7 +322,7 @@ export const AdvancedSearchResultsPage: FC = () => {
           "",
           false,
           1,
-          10000 + bulkOperationEntryIds.length,
+          10000,
         );
         targetIds = [
           ...new Set([
@@ -316,7 +331,6 @@ export const AdvancedSearchResultsPage: FC = () => {
               .filter(
                 (value) => !bulkOperationEntryIds.includes(value.entry.id),
               )
-              .slice(0, 10000)
               .filter((value) => value.entity.id === firstEntry.schema.id)
               .map((value) => value.entry.id),
           ]),
@@ -327,14 +341,7 @@ export const AdvancedSearchResultsPage: FC = () => {
             targetNames[value.entry.id] = value.entry.name;
           });
       }
-      if (
-        !(await confirmEntryDeletion(
-          targetIds,
-          t("advancedSearch.resultsPage.confirmDeleteTitle"),
-          targetNames,
-        ))
-      )
-        return;
+      if (!(await confirmDeletion(targetIds, targetNames))) return;
       await aironeApiClient.destroyEntries(
         bulkOperationEntryIds,
         JSON.stringify(
@@ -351,6 +358,7 @@ export const AdvancedSearchResultsPage: FC = () => {
         variant: "success",
       });
       setBulkOperationEntryIds([]);
+      setSelectedEntryMap({});
       setIsDeleteAllItems(false);
       setToggle(!toggle);
     } catch (e) {
@@ -521,7 +529,29 @@ export const AdvancedSearchResultsPage: FC = () => {
                 .reduce((a, x) => ({ ...a, [x.key]: x.val }), {})
             }
             bulkOperationEntryIds={bulkOperationEntryIds}
-            setBulkOperationEntryIds={setBulkOperationEntryIds}
+            setBulkOperationEntryIds={(ids) => {
+              setBulkOperationEntryIds(ids);
+              setSelectedEntryMap((previous) => {
+                const next = Object.fromEntries(
+                  Object.entries(previous).filter(([id]) =>
+                    ids.includes(Number(id)),
+                  ),
+                );
+                searchResults.values.forEach((result) => {
+                  if (ids.includes(result.entry.id)) {
+                    next[result.entry.id] = {
+                      id: result.entry.id,
+                      name: result.entry.name,
+                      modelId: result.entity.id,
+                    };
+                  }
+                });
+                return next;
+              });
+            }}
+            selectedEntries={bulkOperationEntryIds
+              .map((id) => selectedEntryMap[id])
+              .filter((entry) => entry != null)}
             entityIds={entityIds}
             searchAllEntities={searchAllEntities}
             joinAttrs={joinAttrs}
