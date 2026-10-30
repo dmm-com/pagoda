@@ -187,6 +187,11 @@ describe("AdvancedSearchEditModal", () => {
             id: 20,
             name: "依存アイテム",
             schema: { id: 3, name: "参照モデル", permission: 1 },
+            isActive: true,
+            deletedUser: null,
+            updatedTime: new Date(0),
+            aliases: [],
+            permission: 1,
           },
         ],
       });
