@@ -210,6 +210,7 @@ export const EntryForm: FC<EntryFormProps> = ({
                       type={type}
                       schemaId={id}
                       choices={choices ?? undefined}
+                      attrName={name}
                     />
                   ) : (
                     <Typography>Permission denied.</Typography>

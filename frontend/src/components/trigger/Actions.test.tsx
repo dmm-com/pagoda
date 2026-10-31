@@ -243,43 +243,48 @@ describe("ActionForm", () => {
       wrapper: TestWrapper,
     });
 
-    expect(screen.queryAllByRole("row")).toHaveLength(7);
+    // Insertion bands and the append row are table rows too; only content rows
+    // carry the list marker.
+    const rows = screen
+      .queryAllByRole("row")
+      .filter((row) => row.getAttribute("data-list-id") === "trigger-actions");
+    expect(rows).toHaveLength(7);
 
     // string
-    const row0 = screen.queryAllByRole("row")[0];
+    const row0 = rows[0];
     expect(within(row0).getByText("attr1")).toBeInTheDocument();
     expect(within(row0).getByDisplayValue("str cond")).toBeInTheDocument();
 
     // array-string
-    const row1 = screen.queryAllByRole("row")[1];
+    const row1 = rows[1];
     expect(within(row1).getByText("attr2")).toBeInTheDocument();
     expect(within(row1).getByDisplayValue("str cond 1")).toBeInTheDocument();
     expect(within(row1).getByDisplayValue("str cond 2")).toBeInTheDocument();
 
     // boolean
-    const row2 = screen.queryAllByRole("row")[2];
+    const row2 = rows[2];
     expect(within(row2).getByText("attr3")).toBeInTheDocument();
     expect(within(row2).getByRole("checkbox")).toBeChecked();
 
     // object
-    const row3 = screen.queryAllByRole("row")[3];
+    const row3 = rows[3];
     expect(within(row3).getByText("attr4")).toBeInTheDocument();
     expect(within(row3).getByDisplayValue("ref1")).toBeInTheDocument();
 
     // array-object
-    const row4 = screen.queryAllByRole("row")[4];
+    const row4 = rows[4];
     expect(within(row4).getByText("attr5")).toBeInTheDocument();
     expect(within(row4).getByDisplayValue("ref1")).toBeInTheDocument();
     expect(within(row4).getByDisplayValue("ref2")).toBeInTheDocument();
 
     // named-object
-    const row5 = screen.queryAllByRole("row")[5];
+    const row5 = rows[5];
     expect(within(row5).getByText("attr6")).toBeInTheDocument();
     expect(within(row5).getByDisplayValue("name")).toBeInTheDocument();
     expect(within(row5).getByDisplayValue("ref1")).toBeInTheDocument();
 
     // array-named-object
-    const row6 = screen.queryAllByRole("row")[6];
+    const row6 = rows[6];
     expect(within(row6).getByText("attr7")).toBeInTheDocument();
     expect(within(row6).getByDisplayValue("name1")).toBeInTheDocument();
     expect(within(row6).getByDisplayValue("ref1")).toBeInTheDocument();
