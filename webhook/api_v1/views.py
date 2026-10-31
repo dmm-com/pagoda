@@ -19,6 +19,13 @@ from webhook.models import Webhook
 urllib3.disable_warnings(InsecureRequestWarning)
 
 
+def _has_full_permission_on_webhook(user: User, webhook: Webhook) -> bool:
+    """A webhook is shared with every entity that registers it, so the
+    requester needs full control on all of them to modify or delete it."""
+    entities = list(webhook.registered_entity.all())
+    return bool(entities) and all(user.has_permission(entity, ACLType.Full) for entity in entities)
+
+
 @http_post(
     [
         {"name": "label", "type": str},
@@ -28,8 +35,9 @@ urllib3.disable_warnings(InsecureRequestWarning)
     ]
 )
 def set_webhook(request: HttpRequest, entity_id: int, recv_data: dict[str, Any]) -> HttpResponse:
+    user = cast(User, request.user)
     entity, error = get_obj_with_check_perm(
-        cast(User, request.user),
+        user,
         Entity,
         entity_id,
         ACLType.Full,
@@ -51,10 +59,22 @@ def set_webhook(request: HttpRequest, entity_id: int, recv_data: dict[str, Any])
         return HttpResponse("Specified URL is invalid", status=400)
 
     if "id" in recv_data:
-        # get Webhook instance and set values
-        webhook = Webhook.objects.filter(id=recv_data["id"]).first()
+        # Only webhooks that are registered to the entity the caller is
+        # authorized for can be updated. Looking the id up globally would let a
+        # user hijack another entity's webhook (IDOR) and receive its events.
+        try:
+            webhook_id = int(recv_data["id"])
+        except (TypeError, ValueError):
+            return HttpResponse("Invalid Webhook ID is specified", status=400)
+
+        webhook = entity.webhooks.filter(id=webhook_id).first()
         if not webhook:
             return HttpResponse("Invalid Webhook ID is specified", status=400)
+
+        # The webhook may also be registered to other entities, which this
+        # update would affect as well.
+        if not _has_full_permission_on_webhook(user, webhook):
+            return HttpResponse("You don't have permission to update this webhook", status=403)
 
         webhook.url = recv_data["webhook_url"]
         webhook.label = recv_data["label"]
@@ -99,11 +119,23 @@ def set_webhook(request: HttpRequest, entity_id: int, recv_data: dict[str, Any])
     return JsonResponse({"webhook_id": webhook.id, "msg": "Succeded in registering Webhook"})
 
 
-# FIXME specify HTTP method
+# The method and the authentication have to be checked here because this view
+# is not wrapped by http_get/http_post helpers.
 def del_webhook(request: HttpRequest, webhook_id: int) -> HttpResponse:
+    if request.method != "DELETE":
+        return HttpResponse("Invalid HTTP method is specified", status=400)
+
+    if not request.user.is_authenticated:
+        return HttpResponse("You have to login to execute this operation", status=401)
+
     webhook = Webhook.objects.filter(id=webhook_id).first()
     if not webhook:
         return HttpResponse("Specified webhook has already been deleted", status=400)
+
+    # A webhook belongs to the entities it is registered to. Only a user who
+    # has full control on all of them is allowed to delete it.
+    if not _has_full_permission_on_webhook(request.user, webhook):
+        return HttpResponse("You don't have permission to delete this webhook", status=403)
 
     # delete specified webhook
     webhook.delete()
