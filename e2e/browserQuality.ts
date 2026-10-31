@@ -50,13 +50,22 @@ export const expectNoBrowserFailures = (failures: string[]) => {
   expect(failures).toEqual([]);
 };
 
-export const expectUiQualityGate = async (page: Page, testInfo: TestInfo) => {
+export const pageScrollWidth = (page: Page) =>
+  page.evaluate(() => document.documentElement.scrollWidth);
+
+export const expectUiQualityGate = async (
+  page: Page,
+  testInfo: TestInfo,
+  { skipLayoutChecks = false }: { skipLayoutChecks?: boolean } = {},
+) => {
   const viewport = page.viewportSize();
-  const pageSize = await page.evaluate(() => ({
-    scrollWidth: document.documentElement.scrollWidth,
-    clientWidth: document.documentElement.clientWidth,
-  }));
-  expect(pageSize.scrollWidth).toBeLessThanOrEqual(pageSize.clientWidth + 1);
+  if (!skipLayoutChecks) {
+    const pageSize = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+    }));
+    expect(pageSize.scrollWidth).toBeLessThanOrEqual(pageSize.clientWidth + 1);
+  }
 
   // Controls must be fully inside the viewport horizontally. Checking the
   // document scroll width alone is not enough: content overflowing a fixed
@@ -67,45 +76,50 @@ export const expectUiQualityGate = async (page: Page, testInfo: TestInfo) => {
   // The document itself is not such a container: `body { overflow-y: scroll }`
   // makes its computed overflow-x `auto`, and page-level overflow is already
   // covered by the scroll width check above.
-  const offscreenControls = await page
-    .locator("button, a[href], input, select, textarea, [role='button']")
-    .evaluateAll((elements) => {
-      // Excludes the vertical scrollbar, which covers content beneath it.
-      const viewportWidth = document.documentElement.clientWidth;
-      const inScrollableContainer = (element: Element) => {
-        for (
-          let parent = element.parentElement;
-          parent != null &&
-          parent !== document.body &&
-          parent !== document.documentElement;
-          parent = parent.parentElement
-        ) {
-          const { overflowX } = window.getComputedStyle(parent);
-          if (overflowX === "auto" || overflowX === "scroll") return true;
-        }
-        return false;
-      };
+  const offscreenControls = skipLayoutChecks
+    ? []
+    : await page
+        .locator("button, a[href], input, select, textarea, [role='button']")
+        .evaluateAll((elements) => {
+          // Excludes the vertical scrollbar, which covers content beneath it.
+          const viewportWidth = document.documentElement.clientWidth;
+          const inScrollableContainer = (element: Element) => {
+            for (
+              let parent = element.parentElement;
+              parent != null &&
+              parent !== document.body &&
+              parent !== document.documentElement;
+              parent = parent.parentElement
+            ) {
+              const { overflowX } = window.getComputedStyle(parent);
+              if (overflowX === "auto" || overflowX === "scroll") return true;
+            }
+            return false;
+          };
 
-      return elements
-        .map((element) => ({ element, rect: element.getBoundingClientRect() }))
-        .filter(
-          ({ element, rect }) =>
-            rect.width > 0 &&
-            rect.height > 0 &&
-            (rect.left < -1 || rect.right > viewportWidth + 1) &&
-            !inScrollableContainer(element),
-        )
-        .map(({ element, rect }) => ({
-          text:
-            element.getAttribute("aria-label") ??
-            element.textContent?.trim() ??
-            element.tagName,
-          left: rect.left,
-          right: rect.right,
-          top: rect.top,
-          bottom: rect.bottom,
-        }));
-    });
+          return elements
+            .map((element) => ({
+              element,
+              rect: element.getBoundingClientRect(),
+            }))
+            .filter(
+              ({ element, rect }) =>
+                rect.width > 0 &&
+                rect.height > 0 &&
+                (rect.left < -1 || rect.right > viewportWidth + 1) &&
+                !inScrollableContainer(element),
+            )
+            .map(({ element, rect }) => ({
+              text:
+                element.getAttribute("aria-label") ??
+                element.textContent?.trim() ??
+                element.tagName,
+              left: rect.left,
+              right: rect.right,
+              top: rect.top,
+              bottom: rect.bottom,
+            }));
+        });
   expect(offscreenControls).toEqual([]);
 
   const axeResults = await new AxeBuilder({ page })

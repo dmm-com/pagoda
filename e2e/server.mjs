@@ -99,6 +99,61 @@ const switchValue = (id, name) => ({
   schema: refSwitch,
 });
 
+const triggerAttr = (id, name, type) => ({ id, name, type });
+
+const triggerFixture = {
+  id: 1,
+  entity: { id: 1, name: "Server", permission: ACL_FULL },
+  conditions: [
+    {
+      id: 1,
+      attr: triggerAttr(11, "hostname", 2),
+      str_cond: "web",
+      ref_cond: null,
+      bool_cond: false,
+      is_unmatch: false,
+    },
+    {
+      id: 2,
+      attr: triggerAttr(13, "backup_switches", 1025),
+      str_cond: null,
+      ref_cond: switchValue(21, "switch-backup-01"),
+      bool_cond: false,
+      is_unmatch: false,
+    },
+    {
+      id: 3,
+      attr: triggerAttr(17, "is_virtual", 8),
+      str_cond: null,
+      ref_cond: null,
+      bool_cond: true,
+      is_unmatch: false,
+    },
+  ],
+  actions: [
+    {
+      id: 1,
+      attr: triggerAttr(11, "hostname", 2),
+      values: [
+        { id: 1, str_cond: "triggered", ref_cond: null, bool_cond: null },
+      ],
+    },
+    {
+      id: 2,
+      attr: triggerAttr(23, "aliases", 1026),
+      values: [
+        { id: 1, str_cond: "alias-a", ref_cond: null, bool_cond: null },
+        { id: 2, str_cond: "alias-b", ref_cond: null, bool_cond: null },
+      ],
+    },
+    {
+      id: 3,
+      attr: triggerAttr(17, "is_virtual", 8),
+      values: [{ id: 1, str_cond: null, ref_cond: null, bool_cond: true }],
+    },
+  ],
+};
+
 const serverEntity = {
   id: 1,
   name: "Server",
@@ -598,7 +653,11 @@ const handleApi = async (req, res, parsed) => {
     return true;
   }
   if (req.method === "GET" && pathname === "/trigger/api/v2") {
-    json(res, 200, paginated([]));
+    json(res, 200, paginated([triggerFixture]));
+    return true;
+  }
+  if (req.method === "GET" && pathname === "/trigger/api/v2/1") {
+    json(res, 200, triggerFixture);
     return true;
   }
   if (req.method === "GET" && pathname === "/job/api/v2/jobs") {
