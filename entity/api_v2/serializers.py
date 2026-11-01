@@ -758,8 +758,10 @@ class IsolationParentCreateUpdateSerializer(serializers.Serializer[dict[str, Any
         # WebhookCreateUpdateSerializer.validate_id already applies. `instance`
         # is None when this serializer is used to create a new entity, where an
         # explicit rule id makes no sense and is therefore rejected.
-        entity: Entity | None = self.parent.parent.instance
-        if entity is None or not entity.isolation_rules.filter(id=id).exists():
+        parent = get_bound_parent(self)
+        grandparent = get_bound_parent(parent) if parent is not None else None
+        entity = grandparent.instance if grandparent is not None else None
+        if not isinstance(entity, Entity) or not entity.isolation_rules.filter(id=id).exists():
             raise ObjectNotExistsError("Invalid id(%s) object does not exist" % id)
 
         return id

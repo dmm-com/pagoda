@@ -782,6 +782,30 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.content, b"You don't have permission to modify this entry")
         self.assertEqual(entry.attrs.filter(schema=entity_attr).count(), 0)
 
+    def test_create_entry_attr_on_non_public_entry(self):
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name="Entity", created_user=user)
+        entity_attr = EntityAttr.objects.create(
+            name="attr",
+            type=AttrType.STRING,
+            created_user=user,
+            parent_entity=entity,
+        )
+        # an entry the user has no ACL on
+        entry = Entry.objects.create(
+            name="Entry", schema=entity, created_user=user, is_public=False
+        )
+
+        resp = self.client.post(
+            "/entry/api/v1/create_entry_attr/%s" % entry.id,
+            json.dumps({"entity_attr_id": entity_attr.id}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b"You don't have permission to modify this entry")
+        self.assertEqual(entry.attrs.filter(schema=entity_attr).count(), 0)
+
     def test_create_entry_attr_with_entity_attr_of_another_entity(self):
         user = self.guest_login()
 
