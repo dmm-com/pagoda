@@ -16,11 +16,13 @@ from airone.lib.types import (
 )
 from entity.models import Entity, EntityAttr
 from entry import tasks
+from entry.api_v2.serializers import resolve_import_entry_references
 from entry.models import Attribute, AttributeValue, Entry
 from entry.services import AdvancedSearchService
 from entry.tests.test_api_v2 import BaseViewTest
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus
+from job.params import ImportedAttribute, ImportedEntry, ImportEntryParams
 from role.models import Role
 from trigger.models import TriggerCondition
 from user.models import User
@@ -2920,4 +2922,78 @@ class ViewTest(BaseViewTest):
                     ],
                 },
             ],
+        )
+
+    def test_resolve_import_entry_references_resolves_names(self):
+        entity_attr = self.entity.attrs.filter(type=AttrType.STRING).first()
+        params = ImportEntryParams(
+            entity=self.entity.name,
+            entries=[
+                ImportedEntry(
+                    name="Entry",
+                    attrs=[ImportedAttribute(name=entity_attr.name, value="hoge")],
+                )
+            ],
+        )
+
+        entries = resolve_import_entry_references(params)
+
+        self.assertEqual(entries[0]["attrs"][0]["id"], entity_attr.id)
+        self.assertEqual(entries[0]["attrs"][0]["value"], "hoge")
+
+    def test_resolve_import_entry_references_leaves_unknown_attribute_unbound(self):
+        # The import identifies an attribute by name; an unknown name must stay
+        # without an ``id`` so the model serializer reports it, exactly like the
+        # former DRF conversion did.
+        params = ImportEntryParams(
+            entity=self.entity.name,
+            entries=[
+                ImportedEntry(name="Entry", attrs=[ImportedAttribute(name="unknown", value="x")])
+            ],
+        )
+
+        entries = resolve_import_entry_references(params)
+
+        self.assertNotIn("id", entries[0]["attrs"][0])
+
+    def test_resolve_import_entry_references_carries_named_object_boolean(self):
+        ref_entity = Entity.objects.create(name="BoolRefEntity2", created_user=self.user)
+        ref_entry = Entry.objects.create(name="ref2", schema=ref_entity, created_user=self.user)
+        ref_entry.register_es()
+
+        entity = Entity.objects.create(name="BoolEntity2", created_user=self.user)
+        entity_attr = EntityAttr.objects.create(
+            name="nobool",
+            type=AttrType.NAMED_OBJECT_BOOLEAN,
+            created_user=self.user,
+            parent_entity=entity,
+        )
+        entity_attr.referral.add(ref_entity)
+
+        params = ImportEntryParams(
+            entity=entity.name,
+            entries=[
+                ImportedEntry(
+                    name="item",
+                    attrs=[
+                        ImportedAttribute(
+                            name="nobool",
+                            value={
+                                "key1": {
+                                    "entity": ref_entity.name,
+                                    "name": ref_entry.name,
+                                    "boolean": True,
+                                }
+                            },
+                        )
+                    ],
+                )
+            ],
+        )
+
+        entries = resolve_import_entry_references(params)
+
+        self.assertEqual(
+            entries[0]["attrs"][0]["value"],
+            {"name": "key1", "id": ref_entry.id, "boolean": True},
         )

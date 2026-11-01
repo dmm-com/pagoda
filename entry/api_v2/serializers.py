@@ -19,7 +19,6 @@ from airone.lib.drf import (
     InvalidValueError,
     ObjectNotExistsError,
     RequiredParameterError,
-    get_bound_parent,
 )
 from airone.lib.elasticsearch import EntryFilterKey, FilterKey
 from airone.lib.log import Logger
@@ -30,6 +29,7 @@ from entry.models import AliasEntry, Attribute, AttributeValue, Entry
 from entry.settings import CONFIG as CONFIG_ENTRY
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus
+from job.params import ImportEntryParams
 from role.models import Role
 from user.api_v2.serializers import UserBaseSerializer
 from user.models import User
@@ -1310,135 +1310,122 @@ class EntryImportEntriesSerializer(serializers.Serializer[Any]):
 
 
 class EntryImportEntitySerializer(serializers.Serializer[Any]):
+    # Shape validation + OpenAPI schema for the API boundary only.  Resolving the
+    # name based references (and reading the already typed job params) lives in
+    # resolve_import_entry_references, so the import and preview tasks do not
+    # round-trip through a DRF serializer just to convert references.
     entity = serializers.CharField()
     entries = serializers.ListField(child=EntryImportEntriesSerializer())
 
-    def validate(self, params: dict[str, Any]) -> dict[str, Any]:
-        # It runs only in the background, because it takes a long time to process.
-        if get_bound_parent(self) is not None:
-            return params
 
-        def _convert_value_name_to_id(
-            attr_data: dict[str, Any], entity_attrs: dict[str, Any]
-        ) -> None:
-            def _object(
-                val: str | dict[str, Any] | None,
-                refs: list[Entity],
-            ) -> int | None:
-                if val:
-                    # for compatibility;
-                    # it will pick wrong entry if there are multiple entries with same name
-                    if isinstance(val, str):
-                        if len(refs) >= 2:
-                            Logger.warning(
-                                "ambiguous object given: entry name(%s), entity names(%s)",
-                                val,
-                                [x.name for x in refs],
-                            )
-                        ref_entry: Entry | None = Entry.objects.filter(
-                            name=val, schema__in=refs
-                        ).first()
-                        return ref_entry.id if ref_entry else 0
-                    # fully qualified entry, safer than above
-                    if isinstance(val, dict):
-                        ref_entry = Entry.objects.filter(
-                            name=val["name"], schema__name=val["entity"]
-                        ).first()
-                        return ref_entry.id if ref_entry else 0
-                return None
+def resolve_import_entry_references(params: ImportEntryParams) -> list[dict[str, Any]]:
+    """Resolve name based references in import params into database ids.
 
-            def _named_object(
-                val: dict[str, Any],
-                refs: list[Entity],
-                is_boolean: bool,
-            ) -> dict[str, Any]:
-                """Convert a named-object value of `{<name>: <referral>}` shape.
+    Returns the entries in the dict shape ``EntryCreateSerializer`` /
+    ``EntryUpdateSerializer`` consume, which is the same shape the DRF serializer
+    used to build in its ``validate``.  References that cannot be resolved become
+    ``0`` (or ``None``) so the downstream model serializers report them per entry
+    instead of aborting the whole import.
+    """
 
-                For (ARRAY_)NAMED_OBJECT_BOOLEAN, the exported boolean flag lives
-                either inside the referral (`{name: .., entity: .., boolean: ..}`,
-                the yaml export shape) or beside the name key
-                (`{<name>: <entry name>, boolean: ..}`). Accept both and carry the
-                flag over, otherwise it is dropped here and the attribute value is
-                never recognized as updated.
-                """
-                items = dict(val)
-                boolean: bool | None = None
-                if is_boolean and isinstance(items.get("boolean"), bool):
-                    boolean = items.pop("boolean")
-                if not items:
-                    return {}
+    def _object(val: Any, refs: list[Entity]) -> int | None:
+        if not val:
+            return None
+        # Compatibility: a bare string matches the first entry that shares the
+        # name across any referred entity.  The entity-qualified dict is safer
+        # and preferred, this branch only serves legacy payloads.
+        if isinstance(val, str):
+            if len(refs) >= 2:
+                Logger.warning(
+                    "ambiguous object given: entry name(%s), entity names(%s)",
+                    val,
+                    [x.name for x in refs],
+                )
+            ref_entry: Entry | None = Entry.objects.filter(name=val, schema__in=refs).first()
+            return ref_entry.id if ref_entry else 0
+        if isinstance(val, dict):
+            ref_entry = Entry.objects.filter(name=val["name"], schema__name=val["entity"]).first()
+            return ref_entry.id if ref_entry else 0
+        return None
 
-                name, referral = next(iter(items.items()))
-                if is_boolean and boolean is None and isinstance(referral, dict):
-                    boolean = referral.get("boolean")
+    def _named_object(val: dict[str, Any], refs: list[Entity], is_boolean: bool) -> dict[str, Any]:
+        """Convert a named-object value of ``{<name>: <referral>}`` shape.
 
-                converted = {"name": name, "id": _object(referral, refs)}
-                if is_boolean:
-                    converted["boolean"] = bool(boolean)
+        For (ARRAY_)NAMED_OBJECT_BOOLEAN, the exported boolean flag lives either
+        inside the referral (``{name: .., entity: .., boolean: ..}``, the yaml
+        export shape) or beside the name key (``{<name>: <entry name>,
+        boolean: ..}``).  Accept both and carry the flag over, otherwise it is
+        dropped and the attribute value is never recognised as updated.
+        """
+        items = dict(val)
+        boolean: bool | None = None
+        if is_boolean and isinstance(items.get("boolean"), bool):
+            boolean = items.pop("boolean")
+        if not items:
+            return {}
 
-                return converted
+        name, referral = next(iter(items.items()))
+        if is_boolean and boolean is None and isinstance(referral, dict):
+            boolean = referral.get("boolean")
 
-            def _group(val: str) -> int | None:
-                if val:
-                    ref_group: Group | None = Group.objects.filter(name=val).first()
-                    return ref_group.id if ref_group else 0
-                return None
+        converted = {"name": name, "id": _object(referral, refs)}
+        if is_boolean:
+            converted["boolean"] = bool(boolean)
+        return converted
 
-            def _role(val: str) -> int | None:
-                if val:
-                    ref_role: Role | None = Role.objects.filter(name=val).first()
-                    return ref_role.id if ref_role else 0
-                return None
+    def _group(val: Any) -> int | None:
+        if val:
+            ref_group: Group | None = Group.objects.filter(name=val).first()
+            return ref_group.id if ref_group else 0
+        return None
 
-            attr_type = entity_attrs[attr_data["name"]]["type"]
-            # _NAMED types also carry the BOOLEAN bit when they hold a boolean flag
-            is_boolean_named = bool(attr_type & AttrType._NAMED and attr_type & AttrType.BOOLEAN)
+    def _role(val: Any) -> int | None:
+        if val:
+            ref_role: Role | None = Role.objects.filter(name=val).first()
+            return ref_role.id if ref_role else 0
+        return None
 
-            if entity_attrs[attr_data["name"]]["type"] & AttrType._ARRAY:
-                if not isinstance(attr_data["value"], list):
-                    return
-                for i, child_value in enumerate(attr_data["value"]):
-                    if entity_attrs[attr_data["name"]]["type"] & AttrType.OBJECT:
-                        if entity_attrs[attr_data["name"]]["type"] & AttrType._NAMED:
-                            if not isinstance(child_value, dict):
-                                return
-                            attr_data["value"][i] = _named_object(
-                                child_value,
-                                entity_attrs[attr_data["name"]]["refs"],
-                                is_boolean_named,
-                            )
-                        else:
-                            attr_data["value"][i] = _object(
-                                child_value, entity_attrs[attr_data["name"]]["refs"]
-                            )
-                    if entity_attrs[attr_data["name"]]["type"] & AttrType.GROUP:
-                        attr_data["value"][i] = _group(child_value)
+    def _convert(value: Any, attr_info: dict[str, Any]) -> Any:
+        attr_type: int = attr_info["type"]
+        refs: list[Entity] = attr_info["refs"]
+        # _NAMED types also carry the BOOLEAN bit when they hold a boolean flag
+        is_boolean_named = bool(attr_type & AttrType._NAMED and attr_type & AttrType.BOOLEAN)
 
-                    if entity_attrs[attr_data["name"]]["type"] & AttrType.ROLE:
-                        attr_data["value"][i] = _role(child_value)
-            else:
-                if entity_attrs[attr_data["name"]]["type"] & AttrType.OBJECT:
-                    if entity_attrs[attr_data["name"]]["type"] & AttrType._NAMED:
-                        if not isinstance(attr_data["value"], dict):
-                            return
-                        attr_data["value"] = _named_object(
-                            attr_data["value"],
-                            entity_attrs[attr_data["name"]]["refs"],
-                            is_boolean_named,
-                        )
+        if attr_type & AttrType._ARRAY:
+            if not isinstance(value, list):
+                return value
+            converted: list[Any] = list(value)
+            for i, child_value in enumerate(value):
+                if attr_type & AttrType.OBJECT:
+                    if attr_type & AttrType._NAMED:
+                        if not isinstance(child_value, dict):
+                            return converted
+                        converted[i] = _named_object(child_value, refs, is_boolean_named)
                     else:
-                        attr_data["value"] = _object(
-                            attr_data["value"], entity_attrs[attr_data["name"]]["refs"]
-                        )
-                if entity_attrs[attr_data["name"]]["type"] & AttrType.GROUP:
-                    attr_data["value"] = _group(attr_data["value"])
-                if entity_attrs[attr_data["name"]]["type"] & AttrType.ROLE:
-                    attr_data["value"] = _role(attr_data["value"])
+                        converted[i] = _object(child_value, refs)
+                if attr_type & AttrType.GROUP:
+                    converted[i] = _group(child_value)
+                if attr_type & AttrType.ROLE:
+                    converted[i] = _role(child_value)
+            return converted
 
-        entity: Entity | None = Entity.objects.filter(name=params["entity"], is_active=True).first()
-        if not entity:
-            return params
-        entity_attrs = {
+        converted_value = value
+        if attr_type & AttrType.OBJECT:
+            if attr_type & AttrType._NAMED:
+                if not isinstance(value, dict):
+                    return converted_value
+                converted_value = _named_object(value, refs, is_boolean_named)
+            else:
+                converted_value = _object(value, refs)
+        if attr_type & AttrType.GROUP:
+            converted_value = _group(converted_value)
+        if attr_type & AttrType.ROLE:
+            converted_value = _role(converted_value)
+        return converted_value
+
+    entity: Entity | None = Entity.objects.filter(name=params.entity, is_active=True).first()
+    entity_attrs: dict[str, dict[str, Any]] = (
+        {
             entity_attr.name: {
                 "id": entity_attr.id,
                 "type": entity_attr.type,
@@ -1446,13 +1433,34 @@ class EntryImportEntitySerializer(serializers.Serializer[Any]):
             }
             for entity_attr in entity.attrs.filter(is_active=True)
         }
-        for entry_data in params["entries"]:
-            for attr_data in entry_data.get("attrs", []):
-                if attr_data["name"] in entity_attrs.keys():
-                    attr_data["id"] = entity_attrs[attr_data["name"]]["id"]
-                    _convert_value_name_to_id(attr_data, entity_attrs)
+        if entity
+        else {}
+    )
 
-        return params
+    entries: list[dict[str, Any]] = []
+    for entry in params.entries:
+        attrs: list[dict[str, Any]] = []
+        for attr in entry.attrs:
+            attr_info = entity_attrs.get(attr.name)
+            if attr_info is None:
+                # Keep the attribute so the model serializer reports it.  No
+                # ``id`` key is added, exactly like the former DRF validate, so
+                # the serializer still reports it as a required field.
+                attrs.append({"name": attr.name, "value": attr.value})
+                continue
+            attrs.append(
+                {
+                    "name": attr.name,
+                    "value": _convert(attr.value, attr_info),
+                    "id": attr_info["id"],
+                }
+            )
+        entry_data: dict[str, Any] = {"name": entry.name, "attrs": attrs}
+        if entry.id is not None:
+            entry_data["id"] = entry.id
+        entries.append(entry_data)
+
+    return entries
 
 
 class EntryImportSerializer(serializers.ListSerializer[Any]):
