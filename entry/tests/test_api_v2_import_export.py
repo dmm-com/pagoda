@@ -3,6 +3,7 @@ import errno
 import json
 import logging
 from datetime import date
+from typing import Any
 from unittest.mock import Mock, patch
 from urllib.parse import urlencode
 
@@ -16,9 +17,8 @@ from airone.lib.types import (
 )
 from entity.models import Entity, EntityAttr
 from entry import tasks
-from entry.api_v2.serializers import resolve_import_entry_references
 from entry.models import Attribute, AttributeValue, Entry
-from entry.services import AdvancedSearchService
+from entry.services import AdvancedSearchService, resolve_import_entry_references
 from entry.tests.test_api_v2 import BaseViewTest
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus
@@ -2996,4 +2996,106 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             entries[0]["attrs"][0]["value"],
             {"name": "key1", "id": ref_entry.id, "boolean": True},
+        )
+
+    def test_resolve_import_entry_references_resolves_each_reference_type(self):
+        ref_dict = {"entity": self.ref_entity.name, "name": self.ref_entry.name}
+        values: dict[str, Any] = {
+            "ref": self.ref_entry.name,
+            "refs": [self.ref_entry.name, ref_dict],
+            "name": {"key": ref_dict},
+            "names": [{"key1": self.ref_entry.name}, {"key2": ref_dict}],
+            "group": self.group.name,
+            "groups": [self.group.name],
+            "role": self.role.name,
+            "roles": [self.role.name],
+        }
+        params = ImportEntryParams(
+            entity=self.entity.name,
+            entries=[
+                ImportedEntry(
+                    name="Entry",
+                    attrs=[ImportedAttribute(name=k, value=v) for k, v in values.items()],
+                )
+            ],
+        )
+
+        entries = resolve_import_entry_references(params)
+
+        resolved = {x["name"]: x["value"] for x in entries[0]["attrs"]}
+        self.assertEqual(
+            resolved,
+            {
+                "ref": self.ref_entry.id,
+                "refs": [self.ref_entry.id, self.ref_entry.id],
+                "name": {"name": "key", "id": self.ref_entry.id},
+                "names": [
+                    {"name": "key1", "id": self.ref_entry.id},
+                    {"name": "key2", "id": self.ref_entry.id},
+                ],
+                "group": self.group.id,
+                "groups": [self.group.id],
+                "role": self.role.id,
+                "roles": [self.role.id],
+            },
+        )
+        # The typed params must not be mutated by the resolution.
+        self.assertEqual(params.entries[0].attrs[1].value, [self.ref_entry.name, ref_dict])
+
+    def test_resolve_import_entry_references_marks_unresolved_references(self):
+        # Unresolvable names become 0 so the model serializer reports them per
+        # entry, while empty values stay None.
+        values: dict[str, Any] = {
+            "ref": "missing",
+            "refs": ["missing", ""],
+            "name": {"key": {"entity": self.ref_entity.name, "name": "missing"}},
+            "group": "missing",
+            "groups": ["missing"],
+            "role": "missing",
+            "roles": [None],
+        }
+        params = ImportEntryParams(
+            entity=self.entity.name,
+            entries=[
+                ImportedEntry(
+                    name="Entry",
+                    attrs=[ImportedAttribute(name=k, value=v) for k, v in values.items()],
+                )
+            ],
+        )
+
+        entries = resolve_import_entry_references(params)
+
+        resolved = {x["name"]: x["value"] for x in entries[0]["attrs"]}
+        self.assertEqual(
+            resolved,
+            {
+                "ref": 0,
+                "refs": [0, None],
+                "name": {"name": "key", "id": 0},
+                "group": 0,
+                "groups": [0],
+                "role": 0,
+                "roles": [None],
+            },
+        )
+
+    def test_resolve_import_entry_references_with_unknown_entity(self):
+        params = ImportEntryParams(
+            entity="unknown-entity",
+            entries=[
+                ImportedEntry(
+                    id=1,
+                    name="Entry",
+                    attrs=[ImportedAttribute(name="ref", value=self.ref_entry.name)],
+                )
+            ],
+        )
+
+        entries = resolve_import_entry_references(params)
+
+        # Nothing is resolved without the entity; values pass through untouched.
+        self.assertEqual(
+            entries,
+            [{"id": 1, "name": "Entry", "attrs": [{"name": "ref", "value": self.ref_entry.name}]}],
         )

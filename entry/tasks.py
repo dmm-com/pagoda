@@ -47,10 +47,13 @@ from entry.api_v2.serializers import (
     ExportedEntryAttributeValue,
     ExportedEntryAttributeValueObject,
     ReferralEntry,
-    resolve_import_entry_references,
 )
 from entry.models import Attribute, Entry
-from entry.services import AdvancedSearchService, EntryImportPreviewService
+from entry.services import (
+    AdvancedSearchService,
+    EntryImportPreviewService,
+    resolve_import_entry_references,
+)
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus, JobTarget
 from job.params import (
