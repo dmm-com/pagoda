@@ -525,6 +525,7 @@ def _build_core_registry(entries: list[tuple[int, ParamsContract]]) -> dict[int,
 
 class ConfigurationExportParams(JobParamsModel):
     kind: Literal["entity", "user", "group", "role"]
+    entity_id: int | None = None
 
 
 CORE_JOB_PARAMS: dict[int, ParamsContract] = _build_core_registry(

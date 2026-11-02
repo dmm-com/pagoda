@@ -480,6 +480,17 @@ class AironeApiClient {
     await this.entity.entityApiV2ExportRetrieveRaw();
   }
 
+  async exportEntitySchema(entityId: number): Promise<void> {
+    const response = await fetch(
+      `/entity/api/v2/export?entity_id=${encodeURIComponent(entityId)}`,
+    );
+    if (!response.ok) {
+      throw new Error(
+        `Failed to register model export (status: ${response.status})`,
+      );
+    }
+  }
+
   // The diff endpoint is not part of the generated client yet.
   // t0 must be the earlier point in time and t1 the later one.
   async getEntityDiff(

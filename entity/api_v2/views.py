@@ -38,7 +38,7 @@ from entity.api_v2.serializers import (
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import EntryBaseSerializer, EntryCreateSerializer
 from entry.models import Attribute, AttributeValue, Entry
-from job.api_v2.serializers import ImportPreviewJobSerializer
+from job.api_v2.serializers import ImportPreviewJobSerializer, JobSerializers
 from job.models import Job
 from user.models import History, User
 
@@ -535,6 +535,27 @@ class EntityImportPreviewAPI(generics.GenericAPIView[Entity]):
 
 class EntityExportAPI(ConfigurationExportAPI):
     export_kind = "entity"
+
+    @extend_schema(
+        parameters=[OpenApiParameter("entity_id", OpenApiTypes.INT, OpenApiParameter.QUERY)]
+    )
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        entity_id = request.query_params.get("entity_id")
+        if entity_id is not None:
+            try:
+                entity = Entity.objects.get(id=int(entity_id), is_active=True)
+            except (Entity.DoesNotExist, ValueError):
+                raise NotFound("Target Entity doesn't exist")
+            if not cast(User, request.user).has_permission(entity, ACLType.Readable):
+                return Response(status=status.HTTP_403_FORBIDDEN)
+
+        job = Job.new_export_configuration_v2(
+            cast(User, request.user),
+            self.export_kind,
+            entity_id=int(entity_id) if entity_id is not None else None,
+        )
+        job.run()
+        return Response(JobSerializers(job).data, status=status.HTTP_202_ACCEPTED)
 
 
 @extend_schema(

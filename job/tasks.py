@@ -29,10 +29,27 @@ def export_configuration(self: Task[Any, Any], job: Job) -> None:
     user = job.user
     data: object
     if params.kind == "entity":
+        if params.entity_id is not None:
+            entity = Entity.objects.filter(id=params.entity_id, is_active=True).first()
+            entities = (
+                [entity]
+                if entity is not None and user.has_permission(entity, ACLType.Readable)
+                else []
+            )
+            attrs = [
+                attr
+                for attr in EntityAttr.objects.filter(
+                    parent_entity_id=params.entity_id, is_active=True
+                )
+                if user.has_permission(attr, ACLType.Readable)
+            ]
+        else:
+            entities = get_permitted_objects(user, Entity, ACLType.Readable)
+            attrs = get_permitted_objects(user, EntityAttr, ACLType.Readable)
         data = EntityImportExportRootSerializer(
             {
-                "Entity": get_permitted_objects(user, Entity, ACLType.Readable),
-                "EntityAttr": get_permitted_objects(user, EntityAttr, ACLType.Readable),
+                "Entity": entities,
+                "EntityAttr": attrs,
             }
         ).data
     elif params.kind == "user":
