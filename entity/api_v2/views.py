@@ -64,11 +64,16 @@ def strtobool(val: str) -> int:
 
 @http_get
 def history(request: HttpRequest, pk: int) -> HttpResponse:
-    if not Entity.objects.filter(id=pk).exists():
+    user = cast(User, request.user)
+
+    entity = Entity.objects.filter(id=pk).first()
+    if entity is None:
         return HttpResponse("Failed to get entity of specified id", status=400)
 
+    if not user.has_permission(entity, ACLType.Readable):
+        return HttpResponse("You don't have permission to access this object", status=403)
+
     # Entity to be edited is given by URL
-    entity = Entity.objects.get(id=pk)
     histories = (
         History.objects.filter(target_obj=entity, is_detail=False)
         .select_related("user", "target_obj")

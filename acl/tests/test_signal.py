@@ -1,7 +1,9 @@
 from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 
 from acl.models import ACLBase
+from acl.signals import create_permission
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
@@ -36,6 +38,22 @@ class SignalTest(TestCase):
         obj.name = "changedName"
         obj.save(update_fields=["name"])
         self.assertTrue(ACLBase.objects.filter(name="changedName", is_active=True).exists())
+
+    def test_create_permission_is_idempotent(self):
+        # Importing with explicit ids can recreate an object whose permission
+        # rows still remain (e.g. a hard-deleted object). Creating the
+        # permissions again must not raise an integrity error.
+        obj = ACLBase.objects.create(name="object", created_user=self.user)
+
+        create_permission(obj)
+
+        self.assertEqual(
+            Permission.objects.filter(
+                content_type=ContentType.objects.get_for_model(obj),
+                codename__startswith="%s." % obj.id,
+            ).count(),
+            len(ACLType.availables()),
+        )
 
     def test_entity(self):
         # This checks signal processing creates permission objects after creating object

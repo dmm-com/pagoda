@@ -361,6 +361,90 @@ class ViewTest(AironeViewTest):
             resp.json()["username"][0]["message"], "A user with that username already exists."
         )
 
+    def test_update_user_cannot_grant_superuser_to_themselves(self):
+        """A non-superuser must not be able to escalate through a self-update."""
+        login_user = self.guest_login()
+
+        resp = self.client.put(
+            "/user/api/v2/%d/" % login_user.id,
+            json.dumps(
+                {
+                    "username": login_user.username,
+                    "email": "guest@example.com",
+                    "is_superuser": True,
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 403)
+
+        login_user.refresh_from_db()
+        self.assertFalse(login_user.is_superuser)
+
+    def test_update_user_cannot_change_own_username(self):
+        """Renaming users is reserved for administrators."""
+        login_user = self.guest_login()
+
+        resp = self.client.put(
+            "/user/api/v2/%d/" % login_user.id,
+            json.dumps(
+                {
+                    "username": "renamed-by-myself",
+                    "email": "guest@example.com",
+                    "is_superuser": False,
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 403)
+
+        login_user.refresh_from_db()
+        self.assertEqual(login_user.username, "guest")
+
+    def test_update_user_with_unchanged_is_superuser(self):
+        """A normal self-update (is_superuser is false) has to keep working."""
+        login_user = self.guest_login()
+
+        resp = self.client.put(
+            "/user/api/v2/%d/" % login_user.id,
+            json.dumps(
+                {
+                    "username": login_user.username,
+                    "email": "guest@example.com",
+                    "is_superuser": False,
+                    "token_lifetime": 3600,
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        login_user.refresh_from_db()
+        self.assertEqual(login_user.email, "guest@example.com")
+        self.assertEqual(login_user.token_lifetime, 3600)
+        self.assertFalse(login_user.is_superuser)
+
+    def test_update_user_is_superuser_by_superuser(self):
+        """A superuser is still allowed to grant the privilege to others."""
+        self.admin_login()
+        user = self._create_user("user")
+
+        resp = self.client.put(
+            "/user/api/v2/%d/" % user.id,
+            json.dumps(
+                {
+                    "username": user.username,
+                    "email": "user@example.com",
+                    "is_superuser": True,
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        user.refresh_from_db()
+        self.assertTrue(user.is_superuser)
+
     def test_delete_user(self):
         self.admin_login()
 

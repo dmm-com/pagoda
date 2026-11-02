@@ -17,7 +17,14 @@ def create_permission(instance: ACLBase) -> None:
     content_type = ContentType.objects.get_for_model(instance)
     for acltype in ACLType.availables():
         codename = "%s.%s" % (instance.id, acltype.id)
-        HistoricalPermission(name=acltype.name, codename=codename, content_type=content_type).save()
+        # get_or_create keeps the creation idempotent. An ACLBase id can be
+        # reused by an import that specifies ids explicitly while the
+        # permission rows of the previously deleted object still remain.
+        HistoricalPermission.objects.get_or_create(
+            codename=codename,
+            content_type=content_type,
+            defaults={"name": acltype.name},
+        )
 
 
 @receiver(post_save, sender=ACLBase)

@@ -350,3 +350,69 @@ class APITest(AironeViewTest):
         attr_history = resp.json()[0]["attribute"]["history"]
         self.assertEqual(len(attr_history), 1)
         self.assertEqual(attr_history[0]["value"], "second value")
+
+    def test_without_readable_permission_on_entry(self):
+        entry = Entry.objects.create(name="entry", schema=self.entity, created_user=self.user)
+        entry.complement_attrs(self.user)
+        entry.attrs.get(schema__name="str").add_value(self.user, "secret value")
+
+        # make the entity invisible for everybody except users who have explicit ACLs
+        self.entity.is_public = False
+        self.entity.save()
+
+        # login as another user who has no permission on the entity
+        self.guest_login("another")
+        resp = self.client.get(
+            "/api/v1/entry/update_history",
+            {
+                "attribute": "str",
+                "entry": entry.name,
+            },
+        )
+
+        # an unreadable entry is indistinguishable from a missing one
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.content.decode("utf-8"),
+            '"There is no entry with which matches specified parameters"',
+        )
+
+    def test_without_readable_permission_on_attribute(self):
+        entry = Entry.objects.create(name="entry", schema=self.entity, created_user=self.user)
+        entry.complement_attrs(self.user)
+        attr = entry.attrs.get(schema__name="str")
+        attr.add_value(self.user, "secret value")
+
+        # make only the attribute invisible while the entry stays readable
+        attr.is_public = False
+        attr.save()
+
+        self.guest_login("another")
+        resp = self.client.get(
+            "/api/v1/entry/update_history",
+            {
+                "attribute": "str",
+                "entry": entry.name,
+            },
+        )
+
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(
+            resp.content.decode("utf-8"),
+            '"You don\'t have permission to read attribute(str) in entry(entry)"',
+        )
+
+    def test_with_invalid_entry_id(self):
+        resp = self.client.get(
+            "/api/v1/entry/update_history",
+            {
+                "attribute": "str",
+                "entry_id": "1,invalid",
+            },
+        )
+
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.content.decode("utf-8"),
+            "\"'entry_id' parameter accepts comma separated numbers\"",
+        )

@@ -3647,6 +3647,19 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(histories), 1)
         self.assertEqual(len(histories[0]["details"]), 7)
 
+    def test_history_without_permission(self):
+        # make the entity invisible for everybody except users who have explicit ACLs
+        self.entity.is_public = False
+        self.entity.save()
+
+        resp = self.client.get("/entity/api/v2/history/%s" % self.entity.id)
+        self.assertEqual(resp.status_code, 403)
+
+        # a superuser can still read the history of any entity
+        self.admin_login()
+        resp = self.client.get("/entity/api/v2/history/%s" % self.entity.id)
+        self.assertEqual(resp.status_code, 200)
+
     def test_import(self):
         self.admin_login()
 
