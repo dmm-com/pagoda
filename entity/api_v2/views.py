@@ -19,7 +19,7 @@ from rest_framework.views import APIView
 
 from airone.lib.acl import ACLType
 from airone.lib.configuration_export import ConfigurationExportAPI
-from airone.lib.drf import EntryIsNotEmptyError, ObjectNotExistsError, YAMLParser
+from airone.lib.drf import EntryIsNotEmptyError, EnvelopeYAMLParser, ObjectNotExistsError
 from airone.lib.http import http_get
 from airone.lib.plugin_dispatch import PluginOverrideMixin
 from airone.lib.text import normalize_search_text
@@ -477,7 +477,7 @@ class EntityHistoryAPI(viewsets.ReadOnlyModelViewSet[History]):
 
 
 class EntityImportAPI(generics.GenericAPIView[Entity]):
-    parser_classes = [YAMLParser]
+    parser_classes = [EnvelopeYAMLParser]
     # EntityImportExportRootSerializer is Serializer[dict], not Serializer[Entity],
     # so the tighter drf-stubs annotation on serializer_class does not fit here.
     serializer_class = EntityImportExportRootSerializer  # type: ignore[assignment]
@@ -510,7 +510,7 @@ class EntityImportPreviewAPI(generics.GenericAPIView[Entity]):
     The preview stays optional: clients may post straight to ``EntityImportAPI``.
     """
 
-    parser_classes = [YAMLParser]
+    parser_classes = [EnvelopeYAMLParser]
     serializer_class = ImportPreviewJobSerializer  # type: ignore[assignment]
 
     @extend_schema(

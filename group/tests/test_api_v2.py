@@ -6,7 +6,8 @@ from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from rest_framework import status
 
-from airone.lib.test import AironeViewTest
+from airone.lib.test import AironeViewTest, load_export_payload
+from common.lib.import_detector import ImportType
 from common.tests.compat import post_import
 from group.models import Group
 from job.models import Job, JobStatus
@@ -203,7 +204,7 @@ class ViewTest(AironeViewTest):
             r'^attachment; filename="group_\d{4}_\d{2}_\d{2}_\d{2}_\d{2}\.yaml"$',
         )
 
-        obj = yaml.load(resp.content, Loader=yaml.SafeLoader)
+        obj = load_export_payload(resp.content, ImportType.GROUP)
         self.assertTrue(isinstance(obj, list))
         self.assertEqual(len(obj), 2)
 

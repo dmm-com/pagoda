@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from airone.exceptions import ImportDataError
 from airone.lib.drf import InvalidValueError, YAMLParser
 from common.api_v2.serializers import CommonImportJobSerializer
-from common.lib.import_detector import ImportType, UnknownImportFormatError, detect_import_type
+from common.lib.import_detector import ImportType, UnknownImportFormatError, parse_import_document
 from entity.api_v2.serializers import EntityImportExportRootSerializer
 from entry.api_v2.serializers import EntryImportSerializer
 from entry.import_service import start_entry_import_jobs
@@ -62,7 +62,7 @@ class CommonImportAPI(generics.GenericAPIView[Any]):
         user = cast("User", request.user)
 
         try:
-            import_type = detect_import_type(request.data)
+            import_type, payload = parse_import_document(request.data)
         except UnknownImportFormatError as e:
             raise ValidationError(str(e))
 
@@ -78,13 +78,13 @@ class CommonImportAPI(generics.GenericAPIView[Any]):
         error_list: list[str] = []
         if import_type == ImportType.ENTITY:
             entity_serializer = EntityImportExportRootSerializer(
-                data=request.data, context={"request": request}
+                data=payload, context={"request": request}
             )
             entity_serializer.is_valid(raise_exception=True)
             job_ids.append(self._start_general_job(user, "entity", entity_serializer.initial_data))
         elif import_type == ImportType.ENTRY:
             preview_job_id = _parse_preview_job_id(request)
-            entry_serializer = EntryImportSerializer(data=request.data)
+            entry_serializer = EntryImportSerializer(data=payload)
             entry_serializer.is_valid(raise_exception=True)
             job_ids, error_list = start_entry_import_jobs(
                 user,
@@ -93,19 +93,19 @@ class CommonImportAPI(generics.GenericAPIView[Any]):
                 preview_job_id=preview_job_id,
             )
         elif import_type == ImportType.USER:
-            user_serializer = UserImportSerializer(data=request.data)
+            user_serializer = UserImportSerializer(data=payload)
             user_serializer.is_valid(raise_exception=True)
             try:
-                validate_user_import_data(cast(list[dict[str, Any]], request.data))
+                validate_user_import_data(cast(list[dict[str, Any]], payload))
             except ImportDataError as e:
                 raise ValidationError(str(e))
-            job_ids.append(self._start_general_job(user, "user", request.data))
+            job_ids.append(self._start_general_job(user, "user", payload))
         elif import_type == ImportType.GROUP:
-            group_serializer = GroupImportSerializer(data=request.data, many=True)
+            group_serializer = GroupImportSerializer(data=payload, many=True)
             group_serializer.is_valid(raise_exception=True)
-            job_ids.append(self._start_general_job(user, "group", request.data))
+            job_ids.append(self._start_general_job(user, "group", payload))
         else:
-            role_serializer = RoleImportSerializer(data=request.data)
+            role_serializer = RoleImportSerializer(data=payload)
             role_serializer.is_valid(raise_exception=True)
             job = Job.new_role_import_v2(
                 user, text="Preparing to import role data", params=role_serializer.validated_data

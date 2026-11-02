@@ -3,7 +3,8 @@ from unittest.mock import Mock, patch
 
 import yaml
 
-from airone.lib.test import AironeViewTest
+from airone.lib.test import AironeViewTest, load_export_payload
+from common.lib.import_detector import ImportType
 from common.tests.compat import post_import
 from entry.models import Attribute, Entry
 from group.models import Group
@@ -487,7 +488,7 @@ class ViewTest(AironeViewTest):
             resp["Content-Disposition"],
             r'^attachment; filename="role_\d{4}_\d{2}_\d{2}_\d{2}_\d{2}\.yaml"$',
         )
-        data = yaml.safe_load(resp.content.decode("utf-8"))
+        data = load_export_payload(resp.content.decode("utf-8"), ImportType.ROLE)
 
         self.assertEqual(
             data[0]["permissions"],
@@ -744,7 +745,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(f"/job/api/v2/{job.id}/download")
         self.assertEqual(resp.status_code, 200)
 
-        data = yaml.safe_load(resp.content.decode("utf-8"))
+        data = load_export_payload(resp.content.decode("utf-8"), ImportType.ROLE)
         role_names = [x["name"] for x in data]
 
         # Verify user can export roles they belong to
@@ -777,7 +778,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(f"/job/api/v2/{job.id}/download")
         self.assertEqual(resp.status_code, 200)
 
-        data = yaml.safe_load(resp.content.decode("utf-8"))
+        data = load_export_payload(resp.content.decode("utf-8"), ImportType.ROLE)
         role_names = [x["name"] for x in data]
 
         # Superuser should be able to export all roles

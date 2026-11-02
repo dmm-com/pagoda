@@ -13,7 +13,7 @@ from rest_framework.views import APIView
 
 from airone.exceptions import ImportDataError
 from airone.lib.configuration_export import ConfigurationExportAPI
-from airone.lib.drf import IsSuperuser, YAMLParser
+from airone.lib.drf import EnvelopeYAMLParser, IsSuperuser
 from group.api_v2.serializers import (
     GroupCreateUpdateSerializer,
     GroupImportSerializer,
@@ -92,7 +92,7 @@ class GroupTreeAPI(viewsets.ReadOnlyModelViewSet[Group]):
 
 
 class GroupImportAPI(generics.GenericAPIView[Any]):
-    parser_classes = [YAMLParser]
+    parser_classes = [EnvelopeYAMLParser]
     serializer_class = GroupImportSerializer
     permission_classes = [IsAuthenticated & IsSuperuser]
 

@@ -159,6 +159,22 @@ class CommonImportAPITest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self._assert_no_job()
 
+    def test_envelope_with_mismatched_payload_is_rejected_without_a_job(self) -> None:
+        # The declared type is trusted without scanning, so the serializer for that type must
+        # reject a payload shaped like another type before any job is created.
+        self.admin_login()
+        cases = [
+            {"import_type": "user", "data": [{"id": 1, "name": "g"}]},
+            {"import_type": "group", "data": [{"username": "u", "email": "e", "groups": "A"}]},
+            {"import_type": "entity", "data": [{"id": 1, "name": "g"}]},
+            {"import_type": "role", "data": [{"username": "u", "email": "e", "groups": ""}]},
+        ]
+        for data in cases:
+            with self.subTest(import_type=data["import_type"]):
+                resp = self._post(data)
+                self.assertEqual(resp.status_code, 400)
+                self._assert_no_job()
+
     def test_non_superuser_cannot_import_user_group_role(self) -> None:
         self.guest_login()
         cases = [

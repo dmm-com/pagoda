@@ -11,9 +11,11 @@ import yaml
 from airone.lib.acl import ACLType
 from airone.lib.elasticsearch import EntryFilterKey
 from airone.lib.log import Logger
+from airone.lib.test import load_export_payload
 from airone.lib.types import (
     AttrType,
 )
+from common.lib.import_detector import ImportType
 from common.tests.compat import post_import
 from entity.models import Entity, EntityAttr
 from entry import tasks
@@ -88,7 +90,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(job.status, JobStatus.DONE)
         self.assertRegex(job.text, r"^entry_ほげ_\d{4}_\d{2}_\d{2}_\d{2}_\d{2}\.yaml$")
 
-        obj = yaml.load(job.get_cache(), Loader=yaml.SafeLoader)
+        obj = load_export_payload(job.get_cache(), ImportType.ENTRY)
 
         self.assertEqual(len(obj), 1)
         entity_data = obj[0]
@@ -140,7 +142,7 @@ class ViewTest(BaseViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 200)
-        obj = yaml.load(Job.objects.last().get_cache(), Loader=yaml.SafeLoader)
+        obj = load_export_payload(Job.objects.last().get_cache(), ImportType.ENTRY)
 
         # check permitted attributes exist in the result
         self.assertTrue(all([x["name"] in ["foo", "bar"] for x in obj[0]["entries"][0]["attrs"]]))
@@ -257,7 +259,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(job.operation, JobOperation.EXPORT_ENTRY_V2)
         self.assertEqual(job.status, JobStatus.DONE)
 
-        obj = yaml.load(job.get_cache(), Loader=yaml.SafeLoader)
+        obj = load_export_payload(job.get_cache(), ImportType.ENTRY)
 
         self.assertEqual(len(obj), 1)
         entity_data = obj[0]
@@ -334,7 +336,7 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, 200)
         job = Job.objects.filter(target=self.entity).last()
-        obj = yaml.load(job.get_cache(), Loader=yaml.SafeLoader)
+        obj = load_export_payload(job.get_cache(), ImportType.ENTRY)
         self.assertEqual(
             obj[0]["entries"][0]["attrs"],
             [
@@ -1189,7 +1191,7 @@ class ViewTest(BaseViewTest):
             "/entry/api/v2/%d/export/" % model.id, json.dumps({}), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
-        exported_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.SafeLoader)
+        exported_data = load_export_payload(Job.objects.last().get_cache(), ImportType.ENTRY)
 
         # then, change the "item" that would be updated by subsequent import processing
         item.name = "ChangedItem"
@@ -1232,7 +1234,7 @@ class ViewTest(BaseViewTest):
             "/entry/api/v2/%d/export/" % model.id, json.dumps({}), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
-        exported_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.SafeLoader)
+        exported_data = load_export_payload(Job.objects.last().get_cache(), ImportType.ENTRY)
 
         # update exported data to make duplicated name situation on import processing
         exported_data[0]["entries"][0]["name"] = "item-1"  # same as items[1].name
@@ -2346,7 +2348,7 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, 200)
 
-        resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        resp_data = load_export_payload(Job.objects.last().get_cache(), ImportType.ENTRY)
         for index in range(2):
             entity = Entity.objects.get(name="Entity-%d" % index)
             found = next(filter(lambda x: x["entity"] == entity.name, resp_data), None)
@@ -2547,7 +2549,7 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, 200)
 
-        resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        resp_data = load_export_payload(Job.objects.last().get_cache(), ImportType.ENTRY)
         self.assertEqual(len(resp_data[0]["entries"]), 2)
         self.assertEqual([x["name"] for x in resp_data[0]["entries"]], ["bar", "baz"])
 
@@ -2591,7 +2593,7 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, 200)
 
-        resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        resp_data = load_export_payload(Job.objects.last().get_cache(), ImportType.ENTRY)
         referred_entity = next(filter(lambda x: x["entity"] == "ReferredEntity", resp_data), None)
         self.assertIsNotNone(referred_entity)
         referrals = referred_entity["entries"][0]["referrals"]
@@ -2653,7 +2655,7 @@ class ViewTest(BaseViewTest):
 
         job = Job.objects.last()
         self.assertEqual(job.status, JobStatus.DONE)
-        resp_data = yaml.load(job.get_cache(), Loader=yaml.FullLoader)
+        resp_data = load_export_payload(job.get_cache(), ImportType.ENTRY)
         attrs = {x["name"]: x["value"] for x in resp_data[0]["entries"][0]["attrs"]}
         self.assertEqual(
             attrs["nobool"],
@@ -2719,7 +2721,7 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, 200)
 
-        resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        resp_data = load_export_payload(Job.objects.last().get_cache(), ImportType.ENTRY)
         for entity_block in resp_data:
             for entry_block in entity_block["entries"]:
                 self.assertNotIn("referrals", entry_block)
@@ -2739,7 +2741,7 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, 200)
 
-        resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        resp_data = load_export_payload(Job.objects.last().get_cache(), ImportType.ENTRY)
         for entity_block in resp_data:
             for entry_block in entity_block["entries"]:
                 self.assertNotIn("referrals", entry_block)
@@ -2768,7 +2770,7 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, 200)
 
-        obj = yaml.load(Job.objects.last().get_cache(), Loader=yaml.SafeLoader)
+        obj = load_export_payload(Job.objects.last().get_cache(), ImportType.ENTRY)
         for entity_block in obj:
             for entry_block in entity_block["entries"]:
                 self.assertNotIn("referrals", entry_block)
@@ -2851,7 +2853,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(resp.status_code, 200)
 
         # verifying result
-        yaml_contents = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        yaml_contents = load_export_payload(Job.objects.last().get_cache(), ImportType.ENTRY)
         self.assertEqual(
             yaml_contents[0]["entries"][0]["attrs"],
             [{"name": x["column"], "value": x["yaml"]} for x in results],
@@ -2902,7 +2904,7 @@ class ViewTest(BaseViewTest):
         )
 
         self.assertEqual(resp.status_code, 200)
-        resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        resp_data = load_export_payload(Job.objects.last().get_cache(), ImportType.ENTRY)
         self.assertEqual(
             resp_data,
             [

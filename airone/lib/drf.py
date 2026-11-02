@@ -17,6 +17,7 @@ from rest_framework.views import APIView, exception_handler
 from yaml import SafeDumper
 
 from airone.lib.log import Logger
+from common.lib.import_detector import UnknownImportFormatError, unwrap_envelope
 from user.models import User
 
 SafeDumper.add_representer(OrderedDict, yaml.representer.SafeRepresenter.represent_dict)
@@ -49,6 +50,27 @@ class YAMLParser(BaseParser):
             return loaded
         except (ValueError, yaml.parser.ParserError, yaml.scanner.ScannerError) as exc:
             raise ParseError("YAML parse error - %s" % str(exc))
+
+
+class EnvelopeYAMLParser(YAMLParser):
+    """
+    Parses an export file and returns only its payload, dropping the import_type envelope.
+
+    Files without the envelope are returned unchanged.
+    """
+
+    def parse(
+        self,
+        stream: IO[bytes],
+        media_type: str | None = None,
+        parser_context: "Mapping[str, Any] | None" = None,
+    ) -> Any:
+        loaded = super().parse(stream, media_type, parser_context)
+        try:
+            _, payload = unwrap_envelope(loaded)
+        except UnknownImportFormatError as exc:
+            raise ParseError(str(exc))
+        return payload
 
 
 class YAMLRenderer(BaseRenderer):

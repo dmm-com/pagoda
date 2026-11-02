@@ -9,6 +9,7 @@ from airone.exceptions import ImportDataError
 from airone.lib.acl import ACLType, get_permitted_objects
 from airone.lib.drf import YAMLRenderer
 from airone.lib.job import may_schedule_until_job_is_ready, register_job_task
+from common.lib.import_detector import ImportType, wrap_envelope
 from entity.api_v2.serializers import EntityImportExportRootSerializer
 from entity.models import Entity, EntityAttr
 from entity.tasks import _JobRequest
@@ -49,7 +50,7 @@ def export_configuration(self: Task[Any, Any], job: Job) -> None:
         ).data
 
     if not job.is_canceled():
-        job.set_cache(YAMLRenderer().render(data))
+        job.set_cache(YAMLRenderer().render(wrap_envelope(ImportType(params.kind), data)))
 
 
 @register_job_task(JobOperation.IMPORT_GENERAL_V2)

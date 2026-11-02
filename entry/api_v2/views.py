@@ -22,11 +22,11 @@ from airone.lib import custom_view
 from airone.lib.acl import ACLType
 from airone.lib.drf import (
     DuplicatedObjectExistsError,
+    EnvelopeYAMLParser,
     IncorrectTypeError,
     InvalidValueError,
     ObjectNotExistsError,
     RequiredParameterError,
-    YAMLParser,
 )
 from airone.lib.elasticsearch import (
     ENTRY_NAME_SORT_TARGET,
@@ -1057,7 +1057,7 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet[Any]):
 
 
 class EntryImportAPI(generics.GenericAPIView[Entity]):
-    parser_classes = [YAMLParser]
+    parser_classes = [EnvelopeYAMLParser]
     serializer_class = EntryImportSerializer
 
     def get_queryset(self) -> QuerySet[Entity]:
@@ -1129,7 +1129,7 @@ class EntryImportPreviewAPI(generics.GenericAPIView[Any]):
     preview is optional -- posting to ``EntryImportAPI`` imports straight away.
     """
 
-    parser_classes = [YAMLParser]
+    parser_classes = [EnvelopeYAMLParser]
     serializer_class = ImportPreviewJobsSerializer
 
     @extend_schema(
