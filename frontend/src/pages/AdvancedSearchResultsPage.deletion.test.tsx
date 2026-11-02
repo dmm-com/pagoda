@@ -40,7 +40,7 @@ beforeEach(() => {
   });
   vi.mocked(aironeApiClient.getEntry).mockImplementation(
     async (id) =>
-      ({ id, schema: { id: 1 } }) as Awaited<
+      ({ id, name: `item-${id}`, schema: { id: 1 } }) as Awaited<
         ReturnType<typeof aironeApiClient.getEntry>
       >,
   );
@@ -77,6 +77,11 @@ test("checks items outside the visible page before deleting all matches", async 
       }) as Awaited<ReturnType<typeof aironeApiClient.getEntryReferral>>,
   );
   fireEvent.click(screen.getByRole("button", { name: "まとめて削除" }));
+  await screen.findByText("item-1");
+  expect(screen.getAllByText("参照元なし").length).toBeGreaterThan(0);
+  fireEvent.click(screen.getByRole("button", { name: "Go to page 11" }));
+  await screen.findByText("item-101");
+  fireEvent.click(screen.getByRole("button", { name: "参照元: 1件" }));
   await screen.findByRole("link", { name: "OtherModel / dependent-item" });
   expect(aironeApiClient.getEntryReferral).toHaveBeenCalledWith(101, 1);
   expect(
@@ -107,6 +112,10 @@ test("cancelling the reference warning prevents the entire bulk deletion", async
   render(<AdvancedSearchResultsPage />, { wrapper: TestWrapper });
   fireEvent.click(await screen.findByText("select targets"));
   fireEvent.click(screen.getByRole("button", { name: "まとめて削除" }));
+  const referenceButtons = await screen.findAllByRole("button", {
+    name: "参照元: 1件",
+  });
+  fireEvent.click(referenceButtons[0]!);
   await screen.findAllByRole("link", { name: "OtherModel / dependent-item" });
   fireEvent.click(screen.getByRole("button", { name: "キャンセル" }));
   await waitFor(() =>
@@ -116,4 +125,45 @@ test("cancelling the reference warning prevents the entire bulk deletion", async
     screen.queryByRole("button", { name: /yes/i }),
   ).not.toBeInTheDocument();
   expect(aironeApiClient.destroyEntries).not.toHaveBeenCalled();
+});
+
+test("does not allow deletion when reference checks fail", async () => {
+  vi.mocked(aironeApiClient.getEntryReferral).mockRejectedValue(
+    new Error("reference service unavailable"),
+  );
+  render(<AdvancedSearchResultsPage />, { wrapper: TestWrapper });
+  fireEvent.click(await screen.findByText("select targets"));
+  fireEvent.click(screen.getByRole("button", { name: "まとめて削除" }));
+  await screen.findByText(/参照情報を取得できませんでした/);
+  expect(screen.getByRole("button", { name: "削除する" })).toBeDisabled();
+  expect(aironeApiClient.destroyEntries).not.toHaveBeenCalled();
+});
+
+test("shows a reference accordion for a target on the second page", async () => {
+  vi.mocked(aironeApiClient.getEntryReferral).mockImplementation(
+    async (id) =>
+      ({
+        count: id === 11 ? 1 : 0,
+        results:
+          id === 11
+            ? [
+                {
+                  id: 999,
+                  name: "dependent-item",
+                  schema: { id: 10, name: "OtherModel" },
+                },
+              ]
+            : [],
+      }) as Awaited<ReturnType<typeof aironeApiClient.getEntryReferral>>,
+  );
+  render(<AdvancedSearchResultsPage />, { wrapper: TestWrapper });
+  fireEvent.click(await screen.findByText("select targets"));
+  fireEvent.click(screen.getByRole("button", { name: "まとめて削除" }));
+  await screen.findByText("item-1");
+  fireEvent.click(screen.getByRole("button", { name: "Go to page 2" }));
+  await screen.findByText("item-11");
+  fireEvent.click(screen.getByRole("button", { name: "参照元: 1件" }));
+  expect(
+    await screen.findByRole("link", { name: "OtherModel / dependent-item" }),
+  ).toBeInTheDocument();
 });

@@ -748,6 +748,24 @@ class IsolationParentCreateUpdateSerializer(serializers.Serializer[dict[str, Any
     conditions = IsolationConditionCreateUpdateSerializer(many=True, default=[])
     action = IsolationActionCreateUpdateSerializer(default={})
 
+    def validate_id(self, id: int | None) -> int | None:
+        if id is None:
+            return id
+
+        # Isolation rule ids have to belong to the entity that is being edited.
+        # Resolving them globally let a user rewrite another entity's isolation
+        # policy by supplying its rule id (IDOR). This mirrors the rule that
+        # WebhookCreateUpdateSerializer.validate_id already applies. `instance`
+        # is None when this serializer is used to create a new entity, where an
+        # explicit rule id makes no sense and is therefore rejected.
+        parent = get_bound_parent(self)
+        grandparent = get_bound_parent(parent) if parent is not None else None
+        entity = grandparent.instance if grandparent is not None else None
+        if not isinstance(entity, Entity) or not entity.isolation_rules.filter(id=id).exists():
+            raise ObjectNotExistsError("Invalid id(%s) object does not exist" % id)
+
+        return id
+
 
 class EntityCreateData(TypedDict, total=False):
     name: str
@@ -1049,11 +1067,17 @@ class EntitySerializer(serializers.ModelSerializer[Entity]):
                     IsolationParent.objects.filter(id=rule_id, entity=entity).delete()
                 continue
 
-            parent, _ = (
-                IsolationParent.objects.get_or_create(id=rule_id, defaults={"entity": entity})
-                if rule_id
-                else (IsolationParent.objects.create(entity=entity), True)
-            )
+            if rule_id:
+                # validate_id() already rejected ids of other entities. Resolve
+                # through the entity as well so that a race cannot attach a
+                # foreign rule, and so that a missing rule is a 400 rather than
+                # the IntegrityError a bare get_or_create(id=..., entity=...)
+                # would raise.
+                parent = IsolationParent.objects.filter(id=rule_id, entity=entity).first()
+                if parent is None:
+                    raise ObjectNotExistsError("Invalid id(%s) object does not exist" % rule_id)
+            else:
+                parent = IsolationParent.objects.create(entity=entity)
             parent.clear()
             parent.save_conditions(rule_data.get("conditions", []))
 

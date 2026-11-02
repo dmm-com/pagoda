@@ -165,7 +165,11 @@ export const RoleEditPage: FC = () => {
       </PageHeader>
 
       <Container>
-        <RoleForm control={control} setValue={setValue} />
+        <RoleForm
+          control={control}
+          setValue={setValue}
+          permissions={role?.permissions}
+        />
       </Container>
     </Box>
   );

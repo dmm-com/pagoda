@@ -480,6 +480,7 @@ class TriggerListParams(
 
 class BulkEditParams(JobParamsModel):
     modelid: int
+    entry_ids: list[int] | None = None
     attrinfo: list[AttrHintParams] = Field(default_factory=list)
     hint_entry: dict[str, Any] | None = None
     referral_name: str | None = None
@@ -524,6 +525,7 @@ def _build_core_registry(entries: list[tuple[int, ParamsContract]]) -> dict[int,
 
 class ConfigurationExportParams(JobParamsModel):
     kind: Literal["entity", "user", "group", "role"]
+    entity_id: int | None = None
 
 
 class GeneralImportParams(JobParamsModel):

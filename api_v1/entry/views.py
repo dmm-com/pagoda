@@ -320,6 +320,8 @@ class UpdateHistory(APIView):
         responses={200: UpdateHistoryItemSerializer(many=True), 400: str},
     )
     def get(self, request: Request) -> Response:
+        user = cast(User, request.user)
+
         # validate whether mandatory parameters are specified
         p_attr = request.GET.get("attribute")
         if not p_attr:
@@ -331,6 +333,14 @@ class UpdateHistory(APIView):
         if not (p_entry or p_entry_id):
             return Response(
                 "Either 'entries' or 'entry_ids' parameter is required",
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            entry_ids = [int(x) for x in p_entry_id.split(",") if x]
+        except ValueError:
+            return Response(
+                "'entry_id' parameter accepts comma separated numbers",
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -371,14 +381,19 @@ class UpdateHistory(APIView):
         if p_entity:
             q_base &= Q(schema__name=p_entity)
 
-        target_entries = Entry.objects.filter(
-            q_base,
-            (
-                Q(name__in=p_entry.split(","))
-                | Q(id__in=[int(x) for x in p_entry_id.split(",") if x])
-            ),
-        )
-        if not target_entries.exists():
+        target_entries = [
+            entry
+            for entry in Entry.objects.filter(
+                q_base,
+                Q(name__in=p_entry.split(",")) | Q(id__in=entry_ids),
+            ).select_related("schema")
+            if user.has_permission(entry, ACLType.Readable)
+        ]
+
+        # Entries the requester is not allowed to read are indistinguishable
+        # from entries that do not exist, so the same error is returned for
+        # both cases to avoid leaking their existence.
+        if not target_entries:
             return Response(
                 "There is no entry with which matches specified parameters",
                 status=status.HTTP_400_BAD_REQUEST,
@@ -391,6 +406,13 @@ class UpdateHistory(APIView):
                 return Response(
                     "There is no attribute(%s) in entry(%s)" % (p_attr, entry.name),
                     status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            if not user.has_permission(attr, ACLType.Readable):
+                return Response(
+                    "You don't have permission to read attribute(%s) in entry(%s)"
+                    % (p_attr, entry.name),
+                    status=status.HTTP_403_FORBIDDEN,
                 )
 
             history_items: List[UpdateHistoryResponse.AttributeHistory] = []

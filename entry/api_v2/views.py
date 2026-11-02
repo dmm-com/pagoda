@@ -1181,6 +1181,10 @@ class EntryBulkUpdateAPI(generics.UpdateAPIView[Any]):
         if not model:
             return Response("There is no model that is specified by modelid.", status=400)
 
+        target_attr = model.attrs.filter(id=serializer.validated_data["value"]["id"]).first()
+        if target_attr is None:
+            return Response("The attribute does not belong to the specified model.", status=400)
+
         job = Job.new_bulk_edit_entry_v2(user, model, params=request.data)
         job.run()
 

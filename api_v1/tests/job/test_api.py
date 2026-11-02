@@ -6,6 +6,7 @@ from entity.models import Entity
 from entry.models import Entry
 from job.models import Job, JobOperation, JobStatus
 from job.settings import CONFIG
+from user.models import User
 
 # constants using this tests
 _TEST_MAX_LIST_NAV = 3
@@ -152,6 +153,59 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.content, b'"Success to cancel job"')
 
+        job.refresh_from_db()
+        self.assertEqual(job.status, JobStatus.CANCELED)
+
+    def test_cannot_cancel_another_users_job(self):
+        user = self.guest_login()
+        another_user = User.objects.create(username="another")
+
+        entity = Entity.objects.create(name="entity", created_user=user)
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
+
+        # this job belongs to another user
+        job = Job.new_create(another_user, entry)
+        self.assertEqual(job.status, JobStatus.PREPARING)
+
+        resp = self.client.delete(
+            "/api/v1/job/", json.dumps({"job_id": job.id}), "application/json"
+        )
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.content, b'"Cannot cancel another user\'s job"')
+
+        # another user's job has to be kept as it is
+        job.refresh_from_db()
+        self.assertEqual(job.status, JobStatus.PREPARING)
+
+    def test_superuser_cannot_cancel_another_users_job(self):
+        # Owner-only on purpose: job/api/v2 JobAPI.destroy also rejects a
+        # superuser for a job it did not create.
+        admin = self.admin_login()
+        another_user = User.objects.create(username="another")
+
+        entity = Entity.objects.create(name="entity", created_user=admin)
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=admin)
+
+        job = Job.new_create(another_user, entry)
+        resp = self.client.delete(
+            "/api/v1/job/", json.dumps({"job_id": job.id}), "application/json"
+        )
+        self.assertEqual(resp.status_code, 403)
+
+        job.refresh_from_db()
+        self.assertEqual(job.status, JobStatus.PREPARING)
+
+    def test_can_cancel_own_job(self):
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name="entity", created_user=user)
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
+
+        job = Job.new_create(user, entry)
+        resp = self.client.delete(
+            "/api/v1/job/", json.dumps({"job_id": job.id}), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
         job.refresh_from_db()
         self.assertEqual(job.status, JobStatus.CANCELED)
 

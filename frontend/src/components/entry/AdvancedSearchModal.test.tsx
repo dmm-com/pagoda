@@ -39,6 +39,88 @@ describe("AdvancedSearchModal", () => {
   ];
   const joinAttrs: AdvancedSearchJoinAttrInfo[] = [];
 
+  afterEach(() => {
+    window.history.replaceState(null, "", "/");
+  });
+
+  test("discards unsaved changes when reopened with the current search", () => {
+    const props = {
+      openModal: true,
+      setOpenModal: vi.fn(),
+      attrNames,
+      initialAttrNames,
+      attrInfos,
+      joinAttrs,
+    };
+    const { rerender } = render(<AdvancedSearchModal {...props} />, {
+      wrapper: TestWrapper,
+    });
+
+    fireEvent.click(screen.getByLabelText("Clear"));
+    fireEvent.click(screen.getByRole("checkbox"));
+    expect(screen.queryByText("attrA")).not.toBeInTheDocument();
+    expect(screen.getByRole("checkbox")).toBeChecked();
+
+    fireEvent.click(screen.getByText("キャンセル"));
+    rerender(<AdvancedSearchModal {...props} openModal={false} />);
+    window.history.replaceState(null, "", "/?has_referral=true");
+    rerender(<AdvancedSearchModal {...props} initialAttrNames={["attrB"]} />);
+
+    expect(screen.queryByText("attrA")).not.toBeInTheDocument();
+    expect(screen.getByText("attrB")).toBeInTheDocument();
+    expect(screen.queryByText("attrC")).not.toBeInTheDocument();
+    expect(screen.getByRole("checkbox")).toBeChecked();
+
+    fireEvent.click(screen.getByRole("checkbox"));
+    rerender(
+      <AdvancedSearchModal
+        {...props}
+        openModal={false}
+        initialAttrNames={["attrB"]}
+      />,
+    );
+    rerender(<AdvancedSearchModal {...props} initialAttrNames={["attrB"]} />);
+    expect(screen.getByRole("checkbox")).toBeChecked();
+  });
+
+  test("preserves edits for equivalent props and resets when search changes", () => {
+    const props = {
+      openModal: true,
+      setOpenModal: vi.fn(),
+      attrNames,
+      initialAttrNames,
+      attrInfos,
+      joinAttrs,
+    };
+    const { rerender } = render(<AdvancedSearchModal {...props} />, {
+      wrapper: TestWrapper,
+    });
+
+    fireEvent.click(screen.getByLabelText("Clear"));
+    fireEvent.click(screen.getByRole("checkbox"));
+    rerender(
+      <AdvancedSearchModal
+        {...props}
+        initialAttrNames={[...initialAttrNames]}
+      />,
+    );
+    expect(screen.queryByText("attrA")).not.toBeInTheDocument();
+    expect(screen.queryByText("attrC")).not.toBeInTheDocument();
+    expect(screen.getByRole("checkbox")).toBeChecked();
+
+    rerender(<AdvancedSearchModal {...props} initialAttrNames={["attrB"]} />);
+    expect(screen.getByText("attrB")).toBeInTheDocument();
+    expect(screen.getByRole("checkbox")).not.toBeChecked();
+
+    window.history.replaceState(null, "", "/?has_referral=true");
+    rerender(<AdvancedSearchModal {...props} initialAttrNames={["attrB"]} />);
+    expect(screen.getByText("attrB")).toBeInTheDocument();
+    expect(screen.getByRole("checkbox")).toBeChecked();
+
+    rerender(<AdvancedSearchModal {...props} initialAttrNames={[]} />);
+    expect(screen.queryByText("attrB")).not.toBeInTheDocument();
+  });
+
   test("should render modal with title, buttons, and checkbox", () => {
     render(
       <AdvancedSearchModal

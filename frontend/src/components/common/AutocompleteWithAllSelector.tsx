@@ -58,6 +58,7 @@ export const AutocompleteWithAllSelector = <
     query: string;
     results: Array<T | SelectorOption>;
   }>({ query: "", results: options as Array<T | SelectorOption> });
+  const wasDisabled = useRef(disabled);
 
   const allSelected = useMemo(() => {
     return options.length === value?.length;
@@ -68,8 +69,9 @@ export const AutocompleteWithAllSelector = <
   }, []);
 
   useEffect(() => {
-    // reset on re-enable
-    if (!disabled) {
+    // Clear only when the selector is re-enabled. On the initial mount,
+    // clearing would discard a value supplied by the parent.
+    if (wasDisabled.current && !disabled) {
       if (onChange != null) {
         onChange({} as SyntheticEvent, [], "clear");
       }
@@ -78,6 +80,7 @@ export const AutocompleteWithAllSelector = <
         results: options as Array<T | SelectorOption>,
       };
     }
+    wasDisabled.current = disabled;
   }, [disabled]);
 
   const handleChange = (
