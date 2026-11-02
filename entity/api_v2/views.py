@@ -537,7 +537,8 @@ class EntityExportAPI(ConfigurationExportAPI):
     export_kind = "entity"
 
     @extend_schema(
-        parameters=[OpenApiParameter("entity_id", OpenApiTypes.INT, OpenApiParameter.QUERY)]
+        parameters=[OpenApiParameter("entity_id", OpenApiTypes.INT, OpenApiParameter.QUERY)],
+        responses={202: JobSerializers},
     )
     def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         entity_id = request.query_params.get("entity_id")
