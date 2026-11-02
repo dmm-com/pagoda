@@ -13,8 +13,9 @@ from airone.lib.drf import InvalidValueError, YAMLParser
 from common.api_v2.serializers import CommonImportJobSerializer
 from common.lib.import_detector import ImportType, UnknownImportFormatError, parse_import_document
 from entity.api_v2.serializers import EntityImportExportRootSerializer
+from entity.import_service import start_entity_import_preview
 from entry.api_v2.serializers import EntryImportSerializer
-from entry.import_service import start_entry_import_jobs
+from entry.import_service import start_entry_import_jobs, start_entry_import_previews
 from group.api_v2.serializers import GroupImportSerializer
 from job.models import Job
 from role.api_v2.serializers import RoleImportSerializer
@@ -123,3 +124,52 @@ class CommonImportAPI(generics.GenericAPIView[Any]):
         job = Job.new_import_general_v2(user, kind, data)
         job.run()
         return job.id
+
+
+class CommonImportPreviewAPI(generics.GenericAPIView[Any]):
+    """Start the preview job(s) of an entity or item import file.
+
+    The file's type is detected the same way as for the import. Users, groups and
+    roles have no preview, so those files are rejected with 400 before any job is created.
+    The response has the import's shape, with the preview job ids in ``job_ids``.
+    """
+
+    parser_classes = [YAMLParser]
+    permission_classes = [IsAuthenticated]
+    serializer_class = CommonImportJobSerializer
+
+    @extend_schema(
+        request=OpenApiTypes.OBJECT,
+        responses={202: CommonImportJobSerializer},
+    )
+    def post(self, request: Request) -> Response:
+        user = cast("User", request.user)
+
+        try:
+            import_type, payload = parse_import_document(request.data)
+        except UnknownImportFormatError as e:
+            raise ValidationError(str(e))
+
+        if import_type == ImportType.ENTITY:
+            if user.is_readonly:
+                return Response(status=status.HTTP_403_FORBIDDEN)
+            entity_serializer = EntityImportExportRootSerializer(
+                data=payload, context={"request": request}
+            )
+            entity_serializer.is_valid(raise_exception=True)
+            job_ids = [start_entity_import_preview(user, entity_serializer.validated_data)]
+            error_list: list[str] = []
+        elif import_type == ImportType.ENTRY:
+            if user.is_readonly:
+                return Response(status=status.HTTP_403_FORBIDDEN)
+            entry_serializer = EntryImportSerializer(data=payload)
+            entry_serializer.is_valid(raise_exception=True)
+            jobs, error_list = start_entry_import_previews(user, payload)
+            job_ids = [job["job_id"] for job in jobs]
+        else:
+            raise ValidationError("A preview is only available for model and item import files")
+
+        return Response(
+            {"type": import_type.value, "job_ids": job_ids, "error": error_list},
+            status=status.HTTP_202_ACCEPTED,
+        )

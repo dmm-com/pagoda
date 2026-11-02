@@ -1,6 +1,9 @@
 import {
   ACL,
   ACLHistory,
+  CommonApi,
+  CommonImportJob,
+  ResponseError,
   ACLObjtypeEnum,
   ACLSetting,
   AclApi,
@@ -127,6 +130,7 @@ class AironeApiClient {
   private group: GroupApi;
   private user: UserApi;
   private role: RoleApi;
+  private common: CommonApi;
   private job: JobApi;
 
   constructor() {
@@ -142,6 +146,7 @@ class AironeApiClient {
     this.group = new GroupApi(config);
     this.user = new UserApi(config);
     this.role = new RoleApi(config);
+    this.common = new CommonApi(config);
     this.job = new JobApi(config);
   }
 
@@ -795,6 +800,45 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
+      },
+    );
+  }
+
+  // The preview endpoint is not in the generated client yet, so it is called
+  // directly, as getEntityDiff does.
+  async startCommonImportPreview(
+    data: string | ArrayBuffer,
+  ): Promise<{ jobIds: number[]; errors: string[] }> {
+    const resp = await fetch("/common/api/v2/import/preview", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/yaml",
+        "X-CSRFToken": getCsrfToken(),
+      },
+      body: new Blob([data]),
+    });
+    if (!resp.ok) {
+      throw new ResponseError(
+        resp,
+        `Failed to preview import (status: ${resp.status})`,
+      );
+    }
+    const body: { job_ids: number[]; error: string[] } = await resp.json();
+    return { jobIds: body.job_ids, errors: body.error };
+  }
+
+  async importCommon(
+    data: string | ArrayBuffer,
+    previewJobId?: number,
+  ): Promise<CommonImportJob> {
+    return await this.common.commonApiV2ImportCreate(
+      { previewJobId },
+      {
+        headers: {
+          "Content-Type": "application/yaml",
+          "X-CSRFToken": getCsrfToken(),
+        },
+        body: new Blob([data]),
       },
     );
   }

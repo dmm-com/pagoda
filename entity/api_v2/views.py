@@ -35,6 +35,7 @@ from entity.api_v2.serializers import (
     EntityListSerializer,
     EntityUpdateSerializer,
 )
+from entity.import_service import start_entity_import_preview
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import EntryBaseSerializer, EntryCreateSerializer
 from entry.models import Attribute, AttributeValue, Entry
@@ -527,10 +528,9 @@ class EntityImportPreviewAPI(generics.GenericAPIView[Entity]):
         )
         serializer.is_valid(raise_exception=True)
 
-        job = Job.new_import_entity_preview(user, serializer.validated_data)
-        job.run()
+        job_id = start_entity_import_preview(user, serializer.validated_data)
 
-        return Response({"job_id": job.id}, status=status.HTTP_202_ACCEPTED)
+        return Response({"job_id": job_id}, status=status.HTTP_202_ACCEPTED)
 
 
 class EntityExportAPI(ConfigurationExportAPI):

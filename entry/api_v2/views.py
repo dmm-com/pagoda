@@ -70,7 +70,7 @@ from entry.api_v2.serializers import (
     ItemRollbackSerializer,
     _make_display_attr_prefetch,
 )
-from entry.import_service import start_entry_import_jobs
+from entry.import_service import start_entry_import_jobs, start_entry_import_previews
 from entry.models import AliasEntry, Attribute, AttributeValue, Entry
 from entry.services import AdvancedSearchService
 from entry.settings import CONFIG
@@ -1145,25 +1145,7 @@ class EntryImportPreviewAPI(generics.GenericAPIView[Any]):
         serializer = EntryImportSerializer(data=import_datas)
         serializer.is_valid(raise_exception=True)
 
-        entities = Entity.objects.filter(
-            name__in=[d["entity"] for d in import_datas], is_active=True
-        )
-
-        jobs: list[dict[str, Any]] = []
-        error_list: list[str] = []
-        for import_data in import_datas:
-            entity = next((e for e in entities if e.name == import_data["entity"]), None)
-            if not entity:
-                error_list.append("%s: Entity does not exists." % import_data["entity"])
-                continue
-
-            if not user.has_permission(entity, ACLType.Writable):
-                error_list.append("%s: Entity is permission denied." % import_data["entity"])
-                continue
-
-            job = Job.new_import_entry_preview(user, entity, params=import_data)
-            job.run()
-            jobs.append({"entity": entity.name, "job_id": job.id})
+        jobs, error_list = start_entry_import_previews(user, import_datas)
 
         return Response(
             {"result": {"jobs": jobs, "error": error_list}}, status=status.HTTP_202_ACCEPTED
