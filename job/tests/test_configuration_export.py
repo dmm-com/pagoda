@@ -1,3 +1,4 @@
+import yaml
 from unittest.mock import patch
 
 from airone.lib.test import AironeViewTest, load_export_payload
