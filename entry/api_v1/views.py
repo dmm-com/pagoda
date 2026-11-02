@@ -349,6 +349,18 @@ def create_entry_attr(
             "There is no EntityAttr which is specified by entity_attr_id", status=400
         )
 
+    # Attaching an attribute is a write on the entry, and the attribute has to
+    # belong to the entry's own schema. Without these checks any user (read-only
+    # ones included) could graft another entity's attribute onto an entry they
+    # are not allowed to modify.
+    if not user.has_permission(entry, ACLType.Writable):
+        return HttpResponse("You don't have permission to modify this entry", status=400)
+
+    if entity_attr.parent_entity_id != entry.schema_id:
+        return HttpResponse(
+            "Specified EntityAttr does not belong to the entry's entity", status=400
+        )
+
     attr = entry.attrs.filter(schema=entity_attr, is_active=True).first()
     if not attr:
         attr = entry.add_attribute_from_base(entity_attr, user)

@@ -756,6 +756,82 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["id"], attr.id)
 
+    def test_create_entry_attr_requires_writable_permission(self):
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name="Entity", created_user=user)
+        entity_attr = EntityAttr.objects.create(
+            name="attr",
+            type=AttrType.STRING,
+            created_user=user,
+            parent_entity=entity,
+        )
+        entry = Entry.objects.create(name="Entry", schema=entity, created_user=user)
+
+        # a read-only user must not be able to attach an attribute
+        readonly_user = self.guest_login("readonly-user")
+        readonly_user.is_readonly = True
+        readonly_user.save(update_fields=["is_readonly"])
+
+        resp = self.client.post(
+            "/entry/api/v1/create_entry_attr/%s" % entry.id,
+            json.dumps({"entity_attr_id": entity_attr.id}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b"You don't have permission to modify this entry")
+        self.assertEqual(entry.attrs.filter(schema=entity_attr).count(), 0)
+
+    def test_create_entry_attr_on_non_public_entry(self):
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name="Entity", created_user=user)
+        entity_attr = EntityAttr.objects.create(
+            name="attr",
+            type=AttrType.STRING,
+            created_user=user,
+            parent_entity=entity,
+        )
+        # an entry the user has no ACL on
+        entry = Entry.objects.create(
+            name="Entry", schema=entity, created_user=user, is_public=False
+        )
+
+        resp = self.client.post(
+            "/entry/api/v1/create_entry_attr/%s" % entry.id,
+            json.dumps({"entity_attr_id": entity_attr.id}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b"You don't have permission to modify this entry")
+        self.assertEqual(entry.attrs.filter(schema=entity_attr).count(), 0)
+
+    def test_create_entry_attr_with_entity_attr_of_another_entity(self):
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name="Entity", created_user=user)
+        entry = Entry.objects.create(name="Entry", schema=entity, created_user=user)
+
+        # the attribute belongs to another entity's schema
+        another_entity = Entity.objects.create(name="AnotherEntity", created_user=user)
+        another_attr = EntityAttr.objects.create(
+            name="another-attr",
+            type=AttrType.STRING,
+            created_user=user,
+            parent_entity=another_entity,
+        )
+
+        resp = self.client.post(
+            "/entry/api/v1/create_entry_attr/%s" % entry.id,
+            json.dumps({"entity_attr_id": another_attr.id}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.content, b"Specified EntityAttr does not belong to the entry's entity"
+        )
+        self.assertEqual(entry.attrs.count(), 0)
+
     def test_create_entry_attr_without_param(self):
         user = self.guest_login()
 

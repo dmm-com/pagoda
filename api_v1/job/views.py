@@ -111,6 +111,14 @@ class JobAPI(APIView):
                 "Failed to find Job(id=%s)" % job_id, status=status.HTTP_400_BAD_REQUEST
             )
 
+        # A job belongs to the user who created it. Without this check any
+        # authenticated user could cancel somebody else's job and delete the
+        # entry it was creating. This is owner-only on purpose to match
+        # job/api_v2/views.py JobAPI.destroy, which also rejects superusers for
+        # jobs they did not create.
+        if job.user != request.user:
+            return Response("Cannot cancel another user's job", status=status.HTTP_403_FORBIDDEN)
+
         if job.status == JobStatus.DONE:
             return Response("Target job has already been done")
 

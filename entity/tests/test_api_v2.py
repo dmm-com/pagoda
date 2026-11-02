@@ -18,10 +18,12 @@ from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrType
 from entity import tasks
+from entity.api_v2.serializers import EntityUpdateSerializer
 from entity.models import Entity, EntityAttr, ItemNameType
 from entry.models import AttributeValue, Entry
 from entry.tasks import create_entry_v2
 from group.models import Group
+from isolation.models import IsolationAction, IsolationParent
 from job.models import Job, JobStatus
 from role.models import Role
 from trigger import tasks as trigger_tasks
@@ -2367,6 +2369,133 @@ class ViewTest(AironeViewTest):
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+    def test_update_entity_with_isolation_rule_of_another_entity(self):
+        # an isolation rule that belongs to an entity the user is editing elsewhere
+        other_entity: Entity = self.create_entity(self.user, "other-entity")
+        other_rule: IsolationParent = IsolationParent.objects.create(entity=other_entity)
+
+        params = {
+            "isolation_rules": [
+                {
+                    "id": other_rule.id,
+                    "conditions": [],
+                    "action": {"is_prevent_all": True},
+                }
+            ],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {
+                "isolation_rules": [
+                    {
+                        "id": [
+                            {
+                                "code": "AE-230000",
+                                "message": "Invalid id(%s) object does not exist" % other_rule.id,
+                            }
+                        ]
+                    }
+                ]
+            },
+        )
+
+        # the other entity's isolation rule has not been touched
+        self.assertEqual(IsolationParent.objects.filter(id=other_rule.id).count(), 1)
+        self.assertEqual(other_rule.conditions.count(), 0)
+        self.assertEqual(IsolationAction.objects.filter(parent=other_rule).count(), 0)
+        self.assertEqual(self.entity.isolation_rules.count(), 0)
+
+    def test_update_entity_with_own_isolation_rule(self):
+        # a rule id that belongs to the entity being edited is still accepted,
+        # so the ownership check above does not break the normal flow
+        rule: IsolationParent = IsolationParent.objects.create(entity=self.entity)
+
+        params = {
+            "isolation_rules": [
+                {
+                    "id": rule.id,
+                    "conditions": [],
+                    "action": {"is_prevent_all": True},
+                }
+            ],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 202)
+
+    def test_create_entity_with_isolation_rule_of_another_entity(self):
+        # creating an entity while pointing at a rule that belongs to somebody
+        # else used to adopt (and clear) that rule instead of creating a new one
+        other_entity: Entity = self.create_entity(self.user, "create-other-entity")
+        other_rule: IsolationParent = IsolationParent.objects.create(entity=other_entity)
+        other_rule.save_conditions([])
+        IsolationAction.objects.create(parent=other_rule, is_prevent_all=False)
+
+        params = {
+            "name": "new-entity-with-foreign-rule",
+            "isolation_rules": [
+                {
+                    "id": other_rule.id,
+                    "conditions": [],
+                    "action": {"is_prevent_all": True},
+                }
+            ],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertFalse(Entity.objects.filter(name="new-entity-with-foreign-rule").exists())
+
+        # the victim rule keeps the action it had
+        self.assertEqual(IsolationAction.objects.get(parent=other_rule).is_prevent_all, False)
+
+    def test_update_entity_applies_own_isolation_rule(self):
+        """The serializer path the EDIT_ENTITY_V2 task uses keeps own rule ids."""
+        rule: IsolationParent = IsolationParent.objects.create(entity=self.entity)
+
+        params = {
+            "isolation_rules": [
+                {
+                    "id": rule.id,
+                    "conditions": [],
+                    "action": {"is_prevent_all": True},
+                }
+            ],
+        }
+        serializer = EntityUpdateSerializer(
+            instance=self.entity, data=params, context={"_user": self.user}
+        )
+        self.assertTrue(serializer.is_valid())
+        serializer.update_remaining(self.entity, serializer.validated_data)
+
+        # the specified rule is updated in place instead of being re-created
+        self.assertEqual(self.entity.isolation_rules.count(), 1)
+        self.assertEqual(IsolationAction.objects.get(parent=rule).is_prevent_all, True)
+
+    def test_update_entity_isolation_rule_with_foreign_id_is_rejected_by_serializer(self):
+        """The same validation has to protect the EDIT_ENTITY_V2 task path."""
+        other_entity: Entity = self.create_entity(self.user, "serializer-other-entity")
+        other_rule: IsolationParent = IsolationParent.objects.create(entity=other_entity)
+
+        params = {
+            "isolation_rules": [
+                {
+                    "id": other_rule.id,
+                    "conditions": [],
+                    "action": {"is_prevent_all": True},
+                }
+            ],
+        }
+        serializer = EntityUpdateSerializer(
+            instance=self.entity, data=params, context={"_user": self.user}
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("isolation_rules", serializer.errors)
 
     def test_update_entity_with_invalid_param_webhooks(self):
         params = {
