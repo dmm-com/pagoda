@@ -830,26 +830,8 @@ class ViewTest(BaseViewTest):
             item = Entry.objects.get(name=itemname, schema=self.entity)
             self.assertEqual(item.get_attrv("val").value, expected_value)
 
-    def test_bulk_update_rejects_array_attributes(self):
+    def test_bulk_update_rejects_attribute_outside_model(self):
         original_job_count = Job.objects.filter(operation=JobOperation.BULK_EDIT_ENTRY).count()
-        for attr_type in (AttrType.ARRAY_STRING, AttrType.MULTI_SELECT):
-            with self.subTest(attr_type=attr_type):
-                attr = EntityAttr.objects.create(
-                    name=f"array-{attr_type}",
-                    type=attr_type,
-                    parent_entity=self.entity,
-                    created_user=self.user,
-                )
-                response = self.client.put(
-                    "/entry/api/v2/bulk/",
-                    {
-                        "value": {"id": attr.id, "value": ["unsafe"]},
-                        "modelid": self.entity.id,
-                        "attrinfo": [],
-                    },
-                    "application/json",
-                )
-                self.assertEqual(response.status_code, 400)
         wrong_model_response = self.client.put(
             "/entry/api/v2/bulk/",
             {
@@ -865,21 +847,44 @@ class ViewTest(BaseViewTest):
             original_job_count,
         )
 
-    def test_bulk_update_job_rejects_array_attribute(self):
-        attr = self.entity.attrs.get(name="vals")
-        job = Job.new_bulk_edit_entry_v2(
-            self.user,
-            self.entity,
-            params={
-                "modelid": self.entity.id,
-                "value": {"id": attr.id, "value": ["unsafe"]},
-            },
+    @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))
+    def test_bulk_update_array_attributes(self):
+        choices = [{"value": "old", "label": "Old"}, {"value": "new", "label": "New"}]
+        multi_select = EntityAttr.objects.create(
+            name="multi-select",
+            type=AttrType.MULTI_SELECT,
+            choices=choices,
+            parent_entity=self.entity,
+            created_user=self.user,
         )
-
-        job.run(will_delay=False)
-        job.refresh_from_db()
-        self.assertEqual(job.status, JobStatus.ERROR)
-        self.assertIn("Array attributes cannot be bulk updated", job.text)
+        for attr, name, old_value, new_value, expected in (
+            (self.entity.attrs.get(name="vals"), "vals", ["old"], ["new", "next"], ["new", "next"]),
+            (multi_select, "multi-select", ["old"], ["new"], [choices[1]]),
+        ):
+            with self.subTest(attr_type=attr.type):
+                selected = self.add_entry(
+                    self.user, f"selected-{name}", self.entity, values={name: old_value}
+                )
+                unchanged = self.add_entry(
+                    self.user, f"unchanged-{name}", self.entity, values={name: old_value}
+                )
+                response = self.client.put(
+                    "/entry/api/v2/bulk/",
+                    {
+                        "value": {"id": attr.id, "value": new_value},
+                        "modelid": self.entity.id,
+                        "entry_ids": [selected.id],
+                    },
+                    "application/json",
+                )
+                self.assertEqual(response.status_code, 202)
+                job = Job.objects.filter(operation=JobOperation.BULK_EDIT_ENTRY).last()
+                self.assertEqual(job.status, JobStatus.DONE, job.text)
+                self.assertEqual(selected.get_attrv(name).get_value(), expected)
+                self.assertEqual(
+                    unchanged.get_attrv(name).get_value(),
+                    ["old"] if name == "vals" else [choices[0]],
+                )
 
     @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))
     def test_bulk_update_only_selected_items(self):

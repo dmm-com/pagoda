@@ -78,6 +78,7 @@ interface Props {
   defaultAttrsFilter?: AttrsFilter;
   defaultSort?: AdvancedSearchSort;
   bulkOperationEntryIds: Array<number>;
+  selectedEntries?: Array<{ id: number; name: string; modelId: number }>;
   setBulkOperationEntryIds: (entryIds: Array<number>) => void;
   entityIds: number[];
   searchAllEntities: boolean;
@@ -101,6 +102,7 @@ export const SearchResults: FC<Props> = ({
   defaultAttrsFilter = {},
   defaultSort,
   bulkOperationEntryIds,
+  selectedEntries,
   setBulkOperationEntryIds,
   entityIds,
   searchAllEntities,
@@ -164,10 +166,15 @@ export const SearchResults: FC<Props> = ({
   };
 
   const handleChangeAllBulkOperationEntryIds = (checked: boolean) => {
+    const visibleIds = results.values.map((value) => value.entry.id);
     if (checked) {
-      setBulkOperationEntryIds(results.values.map((v) => v.entry.id));
+      setBulkOperationEntryIds([
+        ...new Set([...bulkOperationEntryIds, ...visibleIds]),
+      ]);
     } else {
-      setBulkOperationEntryIds([]);
+      setBulkOperationEntryIds(
+        bulkOperationEntryIds.filter((id) => !visibleIds.includes(id)),
+      );
     }
   };
 
@@ -196,6 +203,25 @@ export const SearchResults: FC<Props> = ({
               isNarrowDown={isNarrowDown}
               omitHeadline={omitHeadline}
               totalCount={results.count}
+              matchedCount={results.totalCount}
+              allVisibleSelected={
+                results.values.length > 0 &&
+                results.values.every((value) =>
+                  bulkOperationEntryIds.includes(value.entry.id),
+                )
+              }
+              selectedEntries={
+                selectedEntries ??
+                results.values
+                  .filter((result) =>
+                    bulkOperationEntryIds.includes(result.entry.id),
+                  )
+                  .map((result) => ({
+                    id: result.entry.id,
+                    name: result.entry.name,
+                    modelId: result.entity.id,
+                  }))
+              }
             />
             <TableBody ref={bodyRef}>
               {results.values?.map((result) => (

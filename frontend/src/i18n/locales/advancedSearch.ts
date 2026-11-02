@@ -12,6 +12,16 @@ export const advancedSearchMessages = defineMessages({
       "一括更新する（変更後の）値に更新",
     "advancedSearch.editModal.bulkUpdateSucceeded":
       "属性「{{attrName}}」の一括更新のジョブを実行しました（順次結果が反映されます）。",
+    "advancedSearch.editModal.bulkUpdateFailed": "一括更新の開始に失敗しました",
+    "advancedSearch.editModal.valueLabel": "属性「{{attrName}}」の変更後の値",
+    "advancedSearch.editModal.noTargets": "更新対象のアイテムがありません",
+    "advancedSearch.editModal.previewFailed": "更新対象の取得に失敗しました",
+    "advancedSearch.editModal.targets":
+      "更新対象のアイテムと依存関係（{{count}}件）",
+    "advancedSearch.editModal.allMatchedNotice":
+      "チェックがないため、検索条件に一致する全{{count}}件が変更対象です。",
+    "advancedSearch.targetList.referenceCount": "参照元: {{count}}件",
+    "advancedSearch.targetList.noReferences": "参照元なし",
 
     // AdvancedSearchJoinModal
     "advancedSearch.joinModal.title": "結合するアイテムの属性名",
@@ -87,6 +97,11 @@ export const advancedSearchMessages = defineMessages({
     "advancedSearch.resultsPage.exportCsv": "CSV 出力",
     "advancedSearch.resultsPage.bulkDelete": "まとめて削除",
     "advancedSearch.resultsPage.confirmDeleteTitle": "本当に削除しますか？",
+    "advancedSearch.resultsPage.deleteDialogTitle":
+      "削除対象のアイテム（{{count}}件）",
+    "advancedSearch.resultsPage.deleteReferenceWarning":
+      "参照されているアイテムがあります。参照元を確認してから削除してください。",
+    "advancedSearch.resultsPage.confirmDeleteAction": "削除する",
   },
   en: {
     // AdvancedSearchModal
@@ -99,6 +114,17 @@ export const advancedSearchMessages = defineMessages({
       "Update to the (changed) value for bulk update",
     "advancedSearch.editModal.bulkUpdateSucceeded":
       'Started the bulk update job for attribute "{{attrName}}" (results will be reflected sequentially).',
+    "advancedSearch.editModal.bulkUpdateFailed": "Failed to start bulk update",
+    "advancedSearch.editModal.valueLabel":
+      'New value for attribute "{{attrName}}"',
+    "advancedSearch.editModal.noTargets": "There are no items to update",
+    "advancedSearch.editModal.previewFailed": "Failed to load items to update",
+    "advancedSearch.editModal.targets":
+      "Items to update and their dependencies ({{count}})",
+    "advancedSearch.editModal.allMatchedNotice":
+      "No items are checked, so all {{count}} matching items will be updated.",
+    "advancedSearch.targetList.referenceCount": "References: {{count}}",
+    "advancedSearch.targetList.noReferences": "No references",
 
     // AdvancedSearchJoinModal
     "advancedSearch.joinModal.title": "Attribute name of the item to join",
@@ -181,5 +207,10 @@ export const advancedSearchMessages = defineMessages({
     "advancedSearch.resultsPage.bulkDelete": "Bulk delete",
     "advancedSearch.resultsPage.confirmDeleteTitle":
       "Are you sure you want to delete?",
+    "advancedSearch.resultsPage.deleteDialogTitle":
+      "Items to delete ({{count}})",
+    "advancedSearch.resultsPage.deleteReferenceWarning":
+      "Some items are referenced. Review the referring items before deleting.",
+    "advancedSearch.resultsPage.confirmDeleteAction": "Delete",
   },
 });

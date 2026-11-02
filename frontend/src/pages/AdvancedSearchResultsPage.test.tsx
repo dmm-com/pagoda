@@ -90,6 +90,47 @@ test("should call advanced search once when changing to the next page", async ()
   expect(requests[1].entry_offset).toBe(100);
 });
 
+test("starts with no checked items and preserves explicit selections across pages", async () => {
+  server.use(
+    http.post(
+      "http://localhost/entry/api/v2/advanced_search/",
+      async ({ request }) => {
+        const body = (await request.json()) as { entry_offset?: number };
+        const secondPage = body.entry_offset === 100;
+        return HttpResponse.json({
+          count: 1,
+          total_count: 101,
+          values: [
+            {
+              entry: {
+                id: secondPage ? 3 : 2,
+                name: secondPage ? "entry2" : "entry1",
+              },
+              entity: { id: 1, name: "entity1" },
+              attrs: {},
+              is_readable: true,
+            },
+          ],
+        });
+      },
+    ),
+  );
+
+  render(<AdvancedSearchResultsPage />, { wrapper: TestWrapper });
+  const first = await screen.findByRole("checkbox");
+  expect(first).not.toBeChecked();
+  fireEvent.click(first);
+  expect(first).toBeChecked();
+
+  fireEvent.click(screen.getByLabelText("Go to page 2"));
+  await screen.findByText("entry2");
+  expect(screen.getByRole("checkbox")).not.toBeChecked();
+
+  fireEvent.click(screen.getByLabelText("Go to page 1"));
+  await screen.findByText("entry1");
+  expect(screen.getByRole("checkbox")).toBeChecked();
+});
+
 test("should cap the displayed loaded count at the total count", () => {
   expect(getDisplayedSearchResultCount(2, 160, 100)).toBe(160);
   expect(getDisplayedSearchResultCount(2, 200, 100)).toBe(200);

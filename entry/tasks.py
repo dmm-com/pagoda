@@ -1289,8 +1289,6 @@ def bulk_update_entries(
     ).first()
     if target_attr is None:
         return JobStatus.ERROR, "The attribute does not belong to the specified model.", None
-    if target_attr.type & AttrType._ARRAY:
-        return JobStatus.ERROR, "Array attributes cannot be bulk updated.", None
 
     # Selected items are constrained to the user's searchable items in this model.
     # Without an explicit selection, retain the existing filter-based bulk edit.
