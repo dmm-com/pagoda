@@ -1,4 +1,3 @@
-import yaml
 from unittest.mock import patch
 
 from airone.lib.test import AironeViewTest, load_export_payload
@@ -78,7 +77,7 @@ class ConfigurationExportTest(AironeViewTest):
         self.assertEqual(params.entity_id, selected.id)
         job.run(will_delay=False)
 
-        data = yaml.safe_load(job.get_cache())
+        data = load_export_payload(job.get_cache(), ImportType.ENTITY)
         self.assertEqual([entity["name"] for entity in data["Entity"]], ["selected"])
         self.assertEqual(
             [attr["name"] for attr in data["EntityAttr"]],
