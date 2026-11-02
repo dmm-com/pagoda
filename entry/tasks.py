@@ -39,7 +39,6 @@ from entry.api_v2.serializers import (
     AdvancedSearchJoinAttrInfoList,
     AdvancedSearchResultExportSerializer,
     EntryCreateSerializer,
-    EntryImportEntitySerializer,
     EntryUpdateSerializer,
     ExportedEntityEntries,
     ExportedEntry,
@@ -50,7 +49,11 @@ from entry.api_v2.serializers import (
     ReferralEntry,
 )
 from entry.models import Attribute, Entry
-from entry.services import AdvancedSearchService, EntryImportPreviewService
+from entry.services import (
+    AdvancedSearchService,
+    EntryImportPreviewService,
+    resolve_import_entry_references,
+)
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus, JobTarget
 from job.params import (
@@ -745,17 +748,14 @@ def import_entries_v2(self: Task[Any, Any], job: Job) -> tuple[JobStatus, str, N
         return JobStatus.ERROR, "Failed to get job.target", None
     entity = Entity.objects.get(id=job.target.id)
     params = job.get_typed_params(ImportEntryParams)
-    import_serializer = EntryImportEntitySerializer(
-        data=params.model_dump(mode="json", by_alias=True, exclude_unset=True)
-    )
-    import_serializer.is_valid(raise_exception=True)
+    resolved_entries = resolve_import_entry_references(params)
     context = {"request": DRFRequest(user)}
 
-    total_count = len(import_serializer.validated_data["entries"])
+    total_count = len(resolved_entries)
     err_msg: list[str] = []
     stale: list[str] = []
     baselines = EntryImportPreviewService.load_baselines(job)
-    for index, entry_data in enumerate(import_serializer.validated_data["entries"]):
+    for index, entry_data in enumerate(resolved_entries):
         job.text = "Now importing... (progress: [%5d/%5d])" % (index + 1, total_count)
         job.save(update_fields=["text"])
 
@@ -1366,16 +1366,13 @@ def import_entries_preview_v2(self: Task[Any, Any], job: Job) -> JobStatus:
     entity = Entity.objects.get(id=job.target.id)
     params = job.get_typed_params(ImportEntryParams)
     raw_data = params.model_dump(mode="json", by_alias=True, exclude_unset=True)
-
-    import_serializer = EntryImportEntitySerializer(data=raw_data)
-    if not import_serializer.is_valid():
-        return JobStatus.ERROR
+    resolved_entries = resolve_import_entry_references(params)
 
     payload = EntryImportPreviewService.build(
         job,
         job.user,
         entity,
-        import_serializer.validated_data["entries"],
+        resolved_entries,
         raw_data.get("entries", []),
     )
     if payload is None:
