@@ -646,16 +646,22 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_export_configuration_v2(kls, user: User, kind: str) -> "Job":
+    def new_export_configuration_v2(
+        kls, user: User, kind: str, entity_id: int | None = None
+    ) -> "Job":
         # http imports the job enums, so defer this import until model initialization is done.
         from airone.lib.http import timestamped_filename
 
+        filename = f"{kind}.yaml" if entity_id is None else f"{kind}_{entity_id}.yaml"
         return kls._create_new_job(
             user=user,
             target=None,
             operation=JobOperation.EXPORT_CONFIGURATION_V2,
-            text=timestamped_filename(f"{kind}.yaml"),
-            params={"kind": kind},
+            text=timestamped_filename(filename),
+            params={
+                "kind": kind,
+                **({"entity_id": entity_id} if entity_id is not None else {}),
+            },
         )
 
     @classmethod

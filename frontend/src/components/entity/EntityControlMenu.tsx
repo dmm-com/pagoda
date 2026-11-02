@@ -103,6 +103,19 @@ export const EntityControlMenu: FC<Props> = ({
       );
     }
   };
+  const handleExportSchema = async (entityId: number) => {
+    try {
+      await aironeApiClient.exportEntitySchema(entityId);
+      enqueueSnackbar(NotificationMessages.jobRegistered(t("common.export")), {
+        variant: "info",
+      });
+    } catch {
+      enqueueSnackbar(
+        NotificationMessages.jobRegistrationFailed(t("common.export")),
+        { variant: "error" },
+      );
+    }
+  };
 
   return (
     <Menu
@@ -144,6 +157,14 @@ export const EntityControlMenu: FC<Props> = ({
       <MenuItem component={Link} to={aclHistoryPath(entityId)}>
         <Typography>{t("entity.controlMenu.aclHistory")}</Typography>
       </MenuItem>
+      <RateLimitedClickable
+        intervalSec={5}
+        onClick={handleExportSchema.bind(null, entityId)}
+      >
+        <MenuItem>
+          <Typography>{t("entity.controlMenu.exportModelSchema")}</Typography>
+        </MenuItem>
+      </RateLimitedClickable>
       <RateLimitedClickable
         intervalSec={5}
         onClick={handleExport.bind(null, entityId, "YAML")}
