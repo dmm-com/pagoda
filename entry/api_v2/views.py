@@ -209,7 +209,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet[Entry]):
         entry.set_status(Entry.STATUS_CREATING)
 
         # restore entry
-        entry.restore()
+        entry.restore(user=user)
 
         if custom_view.is_custom("after_restore_entry_v2", entry.schema.name):
             custom_view.call_custom("after_restore_entry_v2", entry.schema.name, user, entry)
@@ -975,7 +975,7 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet[Any]):
                 display_attrv_prefetch = Prefetch(
                     "values",
                     queryset=AttributeValue.objects.filter(is_latest=True).select_related(
-                        "referral"
+                        "referral__entry__schema"
                     ),
                     to_attr="_display_attrv_list",
                 )
@@ -984,7 +984,7 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet[Any]):
                     queryset=Attribute.objects.filter(
                         is_active=True, schema__name=entity_attr.display_attr
                     )
-                    .select_related("schema")
+                    .select_related("schema__parent_entity", "parent_entry__schema")
                     .prefetch_related(display_attrv_prefetch),
                     to_attr="_display_attr_list",
                 )
