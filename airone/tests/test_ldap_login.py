@@ -75,3 +75,8 @@ class ViewTest(AironeTestCase):
                 authenticate_type=User.AuthenticateType.AUTH_TYPE_LDAP,
             ).exists()
         )
+
+        # LDAP users are authenticated by the directory, so the auto-created
+        # account must not carry a usable local password.
+        ldap_user = User.objects.get(username="ldap_user")
+        self.assertFalse(ldap_user.has_usable_password())

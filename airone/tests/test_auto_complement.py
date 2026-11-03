@@ -63,3 +63,18 @@ class LibAutoComplementTest(AironeTestCase):
         # Check user id
         self.assertEqual(user.id, self.user.id)
         self.assertEqual(user.username, self.user.username)
+
+    def test_get_or_create_auto_complement_user_returns_existing_user(self):
+        user = auto_complement.get_or_create_auto_complement_user()
+
+        self.assertEqual(user.id, self.complement_user.id)
+
+    def test_get_or_create_auto_complement_user_creates_one_without_usable_password(self):
+        User.objects.filter(username=settings.AIRONE["AUTO_COMPLEMENT_USER"]).delete()
+
+        user = auto_complement.get_or_create_auto_complement_user()
+
+        self.assertEqual(user.username, settings.AIRONE["AUTO_COMPLEMENT_USER"])
+        # The service user only acts as the job actor and never logs in, so it
+        # must not be given a usable password (empty counts as empty string).
+        self.assertFalse(user.has_usable_password())

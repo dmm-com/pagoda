@@ -99,6 +99,23 @@ class User(AbstractUser):
     def token(self) -> Token | None:
         return Token.objects.filter(user=self).first()
 
+    @property
+    def can_reset_password(self) -> bool:
+        """Whether this account may go through the password reset flow.
+
+        Only an active local account with a real, usable password may be reset.
+        Accounts without a local password (LDAP, SSO, imported and service
+        users) must not be reachable through the flow, because every input of
+        their reset token is known or guessable. has_usable_password() reports
+        an empty password as usable, hence the explicit emptiness check.
+        """
+        return (
+            self.is_active
+            and self.authenticate_type == User.AuthenticateType.AUTH_TYPE_LOCAL
+            and bool(self.password)
+            and self.has_usable_password()
+        )
+
     def belonging_groups(self, is_direct_belonging: bool = False) -> Iterable[Group]:
         """This returns groups that include hierarchical superior groups"""
 

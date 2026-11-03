@@ -42,6 +42,10 @@ class ModelTest(AironeTestCase):
         self.assertFalse(self.group1.is_active)
         self.assertEqual(self.group1.name.find("group1_deleted_"), 0)
 
+        # The service user that records the deletion has no usable password.
+        service_user = User.objects.get(username=settings.AIRONE["AUTO_COMPLEMENT_USER"])
+        self.assertFalse(service_user.has_usable_password())
+
     def test_delete_parent_group(self):
         """This try to delete Group that has subordinates.
         This expects to replace parent_group member of subordinates

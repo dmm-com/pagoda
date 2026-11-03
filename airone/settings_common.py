@@ -8,6 +8,7 @@ from typing import Any
 import environ
 from configurations import Configuration
 from ddtrace import config, patch_all, tracer  # type: ignore[attr-defined]
+from django.core.exceptions import ImproperlyConfigured
 
 from airone.lib import devmode
 
@@ -16,6 +17,32 @@ env.read_env(os.path.join(environ.Path(__file__) - 2, ".env"))
 
 # Lite mode: no MySQL, no Elasticsearch, no RabbitMQ. See airone/lib/devmode.py.
 LITE = devmode.is_lite()
+
+#: Signing key used when AIRONE_SECRET_KEY is unset. It is published in this
+#: repository, so it is only suitable for development, tests and lite mode.
+DEFAULT_SECRET_KEY = "(ch@ngeMe)"
+
+#: SECRET_KEY values that ship with the repository, the documentation or the
+#: Helm chart. Anyone can read them, so signing with one is equivalent to
+#: signing with no key at all and they must never reach production.
+INSECURE_SECRET_KEYS = frozenset({DEFAULT_SECRET_KEY, "changeme"})
+
+
+def ensure_secure_secret_key(secret_key: str | None) -> None:
+    """Reject a missing or published SECRET_KEY.
+
+    Everything Django signs (password-reset tokens and signed cookies among
+    them) is only as secret as this key, so production must not start without a
+    value an attacker cannot guess. The caller decides whether it is a
+    production process; this function only judges the value itself.
+    """
+    if not secret_key or secret_key in INSECURE_SECRET_KEYS:
+        raise ImproperlyConfigured(
+            "AIRONE_SECRET_KEY is unset or set to a published default. "
+            "Set it to a unique secret value (for example with "
+            "django.core.management.utils.get_random_secret_key) before "
+            "running the Prd configuration."
+        )
 
 
 class Common(Configuration):  # type: ignore[misc]
@@ -26,7 +53,9 @@ class Common(Configuration):  # type: ignore[misc]
     # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
     # SECURITY WARNING: keep the secret key used in production secret!
-    SECRET_KEY = env.str("AIRONE_SECRET_KEY", "(ch@ngeMe)")
+    # The Prd configuration refuses to start with the fallback below; see
+    # ensure_secure_secret_key().
+    SECRET_KEY = env.str("AIRONE_SECRET_KEY", DEFAULT_SECRET_KEY)
 
     # Celery settings
     #

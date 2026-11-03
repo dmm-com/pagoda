@@ -829,9 +829,7 @@ class Job(models.Model):
     def new_update_documents(
         kls, target: ACLBase | None, text: str = "", params: JobParams | None = None
     ) -> "Job":
-        user = auto_complement.get_auto_complement_user(None)
-        if not user:
-            user = User.objects.create(username=settings.AIRONE["AUTO_COMPLEMENT_USER"])
+        user = auto_complement.get_or_create_auto_complement_user()
         return kls._create_new_job(
             user=user,
             target=target,

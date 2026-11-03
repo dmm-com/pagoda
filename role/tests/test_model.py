@@ -10,6 +10,7 @@ from entry.services import AdvancedSearchService
 from group.models import Group
 from role import tasks
 from role.models import Role
+from user.models import User
 
 from .base import RoleTestBase
 
@@ -154,6 +155,10 @@ class ModelTest(RoleTestBase):
         self.assertEqual(deleted_role, self.role)
         self.assertFalse(deleted_role.is_active)
         self.assertIn("test_role", deleted_role.name)
+
+        # The service user that records the deletion has no usable password.
+        service_user = User.objects.get(username=settings.AIRONE["AUTO_COMPLEMENT_USER"])
+        self.assertFalse(service_user.has_usable_password())
 
     def test_get_referred_entries(self):
         user = self.users["userA"]

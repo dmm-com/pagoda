@@ -36,6 +36,25 @@ class ModelTest(TestCase):
         self.assertIsNotNone(self.user.date_joined)
         self.assertTrue(self.user.is_active)
 
+    def test_can_reset_password(self):
+        self.assertTrue(self.user.can_reset_password)
+
+        self.user.is_active = False
+        self.assertFalse(self.user.can_reset_password)
+        self.user.is_active = True
+
+        self.user.authenticate_type = User.AuthenticateType.AUTH_TYPE_LDAP
+        self.assertFalse(self.user.can_reset_password)
+        self.user.authenticate_type = User.AuthenticateType.AUTH_TYPE_LOCAL
+
+        self.user.set_unusable_password()
+        self.assertFalse(self.user.can_reset_password)
+
+        # An empty password is reported as usable, but must not qualify.
+        self.user.password = ""
+        self.assertTrue(self.user.has_usable_password())
+        self.assertFalse(self.user.can_reset_password)
+
     def test_delete_user(self):
         self.user.delete()
 
