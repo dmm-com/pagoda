@@ -580,7 +580,7 @@ class ViewTest(AironeViewTest):
         user2.groups.add(group1)
 
         with patch.object(Job, "run") as enqueue:
-            resp = self.client.get("/user/api/v2/export/")
+            resp = self.client.post("/user/api/v2/export")
         enqueue.assert_called_once_with()
         self.assertEqual(resp.status_code, 202)
         self.assertNotIn("Content-Disposition", resp)

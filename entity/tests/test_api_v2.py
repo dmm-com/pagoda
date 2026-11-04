@@ -4142,7 +4142,7 @@ class ViewTest(AironeViewTest):
         self.admin_login()
 
         with patch.object(Job, "run") as enqueue:
-            resp = self.client.get("/entity/api/v2/export")
+            resp = self.client.post("/entity/api/v2/export")
         enqueue.assert_called_once_with()
         self.assertEqual(resp.status_code, 202)
         self.assertNotIn("Content-Disposition", resp)

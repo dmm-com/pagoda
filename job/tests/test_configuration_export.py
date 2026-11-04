@@ -13,7 +13,7 @@ class ConfigurationExportTest(AironeViewTest):
     def test_export_is_unavailable_until_worker_finishes_and_owner_only(self):
         self.guest_login()
         with patch.object(Job, "run") as enqueue:
-            response = self.client.get("/entity/api/v2/export")
+            response = self.client.post("/entity/api/v2/export")
         self.assertEqual(response.status_code, 202)
         enqueue.assert_called_once_with()
         job = Job.objects.get(id=response.json()["id"])
@@ -69,7 +69,7 @@ class ConfigurationExportTest(AironeViewTest):
         # The response serializer is part of this regression: the endpoint must
         # return its accepted job instead of raising a NameError after enqueueing.
         with patch.object(Job, "run") as enqueue:
-            response = self.client.get(f"/entity/api/v2/export?entity_id={selected.id}")
+            response = self.client.post(f"/entity/api/v2/{selected.id}/export")
         self.assertEqual(response.status_code, 202, response.content)
         enqueue.assert_called_once_with()
 
