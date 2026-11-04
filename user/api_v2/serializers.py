@@ -47,12 +47,14 @@ class UserTokenSerializer(serializers.ModelSerializer[Token]):
 class UserGroupType(TypedDict):
     id: int
     name: str
+    display_name: str
     is_direct: bool
 
 
 class UserGroupSerializer(serializers.Serializer[UserGroupType]):
     id = serializers.IntegerField()
     name = serializers.CharField()
+    display_name = serializers.CharField()
     # False when this user belongs to the group only through its subordinates
     is_direct = serializers.BooleanField()
 
@@ -60,11 +62,13 @@ class UserGroupSerializer(serializers.Serializer[UserGroupType]):
 class UserRoleGroupType(TypedDict):
     id: int
     name: str
+    display_name: str
 
 
 class UserRoleGroupSerializer(serializers.Serializer[UserRoleGroupType]):
     id = serializers.IntegerField()
     name = serializers.CharField()
+    display_name = serializers.CharField()
 
 
 class UserRoleType(TypedDict):
@@ -242,7 +246,12 @@ class UserRetrieveSerializer(UserBaseSerializer):
     def get_groups(self, obj: User) -> list[UserGroupType]:
         direct_group_ids = {g.id for g in obj.airone_groups}
         return [
-            {"id": g.id, "name": g.name, "is_direct": g.id in direct_group_ids}
+            {
+                "id": g.id,
+                "name": g.name,
+                "display_name": g.display_name,
+                "is_direct": g.id in direct_group_ids,
+            }
             for g in sorted(obj.belonging_groups(), key=lambda x: x.name)
         ]
 
@@ -261,7 +270,7 @@ class UserRetrieveSerializer(UserBaseSerializer):
                 "is_direct": belonging.is_direct,
                 "is_admin": belonging.is_admin,
                 "via_groups": [
-                    {"id": g.id, "name": g.name}
+                    {"id": g.id, "name": g.name, "display_name": g.display_name}
                     for g in sorted(belonging.via_groups, key=lambda x: x.name)
                 ],
             }

@@ -27,6 +27,7 @@ class RoleGroupSerializer(serializers.ModelSerializer[Group]):
         fields = [
             "id",
             "name",
+            "display_name",
         ]
 
 

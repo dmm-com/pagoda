@@ -24,7 +24,7 @@ class GroupSerializer(serializers.ModelSerializer[Group]):
 
     class Meta:
         model = Group
-        fields = ["id", "name", "parent_group", "members"]
+        fields = ["id", "name", "display_name", "parent_group", "members"]
 
     @extend_schema_field(GroupMemberSerializer(many=True))
     def get_members(self, obj: Group) -> list[GroupMemberType]:
@@ -46,7 +46,7 @@ class GroupCreateUpdateSerializer(serializers.ModelSerializer[Group]):
 
     class Meta:
         model = Group
-        fields = ["id", "name", "parent_group", "members"]
+        fields = ["id", "name", "display_name", "parent_group", "members"]
 
     def create(self, validated_data: dict[str, Any]) -> Group:
         parent_group = validated_data.get("parent_group")
@@ -55,6 +55,7 @@ class GroupCreateUpdateSerializer(serializers.ModelSerializer[Group]):
 
         new_group = Group(
             name=validated_data["name"],
+            display_name=validated_data.get("display_name", ""),
             parent_group=parent_group,
         )
         new_group.save()
@@ -80,6 +81,7 @@ class GroupCreateUpdateSerializer(serializers.ModelSerializer[Group]):
 
         # update group_name with specified one
         instance.name = validated_data["name"]
+        instance.display_name = validated_data.get("display_name", instance.display_name)
         instance.parent_group = parent_group
         instance.save()
 
@@ -107,7 +109,7 @@ class GroupTreeV2Serializer(serializers.ModelSerializer[Group]):
 
     class Meta:
         model = Group
-        fields = ["id", "name", "children"]
+        fields = ["id", "name", "display_name", "children"]
 
     @extend_schema_field(serializers.ListField(child=serializers.DictField()))
     def get_children(self, obj: Group) -> list[dict[str, object]]:
@@ -118,6 +120,7 @@ class GroupTreeV2Serializer(serializers.ModelSerializer[Group]):
                 {
                     "id": g.id,
                     "name": g.name,
+                    "display_name": g.display_name,
                     "children": _make_hierarchical_group(g.subordinates.filter(is_active=True)),
                 }
                 for g in groups
@@ -129,9 +132,10 @@ class GroupTreeV2Serializer(serializers.ModelSerializer[Group]):
 class GroupImportSerializer(serializers.Serializer[dict[str, Any]]):
     id = serializers.IntegerField(required=False)
     name = serializers.CharField()
+    display_name = serializers.CharField(required=False, allow_blank=True)
 
 
 class GroupExportSerializer(serializers.ModelSerializer[Group]):
     class Meta:
         model = Group
-        fields = ["id", "name"]
+        fields = ["id", "name", "display_name"]
