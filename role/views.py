@@ -165,13 +165,12 @@ def edit(request: HttpRequest, role_id: int) -> HttpResponse:
         ("admin_group_info", "display_name", role.admin_groups),
     ]:
         for instance in model.filter(is_active=True):
+            display_name = getattr(instance, nameattr)
+            if nameattr == "display_name" and not display_name:
+                display_name = getattr(instance, "name")
             context[key][cast(Any, instance).id].update(
                 {
-                    "name": (
-                        (getattr(instance, nameattr) or instance.name)
-                        if nameattr == "display_name"
-                        else getattr(instance, nameattr)
-                    ),
+                    "name": display_name,
                     "is_checked": "true",
                 }
             )

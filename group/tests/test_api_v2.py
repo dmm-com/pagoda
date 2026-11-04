@@ -140,6 +140,7 @@ class ViewTest(AironeViewTest):
 
         first = {"name": "hoge", "display_name": "短い名前", "members": []}
         second = {"name": "hoge-full-path", "display_name": "短い名前", "members": []}
+        third = {"name": "hoge-without-display-name", "members": []}
 
         first_response = self.client.post(
             "/group/api/v2/groups", json.dumps(first), "application/json"
@@ -147,11 +148,16 @@ class ViewTest(AironeViewTest):
         second_response = self.client.post(
             "/group/api/v2/groups", json.dumps(second), "application/json"
         )
+        third_response = self.client.post(
+            "/group/api/v2/groups", json.dumps(third), "application/json"
+        )
 
         self.assertEqual(first_response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(second_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(third_response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Group.objects.get(name="hoge").display_name, "短い名前")
         self.assertEqual(Group.objects.get(name="hoge-full-path").display_name, "短い名前")
+        self.assertEqual(Group.objects.get(name="hoge-without-display-name").display_name, "")
 
         list_response = self.client.get("/group/api/v2/groups")
         self.assertEqual(
