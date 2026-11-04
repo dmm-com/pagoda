@@ -308,14 +308,14 @@ class JobListAPI(viewsets.ModelViewSet[Job]):
             raw = params.get(name)
             if raw:
                 try:
-                    value = parse_datetime(raw)
+                    datetime_value = parse_datetime(raw)
                 except ValueError:
-                    value = None
-                if value is None:
+                    datetime_value = None
+                if datetime_value is None:
                     raise InvalidValueError("'%s' must be a datetime" % name)
-                if timezone.is_naive(value):
-                    value = timezone.make_aware(value)
-                query &= Q(**{lookup: value})
+                if timezone.is_naive(datetime_value):
+                    datetime_value = timezone.make_aware(datetime_value)
+                query &= Q(**{lookup: datetime_value})
 
         for name, lookup in (
             ("target_id", "target_id"),
@@ -324,12 +324,12 @@ class JobListAPI(viewsets.ModelViewSet[Job]):
             raw = params.get(name)
             if raw:
                 try:
-                    value = int(raw)
+                    integer_value = int(raw)
                 except ValueError:
                     raise InvalidValueError("'%s' must be an integer" % name)
-                if value < 0:
+                if integer_value < 0:
                     raise InvalidValueError("'%s' must not be negative" % name)
-                query &= Q(**{lookup: value})
+                query &= Q(**{lookup: integer_value})
 
         raw_operations = params.get("operation")
         if raw_operations:
