@@ -160,17 +160,14 @@ def edit(request: HttpRequest, role_id: int) -> HttpResponse:
     context["description"] = role.description
     for key, nameattr, model in [
         ("user_info", "username", role.users),
-        ("group_info", "display_name", role.groups),
+        ("group_info", "name", role.groups),
         ("admin_user_info", "username", role.admin_users),
-        ("admin_group_info", "display_name", role.admin_groups),
+        ("admin_group_info", "name", role.admin_groups),
     ]:
         for instance in model.filter(is_active=True):
-            display_name = getattr(instance, nameattr)
-            if nameattr == "display_name" and not display_name:
-                display_name = getattr(instance, "name")
             context[key][cast(Any, instance).id].update(
                 {
-                    "name": display_name,
+                    "name": getattr(instance, nameattr),
                     "is_checked": "true",
                 }
             )
