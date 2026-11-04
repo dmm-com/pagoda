@@ -123,13 +123,18 @@ class GroupImportAPI(generics.GenericAPIView[Any]):
                     )
 
                 group.name = group_data["name"]
+                if "display_name" in group_data:
+                    group.display_name = group_data["display_name"]
                 group.save()
             else:
                 # update group by name
                 group = Group.objects.filter(name=group_data["name"]).first()
                 if not group:
                     # create group
-                    group = Group(name=group_data["name"])
+                    group = Group(
+                        name=group_data["name"],
+                        display_name=group_data.get("display_name", ""),
+                    )
                 group.save()
 
         return Response(status=status.HTTP_200_OK)

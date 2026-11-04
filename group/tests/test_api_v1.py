@@ -44,16 +44,33 @@ class APITest(AironeViewTest):
                 {
                     "id": group0.id,
                     "name": group0.name,
+                    "display_name": group0.display_name,
                     "children": [
                         {
                             "id": group1.id,
                             "name": group1.name,
-                            "children": [{"id": group3.id, "name": group3.name, "children": []}],
+                            "display_name": group1.display_name,
+                            "children": [
+                                {
+                                    "id": group3.id,
+                                    "name": group3.name,
+                                    "display_name": group3.display_name,
+                                    "children": [],
+                                }
+                            ],
                         },
                         {
                             "id": group2.id,
                             "name": group2.name,
-                            "children": [{"id": group4.id, "name": group4.name, "children": []}],
+                            "display_name": group2.display_name,
+                            "children": [
+                                {
+                                    "id": group4.id,
+                                    "name": group4.name,
+                                    "display_name": group4.display_name,
+                                    "children": [],
+                                }
+                            ],
                         },
                     ],
                 }
