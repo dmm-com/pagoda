@@ -1294,7 +1294,9 @@ class AironeApiClient {
       headers: { "X-CSRFToken": getCsrfToken() },
     });
     if (!response.ok) {
-      throw new Error(`Failed to register user export (status: ${response.status})`);
+      throw new Error(
+        `Failed to register user export (status: ${response.status})`,
+      );
     }
   }
 

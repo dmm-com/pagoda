@@ -541,7 +541,7 @@ class EntityImportPreviewAPI(generics.GenericAPIView[Entity]):
 class EntityExportAPI(ConfigurationExportAPI):
     export_kind = "entity"
 
-    @extend_schema(responses={202: JobSerializers})
+    @extend_schema(request=None, responses={202: JobSerializers})
     def post(self, request: Request, entity_id: int | None = None) -> Response:
         if entity_id is not None:
             try:
