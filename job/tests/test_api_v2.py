@@ -164,8 +164,9 @@ class ViewTest(AironeViewTest):
                 self.assertEqual([job["id"] for job in resp.json()["results"]], [visible.id])
 
         self.assertEqual(
-            self.client.get("/job/api/v2/jobs", {"all_users": "true", "text": "internal"})
-            .json()["count"],
+            self.client.get("/job/api/v2/jobs", {"all_users": "true", "text": "internal"}).json()[
+                "count"
+            ],
             0,
         )
 
@@ -173,9 +174,7 @@ class ViewTest(AironeViewTest):
         user = self.guest_login()
         entity = Entity.objects.create(name="entity", created_user=user)
         entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
-        created_entry = Job.new_create(
-            user, entry, params={"entry_name": entry.name, "attrs": []}
-        )
+        created_entry = Job.new_create(user, entry, params={"entry_name": entry.name, "attrs": []})
         created_entity = Job.objects.create(
             user=user,
             target=entity,
