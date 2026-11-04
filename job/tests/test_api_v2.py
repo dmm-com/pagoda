@@ -54,6 +54,168 @@ class ViewTest(AironeViewTest):
         # user field is present in results
         self.assertIn("user", resp.json()["results"][0])
 
+    def test_search_jobs_combines_filters_before_pagination(self):
+        user = self.guest_login()
+        entity = Entity.objects.create(name="entity", created_user=user)
+        entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
+        match = Job.new_create(
+            user,
+            entry,
+            "Connection refused by INTERNAL host",
+            params={"entry_name": entry.name, "attrs": []},
+        )
+        match.update(JobStatus.ERROR)
+        other = Job.new_create(
+            user, entry, "Successful request", params={"entry_name": entry.name, "attrs": []}
+        )
+        other.update(JobStatus.DONE)
+
+        after = (match.created_at - timedelta(minutes=1)).isoformat()
+        before = (match.created_at + timedelta(minutes=1)).isoformat()
+        for key, value in (
+            ("job_id", match.id),
+            ("status", JobStatus.ERROR),
+            ("operation", JobOperation.CREATE_ENTRY),
+            ("user", user.username.upper()[:3]),
+            ("text", "internal"),
+            ("created_after", after),
+            ("created_before", before),
+        ):
+            self.assertIn(
+                match.id,
+                [
+                    job["id"]
+                    for job in self.client.get("/job/api/v2/jobs", {key: value}).json()["results"]
+                ],
+                key,
+            )
+        resp = self.client.get(
+            "/job/api/v2/jobs",
+            {
+                "limit": 1,
+                "offset": 0,
+                "job_id": match.id,
+                "status": JobStatus.ERROR,
+                "operation": JobOperation.CREATE_ENTRY,
+                "user": user.username.upper()[:3],
+                "text": "internal",
+                "created_after": after,
+                "created_before": before,
+            },
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], 1)
+        self.assertEqual(resp.json()["results"][0]["id"], match.id)
+        self.assertEqual(
+            self.client.get("/job/api/v2/jobs", {"text": "successful"}).json()["count"], 1
+        )
+        self.assertEqual(
+            self.client.get(
+                "/job/api/v2/jobs", {"status": JobStatus.ERROR, "text": "successful"}
+            ).json()["count"],
+            0,
+        )
+
+    def test_search_jobs_excludes_internal_and_deleted_targets(self):
+        user = self.guest_login()
+        entity = Entity.objects.create(name="entity", created_user=user)
+        entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
+        visible = Job.new_create(
+            user, entry, "visible", params={"entry_name": entry.name, "attrs": []}
+        )
+        Job.objects.create(
+            user=user,
+            target=entry,
+            operation=JobOperation.UPDATE_DOCUMENT,
+            status=JobStatus.ERROR,
+            text="hidden internal error",
+            params="{}",
+        )
+        deleted_entry = Entry.objects.create(
+            name="deleted entry", created_user=user, schema=entity, is_active=False
+        )
+        Job.new_create(
+            user,
+            deleted_entry,
+            "deleted target",
+            params={"entry_name": deleted_entry.name, "attrs": []},
+        )
+        Job.objects.create(
+            user=user,
+            target=deleted_entry,
+            operation=JobOperation.DELETE_ENTRY,
+            status=JobStatus.DONE,
+            text="delete operation",
+            params="{}",
+        )
+
+        for params in ({}, {"include_hidden": "true", "include_empty_success": "true"}):
+            with self.subTest(params=params):
+                resp = self.client.get("/job/api/v2/jobs", params)
+                self.assertEqual([job["id"] for job in resp.json()["results"]], [visible.id])
+
+        self.admin_login()
+        for params in (
+            {"all_users": "true"},
+            {"all_users": "true", "include_hidden": "true", "include_empty_success": "true"},
+        ):
+            with self.subTest(params=params):
+                resp = self.client.get("/job/api/v2/jobs", params)
+                self.assertEqual([job["id"] for job in resp.json()["results"]], [visible.id])
+
+        self.assertEqual(
+            self.client.get("/job/api/v2/jobs", {"all_users": "true", "text": "internal"})
+            .json()["count"],
+            0,
+        )
+
+    def test_search_jobs_matches_multiple_operation_ids(self):
+        user = self.guest_login()
+        entity = Entity.objects.create(name="entity", created_user=user)
+        entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
+        created_entry = Job.new_create(
+            user, entry, params={"entry_name": entry.name, "attrs": []}
+        )
+        created_entity = Job.objects.create(
+            user=user,
+            target=entity,
+            operation=JobOperation.CREATE_ENTITY,
+            status=JobStatus.DONE,
+            text="created entity",
+            params="{}",
+        )
+        Job.objects.create(
+            user=user,
+            target=entry,
+            operation=JobOperation.EDIT_ENTRY,
+            status=JobStatus.DONE,
+            text="edited entry",
+            params="{}",
+        )
+
+        resp = self.client.get(
+            "/job/api/v2/jobs",
+            {"operation": f"{JobOperation.CREATE_ENTRY},{JobOperation.CREATE_ENTITY}"},
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            {job["id"] for job in resp.json()["results"]},
+            {created_entry.id, created_entity.id},
+        )
+
+    def test_search_jobs_rejects_invalid_filters(self):
+        self.guest_login()
+        for params in (
+            {"status": "oops"},
+            {"job_id": "-1"},
+            {"operation": "1,invalid"},
+            {"operation": "1,-2"},
+            {"created_before": "invalid"},
+            {"created_before": "2026-02-30T00:00:00"},
+        ):
+            with self.subTest(params=params):
+                self.assertEqual(self.client.get("/job/api/v2/jobs", params).status_code, 400)
+
     def test_expired_job_is_reported_as_timeout_without_changing_terminal_status(self):
         user = self.guest_login()
         entity = Entity.objects.create(name="entity", created_user=user)
@@ -65,6 +227,17 @@ class ViewTest(AironeViewTest):
             response = self.client.get(f"/job/api/v2/jobs?target_id={entry.id}")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["results"][0]["status"], JobStatus.TIMEOUT)
+        with patch.object(Job, "_get_job_timeout", return_value=60):
+            self.assertEqual(
+                self.client.get("/job/api/v2/jobs", {"status": JobStatus.TIMEOUT}).json()["count"],
+                1,
+            )
+            self.assertEqual(
+                self.client.get("/job/api/v2/jobs", {"status": JobStatus.PREPARING}).json()[
+                    "count"
+                ],
+                0,
+            )
         with patch.object(Job, "_get_job_timeout", return_value=60):
             detail = self.client.get(f"/job/api/v2/{job.id}/")
         self.assertEqual(detail.json()["status"], JobStatus.TIMEOUT)
@@ -117,7 +290,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["count"], 1)
 
-        # check the case show jobs after deleting job target
+        # Jobs for deleted targets are omitted from the list.
         entry.delete()
 
         # Create delete job
@@ -126,13 +299,11 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0")
         self.assertEqual(resp.status_code, 200)
 
-        # Confirm that the delete job can be obtained
         body = resp.json()
-        self.assertEqual(body["count"], 1)
-        self.assertEqual(body["results"][0]["operation"], JobOperation.DELETE_ENTRY)
+        self.assertEqual(body["count"], 0)
 
     def test_get_jobs_deleted_target_v2_entry(self):
-        """Test that DELETE_ENTRY_V2 jobs are visible even when target is_active=False"""
+        """DELETE_ENTRY_V2 jobs for inactive targets are omitted from the list."""
         user = self.guest_login()
 
         entity = Entity.objects.create(name="entity", created_user=user)
@@ -146,13 +317,11 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0")
         self.assertEqual(resp.status_code, 200)
 
-        # Confirm that the delete job v2 can be obtained even when entry.is_active=False
         body = resp.json()
-        self.assertEqual(body["count"], 1)
-        self.assertEqual(body["results"][0]["operation"], JobOperation.DELETE_ENTRY_V2)
+        self.assertEqual(body["count"], 0)
 
     def test_get_jobs_deleted_target_v2_entity(self):
-        """Test that DELETE_ENTITY_V2 jobs are visible even when target is_active=False"""
+        """DELETE_ENTITY_V2 jobs for inactive targets are omitted from the list."""
         user = self.guest_login()
 
         entity = Entity.objects.create(name="entity", created_user=user)
@@ -165,10 +334,8 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0")
         self.assertEqual(resp.status_code, 200)
 
-        # Confirm that the delete job v2 can be obtained even when entity.is_active=False
         body = resp.json()
-        self.assertEqual(body["count"], 1)
-        self.assertEqual(body["results"][0]["operation"], JobOperation.DELETE_ENTITY_V2)
+        self.assertEqual(body["count"], 0)
 
     @patch("entry.tasks.create_entry_v2.delay", Mock(side_effect=tasks.create_entry_v2))
     def test_create_entry_v2_job_is_listed(self):

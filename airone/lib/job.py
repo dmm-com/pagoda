@@ -43,7 +43,8 @@ raised exception:
 {traceback.format_exc()}
 """
         mail_admins(subject, message)
-        ret = JobStatus.ERROR
+        error_message = f"{type(e).__name__}: {e}"[:2000]
+        ret = (JobStatus.ERROR, f"{job.text}\n{error_message}".strip(), None)
 
     # update Job status after finishing Job processing
     if isinstance(ret, JobStatus):

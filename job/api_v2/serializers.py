@@ -62,6 +62,13 @@ class JobSerializers(serializers.ModelSerializer[Job]):
                         .first()
                         or {}
                     )
+                if not sub:
+                    return {
+                        "id": obj.target.id,
+                        "name": obj.target.name,
+                        "schema_id": None,
+                        "schema_name": None,
+                    }
                 return {
                     "id": sub["id"],
                     "name": sub["name"],
