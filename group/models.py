@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 class Group(DjangoGroup):
     is_active = models.BooleanField(default=True)
+    display_name = models.CharField(max_length=255, default="", blank=True)
     parent_group = models.ForeignKey(
         "Group", on_delete=models.DO_NOTHING, related_name="subordinates", null=True
     )

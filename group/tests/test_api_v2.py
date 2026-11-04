@@ -84,6 +84,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         body = resp.json()
         self.assertEqual(body["id"], group.id)
+        self.assertEqual(body["display_name"], "")
         self.assertEqual(len(body["members"]), 1)
         self.assertEqual(body["members"][0]["id"], user.id)
 
@@ -96,6 +97,7 @@ class ViewTest(AironeViewTest):
 
         update_params = {
             "name": "fuga",
+            "display_name": "表示名",
             "members": [str(users[1].id), int(users[2].id)],
         }
         resp = self.client.put(
@@ -106,6 +108,7 @@ class ViewTest(AironeViewTest):
         # These statements checks whether "group" was updated expectedly
         group.refresh_from_db()
         self.assertEqual(group.name, "fuga")
+        self.assertEqual(group.display_name, "表示名")
         self.assertEqual([x.id for x in users[0].groups.all()], [])
         self.assertEqual([x.id for x in users[1].groups.all()], [group.id])
         self.assertEqual([x.id for x in users[2].groups.all()], [group.id])
@@ -131,6 +134,36 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         self.assertTrue(Group.objects.filter(name="hoge").exists())
+
+    def test_display_name_is_optional_and_not_unique(self):
+        self.admin_login()
+
+        first = {"name": "hoge", "display_name": "短い名前", "members": []}
+        second = {"name": "hoge-full-path", "display_name": "短い名前", "members": []}
+        third = {"name": "hoge-without-display-name", "members": []}
+
+        first_response = self.client.post(
+            "/group/api/v2/groups", json.dumps(first), "application/json"
+        )
+        second_response = self.client.post(
+            "/group/api/v2/groups", json.dumps(second), "application/json"
+        )
+        third_response = self.client.post(
+            "/group/api/v2/groups", json.dumps(third), "application/json"
+        )
+
+        self.assertEqual(first_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(second_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(third_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Group.objects.get(name="hoge").display_name, "短い名前")
+        self.assertEqual(Group.objects.get(name="hoge-full-path").display_name, "短い名前")
+        self.assertEqual(Group.objects.get(name="hoge-without-display-name").display_name, "")
+
+        list_response = self.client.get("/group/api/v2/groups")
+        self.assertEqual(
+            {item["display_name"] for item in list_response.json()["results"]},
+            {"", "短い名前"},
+        )
 
     def test_create_group_by_non_superuser_is_forbidden(self):
         # a child group inherits the roles of its parent group
@@ -219,3 +252,4 @@ class ViewTest(AironeViewTest):
         body = resp.json()
 
         self.assertEqual([g["name"] for g in body], ["group-a", "group-b", "group-c"])
+        self.assertEqual([g["display_name"] for g in body], ["", "", ""])

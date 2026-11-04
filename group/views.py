@@ -36,6 +36,7 @@ def edit(request: HttpRequest, group_id: int) -> HttpResponse:
     context: dict[str, Any] = {
         "default_group_id": int(group_id),
         "current_group_name": group.name,
+        "current_group_display_name": group.display_name,
         "current_group_members": User.objects.filter(groups__id=group.id, is_active=True).order_by(
             "username"
         ),
@@ -77,6 +78,7 @@ def edit(request: HttpRequest, group_id: int) -> HttpResponse:
             ),
         },
         {"name": "parent_group", "type": str, "omittable": True},
+        {"name": "display_name", "type": str, "omittable": True},
     ]
 )
 @check_superuser
@@ -107,6 +109,8 @@ def do_edit(request: HttpRequest, group_id: int, recv_data: dict[str, Any]) -> H
 
     # update group_name with specified one
     group.name = recv_data["name"]
+    if "display_name" in recv_data:
+        group.display_name = recv_data["display_name"]
     group.parent_group = Group.objects.filter(
         id=recv_data.get("parent_group", 0),
         is_active=True,
@@ -136,6 +140,7 @@ def do_edit(request: HttpRequest, group_id: int, recv_data: dict[str, Any]) -> H
 def create(request: HttpRequest) -> HttpResponse:
     context: dict[str, Any] = {
         "default_group_id": 0,
+        "current_group_display_name": "",
         "submit_ref": "/group/do_create",
     }
 
@@ -178,12 +183,14 @@ def create(request: HttpRequest) -> HttpResponse:
             ),
         },
         {"name": "parent_group", "type": str, "omittable": True},
+        {"name": "display_name", "type": str, "omittable": True},
     ]
 )
 @check_superuser
 def do_create(request: HttpRequest, recv_data: dict[str, Any]) -> HttpResponse:
     new_group = Group(
         name=recv_data["name"],
+        display_name=recv_data.get("display_name", ""),
         parent_group=Group.objects.filter(
             id=recv_data.get("parent_group", 0),
             is_active=True,
@@ -234,6 +241,7 @@ def export(request: HttpRequest) -> HttpResponse:
             {
                 "id": group.id,
                 "name": group.name,
+                "display_name": group.display_name,
             }
         )
 
@@ -303,13 +311,18 @@ def do_import_user_and_group(request: HttpRequest, context: str) -> HttpResponse
                 )
 
             group.name = group_data["name"]
+            if "display_name" in group_data:
+                group.display_name = group_data["display_name"]
             group.save()
         else:
             # update group by name
             group = Group.objects.filter(name=group_data["name"]).first()
             if not group:
                 # create group
-                group = Group(name=group_data["name"])
+                group = Group(
+                    name=group_data["name"],
+                    display_name=group_data.get("display_name", ""),
+                )
             group.save()
 
     # update or create user
