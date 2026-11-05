@@ -8,7 +8,7 @@ import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntityControlMenu } from "components/entity/EntityControlMenu";
-import { EntryImportModal } from "components/entry/EntryImportModal";
+import { CommonImportModal } from "components/common/CommonImportModal";
 import { RestorableEntryList } from "components/entry/RestorableEntryList";
 import { useIdParams } from "hooks/useIdParams";
 import { useTranslation } from "hooks/useTranslation";
@@ -50,7 +50,7 @@ const EntryRestoreContent: FC<{ entityId: number }> = ({ entityId }) => {
             setOpenImportModal={setOpenImportModal}
             permission={entity.permission}
           />
-          <EntryImportModal
+          <CommonImportModal
             openImportModal={openImportModal}
             closeImportModal={() => setOpenImportModal(false)}
           />

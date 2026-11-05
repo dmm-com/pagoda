@@ -14,7 +14,7 @@ import { SearchBox } from "components/common/SearchBox";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntityControlMenu } from "components/entity/EntityControlMenu";
 import { AliasEntryList } from "components/entry/AliasEntryList";
-import { EntryImportModal } from "components/entry/EntryImportModal";
+import { CommonImportModal } from "components/common/CommonImportModal";
 import { useFormNotification, usePage } from "hooks";
 import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
@@ -195,7 +195,7 @@ const AliasEntryListContent: FC = () => {
         />
       </Container>
 
-      <EntryImportModal
+      <CommonImportModal
         openImportModal={openImportModal}
         closeImportModal={() => setOpenImportModal(false)}
       />

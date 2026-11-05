@@ -13,7 +13,7 @@ import { FC, Suspense, useMemo, useState } from "react";
 import { Link } from "react-router";
 
 import { GroupControlMenu } from "../components/group/GroupControlMenu";
-import { GroupImportModal } from "../components/group/GroupImportModal";
+import { CommonImportModal } from "components/common/CommonImportModal";
 import { GroupTreeRoot } from "../components/group/GroupTreeRoot";
 
 import { AironeLink } from "components";
@@ -167,7 +167,7 @@ export const GroupListPage: FC = () => {
         >
           {t("common.import")}
         </Button>
-        <GroupImportModal
+        <CommonImportModal
           openImportModal={openImportModal}
           closeImportModal={() => setOpenImportModal(false)}
         />

@@ -6,7 +6,7 @@ import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntityControlMenu } from "components/entity/EntityControlMenu";
-import { EntryImportModal } from "components/entry/EntryImportModal";
+import { CommonImportModal } from "components/common/CommonImportModal";
 import { EntryList } from "components/entry/EntryList";
 import { useIdParams } from "hooks/useIdParams";
 import { usePageTitle } from "hooks/usePageTitle";
@@ -77,7 +77,7 @@ const EntryListContent: FC<Props> = ({ canCreateEntry = true }) => {
           }
         />
       </Container>
-      <EntryImportModal
+      <CommonImportModal
         openImportModal={openImportModal}
         closeImportModal={() => setOpenImportModal(false)}
       />
