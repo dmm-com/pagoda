@@ -131,6 +131,28 @@ class JobParamsBoundaryTest(TestCase):
             job.get_typed_params(dict)
 
     @mock.patch("airone.lib.job.mail_admins")
+    def test_task_exception_saves_searchable_error_message(self, mail_admins: mock.Mock):
+        job = Job.objects.create(
+            user=self.user,
+            target_type=JobTarget.UNKNOWN,
+            status=JobStatus.PREPARING,
+            operation=JobOperation.UPDATE_DOCUMENT,
+            text="original context",
+            params='{"is_update":true}',
+        )
+
+        def handler(_kls: object, _job: Job) -> JobStatus:
+            raise RuntimeError("searchable failure")
+
+        _handle_task(object(), handler, job)
+
+        job.refresh_from_db()
+        self.assertEqual(job.status, JobStatus.ERROR)
+        self.assertIn("original context", job.text)
+        self.assertIn("RuntimeError: searchable failure", job.text)
+        mail_admins.assert_called_once()
+
+    @mock.patch("airone.lib.job.mail_admins")
     def test_invalid_legacy_row_fails_before_processing_without_mail_or_handler(
         self, mail_admins: mock.Mock
     ):
