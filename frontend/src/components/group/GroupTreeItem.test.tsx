@@ -30,15 +30,18 @@ const mockGroupTrees: GroupTree[] = [
   {
     id: 1,
     name: "u30b0u30ebu30fcu30d71",
+    displayName: "短いグループ1",
     children: [],
   },
   {
     id: 2,
     name: "u30b0u30ebu30fcu30d72",
+    displayName: "短いグループ2",
     children: [
       {
         id: 3,
         name: "u5b50u30b0u30ebu30fcu30d71",
+        displayName: "短い子グループ1",
         children: [],
       },
     ],
@@ -75,8 +78,8 @@ describe("GroupTreeItem", () => {
       { wrapper: TestWrapper },
     );
 
-    expect(screen.getByText("u30b0u30ebu30fcu30d71")).toBeInTheDocument();
-    expect(screen.getByText("u30b0u30ebu30fcu30d72")).toBeInTheDocument();
+    expect(screen.getByText("短いグループ1")).toBeInTheDocument();
+    expect(screen.getByText("短いグループ2")).toBeInTheDocument();
   });
 
   test("should render group name as a link to detail page when user is superuser", () => {
@@ -262,8 +265,8 @@ describe("GroupTreeItem", () => {
       { wrapper: TestWrapper },
     );
 
-    expect(screen.getByText("u30b0u30ebu30fcu30d72")).toBeInTheDocument();
-    expect(screen.getByText("u5b50u30b0u30ebu30fcu30d71")).toBeInTheDocument();
+    expect(screen.getByText("短いグループ2")).toBeInTheDocument();
+    expect(screen.getByText("短い子グループ1")).toBeInTheDocument();
   });
 
   test("should apply correct indent style based on depth", () => {

@@ -24,6 +24,7 @@ import {
   isResponseError,
 } from "services/AironeAPIErrorUtil";
 import { ForbiddenError } from "services/Exceptions";
+import { getGroupDisplayName } from "services/GroupUtil";
 import { ServerContext } from "services/ServerContext";
 
 export const GroupEditPage: FC = () => {
@@ -53,7 +54,13 @@ export const GroupEditPage: FC = () => {
     mode: "onBlur",
     // Sync form values when the fetched group arrives. Dirty fields are
     // kept so a background revalidation does not clobber user edits.
-    values: group,
+    values:
+      group != null
+        ? {
+            ...group,
+            displayName: group.displayName ?? "",
+          }
+        : undefined,
     resetOptions: { keepDirtyValues: true },
   });
 
@@ -101,7 +108,7 @@ export const GroupEditPage: FC = () => {
     groupLoading ? t("group.edit.loading") : TITLE_TEMPLATES.groupEdit,
     {
       prefix:
-        group?.name ??
+        (group != null ? getGroupDisplayName(group) : undefined) ??
         (willCreate ? t("group.edit.newGroupPrefix") : undefined),
     },
   );
@@ -114,7 +121,9 @@ export const GroupEditPage: FC = () => {
     throw new ForbiddenError("only admin can edit a group");
   }
 
-  const pageTitle = group?.name ?? t("group.edit.pageTitleNew");
+  const pageTitle =
+    (group != null ? getGroupDisplayName(group) : undefined) ??
+    t("group.edit.pageTitleNew");
   const pageDescription = willCreate ? undefined : t("group.edit.description");
 
   return (
