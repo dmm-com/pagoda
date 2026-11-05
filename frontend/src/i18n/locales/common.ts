@@ -155,7 +155,7 @@ export const commonMessages = defineMessages({
     "commonImport.title": "データのインポート",
     "commonImport.description": "インポートするファイルを選択してください。",
     "commonImport.caption":
-      "※ファイルの内容からモデル・アイテム・ユーザ・グループ・ロールを自動判定します。CSV形式のファイルは選択できません。",
+      "※モデル・アイテム・ユーザ他、いずれのインポートファイルも受け付けます。CSV形式のファイルは選択できません。",
   },
   en: {
     // Generic actions
