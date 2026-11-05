@@ -2,7 +2,9 @@
  */
 
 import { fileDownload, getCsrfToken } from "./AironeApiClient";
+import { aironeApiClient } from "./AironeApiClient";
 
+import type { GroupTreeV2 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import type { Mock } from "vitest";
 
 describe("fileDownload", () => {
@@ -125,5 +127,48 @@ describe("getCsrfToken", () => {
   test("should decode URI-encoded token values", () => {
     document.cookie = "csrftoken=" + encodeURIComponent("tok%en+special");
     expect(getCsrfToken()).toBe("tok%en+special");
+  });
+});
+
+describe("AironeApiClient.getGroupTrees", () => {
+  test("preserves display names returned by the generated API client", async () => {
+    const groupApi = (
+      aironeApiClient as unknown as {
+        group: {
+          groupApiV2GroupsTreeList: () => Promise<GroupTreeV2[]>;
+        };
+      }
+    ).group;
+    vi.spyOn(groupApi, "groupApiV2GroupsTreeList").mockResolvedValue([
+      {
+        id: 1,
+        name: "organization / department",
+        displayName: "department",
+        children: [
+          {
+            id: 2,
+            name: "organization / department / team",
+            displayName: "team",
+            children: [],
+          },
+        ],
+      },
+    ]);
+
+    await expect(aironeApiClient.getGroupTrees()).resolves.toEqual([
+      {
+        id: 1,
+        name: "organization / department",
+        displayName: "department",
+        children: [
+          {
+            id: 2,
+            name: "organization / department / team",
+            displayName: "team",
+            children: [],
+          },
+        ],
+      },
+    ]);
   });
 });
