@@ -1,6 +1,9 @@
 import {
   ACL,
   ACLHistory,
+  CommonApi,
+  CommonImportJob,
+  ResponseError,
   ACLObjtypeEnum,
   ACLSetting,
   AclApi,
@@ -61,7 +64,7 @@ import {
   UserToken,
   UserUpdate,
   WebhookCreateUpdate,
-  GroupTreeV2,
+  GroupTreeV2 as _GroupTree,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 import {
@@ -78,9 +81,7 @@ import {
   JobListParam,
 } from "services/Constants";
 
-export type { Group, GroupCreateUpdate, PaginatedGroupList };
-
-export type GroupTree = Omit<GroupTreeV2, "children"> & {
+export type GroupTree = Pick<_GroupTree, "id" | "name"> & {
   children: Array<GroupTree>;
 };
 
@@ -156,6 +157,7 @@ class AironeApiClient {
   private group: GroupApi;
   private user: UserApi;
   private role: RoleApi;
+  private common: CommonApi;
   private job: JobApi;
 
   constructor() {
@@ -171,6 +173,7 @@ class AironeApiClient {
     this.group = new GroupApi(config);
     this.user = new UserApi(config);
     this.role = new RoleApi(config);
+    this.common = new CommonApi(config);
     this.job = new JobApi(config);
   }
 
@@ -496,21 +499,12 @@ class AironeApiClient {
   }
 
   async exportEntities(): Promise<void> {
-    const response = await fetch("/entity/api/v2/export", {
-      method: "POST",
-      headers: { "X-CSRFToken": getCsrfToken() },
-    });
-    if (!response.ok) {
-      throw new Error(
-        `Failed to register entity export (status: ${response.status})`,
-      );
-    }
+    await this.entity.entityApiV2ExportRetrieveRaw();
   }
 
   async exportEntitySchema(entityId: number): Promise<void> {
     const response = await fetch(
-      `/entity/api/v2/${encodeURIComponent(entityId)}/export`,
-      { method: "POST", headers: { "X-CSRFToken": getCsrfToken() } },
+      `/entity/api/v2/export?entity_id=${encodeURIComponent(entityId)}`,
     );
     if (!response.ok) {
       throw new Error(
@@ -712,7 +706,7 @@ class AironeApiClient {
   }
 
   async getGroups(page = 1, keyword?: string): Promise<PaginatedGroupList> {
-    return this.group.groupApiV2GroupsList({
+    return await this.group.groupApiV2GroupsList({
       page: page,
       search: keyword,
       ordering: "name",
@@ -721,7 +715,7 @@ class AironeApiClient {
 
   async getGroup(id: number): Promise<Group> {
     // groupApiV2GroupsRetrieve: associated with
-    return this.group.groupApiV2GroupsRetrieve({ id });
+    return await this.group.groupApiV2GroupsRetrieve({ id });
   }
 
   async createGroup(group: GroupCreateUpdate): Promise<void> {
@@ -763,8 +757,25 @@ class AironeApiClient {
   }
 
   async getGroupTrees(): Promise<GroupTree[]> {
+    interface APIGroupTreeData {
+      id: number;
+      name: string;
+      children: APIGroupTreeData[];
+    }
+
     const groupTrees = await this.group.groupApiV2GroupsTreeList();
-    return groupTrees as GroupTree[];
+
+    const toTyped = (groupTree: Partial<APIGroupTreeData>): GroupTree => ({
+      id: groupTree.id as number,
+      name: groupTree.name as string,
+      children: (groupTree.children || []).map(
+        (child: Partial<APIGroupTreeData>) => toTyped(child),
+      ),
+    });
+
+    return groupTrees.map((groupTree) =>
+      toTyped(groupTree as unknown as Partial<APIGroupTreeData>),
+    );
   }
 
   async importGroups(data: string | ArrayBuffer): Promise<void> {
@@ -781,15 +792,7 @@ class AironeApiClient {
   }
 
   async exportGroups(): Promise<void> {
-    const response = await fetch("/group/api/v2/groups/export", {
-      method: "POST",
-      headers: { "X-CSRFToken": getCsrfToken() },
-    });
-    if (!response.ok) {
-      throw new Error(
-        `Failed to register group export (status: ${response.status})`,
-      );
-    }
+    await this.group.groupApiV2GroupsExportListRaw();
   }
 
   async getRoles(keyword?: string): Promise<Role[]> {
@@ -889,6 +892,46 @@ class AironeApiClient {
     );
   }
 
+  // The preview endpoint is not in the generated client yet, so it is called
+  // directly, as getEntityDiff does.
+  async startCommonImportPreview(
+    data: string | ArrayBuffer,
+  ): Promise<{ jobIds: number[]; errors: string[] }> {
+    const resp = await fetch("/common/api/v2/import/preview", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/yaml",
+        "X-CSRFToken": getCsrfToken(),
+      },
+      body: new Blob([data]),
+    });
+    if (!resp.ok) {
+      throw new ResponseError(
+        resp,
+        `Failed to preview import (status: ${resp.status})`,
+      );
+    }
+    const body: { job_ids: number[]; error: string[] } = await resp.json();
+    return { jobIds: body.job_ids, errors: body.error };
+  }
+
+  async importCommon(
+    data: string | ArrayBuffer,
+    force: boolean,
+    previewJobId?: number,
+  ): Promise<CommonImportJob> {
+    return await this.common.commonApiV2ImportCreate(
+      { force, previewJobId },
+      {
+        headers: {
+          "Content-Type": "application/yaml",
+          "X-CSRFToken": getCsrfToken(),
+        },
+        body: new Blob([data]),
+      },
+    );
+  }
+
   async importRoles(data: string | ArrayBuffer): Promise<void> {
     await this.role.roleApiV2ImportCreate(
       { roleImportExportChild: [] },
@@ -903,15 +946,7 @@ class AironeApiClient {
   }
 
   async exportRoles(): Promise<void> {
-    const response = await fetch("/role/api/v2/export", {
-      method: "POST",
-      headers: { "X-CSRFToken": getCsrfToken() },
-    });
-    if (!response.ok) {
-      throw new Error(
-        `Failed to register role export (status: ${response.status})`,
-      );
-    }
+    await this.role.roleApiV2ExportListRaw();
   }
 
   async getCategories(
@@ -1291,15 +1326,7 @@ class AironeApiClient {
   }
 
   async exportUsers(): Promise<void> {
-    const response = await fetch("/user/api/v2/export/", {
-      method: "POST",
-      headers: { "X-CSRFToken": getCsrfToken() },
-    });
-    if (!response.ok) {
-      throw new Error(
-        `Failed to register user export (status: ${response.status})`,
-      );
-    }
+    await this.user.userApiV2ExportListRaw();
   }
 
   async updateUserPassword(

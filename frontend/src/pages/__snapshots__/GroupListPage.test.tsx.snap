@@ -173,11 +173,7 @@ exports[`GroupListPage > should match snapshot 1`] = `
                         data-discover="true"
                         href="/ui/groups/1"
                       >
-                        <span
-                          title="group1"
-                        >
-                          group1
-                        </span>
+                        group1
                       </a>
                       <button
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1ffhwr1-MuiButtonBase-root-MuiIconButton-root"
@@ -225,11 +221,7 @@ exports[`GroupListPage > should match snapshot 1`] = `
                         data-discover="true"
                         href="/ui/groups/1"
                       >
-                        <span
-                          title="group1"
-                        >
-                          group1
-                        </span>
+                        group1
                       </a>
                       <button
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1ffhwr1-MuiButtonBase-root-MuiIconButton-root"
@@ -277,11 +269,7 @@ exports[`GroupListPage > should match snapshot 1`] = `
                         data-discover="true"
                         href="/ui/groups/2"
                       >
-                        <span
-                          title="group2"
-                        >
-                          group2
-                        </span>
+                        group2
                       </a>
                       <button
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1ffhwr1-MuiButtonBase-root-MuiIconButton-root"
@@ -337,11 +325,7 @@ exports[`GroupListPage > should match snapshot 1`] = `
                         data-discover="true"
                         href="/ui/groups/2"
                       >
-                        <span
-                          title="group2"
-                        >
-                          group2
-                        </span>
+                        group2
                       </a>
                       <button
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1ffhwr1-MuiButtonBase-root-MuiIconButton-root"
@@ -604,11 +588,7 @@ exports[`GroupListPage > should match snapshot 1`] = `
                       data-discover="true"
                       href="/ui/groups/1"
                     >
-                      <span
-                        title="group1"
-                      >
-                        group1
-                      </span>
+                      group1
                     </a>
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1ffhwr1-MuiButtonBase-root-MuiIconButton-root"
@@ -656,11 +636,7 @@ exports[`GroupListPage > should match snapshot 1`] = `
                       data-discover="true"
                       href="/ui/groups/1"
                     >
-                      <span
-                        title="group1"
-                      >
-                        group1
-                      </span>
+                      group1
                     </a>
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1ffhwr1-MuiButtonBase-root-MuiIconButton-root"
@@ -708,11 +684,7 @@ exports[`GroupListPage > should match snapshot 1`] = `
                       data-discover="true"
                       href="/ui/groups/2"
                     >
-                      <span
-                        title="group2"
-                      >
-                        group2
-                      </span>
+                      group2
                     </a>
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1ffhwr1-MuiButtonBase-root-MuiIconButton-root"
@@ -768,11 +740,7 @@ exports[`GroupListPage > should match snapshot 1`] = `
                       data-discover="true"
                       href="/ui/groups/2"
                     >
-                      <span
-                        title="group2"
-                      >
-                        group2
-                      </span>
+                      group2
                     </a>
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1ffhwr1-MuiButtonBase-root-MuiIconButton-root"

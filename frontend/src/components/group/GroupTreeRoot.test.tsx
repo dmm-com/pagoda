@@ -28,18 +28,15 @@ describe("GroupTreeRoot", () => {
     {
       id: 1,
       name: "group1",
-      displayName: "Group One",
       children: [
         {
           id: 2,
           name: "group2",
-          displayName: "Group Two",
           children: [],
         },
         {
           id: 3,
           name: "group3",
-          displayName: "Group Three",
           children: [],
         },
       ],
@@ -47,7 +44,6 @@ describe("GroupTreeRoot", () => {
     {
       id: 4,
       name: "group4",
-      displayName: "",
       children: [],
     },
   ];
@@ -77,44 +73,6 @@ describe("GroupTreeRoot", () => {
 
     // General users should not see any action buttons
     expect(screen.queryAllByRole("button")).toHaveLength(0);
-  });
-
-  test("uses display names and keeps full names available as titles", () => {
-    (ServerContext.getInstance as Mock).mockReturnValue({
-      user: { isSuperuser: false },
-    });
-
-    render(
-      <GroupTreeRoot
-        {...baseProps}
-        groupTrees={[
-          {
-            id: 10,
-            name: "organization / team-a",
-            displayName: "Team",
-            children: [],
-          },
-          {
-            id: 11,
-            name: "organization / team-b",
-            displayName: "Team",
-            children: [],
-          },
-          {
-            id: 12,
-            name: "organization / team-c",
-            displayName: "",
-            children: [],
-          },
-        ]}
-      />,
-      { wrapper: TestWrapper },
-    );
-
-    expect(screen.getAllByText("Team")).toHaveLength(2);
-    expect(screen.getByText("organization / team-c")).toBeInTheDocument();
-    expect(screen.getByTitle("organization / team-a")).toBeInTheDocument();
-    expect(screen.getByTitle("organization / team-b")).toBeInTheDocument();
   });
 
   test("renders correctly for superuser (menu buttons shown)", () => {

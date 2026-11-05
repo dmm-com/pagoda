@@ -41,7 +41,6 @@ import { FlexBox } from "components/common/FlexBox";
 import { useTranslation } from "hooks/useTranslation";
 import { translate } from "i18n/config";
 import { groupPath, rolePath, userPath } from "routes/Routes";
-import { getGroupDisplayName } from "services/GroupUtil";
 import { ServerContext } from "services/ServerContext";
 import { User } from "services/ServerContext";
 
@@ -358,12 +357,11 @@ const ElemGroups: FC<ReadonlyProps> = ({ user }) => {
             {user.groups.map((group) => (
               <Chip
                 key={group.id}
-                title={group.name}
                 label={
                   group.isDirect
-                    ? getGroupDisplayName(group)
+                    ? group.name
                     : t("user.form.inheritedGroupLabel", {
-                        name: getGroupDisplayName(group),
+                        name: group.name,
                       })
                 }
                 size="small"

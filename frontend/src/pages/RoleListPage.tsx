@@ -3,11 +3,11 @@ import { Box, Button, Container, Typography } from "@mui/material";
 import { FC, useState } from "react";
 import { Link } from "react-router";
 
-import { RoleImportModal } from "../components/role/RoleImportModal";
 import { RoleList } from "../components/role/RoleList";
 
 import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { CommonImportModal } from "components/common/CommonImportModal";
 import { ExportButton } from "components/common/ExportButton";
 import { PageHeader } from "components/common/PageHeader";
 import { usePageTitle } from "hooks/usePageTitle";
@@ -47,7 +47,7 @@ export const RoleListPage: FC = () => {
         >
           {t("common.import")}
         </Button>
-        <RoleImportModal
+        <CommonImportModal
           openImportModal={openImportModal}
           closeImportModal={() => setOpenImportModal(false)}
         />

@@ -29,6 +29,7 @@ import { Link } from "react-router";
 
 import { useTranslation } from "../../hooks/useTranslation";
 
+import { CommonImportModal } from "components/common/CommonImportModal";
 import { SearchBox } from "components/common/SearchBox";
 import { useHoverMenus } from "hooks/useHoverMenus";
 import { useInterval } from "hooks/useInterval";
@@ -199,6 +200,7 @@ export const Header: FC = () => {
   const [userAnchorEl, setUserAnchorEl] = useState<HTMLButtonElement | null>();
   const [jobAnchorEl, setJobAnchorEl] = useState<HTMLButtonElement | null>();
   const [navOpen, setNavOpen] = useState(false);
+  const [openImportModal, setOpenImportModal] = useState(false);
 
   // The drawer is only reachable below `md`; close it if the window is
   // widened past that, since its toggle button disappears there.
@@ -321,6 +323,14 @@ export const Header: FC = () => {
                   <ListItemButton component={Link} to={triggersPath()}>
                     <ListItemText primary={t("manageTriggers")} />
                   </ListItemButton>
+                  <ListItemButton
+                    onClick={() => {
+                      setNavOpen(false);
+                      setOpenImportModal(true);
+                    }}
+                  >
+                    <ListItemText primary={t("importData")} />
+                  </ListItemButton>
                   {serverContext?.extendedHeaderMenus.map((menu, index) => (
                     <Fragment key={index}>
                       <ListSubheader component="div">{menu.name}</ListSubheader>
@@ -380,6 +390,9 @@ export const Header: FC = () => {
                   </MenuItem>
                   <MenuItem component={Link} to={triggersPath()}>
                     {t("manageTriggers")}
+                  </MenuItem>
+                  <MenuItem onClick={() => setOpenImportModal(true)}>
+                    {t("importData")}
                   </MenuItem>
                 </Menu>
               </Box>
@@ -493,6 +506,10 @@ export const Header: FC = () => {
           </StyledToolbar>
         </StyledAppBar>
       </Fixed>
+      <CommonImportModal
+        openImportModal={openImportModal}
+        closeImportModal={() => setOpenImportModal(false)}
+      />
     </Frame>
   );
 };

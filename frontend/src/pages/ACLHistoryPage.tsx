@@ -8,13 +8,13 @@ import { preload } from "swr";
 import { usePagodaSWR, wrapFetcher } from "../hooks/usePagodaSWR";
 
 import { ACLHistoryList } from "components/acl/ACLHistoryList";
+import { CommonImportModal } from "components/common/CommonImportModal";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntityControlMenu } from "components/entity/EntityControlMenu";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
-import { EntryImportModal } from "components/entry/EntryImportModal";
 import { useIdParams } from "hooks/useIdParams";
 import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
@@ -129,7 +129,7 @@ const ACLHistoryContent: FC<{ objectId: number }> = ({ objectId }) => {
           {controlMenu()}
         </MenuBox>
       </PageHeader>
-      <EntryImportModal
+      <CommonImportModal
         openImportModal={openImportModal}
         closeImportModal={() => setOpenImportModal(false)}
       />
