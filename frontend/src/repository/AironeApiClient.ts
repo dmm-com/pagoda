@@ -45,6 +45,7 @@ import {
   PaginatedEntryHistoryAttributeValueList,
   PaginatedGroupList,
   PaginatedJobSerializersList,
+  PaginatedJobSerializersListFromJSON,
   PaginatedTriggerParentList,
   PaginatedUserListList,
   Role,
@@ -120,6 +121,22 @@ export interface EntityDiff {
   count: number;
   items: EntityDiffItem[];
 }
+
+export interface JobSearchFilters {
+  jobId?: string;
+  status?: string;
+  operation?: string;
+  user?: string;
+  text?: string;
+  createdAfter?: string;
+  createdBefore?: string;
+}
+
+const jobSearchDate = (value?: string): string | undefined => {
+  if (!value) return undefined;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toISOString();
+};
 
 // see https://docs.djangoproject.com/en/3.2/ref/csrf/
 export function getCsrfToken(): string {
@@ -1353,7 +1370,33 @@ class AironeApiClient {
     targetId?: number,
     limit?: number,
     allUsers?: boolean,
+    filters?: JobSearchFilters,
   ): Promise<PaginatedJobSerializersList> {
+    if (filters && Object.values(filters).some(Boolean)) {
+      const params = new URLSearchParams({
+        offset: String((page - 1) * JobListParam.MAX_ROW_COUNT),
+        limit: String(limit ?? JobListParam.MAX_ROW_COUNT),
+      });
+      if (targetId !== undefined) params.set("target_id", String(targetId));
+      if (allUsers) params.set("all_users", "true");
+      for (const [name, value] of Object.entries({
+        job_id: filters.jobId,
+        status: filters.status,
+        operation: filters.operation,
+        user: filters.user,
+        text: filters.text,
+        created_after: jobSearchDate(filters.createdAfter),
+        created_before: jobSearchDate(filters.createdBefore),
+      })) {
+        if (value) params.set(name, value);
+      }
+      const url = new URL("/job/api/v2/jobs", window.location.origin);
+      url.search = params.toString();
+      const response = await fetch(url.toString());
+      if (!response.ok)
+        throw new Error(`Job search failed: ${response.status}`);
+      return PaginatedJobSerializersListFromJSON(await response.json());
+    }
     return await this.job.jobApiV2JobsList({
       offset: (page - 1) * JobListParam.MAX_ROW_COUNT,
       limit: limit ?? JobListParam.MAX_ROW_COUNT,

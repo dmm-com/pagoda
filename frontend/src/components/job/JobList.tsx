@@ -147,6 +147,7 @@ export const JobList: FC<Props> = ({ jobs, showUser }) => {
   const [encodes, setEncodes] = useState<{
     [key: number]: string;
   }>({});
+  const [expandedJobs, setExpandedJobs] = useState<Set<number>>(new Set());
 
   const handleCancel = async (jobId: number) => {
     await aironeApiClient
@@ -163,6 +164,9 @@ export const JobList: FC<Props> = ({ jobs, showUser }) => {
     <Table>
       <TableHead>
         <AironeTableHeadRow>
+          <AironeTableHeadCell sx={{ width: "80px" }}>
+            {t("job.list.jobId")}
+          </AironeTableHeadCell>
           {showUser && (
             <AironeTableHeadCell sx={{ width: "120px" }}>
               {t("job.list.userColumn")}
@@ -192,6 +196,7 @@ export const JobList: FC<Props> = ({ jobs, showUser }) => {
       <TableBody>
         {jobs.map((job) => (
           <StyledTableRow key={job.id}>
+            <TableCell>{job.id}</TableCell>
             {showUser && (
               <TableCell>
                 <Typography>{job.user}</Typography>
@@ -314,7 +319,7 @@ export const JobList: FC<Props> = ({ jobs, showUser }) => {
               <Typography>{formatDateTime(job.createdAt)}</Typography>
             </TableCell>
             <TableCell>
-              {isExportJob(job.operation) && job.status == JobStatuses.DONE ? (
+              {isExportJob(job.operation) && job.status == JobStatuses.DONE && (
                 <Box display="flex" gap="4px" alignItems="center">
                   <Select
                     defaultValue="utf-8"
@@ -339,8 +344,36 @@ export const JobList: FC<Props> = ({ jobs, showUser }) => {
                     </IconButton>
                   </Tooltip>
                 </Box>
-              ) : (
-                <Typography>{getJobTextForDisplay(job.text)}</Typography>
+              )}
+              {job.text && (
+                <>
+                  <Typography
+                    sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}
+                  >
+                    {expandedJobs.has(job.id)
+                      ? job.text
+                      : getJobTextForDisplay(job.text)}
+                  </Typography>
+                  {job.text.length > JOB_TEXT_DISPLAY_LIMIT && (
+                    <Button
+                      size="small"
+                      onClick={() =>
+                        setExpandedJobs((current) => {
+                          const next = new Set(current);
+                          if (next.has(job.id)) next.delete(job.id);
+                          else next.add(job.id);
+                          return next;
+                        })
+                      }
+                    >
+                      {t(
+                        expandedJobs.has(job.id)
+                          ? "job.list.showLess"
+                          : "job.list.showMore",
+                      )}
+                    </Button>
+                  )}
+                </>
               )}
             </TableCell>
           </StyledTableRow>
