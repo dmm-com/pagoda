@@ -24,6 +24,7 @@ import {
   isResponseError,
 } from "services/AironeAPIErrorUtil";
 import { ForbiddenError } from "services/Exceptions";
+import { getGroupDisplayName } from "services/GroupUtil";
 import { ServerContext } from "services/ServerContext";
 
 export const GroupEditPage: FC = () => {
@@ -101,7 +102,7 @@ export const GroupEditPage: FC = () => {
     groupLoading ? t("group.edit.loading") : TITLE_TEMPLATES.groupEdit,
     {
       prefix:
-        group?.name ??
+        (group != null ? getGroupDisplayName(group) : undefined) ??
         (willCreate ? t("group.edit.newGroupPrefix") : undefined),
     },
   );
@@ -114,7 +115,9 @@ export const GroupEditPage: FC = () => {
     throw new ForbiddenError("only admin can edit a group");
   }
 
-  const pageTitle = group?.name ?? t("group.edit.pageTitleNew");
+  const pageTitle =
+    (group != null ? getGroupDisplayName(group) : undefined) ??
+    t("group.edit.pageTitleNew");
   const pageDescription = willCreate ? undefined : t("group.edit.description");
 
   return (

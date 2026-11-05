@@ -32,9 +32,9 @@ import {
   EntrySearch,
   EntrySearchChain,
   GetEntryAttrReferralList,
-  Group,
+  Group as ApiGroup,
   GroupApi,
-  GroupCreateUpdate,
+  GroupCreateUpdate as ApiGroupCreateUpdate,
   IsolationParentCreateUpdate,
   JobApi,
   JobSerializers,
@@ -43,7 +43,7 @@ import {
   PaginatedEntityListList,
   PaginatedEntryBaseList,
   PaginatedEntryHistoryAttributeValueList,
-  PaginatedGroupList,
+  PaginatedGroupList as ApiPaginatedGroupList,
   PaginatedJobSerializersList,
   PaginatedTriggerParentList,
   PaginatedUserListList,
@@ -77,7 +77,24 @@ import {
   JobListParam,
 } from "services/Constants";
 
+export type Group = ApiGroup & {
+  displayName: string;
+};
+
+export type GroupCreateUpdate = ApiGroupCreateUpdate & {
+  displayName?: string;
+};
+
+export type GroupListItem = ApiGroup & {
+  displayName?: string;
+};
+
+export type PaginatedGroupList = Omit<ApiPaginatedGroupList, "results"> & {
+  results?: GroupListItem[];
+};
+
 export type GroupTree = Pick<_GroupTree, "id" | "name"> & {
+  displayName?: string;
   children: Array<GroupTree>;
 };
 
@@ -477,7 +494,7 @@ class AironeApiClient {
   }
 
   async exportEntities(): Promise<void> {
-    await this.entity.entityApiV2ExportRetrieveRaw();
+    await this.entity.entityApiV2ExportRetrieveRaw({});
   }
 
   async exportEntitySchema(entityId: number): Promise<void> {
@@ -684,16 +701,18 @@ class AironeApiClient {
   }
 
   async getGroups(page = 1, keyword?: string): Promise<PaginatedGroupList> {
-    return await this.group.groupApiV2GroupsList({
+    const groups = await this.group.groupApiV2GroupsList({
       page: page,
       search: keyword,
       ordering: "name",
     });
+    return groups as PaginatedGroupList;
   }
 
   async getGroup(id: number): Promise<Group> {
     // groupApiV2GroupsRetrieve: associated with
-    return await this.group.groupApiV2GroupsRetrieve({ id });
+    const group = await this.group.groupApiV2GroupsRetrieve({ id });
+    return group as Group;
   }
 
   async createGroup(group: GroupCreateUpdate): Promise<void> {
@@ -738,6 +757,8 @@ class AironeApiClient {
     interface APIGroupTreeData {
       id: number;
       name: string;
+      displayName?: string;
+      display_name?: string;
       children: APIGroupTreeData[];
     }
 
@@ -746,6 +767,7 @@ class AironeApiClient {
     const toTyped = (groupTree: Partial<APIGroupTreeData>): GroupTree => ({
       id: groupTree.id as number,
       name: groupTree.name as string,
+      displayName: groupTree.displayName ?? groupTree.display_name,
       children: (groupTree.children || []).map(
         (child: Partial<APIGroupTreeData>) => toTyped(child),
       ),

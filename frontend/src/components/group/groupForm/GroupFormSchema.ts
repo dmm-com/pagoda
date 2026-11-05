@@ -1,13 +1,18 @@
-import { Group } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { z } from "zod";
 
 import { translate } from "../../../i18n/config";
 import { schemaForType } from "../../../services/ZodSchemaUtil";
 
+import type { Group } from "../../../repository/AironeApiClient";
+
 export const schema = schemaForType<Group>()(
   z.object({
     id: z.number().default(0),
     name: z.string().min(1, { message: translate("group.form.nameRequired") }),
+    displayName: z
+      .string()
+      .max(255, { message: translate("group.form.displayNameTooLong") })
+      .default(""),
     parentGroup: z.number().nullable().optional(),
     members: z
       .array(

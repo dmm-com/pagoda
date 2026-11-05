@@ -5,6 +5,7 @@ describe("schema", () => {
   const baseValue: Schema = {
     id: 1,
     name: "group1",
+    displayName: "",
     parentGroup: 100,
     members: [],
   };
@@ -22,12 +23,22 @@ describe("schema", () => {
 
     expect(() => schema.parse(value)).toThrow();
   });
+
+  test("validation fails if display name exceeds 255 characters", () => {
+    const value = {
+      ...baseValue,
+      displayName: "a".repeat(256),
+    };
+
+    expect(() => schema.parse(value)).toThrow();
+  });
 });
 
 describe("schema messages", () => {
   const baseValue: Schema = {
     id: 1,
     name: "group1",
+    displayName: "",
     parentGroup: 100,
     members: [],
   };
