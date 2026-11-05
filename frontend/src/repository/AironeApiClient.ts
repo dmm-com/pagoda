@@ -900,10 +900,11 @@ class AironeApiClient {
 
   async importCommon(
     data: string | ArrayBuffer,
+    force: boolean,
     previewJobId?: number,
   ): Promise<CommonImportJob> {
     return await this.common.commonApiV2ImportCreate(
-      { previewJobId },
+      { force, previewJobId },
       {
         headers: {
           "Content-Type": "application/yaml",

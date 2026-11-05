@@ -1,4 +1,5 @@
-import { FC, useCallback } from "react";
+import { Box, Checkbox, Typography } from "@mui/material";
+import { FC, useCallback, useState } from "react";
 
 import { AironeModal } from "../common/AironeModal";
 
@@ -17,6 +18,7 @@ export const CommonImportModal: FC<Props> = ({
   closeImportModal,
 }) => {
   const { t } = useTranslation();
+  const [forceImport, setForceImport] = useState(false);
 
   const handlePreview = useCallback(
     async (data: string | ArrayBuffer) => {
@@ -39,6 +41,7 @@ export const CommonImportModal: FC<Props> = ({
       // import accepts a single preview id, so it is only passed when it is unambiguous.
       const { jobIds, error } = await aironeApiClient.importCommon(
         data,
+        forceImport,
         previewJobIds.length === 1 ? previewJobIds[0] : undefined,
       );
       if (jobIds.length === 0) {
@@ -48,7 +51,7 @@ export const CommonImportModal: FC<Props> = ({
         );
       }
     },
-    [t],
+    [t, forceImport],
   );
 
   return (
@@ -59,11 +62,27 @@ export const CommonImportModal: FC<Props> = ({
       open={openImportModal}
       onClose={closeImportModal}
     >
-      <ImportForm
-        handleImport={handleImport}
-        handleCancel={closeImportModal}
-        handlePreview={handlePreview}
-      />
+      <Box display="flex" alignItems="center">
+        <Checkbox
+          inputProps={
+            {
+              "data-testid": "force-import",
+            } as React.InputHTMLAttributes<HTMLInputElement>
+          }
+          checked={forceImport}
+          onChange={(event) => setForceImport(event.target.checked)}
+        />
+        <Typography variant={"body2"}>
+          {t("entry.import.forceLabel")}
+        </Typography>
+      </Box>
+      <Box my="8px">
+        <ImportForm
+          handleImport={handleImport}
+          handleCancel={closeImportModal}
+          handlePreview={handlePreview}
+        />
+      </Box>
     </AironeModal>
   );
 };

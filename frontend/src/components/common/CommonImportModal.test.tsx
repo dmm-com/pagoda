@@ -122,6 +122,32 @@ describe("CommonImportModal", () => {
     expect(defaultProps.closeImportModal).not.toHaveBeenCalled();
   });
 
+  test("passes the force option when the checkbox is checked", async () => {
+    (aironeApiClient.importCommon as Mock).mockResolvedValue({
+      type: "entry",
+      jobIds: [1],
+      error: [],
+    });
+
+    render(<CommonImportModal {...defaultProps} />, { wrapper: TestWrapper });
+
+    fireEvent.click(screen.getByTestId("force-import"));
+    fireEvent.change(getFileInput(), {
+      target: {
+        files: [new File(["[]"], "import.yaml", { type: "application/yaml" })],
+      },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "インポート" }));
+
+    await waitFor(() =>
+      expect(aironeApiClient.importCommon).toHaveBeenCalledWith(
+        expect.anything(),
+        true,
+        undefined,
+      ),
+    );
+  });
+
   test("does not report an error when a job was started", async () => {
     (aironeApiClient.importCommon as Mock).mockResolvedValue({
       type: "group",
