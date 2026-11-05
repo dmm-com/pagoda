@@ -150,8 +150,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(
             body["groups"],
             [
-                {"id": child_group.id, "name": "child_group", "is_direct": True},
-                {"id": parent_group.id, "name": "parent_group", "is_direct": False},
+                {
+                    "id": child_group.id,
+                    "name": "child_group",
+                    "display_name": "",
+                    "is_direct": True,
+                },
+                {
+                    "id": parent_group.id,
+                    "name": "parent_group",
+                    "display_name": "",
+                    "is_direct": False,
+                },
             ],
         )
         self.assertEqual(
@@ -162,7 +172,9 @@ class ViewTest(AironeViewTest):
                     "name": "admin_role",
                     "is_direct": False,
                     "is_admin": True,
-                    "via_groups": [{"id": parent_group.id, "name": "parent_group"}],
+                    "via_groups": [
+                        {"id": parent_group.id, "name": "parent_group", "display_name": ""}
+                    ],
                 },
                 {
                     "id": direct_role.id,
@@ -176,7 +188,9 @@ class ViewTest(AironeViewTest):
                     "name": "group_role",
                     "is_direct": False,
                     "is_admin": False,
-                    "via_groups": [{"id": child_group.id, "name": "child_group"}],
+                    "via_groups": [
+                        {"id": child_group.id, "name": "child_group", "display_name": ""}
+                    ],
                 },
             ],
         )

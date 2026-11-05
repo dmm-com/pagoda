@@ -29,6 +29,7 @@ class GroupTreeAPI(APIView):
                 {
                     "id": g.id,
                     "name": g.name,
+                    "display_name": g.display_name,
                     "children": _make_hierarchical_group(g.subordinates.filter(is_active=True)),
                 }
                 for g in groups
