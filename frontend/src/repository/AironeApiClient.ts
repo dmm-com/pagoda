@@ -60,7 +60,7 @@ import {
   UserToken,
   UserUpdate,
   WebhookCreateUpdate,
-  GroupTreeV2 as _GroupTree,
+  GroupTreeV2,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 import {
@@ -77,7 +77,9 @@ import {
   JobListParam,
 } from "services/Constants";
 
-export type GroupTree = Pick<_GroupTree, "id" | "name"> & {
+export type { Group, GroupCreateUpdate, PaginatedGroupList };
+
+export type GroupTree = Omit<GroupTreeV2, "children"> & {
   children: Array<GroupTree>;
 };
 
@@ -693,7 +695,7 @@ class AironeApiClient {
   }
 
   async getGroups(page = 1, keyword?: string): Promise<PaginatedGroupList> {
-    return await this.group.groupApiV2GroupsList({
+    return this.group.groupApiV2GroupsList({
       page: page,
       search: keyword,
       ordering: "name",
@@ -702,7 +704,7 @@ class AironeApiClient {
 
   async getGroup(id: number): Promise<Group> {
     // groupApiV2GroupsRetrieve: associated with
-    return await this.group.groupApiV2GroupsRetrieve({ id });
+    return this.group.groupApiV2GroupsRetrieve({ id });
   }
 
   async createGroup(group: GroupCreateUpdate): Promise<void> {
@@ -744,25 +746,8 @@ class AironeApiClient {
   }
 
   async getGroupTrees(): Promise<GroupTree[]> {
-    interface APIGroupTreeData {
-      id: number;
-      name: string;
-      children: APIGroupTreeData[];
-    }
-
     const groupTrees = await this.group.groupApiV2GroupsTreeList();
-
-    const toTyped = (groupTree: Partial<APIGroupTreeData>): GroupTree => ({
-      id: groupTree.id as number,
-      name: groupTree.name as string,
-      children: (groupTree.children || []).map(
-        (child: Partial<APIGroupTreeData>) => toTyped(child),
-      ),
-    });
-
-    return groupTrees.map((groupTree) =>
-      toTyped(groupTree as unknown as Partial<APIGroupTreeData>),
-    );
+    return groupTrees as GroupTree[];
   }
 
   async importGroups(data: string | ArrayBuffer): Promise<void> {

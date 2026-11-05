@@ -28,6 +28,7 @@ import { Loading } from "../common/Loading";
 import { useTranslation } from "hooks/useTranslation";
 import { rolePath } from "routes/Routes";
 import { ServerContext } from "services";
+import { getGroupDisplayName } from "services/GroupUtil";
 
 const StyledList = styled(List)(() => ({
   padding: "0",
@@ -104,7 +105,9 @@ const RoleListContent: FC = () => {
                 {role.groups.map((group) => (
                   <StyledListItem key={group.id}>
                     <Typography ml="58px" my="4px">
-                      {group.name}
+                      <Typography title={group.name}>
+                        {getGroupDisplayName(group)}
+                      </Typography>
                     </Typography>
                   </StyledListItem>
                 ))}
@@ -144,7 +147,9 @@ const RoleListContent: FC = () => {
                       >
                         {t("role.list.adminBadge")}
                       </Box>
-                      <Typography>{group.name}</Typography>
+                      <Typography title={group.name}>
+                        {getGroupDisplayName(group)}
+                      </Typography>
                     </Box>
                   </StyledListItem>
                 ))}

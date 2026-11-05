@@ -95,6 +95,31 @@ export const GroupForm: FC<Props> = ({ control, setValue, groupId }) => {
           </TableRow>
           <TableRow>
             <TableCell>
+              <Typography>{t("group.form.displayName")}</Typography>
+            </TableCell>
+            <TableCell>
+              <Controller
+                name="displayName"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    variant="standard"
+                    placeholder={t("group.form.displayNamePlaceholder")}
+                    helperText={t("group.form.displayNameHelp")}
+                    sx={{ width: "100%" }}
+                    inputProps={{
+                      maxLength: 255,
+                      "data-1p-ignore": true,
+                    }}
+                  />
+                )}
+              />
+            </TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>
               <Typography>{t("group.form.members")}</Typography>
             </TableCell>
             <TableCell>
