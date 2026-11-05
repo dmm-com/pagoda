@@ -3923,6 +3923,48 @@ class ViewTest(AironeViewTest):
         # the preview did not apply the change
         self.assertEqual(Entity.objects.get(name="entity").note, "note1")
 
+    def test_exported_entity_round_trip_preserves_item_name_pattern(self):
+        entity = Entity.objects.create(
+            name="round-trip", created_user=self.user, item_name_pattern="^original$"
+        )
+        export_job = Job.new_export_configuration_v2(self.user, "entity", entity_id=entity.id)
+        export_job.run(will_delay=False)
+        exported = yaml.safe_load(export_job.get_cache())
+
+        self.assertEqual(exported["Entity"][0]["item_name_pattern"], "^original$")
+        preview = self._preview_import(yaml.safe_dump(exported))
+        self.assertEqual(preview["summary"]["errored"], 0)
+        self.assertEqual(preview["rows"][0]["action"], "unchanged")
+
+        exported["Entity"][0]["item_name_pattern"] = "^changed$"
+        changed = yaml.safe_dump(exported)
+        preview = self._preview_import(changed)
+        self.assertEqual(
+            preview["rows"][0]["changes"],
+            [{"field": "item_name_pattern", "before": "^original$", "after": "^changed$"}],
+        )
+        import_url = "/entity/api/v2/import"
+        response = self.client.post(import_url, changed, content_type="application/yaml")
+        self.assertEqual(response.status_code, 200)
+        entity.refresh_from_db()
+        self.assertEqual(entity.item_name_pattern, "^changed$")
+
+        del exported["Entity"][0]["item_name_pattern"]
+        legacy = yaml.safe_dump(exported)
+        self.assertEqual(self._preview_import(legacy)["rows"][0]["action"], "unchanged")
+        response = self.client.post(import_url, legacy, content_type="application/yaml")
+        self.assertEqual(response.status_code, 200)
+        entity.refresh_from_db()
+        self.assertEqual(entity.item_name_pattern, "^changed$")
+
+        exported["Entity"][0]["item_name_pattern"] = ""
+        cleared = yaml.safe_dump(exported)
+        self.assertEqual(self._preview_import(cleared)["rows"][0]["action"], "update")
+        response = self.client.post(import_url, cleared, content_type="application/yaml")
+        self.assertEqual(response.status_code, 200)
+        entity.refresh_from_db()
+        self.assertEqual(entity.item_name_pattern, "")
+
     def test_import_preview_surfaces_rows_the_import_would_drop(self):
         self.admin_login()
         self._clear_entities()

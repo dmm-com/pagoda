@@ -13,6 +13,7 @@ from user.models import User
 
 class AironeModelResource(ModelResource):  # type: ignore[misc]
     DISALLOW_UPDATE_KEYS: list[str] = []
+    OPTIONAL_IMPORT_KEYS: frozenset[str] = frozenset()
 
     def __init__(self, *args: object, **kwargs: object) -> None:
         super(AironeModelResource, self).__init__(*args, **kwargs)
@@ -83,8 +84,12 @@ class AironeModelResource(ModelResource):  # type: ignore[misc]
 
     @classmethod
     def normalize_import_row(cls, data: dict[str, Any]) -> dict[str, Any]:
-        """Shape a row the way the importer sees it: every header key, blank if absent."""
-        return {key: data.get(key, "") or "" for key in cls._IMPORT_INFO["header"]}
+        """Shape a row as imported, preserving absent optional keys."""
+        return {
+            key: data.get(key, "") or ""
+            for key in cls._IMPORT_INFO["header"]
+            if key in data or key not in cls.OPTIONAL_IMPORT_KEYS
+        }
 
     @classmethod
     def validate_import_row(cls, data: dict[str, object]) -> None:
@@ -126,10 +131,12 @@ class AironeModelResource(ModelResource):  # type: ignore[misc]
         cls.validate_import_row(data)
 
         # get dataset to import
-        dataset = tablib.Dataset(
-            [x in data and data[x] or "" for x in cls._IMPORT_INFO["header"]],
-            headers=cls._IMPORT_INFO["header"],
-        )
+        headers = [
+            key
+            for key in cls._IMPORT_INFO["header"]
+            if key in data or key not in cls.OPTIONAL_IMPORT_KEYS
+        ]
+        dataset = tablib.Dataset([data.get(key) or "" for key in headers], headers=headers)
 
         return resource, dataset
 
