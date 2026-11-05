@@ -1,9 +1,13 @@
 import csv
 import errno
 import io
+from datetime import timedelta
 from typing import Any, cast
 
 from django.db.models import Q, QuerySet
+from django.db.models.functions import Lower
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status, viewsets
@@ -242,7 +246,28 @@ def _query_int(request: Request, name: str, default: int) -> int:
 @extend_schema(
     parameters=[
         OpenApiParameter("created_after", OpenApiTypes.DATETIME, OpenApiParameter.QUERY),
+        OpenApiParameter("created_before", OpenApiTypes.DATETIME, OpenApiParameter.QUERY),
         OpenApiParameter("target_id", OpenApiTypes.INT, OpenApiParameter.QUERY),
+        OpenApiParameter("job_id", OpenApiTypes.INT, OpenApiParameter.QUERY),
+        OpenApiParameter("status", OpenApiTypes.INT, OpenApiParameter.QUERY),
+        OpenApiParameter(
+            "operation",
+            OpenApiTypes.STR,
+            OpenApiParameter.QUERY,
+            description="One operation ID or comma-separated operation IDs.",
+        ),
+        OpenApiParameter(
+            "user",
+            OpenApiTypes.STR,
+            OpenApiParameter.QUERY,
+            description="Case-insensitive partial match on username.",
+        ),
+        OpenApiParameter(
+            "text",
+            OpenApiTypes.STR,
+            OpenApiParameter.QUERY,
+            description="Case-insensitive partial match on job message.",
+        ),
         OpenApiParameter(
             "all_users",
             OpenApiTypes.BOOL,
@@ -258,12 +283,8 @@ class JobListAPI(viewsets.ModelViewSet[Job]):
 
     def get_queryset(self) -> QuerySet[Job]:
         user = self.request.user
-        created_after: str | None = self.request.query_params.get("created_after", None)
-        target_id: str | None = self.request.query_params.get("target_id", None)
-        all_users: bool = (
-            user.is_superuser
-            and self.request.query_params.get("all_users", "false").lower() == "true"
-        )
+        params = self.request.query_params
+        all_users: bool = user.is_superuser and params.get("all_users", "false").lower() == "true"
 
         targetless_visible_operations: list[JobOperation] = [
             JobOperation.EXPORT_CONFIGURATION_V2,
@@ -273,29 +294,83 @@ class JobListAPI(viewsets.ModelViewSet[Job]):
             JobOperation.EXPORT_SEARCH_RESULT_V2,
             JobOperation.IMPORT_ROLE_V2,
         ]
-        query = Q(
-            Q() if all_users else Q(user=user),
-            ~Q(operation__in=Job.HIDDEN_OPERATIONS),
-            Q(
-                Q(operation__in=targetless_visible_operations)
-                | Q(
-                    ~Q(operation__in=targetless_visible_operations),
-                    target__isnull=False,
-                    target__is_active=True,
-                )
-                | Q(operation=JobOperation.DELETE_ENTITY, target__isnull=False)
-                | Q(operation=JobOperation.DELETE_ENTRY, target__isnull=False)
-                | Q(operation=JobOperation.DELETE_ENTITY_V2, target__isnull=False)
-                | Q(operation=JobOperation.DELETE_ENTRY_V2, target__isnull=False)
-            ),
+        query = Q() if all_users else Q(user=user)
+        query &= ~Q(operation__in=Job.HIDDEN_OPERATIONS)
+        query &= Q(
+            Q(operation__in=targetless_visible_operations, target__isnull=True)
+            | Q(target__isnull=False, target__is_active=True)
         )
 
-        if created_after:
-            query &= Q(created_at__gte=created_after)
-        if target_id:
-            query &= Q(target=target_id)
+        for name, lookup in (
+            ("created_after", "created_at__gte"),
+            ("created_before", "created_at__lte"),
+        ):
+            raw = params.get(name)
+            if raw:
+                try:
+                    datetime_value = parse_datetime(raw)
+                except ValueError:
+                    datetime_value = None
+                if datetime_value is None:
+                    raise InvalidValueError("'%s' must be a datetime" % name)
+                if timezone.is_naive(datetime_value):
+                    datetime_value = timezone.make_aware(datetime_value)
+                query &= Q(**{lookup: datetime_value})
 
-        return Job.objects.filter(query).select_related("user", "target").order_by("-id")
+        for name, lookup in (
+            ("target_id", "target_id"),
+            ("job_id", "id"),
+        ):
+            raw = params.get(name)
+            if raw:
+                try:
+                    integer_value = int(raw)
+                except ValueError:
+                    raise InvalidValueError("'%s' must be an integer" % name)
+                if integer_value < 0:
+                    raise InvalidValueError("'%s' must not be negative" % name)
+                query &= Q(**{lookup: integer_value})
+
+        raw_operations = params.get("operation")
+        if raw_operations:
+            try:
+                operations = [int(value) for value in raw_operations.split(",")]
+            except ValueError:
+                raise InvalidValueError("'operation' must contain integers")
+            if any(value < 0 for value in operations):
+                raise InvalidValueError("'operation' must not contain negative integers")
+            query &= Q(operation__in=operations)
+
+        raw_status = params.get("status")
+        if raw_status:
+            try:
+                job_status = int(raw_status)
+            except ValueError:
+                raise InvalidValueError("'status' must be an integer")
+            if job_status < 0:
+                raise InvalidValueError("'status' must not be negative")
+            timeout_at = timezone.now() - timedelta(seconds=Job._get_job_timeout())
+            if job_status == JobStatus.TIMEOUT:
+                query &= Q(status=JobStatus.TIMEOUT) | Q(
+                    status__in=[JobStatus.PREPARING, JobStatus.PROCESSING],
+                    updated_at__lt=timeout_at,
+                )
+            elif job_status in (JobStatus.PREPARING, JobStatus.PROCESSING):
+                query &= Q(status=job_status, updated_at__gte=timeout_at)
+            else:
+                query &= Q(status=job_status)
+
+        jobs = Job.objects.filter(query)
+        if params.get("user"):
+            jobs = jobs.alias(search_user=Lower("user__username")).filter(
+                search_user__contains=params["user"].strip().lower()
+            )
+        if params.get("text"):
+            jobs = jobs.alias(search_text=Lower("text")).filter(
+                search_text__contains=params["text"].strip().lower()
+            )
+
+        return jobs.select_related("user", "target").defer("params").order_by("-id")
 
     def paginate_queryset(self, queryset: Any) -> Any:
         page = super().paginate_queryset(queryset)
