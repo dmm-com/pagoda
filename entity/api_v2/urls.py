@@ -26,6 +26,10 @@ urlpatterns = [
         views.EntityExportAPI.as_view(),
     ),
     path(
+        "<int:entity_id>/export",
+        views.EntityExportAPI.as_view(),
+    ),
+    path(
         "diff",
         views.EntityDiffAPI.as_view(),
     ),

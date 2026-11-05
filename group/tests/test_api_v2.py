@@ -222,7 +222,7 @@ class ViewTest(AironeViewTest):
         self._create_group("group2")
 
         with patch.object(Job, "run") as enqueue:
-            resp = self.client.get("/group/api/v2/groups/export")
+            resp = self.client.post("/group/api/v2/groups/export")
         enqueue.assert_called_once_with()
         self.assertEqual(resp.status_code, 202)
         self.assertNotIn("Content-Disposition", resp)

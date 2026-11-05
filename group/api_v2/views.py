@@ -110,6 +110,6 @@ class GroupImportAPI(generics.GenericAPIView[Any]):
         return Response(status=status.HTTP_200_OK)
 
 
-@extend_schema_view(get=extend_schema(operation_id="group_api_v2_groups_export_list"))
+@extend_schema_view(post=extend_schema(operation_id="group_api_v2_groups_export_create"))
 class GroupExportAPI(ConfigurationExportAPI):
     export_kind = "group"

@@ -501,7 +501,7 @@ class UserImportAPI(generics.GenericAPIView[Any]):
         return Response()
 
 
-@extend_schema_view(get=extend_schema(operation_id="user_api_v2_export_list"))
+@extend_schema_view(post=extend_schema(operation_id="user_api_v2_export_create"))
 class UserExportAPI(ConfigurationExportAPI):
     export_kind = "user"
 
