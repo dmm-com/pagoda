@@ -13,6 +13,11 @@ export const groupMessages = defineMessages({
     "group.form.columnContent": "内容",
     "group.form.name": "グループ名",
     "group.form.namePlaceholder": "グループ名",
+    "group.form.displayName": "表示名",
+    "group.form.displayNamePlaceholder": "表示名（未設定時はグループ名）",
+    "group.form.displayNameHelp":
+      "一覧・ツリーなどに表示する名前です。未入力の場合はグループ名が表示されます。",
+    "group.form.displayNameTooLong": "表示名は255文字以内で入力してください",
     "group.form.members": "登録ユーザ",
     "group.form.parentGroupSectionTitle": "所属グループ",
     "group.form.parentGroupHelp":
@@ -56,6 +61,13 @@ export const groupMessages = defineMessages({
     "group.form.columnContent": "Content",
     "group.form.name": "Group name",
     "group.form.namePlaceholder": "Group name",
+    "group.form.displayName": "Display name",
+    "group.form.displayNamePlaceholder":
+      "Display name (uses group name when empty)",
+    "group.form.displayNameHelp":
+      "The name shown in lists and trees. The group name is used when empty.",
+    "group.form.displayNameTooLong":
+      "Display name must be 255 characters or fewer",
     "group.form.members": "Registered users",
     "group.form.parentGroupSectionTitle": "Parent group",
     "group.form.parentGroupHelp":

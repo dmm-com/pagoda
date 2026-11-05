@@ -468,7 +468,7 @@ class ViewTest(AironeViewTest):
         group.delete()
 
         with patch.object(Job, "run") as enqueue:
-            resp = self.client.get("/role/api/v2/export")
+            resp = self.client.post("/role/api/v2/export")
         enqueue.assert_called_once_with()
         self.assertEqual(resp.status_code, 202)
         self.assertNotIn("Content-Disposition", resp)
@@ -728,7 +728,7 @@ class ViewTest(AironeViewTest):
 
         # Request role export
         with patch.object(Job, "run") as enqueue:
-            resp = self.client.get("/role/api/v2/export")
+            resp = self.client.post("/role/api/v2/export")
         enqueue.assert_called_once_with()
         self.assertEqual(resp.status_code, 202)
         self.assertNotIn("Content-Disposition", resp)
@@ -761,7 +761,7 @@ class ViewTest(AironeViewTest):
 
         # Request role export
         with patch.object(Job, "run") as enqueue:
-            resp = self.client.get("/role/api/v2/export")
+            resp = self.client.post("/role/api/v2/export")
         enqueue.assert_called_once_with()
         self.assertEqual(resp.status_code, 202)
         self.assertNotIn("Content-Disposition", resp)
