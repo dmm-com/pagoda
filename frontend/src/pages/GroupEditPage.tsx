@@ -54,7 +54,13 @@ export const GroupEditPage: FC = () => {
     mode: "onBlur",
     // Sync form values when the fetched group arrives. Dirty fields are
     // kept so a background revalidation does not clobber user edits.
-    values: group,
+    values:
+      group != null
+        ? {
+            ...group,
+            displayName: group.displayName ?? "",
+          }
+        : undefined,
     resetOptions: { keepDirtyValues: true },
   });
 
