@@ -116,6 +116,6 @@ class RoleImportAPI(generics.GenericAPIView[Any]):
         return Response([], status=status.HTTP_200_OK)
 
 
-@extend_schema_view(get=extend_schema(operation_id="role_api_v2_export_list"))
+@extend_schema_view(post=extend_schema(operation_id="role_api_v2_export_create"))
 class RoleExportAPI(ConfigurationExportAPI):
     export_kind = "role"

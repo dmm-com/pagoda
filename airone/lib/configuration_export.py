@@ -14,8 +14,8 @@ from user.models import User
 class ConfigurationExportAPI(APIView):
     export_kind: str
 
-    @extend_schema(responses={202: JobSerializers})
-    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+    @extend_schema(request=None, responses={202: JobSerializers})
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         job = Job.new_export_configuration_v2(cast(User, request.user), self.export_kind)
         job.run()
         return Response(JobSerializers(job).data, status=status.HTTP_202_ACCEPTED)
