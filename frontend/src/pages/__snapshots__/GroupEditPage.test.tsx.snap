@@ -197,49 +197,6 @@ exports[`EditGroupPage > should match snapshot 1`] = `
                     <p
                       class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
                     >
-                      表示名
-                    </p>
-                  </td>
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-                  >
-                    <div
-                      class="MuiFormControl-root MuiTextField-root css-1myhl20-MuiFormControl-root-MuiTextField-root"
-                    >
-                      <div
-                        class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-formControl css-5h82ro-MuiInputBase-root-MuiInput-root"
-                      >
-                        <input
-                          aria-describedby="_r_3_-helper-text"
-                          aria-invalid="false"
-                          class="MuiInputBase-input MuiInput-input css-1yrc8ca-MuiInputBase-input-MuiInput-input"
-                          data-1p-ignore="true"
-                          id="_r_3_"
-                          maxlength="255"
-                          name="displayName"
-                          placeholder="表示名（未設定時はグループ名）"
-                          type="text"
-                          value=""
-                        />
-                      </div>
-                      <p
-                        class="MuiFormHelperText-root MuiFormHelperText-sizeMedium css-18y2hez-MuiFormHelperText-root"
-                        id="_r_3_-helper-text"
-                      >
-                        一覧・ツリーなどに表示する名前です。未入力の場合はグループ名が表示されます。
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-                <tr
-                  class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
-                >
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-                  >
-                    <p
-                      class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-                    >
                       登録ユーザ
                     </p>
                   </td>
@@ -263,7 +220,7 @@ exports[`EditGroupPage > should match snapshot 1`] = `
                             autocapitalize="none"
                             autocomplete="off"
                             class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-1dune0f-MuiInputBase-input-MuiOutlinedInput-input"
-                            id="_r_4_"
+                            id="_r_3_"
                             role="combobox"
                             spellcheck="false"
                             type="text"
@@ -371,11 +328,7 @@ exports[`EditGroupPage > should match snapshot 1`] = `
                       data-discover="true"
                       href="/ui/groups/1"
                     >
-                      <span
-                        title="group1"
-                      >
-                        group1
-                      </span>
+                      group1
                     </a>
                   </li>
                   <li
@@ -406,11 +359,7 @@ exports[`EditGroupPage > should match snapshot 1`] = `
                       data-discover="true"
                       href="/ui/groups/1"
                     >
-                      <span
-                        title="group1"
-                      >
-                        group1
-                      </span>
+                      group1
                     </a>
                   </li>
                   <li
@@ -441,11 +390,7 @@ exports[`EditGroupPage > should match snapshot 1`] = `
                       data-discover="true"
                       href="/ui/groups/2"
                     >
-                      <span
-                        title="group2"
-                      >
-                        group2
-                      </span>
+                      group2
                     </a>
                   </li>
                 </ul>
@@ -484,11 +429,7 @@ exports[`EditGroupPage > should match snapshot 1`] = `
                       data-discover="true"
                       href="/ui/groups/2"
                     >
-                      <span
-                        title="group2"
-                      >
-                        group2
-                      </span>
+                      group2
                     </a>
                   </li>
                 </ul>
@@ -692,49 +633,6 @@ exports[`EditGroupPage > should match snapshot 1`] = `
                   <p
                     class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
                   >
-                    表示名
-                  </p>
-                </td>
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-                >
-                  <div
-                    class="MuiFormControl-root MuiTextField-root css-1myhl20-MuiFormControl-root-MuiTextField-root"
-                  >
-                    <div
-                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-formControl css-5h82ro-MuiInputBase-root-MuiInput-root"
-                    >
-                      <input
-                        aria-describedby="_r_3_-helper-text"
-                        aria-invalid="false"
-                        class="MuiInputBase-input MuiInput-input css-1yrc8ca-MuiInputBase-input-MuiInput-input"
-                        data-1p-ignore="true"
-                        id="_r_3_"
-                        maxlength="255"
-                        name="displayName"
-                        placeholder="表示名（未設定時はグループ名）"
-                        type="text"
-                        value=""
-                      />
-                    </div>
-                    <p
-                      class="MuiFormHelperText-root MuiFormHelperText-sizeMedium css-18y2hez-MuiFormHelperText-root"
-                      id="_r_3_-helper-text"
-                    >
-                      一覧・ツリーなどに表示する名前です。未入力の場合はグループ名が表示されます。
-                    </p>
-                  </div>
-                </td>
-              </tr>
-              <tr
-                class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
-              >
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-                >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-                  >
                     登録ユーザ
                   </p>
                 </td>
@@ -758,7 +656,7 @@ exports[`EditGroupPage > should match snapshot 1`] = `
                           autocapitalize="none"
                           autocomplete="off"
                           class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-1dune0f-MuiInputBase-input-MuiOutlinedInput-input"
-                          id="_r_4_"
+                          id="_r_3_"
                           role="combobox"
                           spellcheck="false"
                           type="text"
@@ -866,11 +764,7 @@ exports[`EditGroupPage > should match snapshot 1`] = `
                     data-discover="true"
                     href="/ui/groups/1"
                   >
-                    <span
-                      title="group1"
-                    >
-                      group1
-                    </span>
+                    group1
                   </a>
                 </li>
                 <li
@@ -901,11 +795,7 @@ exports[`EditGroupPage > should match snapshot 1`] = `
                     data-discover="true"
                     href="/ui/groups/1"
                   >
-                    <span
-                      title="group1"
-                    >
-                      group1
-                    </span>
+                    group1
                   </a>
                 </li>
                 <li
@@ -936,11 +826,7 @@ exports[`EditGroupPage > should match snapshot 1`] = `
                     data-discover="true"
                     href="/ui/groups/2"
                   >
-                    <span
-                      title="group2"
-                    >
-                      group2
-                    </span>
+                    group2
                   </a>
                 </li>
               </ul>
@@ -979,11 +865,7 @@ exports[`EditGroupPage > should match snapshot 1`] = `
                     data-discover="true"
                     href="/ui/groups/2"
                   >
-                    <span
-                      title="group2"
-                    >
-                      group2
-                    </span>
+                    group2
                   </a>
                 </li>
               </ul>

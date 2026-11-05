@@ -35,7 +35,6 @@ import { Schema } from "./roleForm/RoleFormSchema";
 import type { RolePermission } from "../../repository/AironeApiClient";
 
 import { ACLType, ACLTypeLabels } from "services/ACLUtil";
-import { getGroupDisplayName } from "services/GroupUtil";
 import { fuzzyMatch } from "services/StringUtil";
 
 interface Props {
@@ -43,8 +42,6 @@ interface Props {
   setValue: UseFormSetValue<Schema>;
   permissions?: RolePermission[];
 }
-
-type GroupOption = RoleGroup & { displayName?: string };
 
 export const RoleForm: FC<Props> = ({
   control,
@@ -69,11 +66,7 @@ export const RoleForm: FC<Props> = ({
     async () => {
       const _groups = await aironeApiClient.getGroups(1, adminGroupUserKeyword);
       return _groups.results?.map(
-        (group): GroupOption => ({
-          id: group.id,
-          name: group.name,
-          displayName: group.displayName,
-        }),
+        (group): RoleGroup => ({ id: group.id, name: group.name }),
       );
     },
   );
@@ -82,11 +75,7 @@ export const RoleForm: FC<Props> = ({
     async () => {
       const _groups = await aironeApiClient.getGroups(1, groupUserKeyword);
       return _groups.results?.map(
-        (group): GroupOption => ({
-          id: group.id,
-          name: group.name,
-          displayName: group.displayName,
-        }),
+        (group): RoleGroup => ({ id: group.id, name: group.name }),
       );
     },
   );
@@ -248,15 +237,10 @@ export const RoleForm: FC<Props> = ({
                       <Autocomplete
                         {...field}
                         options={adminGroups ?? []}
-                        getOptionLabel={(option: RoleGroup) =>
-                          getGroupDisplayName(option)
-                        }
+                        getOptionLabel={(option: RoleGroup) => option.name}
                         filterOptions={(options, state) =>
                           options.filter((option) =>
-                            fuzzyMatch(
-                              getGroupDisplayName(option),
-                              state.inputValue,
-                            ),
+                            fuzzyMatch(option.name, state.inputValue),
                           )
                         }
                         isOptionEqualToValue={(option, value) =>
@@ -295,8 +279,7 @@ export const RoleForm: FC<Props> = ({
                             <Chip
                               {...getTagProps({ index })}
                               key={option.name}
-                              title={option.name}
-                              label={getGroupDisplayName(option)}
+                              label={option.name}
                               color={
                                 (error as FieldError[] | undefined)?.[index]
                                   ? "error"
@@ -331,15 +314,10 @@ export const RoleForm: FC<Props> = ({
                       <Autocomplete
                         {...field}
                         options={groups ?? []}
-                        getOptionLabel={(option: RoleGroup) =>
-                          getGroupDisplayName(option)
-                        }
+                        getOptionLabel={(option: RoleGroup) => option.name}
                         filterOptions={(options, state) =>
                           options.filter((option) =>
-                            fuzzyMatch(
-                              getGroupDisplayName(option),
-                              state.inputValue,
-                            ),
+                            fuzzyMatch(option.name, state.inputValue),
                           )
                         }
                         isOptionEqualToValue={(option, value) =>
@@ -378,8 +356,7 @@ export const RoleForm: FC<Props> = ({
                             <Chip
                               {...getTagProps({ index })}
                               key={option.name}
-                              title={option.name}
-                              label={getGroupDisplayName(option)}
+                              label={option.name}
                               color={
                                 (error as FieldError[] | undefined)?.[index]
                                   ? "error"

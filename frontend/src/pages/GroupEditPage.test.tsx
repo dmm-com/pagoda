@@ -17,7 +17,6 @@ import { useSWRConfig } from "swr";
 import { TestWrapperWithoutRoutes } from "TestWrapper";
 import i18n from "i18n/config";
 import { GroupEditPage } from "pages/GroupEditPage";
-import { aironeApiClient } from "repository/AironeApiClient";
 
 const server = setupServer(
   // getGroup
@@ -25,7 +24,6 @@ const server = setupServer(
     return HttpResponse.json({
       id: 1,
       name: "group1",
-      display_name: "表示名1",
       members: [
         {
           id: 1,
@@ -87,10 +85,7 @@ const server = setupServer(
 
 beforeAll(() => server.listen());
 
-afterEach(() => {
-  server.resetHandlers();
-  vi.restoreAllMocks();
-});
+afterEach(() => server.resetHandlers());
 
 afterAll(() => server.close());
 
@@ -178,88 +173,6 @@ describe("EditGroupPage", () => {
     });
 
     expect(getNameInputValue()).toBe("edited");
-  });
-
-  test("loads and submits the display name for an existing group", async () => {
-    const updateGroup = vi
-      .spyOn(aironeApiClient, "updateGroup")
-      .mockResolvedValue();
-    const router = createMemoryRouter(
-      [
-        {
-          path: "/groups/:groupId",
-          element: <GroupEditPage />,
-        },
-      ],
-      { initialEntries: ["/groups/1"] },
-    );
-
-    render(<RouterProvider router={router} />, {
-      wrapper: TestWrapperWithoutRoutes,
-    });
-    await waitFor(() => {
-      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
-    });
-
-    const displayNameInput = screen.getByPlaceholderText(
-      "表示名（未設定時はグループ名）",
-    );
-    expect(displayNameInput).toHaveValue("表示名1");
-
-    fireEvent.change(displayNameInput, { target: { value: "変更後の表示名" } });
-    fireEvent.click(screen.getByRole("button", { name: "保存" }));
-
-    await waitFor(() => {
-      expect(updateGroup).toHaveBeenCalledWith(
-        1,
-        expect.objectContaining({ displayName: "変更後の表示名" }),
-      );
-    });
-  });
-
-  test("includes the display name when creating a group", async () => {
-    const createGroup = vi
-      .spyOn(aironeApiClient, "createGroup")
-      .mockResolvedValue();
-    const router = createMemoryRouter([
-      {
-        path: "/",
-        element: <GroupEditPage />,
-      },
-    ]);
-
-    render(<RouterProvider router={router} />, {
-      wrapper: TestWrapperWithoutRoutes,
-    });
-    await waitFor(() => {
-      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
-    });
-
-    fireEvent.change(screen.getByPlaceholderText("グループ名"), {
-      target: { value: "new-group" },
-    });
-    fireEvent.blur(screen.getByPlaceholderText("グループ名"));
-    fireEvent.change(
-      screen.getByPlaceholderText("表示名（未設定時はグループ名）"),
-      { target: { value: "新規表示名" } },
-    );
-    fireEvent.blur(
-      screen.getByPlaceholderText("表示名（未設定時はグループ名）"),
-    );
-    const saveButton = screen.getByRole("button", { name: "保存" });
-    await waitFor(() => expect(saveButton).not.toBeDisabled());
-    await act(async () => {
-      fireEvent.click(saveButton);
-    });
-
-    await waitFor(() => {
-      expect(createGroup).toHaveBeenCalledWith(
-        expect.objectContaining({
-          name: "new-group",
-          displayName: "新規表示名",
-        }),
-      );
-    });
   });
 
   test("renders in English", async () => {

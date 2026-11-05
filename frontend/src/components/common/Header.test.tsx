@@ -192,6 +192,15 @@ describe("Header", () => {
   });
 
   describe("extended header menus", () => {
+    test("should open the import modal from the management menu", async () => {
+      render(<Header />, { wrapper: TestWrapper });
+
+      fireEvent.mouseEnter(screen.getByText("Management"));
+      fireEvent.click(await screen.findByText("importData"));
+
+      expect(await screen.findByText("commonImport.title")).toBeInTheDocument();
+    });
+
     test("should show extended menu items on hover", async () => {
       mockServerContext = {
         ...defaultServerContext,
@@ -377,6 +386,18 @@ describe("Header", () => {
       const drawer = within(await openDrawer());
       fireEvent.click(drawer.getByRole("link", { name: "Entities" }));
 
+      await waitFor(() => {
+        expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
+      });
+    });
+
+    test("should open the import modal and close the drawer", async () => {
+      render(<Header />, { wrapper: TestWrapper });
+
+      const drawer = within(await openDrawer());
+      fireEvent.click(drawer.getByText("importData"));
+
+      expect(await screen.findByText("commonImport.title")).toBeInTheDocument();
       await waitFor(() => {
         expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
       });
