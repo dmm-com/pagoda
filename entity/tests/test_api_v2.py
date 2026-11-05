@@ -14,13 +14,14 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
 from acl.models import ACLBase, ACLType
+from airone.lib.drf import YAMLRenderer
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest, load_export_payload
 from airone.lib.types import AttrType
 from common.lib.import_detector import ImportType
 from common.tests.compat import post_import
 from entity import tasks
-from entity.api_v2.serializers import EntityUpdateSerializer
+from entity.api_v2.serializers import EntityImportExportRootSerializer, EntityUpdateSerializer
 from entity.models import Entity, EntityAttr, ItemNameType
 from entry.models import AttributeValue, Entry
 from entry.tasks import create_entry_v2
@@ -3926,6 +3927,50 @@ class ViewTest(AironeViewTest):
 
         # the preview did not apply the change
         self.assertEqual(Entity.objects.get(name="entity").note, "note1")
+
+    def test_exported_entity_round_trip_preserves_item_name_pattern(self):
+        entity = Entity.objects.create(
+            name="round-trip", created_user=self.user, item_name_pattern="^original$"
+        )
+        exported = yaml.safe_load(
+            YAMLRenderer().render(
+                EntityImportExportRootSerializer({"Entity": [entity], "EntityAttr": []}).data
+            )
+        )
+
+        self.assertEqual(exported["Entity"][0]["item_name_pattern"], "^original$")
+        preview = self._preview_import(yaml.safe_dump(exported))
+        self.assertEqual(preview["summary"]["errored"], 0)
+        self.assertEqual(preview["rows"][0]["action"], "unchanged")
+
+        exported["Entity"][0]["item_name_pattern"] = "^changed$"
+        changed = yaml.safe_dump(exported)
+        preview = self._preview_import(changed)
+        self.assertEqual(
+            preview["rows"][0]["changes"],
+            [{"field": "item_name_pattern", "before": "^original$", "after": "^changed$"}],
+        )
+        import_url = "/entity/api/v2/import"
+        response = self.client.post(import_url, changed, content_type="application/yaml")
+        self.assertEqual(response.status_code, 200)
+        entity.refresh_from_db()
+        self.assertEqual(entity.item_name_pattern, "^changed$")
+
+        del exported["Entity"][0]["item_name_pattern"]
+        legacy = yaml.safe_dump(exported)
+        self.assertEqual(self._preview_import(legacy)["rows"][0]["action"], "unchanged")
+        response = self.client.post(import_url, legacy, content_type="application/yaml")
+        self.assertEqual(response.status_code, 200)
+        entity.refresh_from_db()
+        self.assertEqual(entity.item_name_pattern, "^changed$")
+
+        exported["Entity"][0]["item_name_pattern"] = ""
+        cleared = yaml.safe_dump(exported)
+        self.assertEqual(self._preview_import(cleared)["rows"][0]["action"], "update")
+        response = self.client.post(import_url, cleared, content_type="application/yaml")
+        self.assertEqual(response.status_code, 200)
+        entity.refresh_from_db()
+        self.assertEqual(entity.item_name_pattern, "")
 
     def test_import_preview_surfaces_rows_the_import_would_drop(self):
         self.admin_login()

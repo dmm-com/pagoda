@@ -2,7 +2,7 @@
  */
 
 import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 
 import { TestWrapper } from "../../TestWrapper";
 import i18n from "../../i18n/config";
@@ -33,6 +33,9 @@ describe("JobList", () => {
     render(<JobList jobs={jobs} />, {
       wrapper: TestWrapper,
     });
+
+    expect(screen.getAllByText("作成")).toHaveLength(4);
+    expect(screen.queryByText("作成 (27)")).not.toBeInTheDocument();
 
     // 35 links: 23 operations have a link to their target (entity),
     // plus 12 entry operations have an additional link to the target entry
@@ -122,6 +125,8 @@ describe("JobList", () => {
     );
 
     expect(screen.getByText("a".repeat(300) + "...")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "全文を表示" }));
+    expect(screen.getByText(text)).toBeInTheDocument();
   });
 
   describe("English", () => {

@@ -46,13 +46,14 @@ def check_entity_attr_row(
 
 class EntityResource(AironeModelResource):
     _IMPORT_INFO = {
-        "header": ["id", "name", "note", "created_user", "status"],
+        "header": ["id", "name", "note", "item_name_pattern", "created_user", "status"],
         "mandatory_keys": ["name", "created_user"],
         "resource_module": "entity.admin",
         "resource_model_name": "EntityResource",
     }
 
     DISALLOW_UPDATE_KEYS = ["created_user"]
+    OPTIONAL_IMPORT_KEYS = frozenset({"item_name_pattern"})
 
     user = fields.Field(
         column_name="created_user",
@@ -62,7 +63,7 @@ class EntityResource(AironeModelResource):
 
     class Meta:
         model = Entity
-        fields = ("id", "name", "note", "status", "user")
+        fields = ("id", "name", "note", "item_name_pattern", "status", "user")
         export_order = ("id", "name", "note", "user")
 
     def import_instance(self, instance: Entity, row: dict[str, Any], **kwargs: Any) -> None:
