@@ -29,7 +29,7 @@ const server = setupServer(
           operation: 1,
           status: 1,
           passed_time: 1,
-          created_at: new Date("2022-01-01T09:00:00.000000+09:00"),
+          created_at: new Date(2022, 0, 1, 9, 0, 0),
           text: "note",
           target: {
             id: 1,
@@ -44,7 +44,7 @@ const server = setupServer(
           operation: 2,
           status: 2,
           passed_time: 2,
-          created_at: new Date("2022-01-01T09:00:00.000000+09:00"),
+          created_at: new Date(2022, 0, 1, 9, 0, 0),
           text: "note",
           target: {
             id: 2,
