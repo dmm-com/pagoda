@@ -14,11 +14,12 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
 from acl.models import ACLBase, ACLType
+from airone.lib.drf import YAMLRenderer
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrType
 from entity import tasks
-from entity.api_v2.serializers import EntityUpdateSerializer
+from entity.api_v2.serializers import EntityImportExportRootSerializer, EntityUpdateSerializer
 from entity.models import Entity, EntityAttr, ItemNameType
 from entry.models import AttributeValue, Entry
 from entry.tasks import create_entry_v2
@@ -3927,9 +3928,11 @@ class ViewTest(AironeViewTest):
         entity = Entity.objects.create(
             name="round-trip", created_user=self.user, item_name_pattern="^original$"
         )
-        export_job = Job.new_export_configuration_v2(self.user, "entity", entity_id=entity.id)
-        export_job.run(will_delay=False)
-        exported = yaml.safe_load(export_job.get_cache())
+        exported = yaml.safe_load(
+            YAMLRenderer().render(
+                EntityImportExportRootSerializer({"Entity": [entity], "EntityAttr": []}).data
+            )
+        )
 
         self.assertEqual(exported["Entity"][0]["item_name_pattern"], "^original$")
         preview = self._preview_import(yaml.safe_dump(exported))
