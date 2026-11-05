@@ -41,6 +41,11 @@ ENTITY_FIELDS = [
     _PreviewField("name", lambda row: _text(row.get("name")), lambda x: _text(x.name)),
     _PreviewField("note", lambda row: _text(row.get("note")), lambda x: _text(x.note)),
     _PreviewField(
+        "item_name_pattern",
+        lambda row: _text(row.get("item_name_pattern")),
+        lambda x: _text(x.item_name_pattern),
+    ),
+    _PreviewField(
         "status",
         lambda row: _text(int(row.get("status") or 0)),
         lambda x: _text(x.status),
@@ -178,7 +183,10 @@ def _preview_entity_row(user: User, row: dict[str, Any]) -> _RowOutcome:
         return _RowOutcome("error", "created_user does not exist", [])
 
     instance = Entity.objects.filter(id=row["id"]).first() if row.get("id") else None
-    return _compare(user, EntityResource, ENTITY_FIELDS, row, instance)
+    fields = [
+        field for field in ENTITY_FIELDS if field.name in row or field.name != "item_name_pattern"
+    ]
+    return _compare(user, EntityResource, fields, row, instance)
 
 
 def _preview_entity_attr_row(
