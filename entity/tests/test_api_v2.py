@@ -15,8 +15,10 @@ from rest_framework.exceptions import ValidationError
 
 from acl.models import ACLBase, ACLType
 from airone.lib.log import Logger
-from airone.lib.test import AironeViewTest
+from airone.lib.test import AironeViewTest, load_export_payload
 from airone.lib.types import AttrType
+from common.lib.import_detector import ImportType
+from common.tests.compat import post_import
 from entity import tasks
 from entity.api_v2.serializers import EntityUpdateSerializer
 from entity.models import Entity, EntityAttr, ItemNameType
@@ -3800,7 +3802,9 @@ class ViewTest(AironeViewTest):
         ACLBase.objects.create(id=1000, name="entity1", created_user=user)
 
         fp = self.open_fixture_file("entity.yaml")
-        resp = self.client.post("/entity/api/v2/import", fp.read(), content_type="application/yaml")
+        resp = post_import(
+            self, "/entity/api/v2/import", fp.read(), content_type="application/yaml"
+        )
         self.assertEqual(resp.status_code, 200)
         fp.close()
 
@@ -3892,8 +3896,8 @@ class ViewTest(AironeViewTest):
         payload = fp.read()
         fp.close()
         self.assertEqual(
-            self.client.post(
-                "/entity/api/v2/import", payload, content_type="application/yaml"
+            post_import(
+                self, "/entity/api/v2/import", payload, content_type="application/yaml"
             ).status_code,
             200,
         )
@@ -3970,7 +3974,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(row["action"], "skip")
         self.assertEqual(row["reason"], "permission_denied")
 
-        resp = self.client.post("/entity/api/v2/import", payload, content_type="application/yaml")
+        resp = post_import(self, "/entity/api/v2/import", payload, content_type="application/yaml")
         self.assertEqual(resp.status_code, 200)
         self.assertFalse(EntityAttr.objects.filter(name="injected").exists())
 
@@ -4069,7 +4073,9 @@ class ViewTest(AironeViewTest):
         self.entity.delete()
 
         fp = self.open_fixture_file("entity_with_unnecessary_param.yaml")
-        resp = self.client.post("/entity/api/v2/import", fp.read(), content_type="application/yaml")
+        resp = post_import(
+            self, "/entity/api/v2/import", fp.read(), content_type="application/yaml"
+        )
         self.assertEqual(resp.status_code, 200)
         fp.close()
 
@@ -4086,8 +4092,8 @@ class ViewTest(AironeViewTest):
 
         fp = self.open_fixture_file("entity_without_mandatory_param.yaml")
         with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
-            resp = self.client.post(
-                "/entity/api/v2/import", fp.read(), content_type="application/yaml"
+            resp = post_import(
+                self, "/entity/api/v2/import", fp.read(), content_type="application/yaml"
             )
             self.assertEqual(resp.status_code, 200)
 
@@ -4119,8 +4125,8 @@ class ViewTest(AironeViewTest):
 
         fp = self.open_fixture_file("entity.yaml")
         with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
-            resp = self.client.post(
-                "/entity/api/v2/import", fp.read(), content_type="application/yaml"
+            resp = post_import(
+                self, "/entity/api/v2/import", fp.read(), content_type="application/yaml"
             )
             self.assertEqual(resp.status_code, 200)
 
@@ -4157,7 +4163,7 @@ class ViewTest(AironeViewTest):
             r'^attachment; filename="entity_\d{4}_\d{2}_\d{2}_\d{2}_\d{2}\.yaml"$',
         )
 
-        obj = yaml.load(resp.content, Loader=yaml.SafeLoader)
+        obj = load_export_payload(resp.content, ImportType.ENTITY)
         self.assertTrue(isinstance(obj, dict))
         self.assertEqual(sorted(obj.keys()), ["Entity", "EntityAttr"])
         self.assertEqual(len(obj["EntityAttr"]), self.entity.attrs.count())
@@ -5018,8 +5024,8 @@ class ReadonlyUserPermissionTest(AironeViewTest):
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_import_entity_is_forbidden_for_readonly_user(self):
-        resp = self.client.post(
-            "/entity/api/v2/import", b"Entity: []", content_type="application/yaml"
+        resp = post_import(
+            self, "/entity/api/v2/import", b"Entity: []", content_type="application/yaml"
         )
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
 

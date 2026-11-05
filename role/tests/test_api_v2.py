@@ -3,7 +3,9 @@ from unittest.mock import Mock, patch
 
 import yaml
 
-from airone.lib.test import AironeViewTest
+from airone.lib.test import AironeViewTest, load_export_payload
+from common.lib.import_detector import ImportType
+from common.tests.compat import post_import
 from entry.models import Attribute, Entry
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus
@@ -280,7 +282,7 @@ class ViewTest(AironeViewTest):
         self.admin_login()
 
         fp = self.open_fixture_file("import_roles.yaml")
-        resp = self.client.post("/role/api/v2/import", fp.read(), content_type="application/yaml")
+        resp = post_import(self, "/role/api/v2/import", fp.read(), content_type="application/yaml")
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(Role.objects.filter(name="role1").count(), 1)
@@ -304,7 +306,7 @@ class ViewTest(AironeViewTest):
                 }
             ]
         )
-        resp = self.client.post("/role/api/v2/import", payload, content_type="application/yaml")
+        resp = post_import(self, "/role/api/v2/import", payload, content_type="application/yaml")
 
         self.assertEqual(resp.status_code, 403)
         self.assertFalse(Job.objects.filter(operation=JobOperation.IMPORT_ROLE_V2).exists())
@@ -323,7 +325,9 @@ class ViewTest(AironeViewTest):
         # do import processing
         fp = self.open_fixture_file("import_roles_for_update.yaml")
         import_data = fp.read().replace("<role_id>", str(role.id))
-        resp = self.client.post("/role/api/v2/import", import_data, content_type="application/yaml")
+        resp = post_import(
+            self, "/role/api/v2/import", import_data, content_type="application/yaml"
+        )
         self.assertEqual(resp.status_code, 200)
         job = Job.objects.get(operation=JobOperation.IMPORT_ROLE_V2)
         self.assertEqual(job.status, JobStatus.DONE)
@@ -345,7 +349,9 @@ class ViewTest(AironeViewTest):
 
         fp = self.open_fixture_file("import_roles_with_permissions.yaml")
         import_data = fp.read().replace("<test_obj_id>", str(entity.id))
-        resp = self.client.post("/role/api/v2/import", import_data, content_type="application/yaml")
+        resp = post_import(
+            self, "/role/api/v2/import", import_data, content_type="application/yaml"
+        )
         job = Job.objects.get(operation=JobOperation.IMPORT_ROLE_V2)
         self.assertEqual(job.status, JobStatus.DONE)
 
@@ -362,7 +368,7 @@ class ViewTest(AironeViewTest):
             "  admin_users: []\n  admin_groups: []\n"
         )
 
-        resp = self.client.post("/role/api/v2/import", payload, content_type="application/yaml")
+        resp = post_import(self, "/role/api/v2/import", payload, content_type="application/yaml")
 
         self.assertEqual(resp.status_code, 400)
         self.assertContains(resp, "role id 31000 does not exist", status_code=400)
@@ -379,7 +385,7 @@ class ViewTest(AironeViewTest):
             "  admin_users: [same-user]\n  admin_groups: []\n"
         )
 
-        resp = self.client.post("/role/api/v2/import", payload, content_type="application/yaml")
+        resp = post_import(self, "/role/api/v2/import", payload, content_type="application/yaml")
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(Role.objects.filter(name="invalid").count(), 0)
@@ -399,7 +405,7 @@ class ViewTest(AironeViewTest):
             "  admin_users: []\n  admin_groups: [same-group]\n"
         )
 
-        resp = self.client.post("/role/api/v2/import", payload, content_type="application/yaml")
+        resp = post_import(self, "/role/api/v2/import", payload, content_type="application/yaml")
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(Role.objects.filter(name="invalid").count(), 0)
@@ -423,7 +429,7 @@ class ViewTest(AironeViewTest):
             "  admin_users: [user1]\n  admin_groups: [group1]\n"
         )
 
-        resp = self.client.post("/role/api/v2/import", payload, content_type="application/yaml")
+        resp = post_import(self, "/role/api/v2/import", payload, content_type="application/yaml")
 
         self.assertEqual(resp.status_code, 200)
         role.refresh_from_db()
@@ -443,7 +449,7 @@ class ViewTest(AironeViewTest):
             "  admin_users: []\n  admin_groups: []\n"
         )
 
-        resp = self.client.post("/role/api/v2/import", payload, content_type="application/yaml")
+        resp = post_import(self, "/role/api/v2/import", payload, content_type="application/yaml")
 
         self.assertEqual(resp.status_code, 400)
         self.assertContains(resp, "specified object is not found", status_code=400)
@@ -482,7 +488,7 @@ class ViewTest(AironeViewTest):
             resp["Content-Disposition"],
             r'^attachment; filename="role_\d{4}_\d{2}_\d{2}_\d{2}_\d{2}\.yaml"$',
         )
-        data = yaml.safe_load(resp.content.decode("utf-8"))
+        data = load_export_payload(resp.content.decode("utf-8"), ImportType.ROLE)
 
         self.assertEqual(
             data[0]["permissions"],
@@ -739,7 +745,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(f"/job/api/v2/{job.id}/download")
         self.assertEqual(resp.status_code, 200)
 
-        data = yaml.safe_load(resp.content.decode("utf-8"))
+        data = load_export_payload(resp.content.decode("utf-8"), ImportType.ROLE)
         role_names = [x["name"] for x in data]
 
         # Verify user can export roles they belong to
@@ -772,7 +778,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(f"/job/api/v2/{job.id}/download")
         self.assertEqual(resp.status_code, 200)
 
-        data = yaml.safe_load(resp.content.decode("utf-8"))
+        data = load_export_payload(resp.content.decode("utf-8"), ImportType.ROLE)
         role_names = [x["name"] for x in data]
 
         # Superuser should be able to export all roles

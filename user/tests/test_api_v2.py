@@ -12,10 +12,12 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 
 from airone.lib.acl import ACLType
-from airone.lib.test import AironeViewTest, with_airone_settings
+from airone.lib.test import AironeViewTest, load_export_payload, with_airone_settings
 from airone.lib.types import (
     AttrType,
 )
+from common.lib.import_detector import ImportType
+from common.tests.compat import post_import
 from entry import tasks as entry_tasks
 from entry.models import Entry
 from group.models import Group
@@ -534,7 +536,7 @@ class ViewTest(AironeViewTest):
         self._create_group("Group2")
 
         fp = self.open_fixture_file("import_user.yaml")
-        resp = self.client.post("/user/api/v2/import/", fp.read(), content_type="application/yaml")
+        resp = post_import(self, "/user/api/v2/import/", fp.read(), content_type="application/yaml")
 
         self.assertEqual(resp.status_code, 200)
 
@@ -559,7 +561,7 @@ class ViewTest(AironeViewTest):
                 {"username": "guest", "email": "guest@example.com", "groups": "Group1"},
             ]
         )
-        resp = self.client.post("/user/api/v2/import/", body, content_type="application/yaml")
+        resp = post_import(self, "/user/api/v2/import/", body, content_type="application/yaml")
 
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
         admin.refresh_from_db()
@@ -595,7 +597,7 @@ class ViewTest(AironeViewTest):
             r'^attachment; filename="user_\d{4}_\d{2}_\d{2}_\d{2}_\d{2}\.yaml"$',
         )
 
-        obj = yaml.load(resp.content, Loader=yaml.SafeLoader)
+        obj = load_export_payload(resp.content, ImportType.USER)
         self.assertTrue(isinstance(obj, list))
         self.assertEqual(len(obj), 3)
 

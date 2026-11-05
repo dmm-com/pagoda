@@ -5,15 +5,17 @@ import io
 import os
 import sys
 from collections.abc import Callable
-from typing import cast
+from typing import Any, cast
 from zoneinfo import ZoneInfo
 
+import yaml
 from django.conf import settings
 from django.test import Client, TestCase, override_settings
 
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrType
 from category.models import Category
+from common.lib.import_detector import ImportType, unwrap_envelope
 from entity.models import Entity, EntityAttr, ItemNameType
 from entry.models import Attribute, Entry
 from user.models import User
@@ -315,6 +317,13 @@ class AironeViewTest(AironeTestCase):
         test_base_path = os.path.dirname(test_file_path)
 
         return open("%s/fixtures/%s" % (test_base_path, fname))
+
+
+def load_export_payload(content: bytes | str, import_type: ImportType) -> Any:
+    """Parse an export file, check the type its envelope declares, and return the payload."""
+    declared, payload = unwrap_envelope(yaml.safe_load(content))
+    assert declared == import_type, f"expected an export of {import_type.value}, got {declared}"
+    return payload
 
 
 class DisableStderr:

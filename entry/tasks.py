@@ -33,6 +33,7 @@ from airone.lib.job import (
 )
 from airone.lib.log import Logger
 from airone.lib.types import AttrType
+from common.lib.import_detector import ImportType, wrap_envelope
 from dashboard.tasks import _csv_export
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import (
@@ -439,7 +440,7 @@ def _yaml_export_v2(
     output = io.StringIO()
     output.write(
         yaml.dump(
-            [x.model_dump(exclude_unset=True) for x in resp_data],
+            wrap_envelope(ImportType.ENTRY, [x.model_dump(exclude_unset=True) for x in resp_data]),
             default_flow_style=False,
             allow_unicode=True,
         )
@@ -947,7 +948,9 @@ def export_entries_v2(self: Task[Any, Any], job: Job) -> None:
         output = io.StringIO()
         output.write(
             yaml.dump(
-                [x.model_dump(exclude_unset=True) for x in exported_entity],
+                wrap_envelope(
+                    ImportType.ENTRY, [x.model_dump(exclude_unset=True) for x in exported_entity]
+                ),
                 default_flow_style=False,
                 allow_unicode=True,
             )

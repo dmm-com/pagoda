@@ -12,9 +12,12 @@ import yaml
 from airone.lib.acl import ACLType
 from airone.lib.elasticsearch import EntryFilterKey
 from airone.lib.log import Logger
+from airone.lib.test import load_export_payload
 from airone.lib.types import (
     AttrType,
 )
+from common.lib.import_detector import ImportType
+from common.tests.compat import post_import
 from entity.models import Entity, EntityAttr
 from entry import tasks
 from entry.models import Attribute, AttributeValue, Entry
@@ -89,7 +92,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(job.status, JobStatus.DONE)
         self.assertRegex(job.text, r"^entry_ほげ_\d{4}_\d{2}_\d{2}_\d{2}_\d{2}\.yaml$")
 
-        obj = yaml.load(job.get_cache(), Loader=yaml.SafeLoader)
+        obj = load_export_payload(job.get_cache(), ImportType.ENTRY)
 
         self.assertEqual(len(obj), 1)
         entity_data = obj[0]
@@ -141,7 +144,7 @@ class ViewTest(BaseViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 200)
-        obj = yaml.load(Job.objects.last().get_cache(), Loader=yaml.SafeLoader)
+        obj = load_export_payload(Job.objects.last().get_cache(), ImportType.ENTRY)
 
         # check permitted attributes exist in the result
         self.assertTrue(all([x["name"] in ["foo", "bar"] for x in obj[0]["entries"][0]["attrs"]]))
@@ -258,7 +261,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(job.operation, JobOperation.EXPORT_ENTRY_V2)
         self.assertEqual(job.status, JobStatus.DONE)
 
-        obj = yaml.load(job.get_cache(), Loader=yaml.SafeLoader)
+        obj = load_export_payload(job.get_cache(), ImportType.ENTRY)
 
         self.assertEqual(len(obj), 1)
         entity_data = obj[0]
@@ -335,7 +338,7 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, 200)
         job = Job.objects.filter(target=self.entity).last()
-        obj = yaml.load(job.get_cache(), Loader=yaml.SafeLoader)
+        obj = load_export_payload(job.get_cache(), ImportType.ENTRY)
         self.assertEqual(
             obj[0]["entries"][0]["attrs"],
             [
@@ -553,7 +556,7 @@ class ViewTest(BaseViewTest):
                 "entry.tasks.notify_create_entry.delay",
                 Mock(side_effect=tasks.notify_create_entry),
             ):
-                self.client.post("/entry/api/v2/import/", payload, "application/yaml")
+                post_import(self, "/entry/api/v2/import/", payload, "application/yaml")
 
         [preview] = self._preview_import(payload)
 
@@ -599,7 +602,8 @@ class ViewTest(BaseViewTest):
         with patch(
             "entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2)
         ):
-            resp = self.client.post(
+            resp = post_import(
+                self,
                 "/entry/api/v2/import/?force=true&preview_job_id=%d" % preview_job_id,
                 payload,
                 "application/yaml",
@@ -636,7 +640,8 @@ class ViewTest(BaseViewTest):
         with patch(
             "entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2)
         ):
-            self.client.post(
+            post_import(
+                self,
                 "/entry/api/v2/import/?force=true&preview_job_id=%d" % preview_job_id,
                 payload,
                 "application/yaml",
@@ -665,7 +670,8 @@ class ViewTest(BaseViewTest):
         with patch(
             "entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2)
         ):
-            self.client.post(
+            post_import(
+                self,
                 "/entry/api/v2/import/?force=true&preview_job_id=%d" % preview_job_id,
                 payload,
                 "application/yaml",
@@ -894,7 +900,8 @@ class ViewTest(BaseViewTest):
         with patch(
             "entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2)
         ):
-            resp = self.client.post(
+            resp = post_import(
+                self,
                 "/entry/api/v2/import/?preview_job_id=not-a-number",
                 payload,
                 "application/yaml",
@@ -927,7 +934,8 @@ class ViewTest(BaseViewTest):
         with patch(
             "entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2)
         ):
-            resp = self.client.post(
+            resp = post_import(
+                self,
                 "/entry/api/v2/import/?force=true&preview_job_id=%d" % preview_job_id,
                 payload,
                 "application/yaml",
@@ -942,7 +950,7 @@ class ViewTest(BaseViewTest):
     @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
     def test_import_create_entry(self):
         fp = self.open_fixture_file("import_data_v2.yaml")
-        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        resp = post_import(self, "/entry/api/v2/import/", fp.read(), "application/yaml")
         fp.close()
 
         self.assertEqual(resp.status_code, 200)
@@ -995,7 +1003,7 @@ class ViewTest(BaseViewTest):
     def test_import_update_entry(self):
         entry = self.add_entry(self.user, "test-entry", self.entity)
         fp = self.open_fixture_file("import_data_v2.yaml")
-        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        resp = post_import(self, "/entry/api/v2/import/", fp.read(), "application/yaml")
         fp.close()
 
         self.assertEqual(resp.status_code, 200)
@@ -1033,7 +1041,7 @@ class ViewTest(BaseViewTest):
 
         # Update only some attributes
         fp = self.open_fixture_file("import_data_v2_update_some.yaml")
-        resp = self.client.post("/entry/api/v2/import/?force=true", fp.read(), "application/yaml")
+        resp = post_import(self, "/entry/api/v2/import/?force=true", fp.read(), "application/yaml")
         fp.close()
 
         self.assertEqual(resp.status_code, 200)
@@ -1049,7 +1057,7 @@ class ViewTest(BaseViewTest):
 
         # Update remove attribute value
         fp = self.open_fixture_file("import_data_v2_update_remove.yaml")
-        resp = self.client.post("/entry/api/v2/import/?force=true", fp.read(), "application/yaml")
+        resp = post_import(self, "/entry/api/v2/import/?force=true", fp.read(), "application/yaml")
         fp.close()
 
         self.assertEqual(resp.status_code, 200)
@@ -1120,7 +1128,8 @@ class ViewTest(BaseViewTest):
             return (single.boolean, [x.boolean for x in array.data_array.all()])
 
         def _import(query, value_single, value_array):
-            resp = self.client.post(
+            resp = post_import(
+                self,
                 "/entry/api/v2/import/%s" % query,
                 yaml.dump(
                     [
@@ -1184,7 +1193,7 @@ class ViewTest(BaseViewTest):
             "/entry/api/v2/%d/export/" % model.id, json.dumps({}), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
-        exported_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.SafeLoader)
+        exported_data = load_export_payload(Job.objects.last().get_cache(), ImportType.ENTRY)
 
         # then, change the "item" that would be updated by subsequent import processing
         item.name = "ChangedItem"
@@ -1192,8 +1201,8 @@ class ViewTest(BaseViewTest):
         item.save()
 
         # import exported data again
-        resp = self.client.post(
-            "/entry/api/v2/import/?force=true", exported_data, "application/yaml"
+        resp = post_import(
+            self, "/entry/api/v2/import/?force=true", exported_data, "application/yaml"
         )
         self.assertEqual(resp.status_code, 200)
 
@@ -1227,14 +1236,14 @@ class ViewTest(BaseViewTest):
             "/entry/api/v2/%d/export/" % model.id, json.dumps({}), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
-        exported_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.SafeLoader)
+        exported_data = load_export_payload(Job.objects.last().get_cache(), ImportType.ENTRY)
 
         # update exported data to make duplicated name situation on import processing
         exported_data[0]["entries"][0]["name"] = "item-1"  # same as items[1].name
 
         # import exported data again
-        resp = self.client.post(
-            "/entry/api/v2/import/?force=true", exported_data, "application/yaml"
+        resp = post_import(
+            self, "/entry/api/v2/import/?force=true", exported_data, "application/yaml"
         )
         self.assertEqual(resp.status_code, 200)
 
@@ -1254,7 +1263,7 @@ class ViewTest(BaseViewTest):
         entity1 = self.create_entity(self.user, "test-entity1")
         entity2 = self.create_entity(self.user, "test-entity2")
         fp = self.open_fixture_file("import_data_v2_multi_entity.yaml")
-        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        resp = post_import(self, "/entry/api/v2/import/", fp.read(), "application/yaml")
         fp.close()
 
         self.assertEqual(resp.status_code, 200)
@@ -1287,7 +1296,7 @@ class ViewTest(BaseViewTest):
         attr.referral.add(ref_entity2)
 
         fp = self.open_fixture_file("import_data_v2_with_entities.yaml")
-        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        resp = post_import(self, "/entry/api/v2/import/", fp.read(), "application/yaml")
         fp.close()
 
         self.assertEqual(resp.status_code, 200)
@@ -1337,8 +1346,8 @@ class ViewTest(BaseViewTest):
 
         with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
             fp = self.open_fixture_file("import_data_v2.yaml")
-            resp = self.client.post(
-                "/entry/api/v2/import/?force=true", fp.read(), "application/yaml"
+            resp = post_import(
+                self, "/entry/api/v2/import/?force=true", fp.read(), "application/yaml"
             )
             fp.close()
             self.assertEqual(
@@ -1351,7 +1360,7 @@ class ViewTest(BaseViewTest):
 
     def test_import_invalid_data(self):
         # nothing data
-        resp = self.client.post("/entry/api/v2/import/", None, "application/yaml")
+        resp = post_import(self, "/entry/api/v2/import/", None, "application/yaml")
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
@@ -1367,7 +1376,7 @@ class ViewTest(BaseViewTest):
 
         # wrong content-type
         fp = self.open_fixture_file("import_data_v2.yaml")
-        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/json")
+        resp = post_import(self, "/entry/api/v2/import/", fp.read(), "application/json")
         fp.close()
         self.assertEqual(resp.status_code, 415)
         self.assertEqual(
@@ -1380,7 +1389,7 @@ class ViewTest(BaseViewTest):
 
         # faild parse yaml
         fp = self.open_fixture_file("import_data_v2_failed_parse.yaml")
-        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        resp = post_import(self, "/entry/api/v2/import/", fp.read(), "application/yaml")
         fp.close()
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.json()["code"], "AE-140000")
@@ -1388,7 +1397,7 @@ class ViewTest(BaseViewTest):
 
         # faild scan yaml
         fp = self.open_fixture_file("import_data_v2_failed_scan.yaml")
-        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        resp = post_import(self, "/entry/api/v2/import/", fp.read(), "application/yaml")
         fp.close()
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.json()["code"], "AE-140000")
@@ -1396,7 +1405,7 @@ class ViewTest(BaseViewTest):
 
         # invalid param
         fp = self.open_fixture_file("import_data_v2_invalid_param.yaml")
-        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        resp = post_import(self, "/entry/api/v2/import/", fp.read(), "application/yaml")
         fp.close()
         self.assertEqual(resp.status_code, 400)
 
@@ -1487,7 +1496,7 @@ class ViewTest(BaseViewTest):
     @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
     def test_import_invalid_data_value(self):
         fp = self.open_fixture_file("import_data_v2_invalid_value.yaml")
-        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        resp = post_import(self, "/entry/api/v2/import/", fp.read(), "application/yaml")
         fp.close()
         job_id = resp.json()["result"]["job_ids"][0]
         job = Job.objects.get(id=job_id)
@@ -1499,7 +1508,7 @@ class ViewTest(BaseViewTest):
     def test_import_invalid_data_entity(self):
         # not exsits entity
         fp = self.open_fixture_file("import_data_v2_invalid_entity.yaml")
-        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        resp = post_import(self, "/entry/api/v2/import/", fp.read(), "application/yaml")
         fp.close()
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
@@ -1510,7 +1519,7 @@ class ViewTest(BaseViewTest):
         self.entity.is_public = False
         self.entity.save()
         fp = self.open_fixture_file("import_data_v2.yaml")
-        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        resp = post_import(self, "/entry/api/v2/import/", fp.read(), "application/yaml")
         fp.close()
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
@@ -1522,7 +1531,7 @@ class ViewTest(BaseViewTest):
         self.role.users.add(self.user)
         self.entity.readable.roles.add(self.role)
         fp = self.open_fixture_file("import_data_v2.yaml")
-        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        resp = post_import(self, "/entry/api/v2/import/", fp.read(), "application/yaml")
         fp.close()
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
@@ -1534,7 +1543,7 @@ class ViewTest(BaseViewTest):
         self.role.users.add(self.user)
         self.entity.writable.roles.add(self.role)
         fp = self.open_fixture_file("import_data_v2.yaml")
-        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        resp = post_import(self, "/entry/api/v2/import/", fp.read(), "application/yaml")
         fp.close()
         self.assertEqual(resp.status_code, 200)
         job = Job.objects.get(target=self.entity, operation=JobOperation.IMPORT_ENTRY_V2)
@@ -1543,7 +1552,7 @@ class ViewTest(BaseViewTest):
     @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
     def test_import_warning(self):
         fp = self.open_fixture_file("import_data_v2_warning.yaml")
-        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        resp = post_import(self, "/entry/api/v2/import/", fp.read(), "application/yaml")
         fp.close()
 
         self.assertEqual(resp.status_code, 200)
@@ -1557,7 +1566,7 @@ class ViewTest(BaseViewTest):
     @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
     def test_import_cancel(self):
         fp = self.open_fixture_file("import_data_v2.yaml")
-        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        resp = post_import(self, "/entry/api/v2/import/", fp.read(), "application/yaml")
         fp.close()
 
         self.assertEqual(resp.status_code, 200)
@@ -1570,19 +1579,19 @@ class ViewTest(BaseViewTest):
     @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
     def test_import_frequent_jobs(self):
         fp = self.open_fixture_file("import_data_v2.yaml")
-        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        resp = post_import(self, "/entry/api/v2/import/", fp.read(), "application/yaml")
         fp.close()
         self.assertEqual(resp.status_code, 200)
 
         # without force param, it should exceed the limit
         fp = self.open_fixture_file("import_data_v2.yaml")
-        resp = self.client.post("/entry/api/v2/import/?force=false", fp.read(), "application/yaml")
+        resp = post_import(self, "/entry/api/v2/import/?force=false", fp.read(), "application/yaml")
         fp.close()
         self.assertEqual(resp.status_code, 400)
 
         # with force param, it should ignore the limit
         fp = self.open_fixture_file("import_data_v2.yaml")
-        resp = self.client.post("/entry/api/v2/import/?force=true", fp.read(), "application/yaml")
+        resp = post_import(self, "/entry/api/v2/import/?force=true", fp.read(), "application/yaml")
         fp.close()
         self.assertEqual(resp.status_code, 200)
 
@@ -2341,7 +2350,7 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, 200)
 
-        resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        resp_data = load_export_payload(Job.objects.last().get_cache(), ImportType.ENTRY)
         for index in range(2):
             entity = Entity.objects.get(name="Entity-%d" % index)
             found = next(filter(lambda x: x["entity"] == entity.name, resp_data), None)
@@ -2415,7 +2424,7 @@ class ViewTest(BaseViewTest):
             },
         ]
 
-        resp = self.client.post("/entry/api/v2/import/", yaml.dump(resp_data), "application/yaml")
+        resp = post_import(self, "/entry/api/v2/import/", yaml.dump(resp_data), "application/yaml")
         self.assertEqual(resp.status_code, 200)
 
         self.assertEqual(entry_another_ref.get_referred_objects().count(), 1)
@@ -2542,7 +2551,7 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, 200)
 
-        resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        resp_data = load_export_payload(Job.objects.last().get_cache(), ImportType.ENTRY)
         self.assertEqual(len(resp_data[0]["entries"]), 2)
         self.assertEqual([x["name"] for x in resp_data[0]["entries"]], ["bar", "baz"])
 
@@ -2586,7 +2595,7 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, 200)
 
-        resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        resp_data = load_export_payload(Job.objects.last().get_cache(), ImportType.ENTRY)
         referred_entity = next(filter(lambda x: x["entity"] == "ReferredEntity", resp_data), None)
         self.assertIsNotNone(referred_entity)
         referrals = referred_entity["entries"][0]["referrals"]
@@ -2648,7 +2657,7 @@ class ViewTest(BaseViewTest):
 
         job = Job.objects.last()
         self.assertEqual(job.status, JobStatus.DONE)
-        resp_data = yaml.load(job.get_cache(), Loader=yaml.FullLoader)
+        resp_data = load_export_payload(job.get_cache(), ImportType.ENTRY)
         attrs = {x["name"]: x["value"] for x in resp_data[0]["entries"][0]["attrs"]}
         self.assertEqual(
             attrs["nobool"],
@@ -2714,7 +2723,7 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, 200)
 
-        resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        resp_data = load_export_payload(Job.objects.last().get_cache(), ImportType.ENTRY)
         for entity_block in resp_data:
             for entry_block in entity_block["entries"]:
                 self.assertNotIn("referrals", entry_block)
@@ -2734,7 +2743,7 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, 200)
 
-        resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        resp_data = load_export_payload(Job.objects.last().get_cache(), ImportType.ENTRY)
         for entity_block in resp_data:
             for entry_block in entity_block["entries"]:
                 self.assertNotIn("referrals", entry_block)
@@ -2763,7 +2772,7 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, 200)
 
-        obj = yaml.load(Job.objects.last().get_cache(), Loader=yaml.SafeLoader)
+        obj = load_export_payload(Job.objects.last().get_cache(), ImportType.ENTRY)
         for entity_block in obj:
             for entry_block in entity_block["entries"]:
                 self.assertNotIn("referrals", entry_block)
@@ -2846,7 +2855,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(resp.status_code, 200)
 
         # verifying result
-        yaml_contents = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        yaml_contents = load_export_payload(Job.objects.last().get_cache(), ImportType.ENTRY)
         self.assertEqual(
             yaml_contents[0]["entries"][0]["attrs"],
             [{"name": x["column"], "value": x["yaml"]} for x in results],
@@ -2897,7 +2906,7 @@ class ViewTest(BaseViewTest):
         )
 
         self.assertEqual(resp.status_code, 200)
-        resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        resp_data = load_export_payload(Job.objects.last().get_cache(), ImportType.ENTRY)
         self.assertEqual(
             resp_data,
             [

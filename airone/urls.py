@@ -38,6 +38,7 @@ urlpatterns = [
     re_path(r"^role/", include(("role.urls", "role"))),
     re_path(r"^trigger/", include(("trigger.urls", "trigger"))),
     re_path(r"^category/", include(("category.urls", "category"))),
+    re_path(r"^common/", include(("common.urls", "common"))),
 ]
 
 if "debug_toolbar" in settings.INSTALLED_APPS:

@@ -1,9 +1,8 @@
 from unittest.mock import patch
 
-import yaml
-
-from airone.lib.test import AironeViewTest
+from airone.lib.test import AironeViewTest, load_export_payload
 from airone.lib.types import AttrType
+from common.lib.import_detector import ImportType
 from entity.models import Entity, EntityAttr
 from job.models import Job, JobStatus
 from job.params import ConfigurationExportParams
@@ -45,7 +44,7 @@ class ConfigurationExportTest(AironeViewTest):
         )
         job = Job.new_export_configuration_v2(user, "entity")
         job.run(will_delay=False)
-        data = yaml.safe_load(job.get_cache())
+        data = load_export_payload(job.get_cache(), ImportType.ENTITY)
         self.assertEqual([entity["name"] for entity in data["Entity"]], ["visible"])
         self.assertEqual(data["EntityAttr"], [])
 
@@ -78,7 +77,7 @@ class ConfigurationExportTest(AironeViewTest):
         self.assertEqual(params.entity_id, selected.id)
         job.run(will_delay=False)
 
-        data = yaml.safe_load(job.get_cache())
+        data = load_export_payload(job.get_cache(), ImportType.ENTITY)
         self.assertEqual([entity["name"] for entity in data["Entity"]], ["selected"])
         self.assertEqual(
             [attr["name"] for attr in data["EntityAttr"]],

@@ -11,14 +11,16 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from airone.exceptions import ImportDataError
 from airone.lib.configuration_export import ConfigurationExportAPI
-from airone.lib.drf import IsSuperuser, YAMLParser
+from airone.lib.drf import EnvelopeYAMLParser, IsSuperuser
 from group.api_v2.serializers import (
     GroupCreateUpdateSerializer,
     GroupImportSerializer,
     GroupSerializer,
     GroupTreeV2Serializer,
 )
+from group.import_service import import_groups
 from group.models import Group
 from user.models import User
 
@@ -90,7 +92,7 @@ class GroupTreeAPI(viewsets.ReadOnlyModelViewSet[Group]):
 
 
 class GroupImportAPI(generics.GenericAPIView[Any]):
-    parser_classes = [YAMLParser]
+    parser_classes = [EnvelopeYAMLParser]
     serializer_class = GroupImportSerializer
     permission_classes = [IsAuthenticated & IsSuperuser]
 
@@ -100,42 +102,10 @@ class GroupImportAPI(generics.GenericAPIView[Any]):
         serializer = GroupImportSerializer(data=import_datas, many=True)
         serializer.is_valid(raise_exception=True)
 
-        # TODO better to move the saving logic into the serializer
-        for group_data in import_datas:
-            if "id" in group_data:
-                # update group by id
-                group = Group.objects.filter(id=group_data["id"]).first()
-                if not group:
-                    return Response(
-                        "Specified id group does not exist(id:%s, group:%s)"
-                        % (group_data["id"], group_data["name"]),
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-
-                # check new name is not used
-                if (group.name != group_data["name"]) and (
-                    Group.objects.filter(name=group_data["name"]).count() > 0
-                ):
-                    return Response(
-                        "New group name is already used(id:%s, group:%s->%s)"
-                        % (group_data["id"], group.name, group_data["name"]),
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-
-                group.name = group_data["name"]
-                if "display_name" in group_data:
-                    group.display_name = group_data["display_name"]
-                group.save()
-            else:
-                # update group by name
-                group = Group.objects.filter(name=group_data["name"]).first()
-                if not group:
-                    # create group
-                    group = Group(
-                        name=group_data["name"],
-                        display_name=group_data.get("display_name", ""),
-                    )
-                group.save()
+        try:
+            import_groups(import_datas)
+        except ImportDataError as e:
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
 
         return Response(status=status.HTTP_200_OK)
 
