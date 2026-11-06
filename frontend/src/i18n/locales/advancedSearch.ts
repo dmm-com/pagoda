@@ -31,6 +31,7 @@ export const advancedSearchMessages = defineMessages({
     "advancedSearch.tableHead.filterByEntryName": "アイテム名でフィルタ",
     "advancedSearch.tableHead.joinAttr": "アイテムの属性を結合する",
     "advancedSearch.tableHead.filterByAttrValue": "属性値でフィルタ",
+    "advancedSearch.tableHead.moveColumn": "{{name}}列をドラッグして移動",
     "advancedSearch.tableHead.referral": "参照アイテム",
     "advancedSearch.tableHead.filterByReferral": "参照アイテムでフィルタ",
 
@@ -134,6 +135,7 @@ export const advancedSearchMessages = defineMessages({
     "advancedSearch.tableHead.filterByEntryName": "Filter by item name",
     "advancedSearch.tableHead.joinAttr": "Join item attribute",
     "advancedSearch.tableHead.filterByAttrValue": "Filter by attribute value",
+    "advancedSearch.tableHead.moveColumn": "Drag to move {{name}} column",
     "advancedSearch.tableHead.referral": "Referral item",
     "advancedSearch.tableHead.filterByReferral": "Filter by referral item",
 

@@ -17,7 +17,7 @@ import { ExtendButtonBaseTypeMap } from "@mui/material/ButtonBase/ButtonBase";
 import { IconButtonTypeMap } from "@mui/material/IconButton/IconButton";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
-import { FC, useMemo } from "react";
+import { FC, useMemo, useState } from "react";
 import { Link } from "react-router";
 
 import { SearchResultsTableHead } from "./SearchResultsTableHead";
@@ -39,7 +39,10 @@ import {
 } from "components/entry/AttributeValue";
 import { entryDetailsPath, entryEditPath } from "routes/Routes";
 import { AdvancedSerarchResultListParam } from "services/Constants";
-import { AttrsFilter } from "services/entry/AdvancedSearch";
+import {
+  AttrsFilter,
+  ENTRY_NAME_SORT_TARGET,
+} from "services/entry/AdvancedSearch";
 
 const StyledIconButton = styled(IconButton)(({ theme }) => ({
   margin: theme.spacing(1),
@@ -65,6 +68,18 @@ const StyledTableRow = styled(TableRow)({
     padding: "8px 16px",
   },
 });
+
+const readColumnOrder = (key: string): string[] => {
+  try {
+    const value: unknown = JSON.parse(localStorage.getItem(key) ?? "[]");
+    return Array.isArray(value) &&
+      value.every((name) => typeof name === "string")
+      ? [...new Set(value)]
+      : [];
+  } catch {
+    return [];
+  }
+};
 
 interface Props {
   results: AdvancedSearchResult;
@@ -120,7 +135,7 @@ export const SearchResults: FC<Props> = ({
   // (Issue #3449: the previous row-0-only lookup returned undefined for any
   // attribute added after the existing entries were last indexed, which
   // bubbled into AttributeValueField as type=0 and threw.)
-  const [attrNames, attrTypes] = useMemo(() => {
+  const [availableAttrNames, attrTypes] = useMemo(() => {
     const _attrNames = Object.keys(defaultAttrsFilter);
     const _attrTypes = Object.fromEntries(
       _attrNames.map((attrName) => [
@@ -134,6 +149,45 @@ export const SearchResults: FC<Props> = ({
     );
     return [_attrNames, _attrTypes];
   }, [defaultAttrsFilter, results.values, entityAttrs]);
+
+  const columnOrderKey = `advanced_search_column_order:${searchAllEntities ? "all" : [...entityIds].sort((a, b) => a - b).join(",")}`;
+  const [columnOrder, setColumnOrder] = useState(() => ({
+    key: columnOrderKey,
+    names: readColumnOrder(columnOrderKey),
+  }));
+  const savedOrder =
+    columnOrder.key === columnOrderKey
+      ? columnOrder.names
+      : readColumnOrder(columnOrderKey);
+  const availableColumns = [ENTRY_NAME_SORT_TARGET, ...availableAttrNames];
+  const columnNames = savedOrder.includes(ENTRY_NAME_SORT_TARGET)
+    ? [
+        ...savedOrder.filter((name) => availableColumns.includes(name)),
+        ...availableColumns.filter((name) => !savedOrder.includes(name)),
+      ]
+    : [
+        ENTRY_NAME_SORT_TARGET,
+        ...savedOrder.filter((name) => availableAttrNames.includes(name)),
+        ...availableAttrNames.filter((name) => !savedOrder.includes(name)),
+      ];
+  const attrNames = columnNames.filter(
+    (name) => name !== ENTRY_NAME_SORT_TARGET,
+  );
+
+  const handleReorderColumn = (source: string, target: string) => {
+    const from = columnNames.indexOf(source);
+    const to = columnNames.indexOf(target);
+    if (from < 0 || to < 0 || from === to) return;
+    const next = [...columnNames];
+    next.splice(from, 1);
+    next.splice(to, 0, source);
+    setColumnOrder({ key: columnOrderKey, names: next });
+    try {
+      localStorage.setItem(columnOrderKey, JSON.stringify(next));
+    } catch {
+      // The current page still keeps the new order when storage is unavailable.
+    }
+  };
 
   const joinedAttrSources = useMemo(
     () => ({
@@ -184,6 +238,8 @@ export const SearchResults: FC<Props> = ({
         <TableContainer component={Paper}>
           <Table id="table_result_list">
             <SearchResultsTableHead
+              columnNames={columnNames}
+              onReorderColumn={handleReorderColumn}
               entityAttrs={entityAttrs}
               hasReferral={hasReferral}
               attrTypes={attrTypes}
@@ -243,115 +299,122 @@ export const SearchResults: FC<Props> = ({
                     </TableCell>
                   )}
 
-                  <TableCell>
-                    {omitHeadline ? (
-                      // show edit icon instead of item name when omitHeadline is true
-                      <StyledIconButton
-                        component={Link}
-                        to={entryEditPath(result.entity.id, result.entry.id)}
-                      >
-                        <EditOutlinedIcon />
-                      </StyledIconButton>
+                  {columnNames.map((attrName) =>
+                    attrName === ENTRY_NAME_SORT_TARGET ? (
+                      <TableCell key={attrName} data-search-entry-name>
+                        {omitHeadline ? (
+                          <StyledIconButton
+                            component={Link}
+                            to={entryEditPath(
+                              result.entity.id,
+                              result.entry.id,
+                            )}
+                          >
+                            <EditOutlinedIcon />
+                          </StyledIconButton>
+                        ) : (
+                          <Box
+                            component={AironeLink}
+                            to={entryDetailsPath(
+                              result.entity.id,
+                              result.entry.id,
+                            )}
+                          >
+                            {result.entry.name}
+                          </Box>
+                        )}
+                      </TableCell>
                     ) : (
-                      // show each item name
-                      <Box
-                        component={AironeLink}
-                        to={entryDetailsPath(result.entity.id, result.entry.id)}
+                      <TableCell
+                        key={attrName}
+                        data-search-attribute={attrName}
+                        sx={
+                          result.joinedAttrs?.[attrName] != null ||
+                          joinedAttrSources[attrName] != null ||
+                          arraySourceNames.has(attrName)
+                            ? { verticalAlign: "top" }
+                            : undefined
+                        }
                       >
-                        {result.entry.name}
-                      </Box>
-                    )}
-                  </TableCell>
-                  {attrNames.map((attrName) => (
-                    <TableCell
-                      key={attrName}
-                      data-search-attribute={attrName}
-                      sx={
-                        result.joinedAttrs?.[attrName] != null ||
-                        joinedAttrSources[attrName] != null ||
-                        arraySourceNames.has(attrName)
-                          ? { verticalAlign: "top" }
-                          : undefined
-                      }
-                    >
-                      {(() => {
-                        const joined = result.joinedAttrs?.[attrName]?.values;
-                        const baseAttrName = joinedAttrSources[attrName];
-                        const source = baseAttrName
-                          ? result.attrs[baseAttrName]?.value
-                          : undefined;
-                        const sourceLength =
-                          source?.asArrayObject?.length ??
-                          source?.asArrayNamedObject?.length ??
-                          source?.asArrayGroup?.length ??
-                          source?.asArrayRole?.length ??
-                          0;
-                        if (joined != null || sourceLength > 0) {
-                          return (
-                            <AttributeValueList
-                              data-source-attribute={baseAttrName}
-                            >
-                              {Array.from(
-                                {
-                                  length: Math.max(
-                                    joined?.length ?? 0,
-                                    sourceLength,
-                                  ),
-                                },
-                                (_, index) => {
-                                  const info = joined?.[index];
-                                  return (
-                                    <AttributeValueListItem
-                                      key={index}
-                                      sx={{ boxSizing: "border-box" }}
-                                    >
-                                      <Box
-                                        sx={{
-                                          width: "100%",
-                                          minHeight: 0,
-                                          maxHeight: "100%",
-                                          overflowY: "auto",
-                                          "& > .MuiList-root > .MuiListItem-root":
-                                            {
-                                              padding: 0,
-                                            },
-                                        }}
+                        {(() => {
+                          const joined = result.joinedAttrs?.[attrName]?.values;
+                          const baseAttrName = joinedAttrSources[attrName];
+                          const source = baseAttrName
+                            ? result.attrs[baseAttrName]?.value
+                            : undefined;
+                          const sourceLength =
+                            source?.asArrayObject?.length ??
+                            source?.asArrayNamedObject?.length ??
+                            source?.asArrayGroup?.length ??
+                            source?.asArrayRole?.length ??
+                            0;
+                          if (joined != null || sourceLength > 0) {
+                            return (
+                              <AttributeValueList
+                                data-source-attribute={baseAttrName}
+                              >
+                                {Array.from(
+                                  {
+                                    length: Math.max(
+                                      joined?.length ?? 0,
+                                      sourceLength,
+                                    ),
+                                  },
+                                  (_, index) => {
+                                    const info = joined?.[index];
+                                    return (
+                                      <AttributeValueListItem
+                                        key={index}
+                                        sx={{ boxSizing: "border-box" }}
                                       >
-                                        {info == null ? (
-                                          "\u00a0"
-                                        ) : info.isReadable ? (
-                                          <AttributeValue attrInfo={info} />
-                                        ) : (
-                                          <Typography>
-                                            Permission denied.
-                                          </Typography>
-                                        )}
-                                      </Box>
-                                    </AttributeValueListItem>
-                                  );
-                                },
-                              )}
-                            </AttributeValueList>
-                          );
-                        }
-                        const info = result.attrs[attrName];
-                        if (info != null) {
-                          return (
-                            <>
-                              {info.isReadable ? (
-                                <AttributeValue attrInfo={info} />
-                              ) : (
-                                <Typography>Permission denied.</Typography>
-                              )}
-                            </>
-                          );
-                        } else if (!result.isReadable) {
-                          return <Typography>Permission denied.</Typography>;
-                        }
-                        return null;
-                      })()}
-                    </TableCell>
-                  ))}
+                                        <Box
+                                          sx={{
+                                            width: "100%",
+                                            minHeight: 0,
+                                            maxHeight: "100%",
+                                            overflowY: "auto",
+                                            "& > .MuiList-root > .MuiListItem-root":
+                                              {
+                                                padding: 0,
+                                              },
+                                          }}
+                                        >
+                                          {info == null ? (
+                                            "\u00a0"
+                                          ) : info.isReadable ? (
+                                            <AttributeValue attrInfo={info} />
+                                          ) : (
+                                            <Typography>
+                                              Permission denied.
+                                            </Typography>
+                                          )}
+                                        </Box>
+                                      </AttributeValueListItem>
+                                    );
+                                  },
+                                )}
+                              </AttributeValueList>
+                            );
+                          }
+                          const info = result.attrs[attrName];
+                          if (info != null) {
+                            return (
+                              <>
+                                {info.isReadable ? (
+                                  <AttributeValue attrInfo={info} />
+                                ) : (
+                                  <Typography>Permission denied.</Typography>
+                                )}
+                              </>
+                            );
+                          } else if (!result.isReadable) {
+                            return <Typography>Permission denied.</Typography>;
+                          }
+                          return null;
+                        })()}
+                      </TableCell>
+                    ),
+                  )}
                   {hasReferral && (
                     <TableCell>
                       <List>
