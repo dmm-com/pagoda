@@ -20,7 +20,11 @@ import { useNavigate } from "react-router";
 
 import { useTranslation } from "../../hooks/useTranslation";
 import { aironeApiClient } from "../../repository/AironeApiClient";
-import { entityEntriesPath, entryDetailsPath } from "../../routes/Routes";
+import {
+  entityEntriesPath,
+  entryDetailsPath,
+  roleHistoryPath,
+} from "../../routes/Routes";
 import { JobOperations, JobStatuses } from "../../services/Constants";
 import { formatDateTime } from "../../services/DateUtil";
 import {
@@ -205,6 +209,18 @@ export const JobList: FC<Props> = ({ jobs, showUser }) => {
             <TableCell>
               {(() => {
                 switch (job.operation) {
+                  case JobOperations.EDIT_ROLE:
+                  case JobOperations.RESTORE_ROLE:
+                  case JobOperations.DELETE_ROLE:
+                    return (
+                      <Typography
+                        component={AironeLink}
+                        to={roleHistoryPath(job.target?.id ?? 0)}
+                      >
+                        {job.target?.name}
+                      </Typography>
+                    );
+
                   case JobOperations.CREATE_ENTITY:
                   case JobOperations.EDIT_ENTITY:
                   case JobOperations.DELETE_ENTITY:

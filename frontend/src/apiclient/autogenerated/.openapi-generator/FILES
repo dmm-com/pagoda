@@ -134,8 +134,13 @@ models/Refer.ts
 models/Role.ts
 models/RoleCreateUpdate.ts
 models/RoleGroup.ts
+models/RoleHistory.ts
+models/RoleHistoryList.ts
+models/RoleHistoryTarget.ts
 models/RoleImportExportChild.ts
+models/RoleJob.ts
 models/RolePermission.ts
+models/RoleRestore.ts
 models/RoleUser.ts
 models/TriggerAction.ts
 models/TriggerActionUpdate.ts

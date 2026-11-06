@@ -6,6 +6,7 @@ from django.urls import reverse
 from airone.lib.elasticsearch import AttrHint
 from airone.lib.types import AttrType
 from entry.services import AdvancedSearchService
+from job.models import Job, JobOperation
 from role import tasks
 
 from .base import RoleTestBase
@@ -88,5 +89,7 @@ class ModelTest(RoleTestBase):
             json.dumps(params),
             "application/json",
         )
+        with self.captureOnCommitCallbacks(execute=True):
+            Job.objects.get(operation=JobOperation.EDIT_ROLE).run(will_delay=False)
         resp2 = AdvancedSearchService.search_entries(user, [entity.id], [AttrHint(name="role")])
         self.assertEqual(resp2.ret_values[0].attrs["role"]["value"]["name"], "test_role_update")

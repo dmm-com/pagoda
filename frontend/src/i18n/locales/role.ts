@@ -2,6 +2,17 @@ import { defineMessages } from "../defineMessages";
 
 export const roleMessages = defineMessages({
   ja: {
+    "role.history.missingTarget": "削除済みの対象",
+    "role.edit.updateAccepted":
+      "ロールの変更を受け付けました。ジョブ一覧で実行結果を確認してください。",
+    "role.history.title": "ロールの変更履歴",
+    "role.history.state": "変更後の状態",
+    "role.history.permissions": "権限（対象名・権限）",
+    "role.history.confirm": "この時点のロールに復元しますか？",
+    "role.history.accepted":
+      "復元を受け付けました。ジョブ一覧で実行結果を確認してください。",
+    "role.history.failed": "ロールの復元を受け付けられませんでした。",
+
     // RoleForm
     "role.form.columnItem": "項目",
     "role.form.columnContent": "内容",
@@ -47,7 +58,8 @@ export const roleMessages = defineMessages({
     "role.list.editColumn": "編集",
     "role.list.adminBadge": "管理者",
     "role.list.deleteConfirm": "本当に削除しますか？",
-    "role.list.deleteSuccess": "ロールの削除が完了しました",
+    "role.list.deleteSuccess":
+      "ロールの削除を受け付けました。ジョブ一覧で実行結果を確認してください。",
     "role.list.deleteFailure": "ロールの削除が失敗しました",
     "role.list.deleteAriaLabel": "{{name}}を削除",
     "role.list.editAriaLabel": "{{name}}を編集",
@@ -67,6 +79,17 @@ export const roleMessages = defineMessages({
     "role.edit.submitFailureDetail": '詳細: "{{message}}"',
   },
   en: {
+    "role.history.missingTarget": "Deleted target",
+    "role.edit.updateAccepted":
+      "Role update queued. Check the job list for the result.",
+    "role.history.title": "Role history",
+    "role.history.state": "State after change",
+    "role.history.permissions": "Permissions (target name / permission)",
+    "role.history.confirm": "Restore the role to this state?",
+    "role.history.accepted":
+      "Restore queued. Check the job list for the result.",
+    "role.history.failed": "Could not queue the role restore.",
+
     // RoleForm
     "role.form.columnItem": "Item",
     "role.form.columnContent": "Content",
@@ -113,7 +136,8 @@ export const roleMessages = defineMessages({
     "role.list.editColumn": "Edit",
     "role.list.adminBadge": "Admin",
     "role.list.deleteConfirm": "Are you sure you want to delete this?",
-    "role.list.deleteSuccess": "Successfully deleted the role",
+    "role.list.deleteSuccess":
+      "Role deletion queued. Check the job list for the result.",
     "role.list.deleteFailure": "Failed to delete the role",
     "role.list.deleteAriaLabel": "Delete {{name}}",
     "role.list.editAriaLabel": "Edit {{name}}",

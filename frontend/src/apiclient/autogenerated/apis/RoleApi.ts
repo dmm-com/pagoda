@@ -25,16 +25,35 @@ import {
   RoleCreateUpdateToJSON,
 } from "../models/RoleCreateUpdate";
 import {
+  type RoleHistoryList,
+  RoleHistoryListFromJSON,
+  RoleHistoryListToJSON,
+} from "../models/RoleHistoryList";
+import {
   type RoleImportExportChild,
   RoleImportExportChildFromJSON,
   RoleImportExportChildToJSON,
 } from "../models/RoleImportExportChild";
+import {
+  type RoleJob,
+  RoleJobFromJSON,
+  RoleJobToJSON,
+} from "../models/RoleJob";
+import {
+  type RoleRestore,
+  RoleRestoreFromJSON,
+  RoleRestoreToJSON,
+} from "../models/RoleRestore";
 
 export interface RoleApiV2CreateRequest {
   roleCreateUpdate: RoleCreateUpdate;
 }
 
 export interface RoleApiV2DestroyRequest {
+  id: number;
+}
+
+export interface RoleApiV2HistoriesRetrieveRequest {
   id: number;
 }
 
@@ -45,6 +64,11 @@ export interface RoleApiV2ImportCreateRequest {
 export interface RoleApiV2ListRequest {
   ordering?: string;
   search?: string;
+}
+
+export interface RoleApiV2RestoreCreateRequest {
+  id: number;
+  roleRestore: RoleRestore;
 }
 
 export interface RoleApiV2RetrieveRequest {
@@ -164,12 +188,14 @@ export class RoleApi extends runtime.BaseAPI {
   async roleApiV2DestroyRaw(
     requestParameters: RoleApiV2DestroyRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<void>> {
+  ): Promise<runtime.ApiResponse<RoleJob>> {
     const requestOptions =
       await this.roleApiV2DestroyRequestOpts(requestParameters);
     const response = await this.request(requestOptions, initOverrides);
 
-    return new runtime.VoidApiResponse(response);
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      RoleJobFromJSON(jsonValue),
+    );
   }
 
   /**
@@ -177,8 +203,12 @@ export class RoleApi extends runtime.BaseAPI {
   async roleApiV2Destroy(
     requestParameters: RoleApiV2DestroyRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<void> {
-    await this.roleApiV2DestroyRaw(requestParameters, initOverrides);
+  ): Promise<RoleJob> {
+    const response = await this.roleApiV2DestroyRaw(
+      requestParameters,
+      initOverrides,
+    );
+    return await response.value();
   }
 
   /**
@@ -223,6 +253,70 @@ export class RoleApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<JobSerializers> {
     const response = await this.roleApiV2ExportCreateRaw(initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Creates request options for roleApiV2HistoriesRetrieve without sending the request
+   */
+  async roleApiV2HistoriesRetrieveRequestOpts(
+    requestParameters: RoleApiV2HistoriesRetrieveRequest,
+  ): Promise<runtime.RequestOpts> {
+    if (requestParameters["id"] == null) {
+      throw new runtime.RequiredError(
+        "id",
+        'Required parameter "id" was null or undefined when calling roleApiV2HistoriesRetrieve().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        await this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    let urlPath = `/role/api/v2/{id}/histories/`;
+    urlPath = urlPath.replace(
+      "{id}",
+      encodeURIComponent(String(requestParameters["id"])),
+    );
+
+    return {
+      path: urlPath,
+      method: "GET",
+      headers: headerParameters,
+      query: queryParameters,
+    };
+  }
+
+  /**
+   */
+  async roleApiV2HistoriesRetrieveRaw(
+    requestParameters: RoleApiV2HistoriesRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<RoleHistoryList>> {
+    const requestOptions =
+      await this.roleApiV2HistoriesRetrieveRequestOpts(requestParameters);
+    const response = await this.request(requestOptions, initOverrides);
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      RoleHistoryListFromJSON(jsonValue),
+    );
+  }
+
+  /**
+   */
+  async roleApiV2HistoriesRetrieve(
+    requestParameters: RoleApiV2HistoriesRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<RoleHistoryList> {
+    const response = await this.roleApiV2HistoriesRetrieveRaw(
+      requestParameters,
+      initOverrides,
+    );
     return await response.value();
   }
 
@@ -353,6 +447,80 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
+   * Creates request options for roleApiV2RestoreCreate without sending the request
+   */
+  async roleApiV2RestoreCreateRequestOpts(
+    requestParameters: RoleApiV2RestoreCreateRequest,
+  ): Promise<runtime.RequestOpts> {
+    if (requestParameters["id"] == null) {
+      throw new runtime.RequiredError(
+        "id",
+        'Required parameter "id" was null or undefined when calling roleApiV2RestoreCreate().',
+      );
+    }
+
+    if (requestParameters["roleRestore"] == null) {
+      throw new runtime.RequiredError(
+        "roleRestore",
+        'Required parameter "roleRestore" was null or undefined when calling roleApiV2RestoreCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        await this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    let urlPath = `/role/api/v2/{id}/restore/`;
+    urlPath = urlPath.replace(
+      "{id}",
+      encodeURIComponent(String(requestParameters["id"])),
+    );
+
+    return {
+      path: urlPath,
+      method: "POST",
+      headers: headerParameters,
+      query: queryParameters,
+      body: RoleRestoreToJSON(requestParameters["roleRestore"]),
+    };
+  }
+
+  /**
+   */
+  async roleApiV2RestoreCreateRaw(
+    requestParameters: RoleApiV2RestoreCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<RoleJob>> {
+    const requestOptions =
+      await this.roleApiV2RestoreCreateRequestOpts(requestParameters);
+    const response = await this.request(requestOptions, initOverrides);
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      RoleJobFromJSON(jsonValue),
+    );
+  }
+
+  /**
+   */
+  async roleApiV2RestoreCreate(
+    requestParameters: RoleApiV2RestoreCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<RoleJob> {
+    const response = await this.roleApiV2RestoreCreateRaw(
+      requestParameters,
+      initOverrides,
+    );
+    return await response.value();
+  }
+
+  /**
    * Creates request options for roleApiV2Retrieve without sending the request
    */
   async roleApiV2RetrieveRequestOpts(
@@ -467,13 +635,13 @@ export class RoleApi extends runtime.BaseAPI {
   async roleApiV2UpdateRaw(
     requestParameters: RoleApiV2UpdateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<RoleCreateUpdate>> {
+  ): Promise<runtime.ApiResponse<RoleJob>> {
     const requestOptions =
       await this.roleApiV2UpdateRequestOpts(requestParameters);
     const response = await this.request(requestOptions, initOverrides);
 
     return new runtime.JSONApiResponse(response, (jsonValue) =>
-      RoleCreateUpdateFromJSON(jsonValue),
+      RoleJobFromJSON(jsonValue),
     );
   }
 
@@ -482,7 +650,7 @@ export class RoleApi extends runtime.BaseAPI {
   async roleApiV2Update(
     requestParameters: RoleApiV2UpdateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<RoleCreateUpdate> {
+  ): Promise<RoleJob> {
     const response = await this.roleApiV2UpdateRaw(
       requestParameters,
       initOverrides,

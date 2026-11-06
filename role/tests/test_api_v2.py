@@ -133,19 +133,14 @@ class ViewTest(AironeViewTest):
             "name": "test-role-updated",
         }
         resp = self.client.put(f"/role/api/v2/{role.id}", json.dumps(params), "application/json")
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(
-            resp.json(),
-            {
-                "is_active": True,
-                "name": "test-role-updated",
-                "description": "test-description",
-                "users": [self.user1.id],
-                "groups": [self.group1.id],
-                "admin_users": [self.user2.id, admin.id],
-                "admin_groups": [self.group2.id],
-            },
-        )
+        self.assertEqual(resp.status_code, 202)
+        role.refresh_from_db()
+        self.assertEqual(role.name, "test-role")
+        job = Job.objects.get(pk=resp.json()["job_id"])
+        job.run(will_delay=False)
+        role.refresh_from_db()
+        self.assertEqual(role.name, "test-role-updated")
+        self.assertEqual(role.history.first().history_user, admin)
 
     def test_update_with_invalid_params(self):
         admin = self.admin_login()
@@ -252,7 +247,8 @@ class ViewTest(AironeViewTest):
         role = Role.objects.filter(name="test-role").first()
 
         resp = self.client.delete(f"/role/api/v2/{role.id}")
-        self.assertEqual(resp.status_code, 204)
+        self.assertEqual(resp.status_code, 202)
+        Job.objects.get(pk=resp.json()["job_id"]).run(will_delay=False)
         self.assertFalse(Role.objects.filter(name="test-role", is_active=True).exists())
 
     def test_delete_without_permission(self):

@@ -38,14 +38,14 @@ describe("JobList", () => {
     expect(screen.getAllByText("作成")).toHaveLength(4);
     expect(screen.queryByText("作成 (27)")).not.toBeInTheDocument();
 
-    // 35 links: 23 operations have a link to their target (entity),
+    // 38 links: 23 operations link to an entity and 3 link to a role history,
     // plus 12 entry operations have an additional link to the target entry
     // NOTE: Possible links on the screen are links to a target or download links
     expect(
       screen.queryAllByRole("link", {
         name: (content) => !content.includes("Download"),
       }),
-    ).toHaveLength(35);
+    ).toHaveLength(38);
 
     // All five export operations should have a download link.
     expect(

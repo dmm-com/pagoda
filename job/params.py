@@ -40,6 +40,12 @@ class JobParamsRootModel(RootModel[RootValue], Generic[RootValue]):
     model_config = ConfigDict(strict=True, frozen=True, validate_default=True)
 
 
+class RoleChangeParams(JobParamsModel):
+    role_id: int
+    data: dict[str, Any] = Field(default_factory=dict)
+    history_id: int | None = None
+
+
 class EmptyParams(JobParamsModel):
     pass
 
@@ -574,6 +580,9 @@ CORE_JOB_PARAMS: dict[int, ParamsContract] = _build_core_registry(
         (33, ImportEntryParams),
         (34, ConfigurationExportParams),
         (35, GeneralImportParams),
+        (36, RoleChangeParams),
+        (37, RoleChangeParams),
+        (38, RoleChangeParams),
     ]
 )
 
