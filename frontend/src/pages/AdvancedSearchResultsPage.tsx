@@ -598,6 +598,8 @@ export const AdvancedSearchResultsPage: FC = () => {
         )}
         attrInfos={attrInfo}
         joinAttrs={joinAttrs}
+        entityIds={entityIds}
+        searchAllEntities={searchAllEntities}
       />
     </Box>
   );
