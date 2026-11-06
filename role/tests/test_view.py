@@ -1,5 +1,6 @@
 import json
 
+from job.models import Job, JobOperation
 from role.models import Role
 
 from .base import RoleTestBase
@@ -119,8 +120,8 @@ class ViewTest(RoleTestBase):
                 "description": "changing role explanation",
                 "users": [{"id": self.users["userB"].id}],
                 "groups": [{"id": self.groups["groupB"].id}],
-                "admin_users": [{"id": self.users["userB"].id}],
-                "admin_groups": [{"id": self.groups["groupB"].id}],
+                "admin_users": [{"id": user.id}],
+                "admin_groups": [{"id": self.groups["groupA"].id}],
             },
         )
         resp = self.client.post(
@@ -128,14 +129,16 @@ class ViewTest(RoleTestBase):
         )
         self.assertEqual(resp.status_code, 200)
 
+        Job.objects.get(operation=JobOperation.EDIT_ROLE).run(will_delay=False)
+
         # check role attributes are updated expectedly
         role.refresh_from_db()
         self.assertEqual(role.name, "Edited Role")
         self.assertEqual(role.description, "changing role explanation")
         self.assertEqual([x.username for x in role.users.all()], ["userB"])
-        self.assertEqual([x.username for x in role.admin_users.all()], ["userB"])
+        self.assertEqual([x.username for x in role.admin_users.all()], [user.username])
         self.assertEqual([x.name for x in role.groups.all()], ["groupB"])
-        self.assertEqual([x.name for x in role.admin_groups.all()], ["groupB"])
+        self.assertEqual([x.name for x in role.admin_groups.all()], ["groupA"])
 
     def test_role_without_admin_member(self):
         self.guest_login()

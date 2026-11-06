@@ -10,6 +10,7 @@ import { RoleEditPage } from "./RoleEditPage";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
 import i18n from "i18n/config";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 const server = setupServer(
   // getRole
@@ -129,4 +130,32 @@ describe("EditRolePage", () => {
 
     expect(screen.getAllByText("Edit role").length).toBeGreaterThan(0);
   });
+});
+
+test("links an existing role to its change history", async () => {
+  const getRole = vi.spyOn(aironeApiClient, "getRole").mockResolvedValue({
+    id: 3,
+    name: "role3",
+    description: "",
+    isEditable: true,
+    users: [],
+    groups: [],
+    adminUsers: [],
+    adminGroups: [],
+    permissions: [],
+  });
+  try {
+    const router = createMemoryRouter(
+      [{ path: "/ui/roles/:roleId", element: <RoleEditPage /> }],
+      { initialEntries: ["/ui/roles/3"] },
+    );
+    render(<RouterProvider router={router} />, {
+      wrapper: TestWrapperWithoutRoutes,
+    });
+    expect(
+      await screen.findByRole("link", { name: i18n.t("role.history.title") }),
+    ).toHaveAttribute("href", "/ui/roles/3/history");
+  } finally {
+    getRole.mockRestore();
+  }
 });

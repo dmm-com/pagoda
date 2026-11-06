@@ -213,6 +213,9 @@ export const JobOperations = {
   IMPORT_ENTITY_PREVIEW: 32,
   IMPORT_ENTRY_PREVIEW: 33,
   EXPORT_CONFIGURATION_V2: 34,
+  EDIT_ROLE: 36,
+  DELETE_ROLE: 37,
+  RESTORE_ROLE: 38,
 };
 
 export const JobRefreshIntervalMilliSec = 5 * 1000;

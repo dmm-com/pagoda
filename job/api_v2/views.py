@@ -294,6 +294,9 @@ class JobListAPI(viewsets.ModelViewSet[Job]):
             JobOperation.EXPORT_SEARCH_RESULT_V2,
             JobOperation.IMPORT_ROLE_V2,
             JobOperation.IMPORT_GENERAL_V2,
+            JobOperation.EDIT_ROLE,
+            JobOperation.DELETE_ROLE,
+            JobOperation.RESTORE_ROLE,
         ]
         query = Q() if all_users else Q(user=user)
         query &= ~Q(operation__in=Job.HIDDEN_OPERATIONS)

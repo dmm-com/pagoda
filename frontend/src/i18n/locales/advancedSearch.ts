@@ -5,6 +5,8 @@ export const advancedSearchMessages = defineMessages({
     // AdvancedSearchModal
     "advancedSearch.modal.resetAttrTitle": "検索属性の再設定",
     "advancedSearch.modal.selectAttrPlaceholder": "属性を選択",
+    "advancedSearch.modal.columnOrder": "列の順番（ドラッグして変更）",
+    "advancedSearch.modal.moveAttribute": "{{name}}列をドラッグして移動",
     "advancedSearch.modal.includeReferral": "参照アイテムも含める",
 
     // AdvancedSearchEditModal
@@ -31,6 +33,7 @@ export const advancedSearchMessages = defineMessages({
     "advancedSearch.tableHead.filterByEntryName": "アイテム名でフィルタ",
     "advancedSearch.tableHead.joinAttr": "アイテムの属性を結合する",
     "advancedSearch.tableHead.filterByAttrValue": "属性値でフィルタ",
+    "advancedSearch.tableHead.moveColumn": "{{name}}列をドラッグして移動",
     "advancedSearch.tableHead.referral": "参照アイテム",
     "advancedSearch.tableHead.filterByReferral": "参照アイテムでフィルタ",
 
@@ -107,6 +110,8 @@ export const advancedSearchMessages = defineMessages({
     // AdvancedSearchModal
     "advancedSearch.modal.resetAttrTitle": "Reset search attributes",
     "advancedSearch.modal.selectAttrPlaceholder": "Select attributes",
+    "advancedSearch.modal.columnOrder": "Column order (drag to change)",
+    "advancedSearch.modal.moveAttribute": "Drag to move {{name}} column",
     "advancedSearch.modal.includeReferral": "Include referral entries",
 
     // AdvancedSearchEditModal
@@ -134,6 +139,7 @@ export const advancedSearchMessages = defineMessages({
     "advancedSearch.tableHead.filterByEntryName": "Filter by item name",
     "advancedSearch.tableHead.joinAttr": "Join item attribute",
     "advancedSearch.tableHead.filterByAttrValue": "Filter by attribute value",
+    "advancedSearch.tableHead.moveColumn": "Drag to move {{name}} column",
     "advancedSearch.tableHead.referral": "Referral item",
     "advancedSearch.tableHead.filterByReferral": "Filter by referral item",
 

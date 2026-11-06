@@ -1,9 +1,11 @@
 from typing import Any, cast
 
+from django.db import transaction
 from django.db.models import Prefetch, Q, QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import filters, generics, serializers, status, viewsets
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -11,13 +13,18 @@ from rest_framework.response import Response
 from airone.lib.configuration_export import ConfigurationExportAPI
 from airone.lib.drf import EnvelopeYAMLParser, IsSuperuser
 from group.models import Group
-from job.models import Job, JobStatus
+from job.models import Job, JobOperation, JobStatus
 from role.api_v2.serializers import (
     RoleCreateUpdateSerializer,
+    RoleHistoryListSerializer,
+    RoleHistorySerializer,
     RoleImportSerializer,
+    RoleJobSerializer,
+    RoleRestoreSerializer,
     RoleSerializer,
 )
 from role.models import Role
+from role.services import restore_data, validate_role_data
 from user.models import User
 
 
@@ -44,7 +51,12 @@ class RolePermission(BasePermission):
 
     def has_object_permission(self, request: Request, view: Any, obj: Role) -> bool:
         current_user = cast(User, request.user)
-        if current_user.is_readonly and view.action in ["update", "destroy"]:
+        if current_user.is_readonly and view.action in [
+            "update",
+            "partial_update",
+            "destroy",
+            "restore",
+        ]:
             return False
 
         is_editable = Role.editable(
@@ -55,6 +67,9 @@ class RolePermission(BasePermission):
             "create": True,
             "destroy": is_editable,
             "update": is_editable,
+            "partial_update": is_editable,
+            "histories": is_editable,
+            "restore": is_editable,
         }
         return permission.get(view.action, False)
 
@@ -67,13 +82,16 @@ class RoleAPI(viewsets.ModelViewSet[Role]):
     ordering = ["name"]
 
     def get_queryset(self) -> QuerySet[Role]:
-        base_queryset = Role.objects.filter(is_active=True).prefetch_related(
+        base_queryset = Role.objects.all()
+        if self.action not in ("histories", "restore"):
+            base_queryset = base_queryset.filter(is_active=True)
+        base_queryset = base_queryset.prefetch_related(
             Prefetch("users", queryset=User.objects.filter(is_active=True)),
             Prefetch("groups", queryset=Group.objects.filter(is_active=True)),
             Prefetch("admin_users", queryset=User.objects.filter(is_active=True)),
             Prefetch("admin_groups", queryset=Group.objects.filter(is_active=True)),
         )
-        if self.action == "retrieve":
+        if self.action in ("retrieve", "histories", "restore"):
             return base_queryset
         return get_permitted_roles(cast(User, self.request.user), base_queryset)
 
@@ -81,8 +99,64 @@ class RoleAPI(viewsets.ModelViewSet[Role]):
         serializer: dict[str, type[serializers.Serializer[Any]]] = {
             "create": RoleCreateUpdateSerializer,
             "update": RoleCreateUpdateSerializer,
+            "histories": RoleHistorySerializer,
+            "restore": RoleRestoreSerializer,
         }
         return serializer.get(self.action, RoleSerializer)
+
+    @extend_schema(responses={202: RoleJobSerializer})
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        role = self.get_object()
+        serializer = self.get_serializer(role, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return self.enqueue_change(role, JobOperation.EDIT_ROLE, {"data": dict(request.data)})
+
+    @extend_schema(responses={202: RoleJobSerializer})
+    def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        return self.enqueue_change(self.get_object(), JobOperation.DELETE_ROLE, {})
+
+    def enqueue_change(
+        self, role: Role, operation: JobOperation, params: dict[str, Any]
+    ) -> Response:
+        job = Job.new_role_change(
+            cast(User, self.request.user),
+            role.pk,
+            operation,
+            params,
+            text=f"{operation.name}: {role.name} (role #{role.pk})",
+        )
+        transaction.on_commit(job.run)
+        return Response({"job_id": job.pk}, status=status.HTTP_202_ACCEPTED)
+
+    @extend_schema(responses=RoleHistoryListSerializer)
+    def histories(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        role = self.get_object()
+        histories = role.history.select_related("history_user").order_by(
+            "-history_date", "-history_id"
+        )
+        pagination = LimitOffsetPagination()
+        pagination.default_limit = 10
+        pagination.max_limit = 100
+        page = pagination.paginate_queryset(histories, request, view=self)
+        serializer = RoleHistorySerializer(page if page is not None else histories, many=True)
+        response = pagination.get_paginated_response(serializer.data)
+        response.data["role"] = {
+            "id": role.pk,
+            "name": role.name,
+            "is_active": role.is_active,
+            "is_editable": role.is_editable(cast(User, request.user)),
+        }
+        return response
+
+    @extend_schema(request=RoleRestoreSerializer, responses={202: RoleJobSerializer})
+    def restore(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        role = self.get_object()
+        serializer = RoleRestoreSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        history_id = serializer.validated_data["history_id"]
+        data, _ = restore_data(role, history_id, cast(User, request.user))
+        validate_role_data(role, data, cast(User, request.user))
+        return self.enqueue_change(role, JobOperation.RESTORE_ROLE, {"history_id": history_id})
 
 
 class RoleImportAPI(generics.GenericAPIView[Any]):

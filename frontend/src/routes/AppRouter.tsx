@@ -48,6 +48,7 @@ import {
   networkPath,
   restoreEntryPath,
   rolePath,
+  roleHistoryPath,
   rolesPath,
   showEntryHistoryPath,
   topPath,
@@ -156,6 +157,10 @@ const JobListPage = lazy(() =>
 const LoginPage = lazy(() =>
   import("pages/LoginPage").then((m) => ({ default: m.LoginPage })),
 );
+const RoleHistoryPage = lazy(() =>
+  import("pages/RoleHistoryPage").then((m) => ({ default: m.RoleHistoryPage })),
+);
+
 const RoleEditPage = lazy(() =>
   import("pages/RoleEditPage").then((m) => ({ default: m.RoleEditPage })),
 );
@@ -330,6 +335,10 @@ export const AppRouter: FC<Props> = ({
           <Route path={newUserPath()} element={<UserEditPage />} />
           <Route path={userPath(":userId")} element={<UserEditPage />} />
           <Route path={usersPath()} element={<UserListPage />} />
+          <Route
+            path={roleHistoryPath(":roleId")}
+            element={<RoleHistoryPage />}
+          />
           <Route path={newRolePath()} element={<RoleEditPage />} />
           <Route path={rolePath(":roleId")} element={<RoleEditPage />} />
           <Route path={rolesPath()} element={<RoleListPage />} />

@@ -8,6 +8,7 @@ from rest_framework import serializers
 from acl.models import ACLBase
 from airone.lib.drf import RequiredParameterError
 from group.models import Group
+from role.history import permission_target_names
 from role.models import Role
 from user.models import User
 
@@ -129,6 +130,18 @@ class RoleCreateUpdateSerializer(serializers.ModelSerializer[Role]):
             "admin_users",
             "admin_groups",
         ]
+
+    def create(self, validated_data: dict[str, Any]) -> Role:
+        members = {
+            key: validated_data.pop(key, [])
+            for key in ("users", "groups", "admin_users", "admin_groups")
+        }
+        role = Role(**validated_data)
+        role._history_user = self.context["request"].user
+        role.save()
+        for key, values in members.items():
+            getattr(role, key).set(values)
+        return role
 
     def validate(self, role: OrderedDict[str, Any]) -> OrderedDict[str, Any]:
         if not role.get("admin_users") and not role.get("admin_groups"):
@@ -269,3 +282,77 @@ class RoleImportSerializer(serializers.ListSerializer[Role]):
         if errors:
             raise serializers.ValidationError({"roles": errors})
         return roles
+
+
+class RoleHistorySerializer(serializers.ModelSerializer[Any]):
+    relations = serializers.SerializerMethodField()
+
+    @extend_schema_field(serializers.DictField())
+    def get_relations(self, obj: Any) -> dict[str, Any]:
+        if not hasattr(self, "_permission_names"):
+            records = (
+                self.parent.instance
+                if isinstance(self.parent, serializers.ListSerializer)
+                else [obj]
+            )
+            if records is None:
+                records = [obj]
+            permissions = [
+                permission
+                for record in records
+                for permission in record.relations.get("permissions", [])
+                if not permission.get("name")
+            ]
+            self._permission_names = permission_target_names(permissions)
+        names = self._permission_names
+        return {
+            **obj.relations,
+            "permissions": [
+                {
+                    **permission,
+                    "name": permission.get("name") or names.get(permission.get("codename")),
+                }
+                for permission in obj.relations.get("permissions", [])
+            ],
+        }
+
+    history_user: serializers.SlugRelatedField[User] = serializers.SlugRelatedField(
+        slug_field="username", read_only=True
+    )
+
+    class Meta:
+        model = Role.history.model
+        fields = [
+            "history_id",
+            "history_date",
+            "history_user",
+            "history_type",
+            "history_change_reason",
+            "name",
+            "description",
+            "is_active",
+            "relations",
+        ]
+
+
+class RoleRestoreSerializer(serializers.Serializer[Any]):
+    history_id = serializers.IntegerField(min_value=1)
+
+
+class RoleJobSerializer(serializers.Serializer[Any]):
+    job_id = serializers.IntegerField()
+
+
+class RoleHistoryTargetSerializer(serializers.Serializer[Any]):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    is_active = serializers.BooleanField()
+    is_editable = serializers.BooleanField()
+
+
+class RoleHistoryListSerializer(serializers.Serializer[Any]):
+    role = RoleHistoryTargetSerializer()
+    count = serializers.IntegerField()
+    next = serializers.URLField(allow_null=True)
+    previous = serializers.URLField(allow_null=True)
+    results = RoleHistorySerializer(many=True)

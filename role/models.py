@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 from django.contrib.auth.models import Permission
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Q, QuerySet
 from simple_history.models import HistoricalRecords
 
@@ -18,6 +18,14 @@ if TYPE_CHECKING:
     from user.models import User
 
 
+class RoleHistoryRelations(models.Model):
+    # Reverse permission relations cannot be tracked with m2m_fields.
+    relations = models.JSONField(default=dict)
+
+    class Meta:
+        abstract = True
+
+
 class Role(models.Model):
     name = models.CharField(max_length=200, unique=True)
     is_active = models.BooleanField(default=True)
@@ -27,6 +35,11 @@ class Role(models.Model):
     groups = models.ManyToManyField("group.Group", related_name="role", blank=True)
     admin_users = models.ManyToManyField("user.User", related_name="admin_role", blank=True)
     admin_groups = models.ManyToManyField("group.Group", related_name="admin_role", blank=True)
+
+    history = HistoricalRecords(bases=[RoleHistoryRelations])
+    _history_user: "User | None"
+    _change_reason: str
+    skip_history_when_saving: bool
 
     @classmethod
     def editable(kls, user: "User", admin_users: list["User"], admin_groups: list["Group"]) -> bool:
@@ -99,7 +112,7 @@ class Role(models.Model):
         Override Model.save method of Django
         """
         max_roles: int | None = settings.MAX_ROLES
-        if max_roles and Role.objects.count() >= max_roles:
+        if self._state.adding and max_roles and Role.objects.count() >= max_roles:
             raise RuntimeError("The number of roles is over the limit")
         return super(Role, self).save(*args, **kwargs)
 
@@ -127,7 +140,7 @@ class Role(models.Model):
             params={"role_id": self.id},
         )
 
-        job_register_referrals.run()
+        transaction.on_commit(job_register_referrals.run)
 
     def get_current_permission(self, aclbase: "ACLBase") -> int:
         permissions = [
@@ -191,6 +204,9 @@ class HistoricalPermission(Permission):
         Q(codename="%s.%s" % (aclbase.id, ACLType.Readable.id))
     )
     """
+
+    _history_user: "User | None"
+    _change_reason: str
 
     roles = models.ManyToManyField(Role, related_name="permissions", blank=True)
     history = HistoricalRecords(m2m_fields=[roles])

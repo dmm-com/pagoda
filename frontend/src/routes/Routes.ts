@@ -82,3 +82,6 @@ export const newCategoryPath = () => basePath + "categories/new";
 export const listCategoryPath = () => basePath + "categories/list";
 export const editCategoryPath = (categoryId: number | string) =>
   basePath + `categories/${categoryId}/edit`;
+
+export const roleHistoryPath = (roleId: number | string) =>
+  `/ui/roles/${roleId}/history`;
