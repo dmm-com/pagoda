@@ -43,6 +43,11 @@ import {
   AttrsFilter,
   ENTRY_NAME_SORT_TARGET,
 } from "services/entry/AdvancedSearch";
+import {
+  getAdvancedSearchColumnOrderKey,
+  readAdvancedSearchColumnOrder,
+  writeAdvancedSearchColumnOrder,
+} from "services/entry/AdvancedSearchColumnOrder";
 
 const StyledIconButton = styled(IconButton)(({ theme }) => ({
   margin: theme.spacing(1),
@@ -68,18 +73,6 @@ const StyledTableRow = styled(TableRow)({
     padding: "8px 16px",
   },
 });
-
-const readColumnOrder = (key: string): string[] => {
-  try {
-    const value: unknown = JSON.parse(localStorage.getItem(key) ?? "[]");
-    return Array.isArray(value) &&
-      value.every((name) => typeof name === "string")
-      ? [...new Set(value)]
-      : [];
-  } catch {
-    return [];
-  }
-};
 
 interface Props {
   results: AdvancedSearchResult;
@@ -150,15 +143,18 @@ export const SearchResults: FC<Props> = ({
     return [_attrNames, _attrTypes];
   }, [defaultAttrsFilter, results.values, entityAttrs]);
 
-  const columnOrderKey = `advanced_search_column_order:${searchAllEntities ? "all" : [...entityIds].sort((a, b) => a - b).join(",")}`;
+  const columnOrderKey = getAdvancedSearchColumnOrderKey(
+    entityIds,
+    searchAllEntities,
+  );
   const [columnOrder, setColumnOrder] = useState(() => ({
     key: columnOrderKey,
-    names: readColumnOrder(columnOrderKey),
+    names: readAdvancedSearchColumnOrder(columnOrderKey),
   }));
   const savedOrder =
     columnOrder.key === columnOrderKey
       ? columnOrder.names
-      : readColumnOrder(columnOrderKey);
+      : readAdvancedSearchColumnOrder(columnOrderKey);
   const availableColumns = [ENTRY_NAME_SORT_TARGET, ...availableAttrNames];
   const columnNames = savedOrder.includes(ENTRY_NAME_SORT_TARGET)
     ? [
@@ -182,11 +178,7 @@ export const SearchResults: FC<Props> = ({
     next.splice(from, 1);
     next.splice(to, 0, source);
     setColumnOrder({ key: columnOrderKey, names: next });
-    try {
-      localStorage.setItem(columnOrderKey, JSON.stringify(next));
-    } catch {
-      // The current page still keeps the new order when storage is unavailable.
-    }
+    writeAdvancedSearchColumnOrder(columnOrderKey, next);
   };
 
   const joinedAttrSources = useMemo(

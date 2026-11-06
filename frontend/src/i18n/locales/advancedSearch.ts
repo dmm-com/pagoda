@@ -5,6 +5,8 @@ export const advancedSearchMessages = defineMessages({
     // AdvancedSearchModal
     "advancedSearch.modal.resetAttrTitle": "検索属性の再設定",
     "advancedSearch.modal.selectAttrPlaceholder": "属性を選択",
+    "advancedSearch.modal.columnOrder": "列の順番（ドラッグして変更）",
+    "advancedSearch.modal.moveAttribute": "{{name}}列をドラッグして移動",
     "advancedSearch.modal.includeReferral": "参照アイテムも含める",
 
     // AdvancedSearchEditModal
@@ -108,6 +110,8 @@ export const advancedSearchMessages = defineMessages({
     // AdvancedSearchModal
     "advancedSearch.modal.resetAttrTitle": "Reset search attributes",
     "advancedSearch.modal.selectAttrPlaceholder": "Select attributes",
+    "advancedSearch.modal.columnOrder": "Column order (drag to change)",
+    "advancedSearch.modal.moveAttribute": "Drag to move {{name}} column",
     "advancedSearch.modal.includeReferral": "Include referral entries",
 
     // AdvancedSearchEditModal
