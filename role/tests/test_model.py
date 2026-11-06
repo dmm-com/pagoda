@@ -229,7 +229,8 @@ class ModelTest(RoleTestBase):
         )
 
         self.add_entry(user, "e-1", entity, values={"role": self.role})
-        self.role.delete()
+        with self.captureOnCommitCallbacks(execute=True):
+            self.role.delete()
 
         resp1 = AdvancedSearchService.search_entries(user, [entity.id], [AttrHint(name="role")])
         self.assertEqual(resp1.ret_values[0].attrs["role"]["value"]["name"], "")

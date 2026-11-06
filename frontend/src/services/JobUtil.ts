@@ -62,11 +62,13 @@ export const jobOperationLabel = (jobOperation: number | undefined): string => {
     case JobOperations.CREATE_ENTITY_V2:
     case JobOperations.CREATE_ENTRY_V2:
       return translate("job.operation.create");
+    case JobOperations.EDIT_ROLE:
     case JobOperations.EDIT_ENTRY:
     case JobOperations.EDIT_ENTITY:
     case JobOperations.EDIT_ENTITY_V2:
     case JobOperations.EDIT_ENTRY_V2:
       return translate("job.operation.edit");
+    case JobOperations.DELETE_ROLE:
     case JobOperations.DELETE_ENTITY:
     case JobOperations.DELETE_ENTRY:
     case JobOperations.DELETE_ENTITY_V2:
@@ -85,6 +87,7 @@ export const jobOperationLabel = (jobOperation: number | undefined): string => {
     case JobOperations.COPY_ENTRY:
     case JobOperations.DO_COPY_ENTRY:
       return translate("job.operation.copy");
+    case JobOperations.RESTORE_ROLE:
     case JobOperations.RESTORE_ENTRY:
       return translate("job.operation.restore");
     case JobOperations.BULK_EDIT_ENTRY:

@@ -67,7 +67,9 @@ describe("RoleList", () => {
     });
 
     await waitFor(() => {
-      screen.getByText("ロールの削除が完了しました");
+      screen.getByText(
+        "ロールの削除を受け付けました。ジョブ一覧で実行結果を確認してください。",
+      );
     });
   });
 
