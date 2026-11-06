@@ -49,6 +49,138 @@ describe("SearchResults", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
+  });
+
+  test("reorders attribute headers and values and restores the order after remount", () => {
+    const results = createMockResults(1);
+    results.values[0]!.attrs = {
+      First: {
+        type: EntryAttributeTypeTypeEnum.STRING,
+        isReadable: true,
+        value: { asString: "First value" },
+      },
+      Second: {
+        type: EntryAttributeTypeTypeEnum.STRING,
+        isReadable: true,
+        value: { asString: "Second value" },
+      },
+    };
+    const attrsFilter = {
+      First: {
+        filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+        keyword: "",
+      },
+      Second: {
+        filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+        keyword: "",
+      },
+    };
+    const props = {
+      ...defaultProps,
+      results,
+      defaultAttrsFilter: attrsFilter,
+    };
+    const view = render(<SearchResults {...props} />, {
+      wrapper: TestWrapper,
+    });
+    const dataTransfer = {
+      effectAllowed: "none",
+      dropEffect: "none",
+      setData: vi.fn(),
+    };
+
+    fireEvent.dragStart(
+      screen.getByRole("button", { name: /First列をドラッグ/ }),
+      {
+        dataTransfer,
+      },
+    );
+    fireEvent.dragOver(screen.getByText("Second").closest("th")!, {
+      dataTransfer,
+    });
+    fireEvent.drop(screen.getByText("Second").closest("th")!, {
+      dataTransfer,
+    });
+
+    const attributeHeaders = () =>
+      Array.from(
+        view.container.querySelectorAll("th[data-search-column]"),
+        (cell) => cell.getAttribute("data-search-column"),
+      );
+    const attributeValues = () =>
+      Array.from(
+        view.container.querySelectorAll("td[data-search-attribute]"),
+        (cell) => cell.textContent?.trim(),
+      );
+    expect(attributeHeaders()).toEqual(["__entry_name__", "Second", "First"]);
+    expect(attributeValues()).toEqual(["Second value", "First value"]);
+
+    view.unmount();
+    const restored = render(<SearchResults {...props} />, {
+      wrapper: TestWrapper,
+    });
+    expect(
+      Array.from(
+        restored.container.querySelectorAll("th[data-search-column]"),
+        (cell) => cell.getAttribute("data-search-column"),
+      ),
+    ).toEqual(["__entry_name__", "Second", "First"]);
+  });
+
+  test("moves the item name column and restores its position after remount", () => {
+    const results = createMockResults(1);
+    results.values[0]!.attrs.First = {
+      type: EntryAttributeTypeTypeEnum.STRING,
+      isReadable: true,
+      value: { asString: "First value" },
+    };
+    const props = {
+      ...defaultProps,
+      results,
+      defaultAttrsFilter: {
+        First: {
+          filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+          keyword: "",
+        },
+      },
+    };
+    const view = render(<SearchResults {...props} />, {
+      wrapper: TestWrapper,
+    });
+    const dataTransfer = {
+      effectAllowed: "none",
+      dropEffect: "none",
+      setData: vi.fn(),
+    };
+    fireEvent.dragStart(
+      screen.getByRole("button", { name: /アイテム名列をドラッグ/ }),
+      { dataTransfer },
+    );
+    const target = screen.getByText("First").closest("th")!;
+    fireEvent.dragOver(target, { dataTransfer });
+    fireEvent.drop(target, { dataTransfer });
+
+    const columnHeaders = (container: HTMLElement) =>
+      Array.from(container.querySelectorAll("th[data-search-column]"), (cell) =>
+        cell.getAttribute("data-search-column"),
+      );
+    expect(columnHeaders(view.container)).toEqual(["First", "__entry_name__"]);
+    const row = screen.getByText("Entry 1").closest("tr")!;
+    expect(
+      Array.from(row.querySelectorAll("td:not(:first-child)"), (cell) =>
+        cell.textContent?.trim(),
+      ),
+    ).toEqual(["First value", "Entry 1"]);
+
+    view.unmount();
+    const restored = render(<SearchResults {...props} />, {
+      wrapper: TestWrapper,
+    });
+    expect(columnHeaders(restored.container)).toEqual([
+      "First",
+      "__entry_name__",
+    ]);
   });
 
   describe("rendering", () => {
