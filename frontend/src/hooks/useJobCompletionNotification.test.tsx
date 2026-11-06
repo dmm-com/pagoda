@@ -64,6 +64,28 @@ describe("useJobCompletionNotification", () => {
     expect(clicks).toEqual(["/job/api/v2/301/download?encode=utf-8"]);
   });
 
+  test("downloads a shared completed export job only once across tabs", () => {
+    const job = makeJob({
+      id: 306,
+      operation: JobOperations.EXPORT_ENTRY_V2,
+      status: JobStatuses.DONE,
+      createdAt: new Date(Date.now() + 1000),
+    });
+    const firstTab = renderHook(
+      () => useJobCompletionNotification([job]),
+      { wrapper },
+    );
+    const secondTab = renderHook(
+      () => useJobCompletionNotification([job]),
+      { wrapper },
+    );
+
+    expect(HTMLAnchorElement.prototype.click).toHaveBeenCalledTimes(1);
+
+    firstTab.unmount();
+    secondTab.unmount();
+  });
+
   test("configuration export downloads automatically and keeps a download link", async () => {
     const job = makeJob({
       id: 302,
