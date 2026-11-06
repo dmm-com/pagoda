@@ -84,7 +84,7 @@
     "@mui/material": "^6.4.6",
     "@mui/system": "^6.4.6",
     "@mui/x-date-pickers": "^7.27.1",
-    "@openapitools/openapi-generator-cli": "2.25.2",
+    "@openapitools/openapi-generator-cli": "2.42.0",
     "@playwright/test": "^1.57.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
