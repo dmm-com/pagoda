@@ -624,7 +624,7 @@ def restore_entry(self: Task[Any, Any], job: Job) -> JobStatus:
     # for history record
     entry._history_user = job.user
 
-    entry.restore()
+    entry.restore(user=job.user)
 
     # remove status flag which is set before calling this
     entry.del_status(Entry.STATUS_CREATING)

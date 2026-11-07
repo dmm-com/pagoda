@@ -285,7 +285,7 @@ class ModelOperationsTest(BaseModelTest):
         entries[1].attrs.get(schema__name="obj").add_value(self._user, ref_entries[2])
 
         # delete entry-0 and check the existance of each referred entries
-        entries[0].delete()
+        entries[0].delete(deleted_user=self._user)
 
         # sync referral entries from database
         [x.refresh_from_db() for x in ref_entries]
@@ -331,7 +331,7 @@ class ModelOperationsTest(BaseModelTest):
         exclude_entry.attrs.get(schema__name="obj").add_value(self._user, ref_entry)
 
         # delete entry-0: ref_entry should be deleted because exclude_entity is in the exclude list
-        entry.delete()
+        entry.delete(deleted_user=self._user)
 
         ref_entry.refresh_from_db()
         self.assertFalse(ref_entry.is_active)
@@ -371,7 +371,7 @@ class ModelOperationsTest(BaseModelTest):
         other_entry.attrs.get(schema__name="obj").add_value(self._user, ref_entry)
 
         # delete entry-0: ref_entry should be preserved because other_entity is NOT excluded
-        entry.delete()
+        entry.delete(deleted_user=self._user)
 
         ref_entry.refresh_from_db()
         self.assertTrue(ref_entry.is_active)
@@ -398,14 +398,14 @@ class ModelOperationsTest(BaseModelTest):
 
             attr: Attribute = entry.attrs.get(schema=entity_attr)
             attr.add_value(self._user, info["val"])
-            attr.may_remove_referral()
+            attr.may_remove_referral(user=self._user)
 
             self._entry.refresh_from_db()
             self.assertFalse(self._entry.is_active)
 
             # restore to pre-test state
             attr.add_value(self._user, info["del"])
-            self._entry.restore()
+            self._entry.restore(user=self._user)
 
     def test_order_of_array_named_ref_entries(self):
         ref_entity = Entity.objects.create(name="referred_entity", created_user=self._user)
