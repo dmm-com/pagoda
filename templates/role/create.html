@@ -61,7 +61,29 @@
 {% endblock %}
 
 {% block script %}
+{{ user_info|json_script:"role-user-info" }}
+{{ admin_user_info|json_script:"role-admin-user-info" }}
+{{ group_info|json_script:"role-group-info" }}
+{{ admin_group_info|json_script:"role-admin-group-info" }}
 <script>
+
+// Escape a value before interpolating it into an HTML string, so that
+// user/group names can never introduce markup.
+function escape_html(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Read a JSON payload rendered by the json_script template filter.
+function read_json_script(element_id) {
+  const elem = document.getElementById(element_id);
+
+  return elem ? JSON.parse(elem.textContent) : {};
+}
 
 function convert_dict_to_list(dict_obj, admin_dict_obj) {
   // attach is_checked_member attribute if it's not existed
@@ -81,12 +103,14 @@ function convert_dict_to_list(dict_obj, admin_dict_obj) {
 }
 
 
-const USERS = convert_dict_to_list({{ user_info|safe }}, {{ admin_user_info|safe }});
-const GROUPS = convert_dict_to_list({{ group_info|safe }}, {{ admin_group_info|safe }});
-/*
-const ADMIN_USERS = convert_dict_to_list({{ admin_user_info|safe }});
-const ADMIN_GROUPS = convert_dict_to_list({{ admin_group_info|safe }});
-*/
+const USERS = convert_dict_to_list(
+  read_json_script('role-user-info'),
+  read_json_script('role-admin-user-info')
+);
+const GROUPS = convert_dict_to_list(
+  read_json_script('role-group-info'),
+  read_json_script('role-admin-group-info')
+);
 const MAXIMUM_LIST_COUNT = 20;
 
 
@@ -236,17 +260,17 @@ function register_checkbox_event_handler() {
 function generate_user_group_content(obj) {
   function _generate_checkbox(is_checked, class_context) {
     if (is_checked) {
-      return `<input type="checkbox" value="${ obj.id }" obj_type="${ obj.type }" class="${ class_context }" checked/>`;
+      return `<input type="checkbox" value="${ escape_html(obj.id) }" obj_type="${ escape_html(obj.type) }" class="${ escape_html(class_context) }" checked/>`;
     } else {
-      return `<input type="checkbox" value="${ obj.id }" obj_type="${ obj.type }" class="${ class_context }"/>`;
+      return `<input type="checkbox" value="${ escape_html(obj.id) }" obj_type="${ escape_html(obj.type) }" class="${ escape_html(class_context) }"/>`;
     }
   }
 
-  return `<tr class="member" obj_type="${ obj.type }" obj_id="${ obj.id }">` +
+  return `<tr class="member" obj_type="${ escape_html(obj.type) }" obj_id="${ escape_html(obj.id) }">` +
       `<td>${ _generate_checkbox(obj.is_checked_member, "member") }</td>` +
       `<td>${ _generate_checkbox(obj.is_checked_admin, "admin") }</td>` +
-      `<td class="member_name">${ obj.name }</td>` +
-      `<td class="member_type">${ obj.type }</td>` +
+      `<td class="member_name">${ escape_html(obj.name) }</td>` +
+      `<td class="member_type">${ escape_html(obj.type) }</td>` +
     `</tr>`;
 }
 

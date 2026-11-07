@@ -1,5 +1,7 @@
 import json
 
+from airone.lib.test import extract_json_script
+from group.models import Group
 from job.models import Job, JobOperation
 from role.models import Role
 
@@ -24,6 +26,40 @@ class ViewTest(RoleTestBase):
 
         resp = self.client.get("/role/create/")
         self.assertEqual(resp.status_code, 200)
+
+    def test_get_create_does_not_emit_raw_group_name(self):
+        self.guest_login()
+        payload = "</script><script>alert(1)</script>"
+        malicious_group = Group.objects.create(name=payload)
+
+        resp = self.client.get("/role/create/")
+        self.assertEqual(resp.status_code, 200)
+
+        content = resp.content.decode("utf-8")
+        self.assertNotIn(payload, content)
+
+        # The group name still reaches the page as JSON data, unchanged
+        group_info = extract_json_script(content, "role-group-info")
+        self.assertEqual(group_info[str(malicious_group.id)]["name"], payload)
+
+    def test_get_edit_does_not_emit_raw_group_name(self):
+        user = self.guest_login()
+        role = Role.objects.create(name="Role")
+        role.admin_users.add(user)
+
+        payload = "</script><script>alert(1)</script>"
+        malicious_group = Group.objects.create(name=payload)
+        role.groups.add(malicious_group)
+
+        resp = self.client.get("/role/edit/%d/" % role.id)
+        self.assertEqual(resp.status_code, 200)
+
+        content = resp.content.decode("utf-8")
+        self.assertNotIn(payload, content)
+
+        group_info = extract_json_script(content, "role-group-info")
+        self.assertEqual(group_info[str(malicious_group.id)]["name"], payload)
+        self.assertEqual(group_info[str(malicious_group.id)]["is_checked"], "true")
 
     def test_post_create(self):
         login_user = self.guest_login()

@@ -87,7 +87,7 @@ function handleSelectNode(e, data) {
       data: groupInfo.members.map(function(u) {
         return {
           selectable: false,
-          text: u.username,
+          text: escape_tree_node_text(u.username),
         }
       }),
     });
