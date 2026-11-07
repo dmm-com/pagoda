@@ -1,9 +1,17 @@
 /**
  */
 
-import { act, render, screen, fireEvent } from "@testing-library/react";
+import {
+  act,
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+} from "@testing-library/react";
 
-import { LoginPage } from "./LoginPage";
+import { aironeApiClient } from "../repository/AironeApiClient";
+
+import { DEFAULT_LOGIN_NEXT, LoginPage, resolveLoginNext } from "./LoginPage";
 
 import { TestWrapper } from "TestWrapper";
 import i18n from "i18n/config";
@@ -179,6 +187,197 @@ describe("LoginPage", () => {
       const loginButton = screen.getByRole("button", { name: "Login" });
       expect(loginButton).toHaveAttribute("type", "submit");
     });
+  });
+});
+
+const ORIGIN = "http://localhost:3000";
+
+describe("login next sanitization", () => {
+  const originalLocation = window.location;
+
+  const stubLocation = () => {
+    const stub = {
+      origin: ORIGIN,
+      href: `${ORIGIN}/auth/login/`,
+      pathname: "/auth/login/",
+      search: "",
+      assign: vi.fn(),
+      replace: vi.fn(),
+    };
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      writable: true,
+      value: stub,
+    });
+
+    return stub;
+  };
+
+  const submitLogin = async () => {
+    const loginButton = screen.getByRole("button", { name: "Login" });
+    await act(async () => {
+      fireEvent.click(loginButton);
+    });
+  };
+
+  // undici's FormData (installed globally by vitest.setup.ts) cannot convert a
+  // jsdom form element, so provide a minimal stand-in for the submit path.
+  class FormDataStub {
+    append() {}
+    get() {
+      return null;
+    }
+  }
+
+  beforeEach(() => {
+    vi.stubGlobal("FormData", FormDataStub as unknown as typeof FormData);
+    vi.mocked(aironeApiClient.postLogin).mockResolvedValue({
+      type: "opaqueredirect",
+    } as unknown as Response);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      writable: true,
+      value: originalLocation,
+    });
+  });
+
+  test("falls back to the default path for a javascript: URL", async () => {
+    const location = stubLocation();
+    loginContext.next = "javascript:alert(document.cookie)";
+
+    render(<LoginPage />, { wrapper: TestWrapper });
+    await submitLogin();
+
+    await waitFor(() => {
+      expect(location.assign).toHaveBeenCalledWith(DEFAULT_LOGIN_NEXT);
+    });
+  });
+
+  test("falls back to the default path for a javascript: URL that hides behind a relative-looking suffix", async () => {
+    const location = stubLocation();
+    // The login page used to decode JS escape sequences, so a value like this
+    // could reach the SPA as a javascript: URL that also contains '/ui/'.
+    loginContext.next =
+      "javascript:fetch('//evil.example/'+document.cookie)//ui/";
+
+    render(<LoginPage />, { wrapper: TestWrapper });
+    await submitLogin();
+
+    await waitFor(() => {
+      expect(location.assign).toHaveBeenCalledWith(DEFAULT_LOGIN_NEXT);
+    });
+  });
+
+  test("falls back to the default path for a different origin", async () => {
+    const location = stubLocation();
+    loginContext.next = "https://evil.example/ui/";
+
+    render(<LoginPage />, { wrapper: TestWrapper });
+    await submitLogin();
+
+    await waitFor(() => {
+      expect(location.assign).toHaveBeenCalledWith(DEFAULT_LOGIN_NEXT);
+    });
+  });
+
+  test("falls back to the default path for a protocol-relative URL of another origin", async () => {
+    const location = stubLocation();
+    loginContext.next = "//evil.example/ui/";
+
+    render(<LoginPage />, { wrapper: TestWrapper });
+    await submitLogin();
+
+    await waitFor(() => {
+      expect(location.assign).toHaveBeenCalledWith(DEFAULT_LOGIN_NEXT);
+    });
+  });
+
+  test("navigates to a same-origin path", async () => {
+    const location = stubLocation();
+    loginContext.next = "/ui/entries/1";
+
+    render(<LoginPage />, { wrapper: TestWrapper });
+    await submitLogin();
+
+    await waitFor(() => {
+      expect(location.assign).toHaveBeenCalledWith(`${ORIGIN}/ui/entries/1`);
+    });
+  });
+
+  test("navigates to an absolute same-origin URL", async () => {
+    const location = stubLocation();
+    loginContext.next = `${ORIGIN}/ui/entities/2/entries/`;
+
+    render(<LoginPage />, { wrapper: TestWrapper });
+    await submitLogin();
+
+    await waitFor(() => {
+      expect(location.assign).toHaveBeenCalledWith(
+        `${ORIGIN}/ui/entities/2/entries/`,
+      );
+    });
+  });
+});
+
+describe("resolveLoginNext", () => {
+  test("returns the default path for unusable values", () => {
+    expect(resolveLoginNext(null)).toBe(DEFAULT_LOGIN_NEXT);
+    expect(resolveLoginNext(undefined)).toBe(DEFAULT_LOGIN_NEXT);
+    expect(resolveLoginNext("")).toBe(DEFAULT_LOGIN_NEXT);
+    expect(resolveLoginNext("javascript:alert(1)")).toBe(DEFAULT_LOGIN_NEXT);
+    expect(resolveLoginNext("JAVASCRIPT:alert(1)")).toBe(DEFAULT_LOGIN_NEXT);
+    expect(resolveLoginNext("data:text/html,<script>alert(1)</script>")).toBe(
+      DEFAULT_LOGIN_NEXT,
+    );
+    expect(resolveLoginNext("blob:https://evil.example/uuid")).toBe(
+      DEFAULT_LOGIN_NEXT,
+    );
+    expect(resolveLoginNext("https://evil.example/ui/")).toBe(
+      DEFAULT_LOGIN_NEXT,
+    );
+    expect(resolveLoginNext("//evil.example/ui/")).toBe(DEFAULT_LOGIN_NEXT);
+    // a single leading backslash is normalized to a relative path, so it stays
+    // on this origin; two of them (or '/\\') select a foreign origin and are
+    // rejected
+    expect(resolveLoginNext("\\evil.example/ui/")).toBe(
+      `${window.location.origin}/evil.example/ui/`,
+    );
+    expect(resolveLoginNext("/\\evil.example/ui/")).toBe(DEFAULT_LOGIN_NEXT);
+    expect(resolveLoginNext("\\\\evil.example/ui/")).toBe(DEFAULT_LOGIN_NEXT);
+    // userinfo tricks must not change the origin
+    expect(resolveLoginNext(`http://localhost:3000@evil.example/ui/`)).toBe(
+      DEFAULT_LOGIN_NEXT,
+    );
+    // unparsable values fall back instead of throwing
+    expect(resolveLoginNext("http://[")).toBe(DEFAULT_LOGIN_NEXT);
+  });
+
+  test("keeps same-origin destinations", () => {
+    expect(resolveLoginNext("/ui/")).toBe(`${window.location.origin}/ui/`);
+    expect(resolveLoginNext("/ui/entries/1?x=1")).toBe(
+      `${window.location.origin}/ui/entries/1?x=1`,
+    );
+    expect(resolveLoginNext(`${window.location.origin}/ui/`)).toBe(
+      `${window.location.origin}/ui/`,
+    );
+    // surrounding whitespace is stripped by the URL parser
+    expect(resolveLoginNext("  /ui/entries/1  ")).toBe(
+      `${window.location.origin}/ui/entries/1`,
+    );
+    expect(resolveLoginNext("\t/ui/entries/1")).toBe(
+      `${window.location.origin}/ui/entries/1`,
+    );
+  });
+
+  test("renders the login form instead of crashing on an unparsable next", () => {
+    loginContext.next = "http://[";
+
+    expect(() => render(<LoginPage />, { wrapper: TestWrapper })).not.toThrow();
+    expect(screen.getByLabelText("Username")).toBeInTheDocument();
   });
 });
 
