@@ -29,6 +29,38 @@ import { useTranslation } from "hooks/useTranslation";
 import { iframeLoginCompletePath, iframePath, loginPath } from "routes/Routes";
 import { ServerContext } from "services/ServerContext";
 
+// Destination used when the `next` parameter cannot be trusted.
+export const DEFAULT_LOGIN_NEXT = "/ui/";
+
+// Resolve the post-login destination safely. The `next` value comes from the
+// query string, so it must never be used verbatim: only same-origin http(s)
+// URLs are followed. Anything else (javascript:, data:, a foreign origin, or a
+// value the URL parser rejects) falls back to the default in-app path.
+export const resolveLoginNext = (
+  loginNext: string | null | undefined,
+): string => {
+  if (!loginNext) {
+    return DEFAULT_LOGIN_NEXT;
+  }
+
+  let url: URL;
+  try {
+    url = new URL(loginNext, window.location.origin);
+  } catch {
+    return DEFAULT_LOGIN_NEXT;
+  }
+
+  if (url.origin !== window.location.origin) {
+    return DEFAULT_LOGIN_NEXT;
+  }
+
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    return DEFAULT_LOGIN_NEXT;
+  }
+
+  return url.href;
+};
+
 export const LoginPage: FC = () => {
   const serverContext = ServerContext.getInstance();
   const navigate = useNavigate();
@@ -102,7 +134,7 @@ export const LoginPage: FC = () => {
 
     const resp = await aironeApiClient.postLogin(data);
     if (resp.type === "opaqueredirect") {
-      window.location.href = serverContext?.loginNext ?? "";
+      window.location.assign(resolveLoginNext(serverContext?.loginNext));
     } else {
       setIsAlert(true);
     }
@@ -121,7 +153,7 @@ export const LoginPage: FC = () => {
   }, [setOpenPasswordResetConfirmModal]);
 
   const nextUrl = new URL(
-    serverContext?.loginNext || "/",
+    resolveLoginNext(serverContext?.loginNext),
     window.location.origin,
   );
   const isIframeDestination =
