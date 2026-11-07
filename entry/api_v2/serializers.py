@@ -349,14 +349,15 @@ class _DisplayLabelReader:
         if self._role_permissions is None:
             roles = [belonging.role.id for belonging in self.user.belonging_roles()]
             self._role_permissions = {}
-            for permission in Permission.objects.filter(
+            codenames = Permission.objects.filter(
                 historicalpermission__roles__id__in=roles,
                 name__in=[level.name for level in ACLType.all()],
-            ):
-                object_id, separator, _ = permission.codename.partition(".")
+            ).values_list("codename", flat=True)
+            for codename in codenames:
+                object_id, separator, _ = codename.partition(".")
                 if not separator:
                     continue
-                level = int(permission.codename.rsplit(".", 1)[-1])
+                level = int(codename.rsplit(".", 1)[-1])
                 self._role_permissions[object_id] = max(
                     self._role_permissions.get(object_id, 0), level
                 )
@@ -376,7 +377,7 @@ def _display_label_reader(context: Mapping[str, Any]) -> _DisplayLabelReader | N
 
 
 def _resolve_display_label(
-    display_attr_name: str, referred_entry: Entry | None, user: _DisplayLabelReader | None
+    display_attr_name: str, referred_entry: Entry | None, reader: _DisplayLabelReader | None
 ) -> str | None:
     """Resolve the value of `display_attr_name` on `referred_entry` as a label string.
 
@@ -385,7 +386,7 @@ def _resolve_display_label(
     is not supported for label rendering. Recursion is bounded to a single hop
     (OBJECT display_attr yields the referred entry's own name, never a chain).
     """
-    if not display_attr_name or referred_entry is None or user is None:
+    if not display_attr_name or referred_entry is None or reader is None:
         return None
 
     # Prefer prefetched list to avoid N+1; fall back to direct query for
@@ -402,7 +403,7 @@ def _resolve_display_label(
     if not matched:
         return None
     target_attr = matched[0]
-    if not target_attr.schema.is_active or not user.has_permission(target_attr, ACLType.Readable):
+    if not target_attr.schema.is_active or not reader.has_permission(target_attr, ACLType.Readable):
         return None
 
     prefetched_vals = getattr(target_attr, "_display_attrv_list", None)
@@ -435,7 +436,7 @@ def _resolve_display_label(
         if (
             val.referral
             and val.referral.is_active
-            and user.has_permission(val.referral.entry, ACLType.Readable)
+            and reader.has_permission(val.referral.entry, ACLType.Readable)
         ):
             return str(val.referral.entry.name)
         return None
@@ -443,7 +444,7 @@ def _resolve_display_label(
 
 
 def _build_object_payload(
-    referral: ACLBase, display_attr_name: str, user: _DisplayLabelReader | None
+    referral: ACLBase, display_attr_name: str, reader: _DisplayLabelReader | None
 ) -> EntryAttributeValueObject:
     """Build the object payload dict for an object-like attribute value.
 
@@ -457,7 +458,7 @@ def _build_object_payload(
         "name": referral.name,
         "schema": {"id": entry.schema.id, "name": entry.schema.name},
     }
-    label = _resolve_display_label(display_attr_name, entry, user)
+    label = _resolve_display_label(display_attr_name, entry, reader)
     if label is not None:
         payload["display_label"] = label
     return payload
