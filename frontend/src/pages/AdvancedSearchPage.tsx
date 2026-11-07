@@ -86,6 +86,21 @@ export const AdvancedSearchPage: FC = () => {
     });
   }, [selectedEntities, searchAllEntities, selectedAttrs, hasReferral]);
 
+  // Attribute selections only make sense within a model scope, so drop them
+  // when the scope becomes empty instead of keeping hidden stale state.
+  const updateModelScope = (
+    entities: Array<EntityList>,
+    allEntities: boolean,
+  ) => {
+    setSelectedEntities(entities);
+    setSearchAllEntities(allEntities);
+    if (entities.length === 0 && !allEntities) {
+      setSelectedAttrs([]);
+      setAttrName("");
+      setHasReferral(false);
+    }
+  };
+
   const handleChangeInputEntityName = (
     event: SyntheticEvent,
     value: string,
@@ -148,7 +163,7 @@ export const AdvancedSearchPage: FC = () => {
             inputValue={entityName}
             disabled={entitiesLoading}
             onChange={(_, value: Array<EntityList>) =>
-              setSelectedEntities(value)
+              updateModelScope(value, searchAllEntities)
             }
             onInputChange={handleChangeInputEntityName}
             renderInput={(params) => (
@@ -166,7 +181,9 @@ export const AdvancedSearchPage: FC = () => {
             {t("advancedSearch.page.searchAllEntities")}
             <Checkbox
               checked={searchAllEntities}
-              onChange={(e) => setSearchAllEntities(e.target.checked)}
+              onChange={(e) =>
+                updateModelScope(selectedEntities, e.target.checked)
+              }
             />
           </Box>
         </StyledFlexColumnBox>

@@ -143,6 +143,35 @@ describe("AdvancedSearchPage", () => {
     expect(screen.queryByPlaceholderText("属性を選択")).not.toBeInTheDocument();
   });
 
+  test("clear selected attributes when the model scope becomes empty", async () => {
+    const searchAllModels = screen.getByRole("checkbox");
+    await act(async () => {
+      fireEvent.click(searchAllModels);
+    });
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText("属性を選択")).not.toBeDisabled();
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getAllByRole("button", { name: "Open" })[1]);
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("option", { name: "str" }));
+    });
+    expect(screen.getByRole("button", { name: "str" })).toBeInTheDocument();
+
+    // hide the attribute section, then show it again
+    await act(async () => {
+      fireEvent.click(searchAllModels);
+    });
+    await act(async () => {
+      fireEvent.click(searchAllModels);
+    });
+    expect(
+      screen.queryByRole("button", { name: "str" }),
+    ).not.toBeInTheDocument();
+  });
+
   test("show all attributes that are related to the entity", async () => {
     const elemInputEntity = screen.getByPlaceholderText("モデルを選択");
 
