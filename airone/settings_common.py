@@ -50,7 +50,17 @@ class Common(Configuration):  # type: ignore[misc]
     CELERY_TASK_SERIALIZER = "json"
     CELERY_BROKER_HEARTBEAT = 10
 
-    ALLOWED_HOSTS = ["*"]
+    # Host header validation. Production must set AIRONE_ALLOWED_HOSTS to the
+    # real service hostnames (comma separated); "*" disables Django's Host
+    # header validation entirely. The first concrete hostname also drives the
+    # domain of externally-visible links (see airone.lib.canonical), so no
+    # separate canonical-URL setting is needed.
+    ALLOWED_HOSTS = env.list("AIRONE_ALLOWED_HOSTS", default=["*"])
+
+    # Whether to fall back to the request host when no concrete ALLOWED_HOSTS
+    # entry can drive external links. Only development configuration classes
+    # may enable this; production must set a concrete hostname instead.
+    CANONICAL_URL_FALLBACK = False
 
     # https://github.com/adamchainz/django-cors-headers
     # No origins are allowed by default; set AIRONE_CORS_ALLOWED_ORIGINS to a
