@@ -9,6 +9,7 @@ import { RoleListPage } from "./RoleListPage";
 
 import { TestWrapper } from "TestWrapper";
 import i18n from "i18n/config";
+import { ServerContext } from "services/ServerContext";
 
 const server = setupServer(
   // getRoles
@@ -30,7 +31,10 @@ const server = setupServer(
 
 beforeAll(() => server.listen());
 
-afterEach(() => server.resetHandlers());
+afterEach(() => {
+  server.resetHandlers();
+  vi.restoreAllMocks();
+});
 
 afterAll(() => server.close());
 
@@ -50,7 +54,22 @@ describe("RoleListPage", () => {
     expect(result!).toMatchSnapshot();
   });
 
-  test("links to registered users and groups in new tabs", async () => {
+  test.each([
+    true,
+    false,
+  ])("renders member links for isSuperuser=%s", async (isSuperuser) => {
+    vi.spyOn(ServerContext, "getInstance").mockReturnValue(
+      new ServerContext({
+        user: {
+          id: 1,
+          username: "viewer",
+          isSuperuser,
+          isReadonly: false,
+          parentUser: null,
+          email: "",
+        },
+      }),
+    );
     server.use(
       http.get("*/role/api/v2/", () =>
         HttpResponse.json([
@@ -72,17 +91,20 @@ describe("RoleListPage", () => {
       render(<RoleListPage />, { wrapper: TestWrapper });
     });
 
-    const links = [
+    for (const [name, href] of [
       ["member-user", "/ui/users/11"],
-      ["member-group", "/ui/groups/21"],
       ["admin-user", "/ui/users/12"],
+      ["member-group", "/ui/groups/21"],
       ["admin-group", "/ui/groups/22"],
-    ] as const;
-
-    for (const [name, href] of links) {
-      const link = await screen.findByRole("link", { name });
-      expect(link).toHaveAttribute("href", href);
-      expect(link).toHaveAttribute("target", "_blank");
+    ]) {
+      expect(await screen.findByText(name)).toBeInTheDocument();
+      if (isSuperuser) {
+        const link = screen.getByRole("link", { name });
+        expect(link).toHaveAttribute("href", href);
+        expect(link).toHaveAttribute("target", "_blank");
+      } else {
+        expect(screen.queryByRole("link", { name })).not.toBeInTheDocument();
+      }
     }
   });
 
