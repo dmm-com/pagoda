@@ -22,11 +22,12 @@ import { Link } from "react-router";
 
 import { usePagodaSWR } from "../../hooks/usePagodaSWR";
 import { aironeApiClient } from "../../repository/AironeApiClient";
+import { AironeLink } from "../common/AironeLink";
 import { Confirmable } from "../common/Confirmable";
 import { Loading } from "../common/Loading";
 
 import { useTranslation } from "hooks/useTranslation";
-import { rolePath } from "routes/Routes";
+import { groupPath, rolePath, userPath } from "routes/Routes";
 import { ServerContext } from "services";
 import { getGroupDisplayName } from "services/GroupUtil";
 
@@ -51,6 +52,7 @@ const RoleListContent: FC = () => {
     { suspense: true },
   );
 
+  const isSuperuser = ServerContext.getInstance()?.user?.isSuperuser ?? false;
   const isReadonly = ServerContext.getInstance()?.user?.isReadonly ?? false;
 
   const handleDelete = async (roleId: number) => {
@@ -98,16 +100,34 @@ const RoleListContent: FC = () => {
                 {role.users.map((user) => (
                   <StyledListItem key={user.id}>
                     <Typography ml="58px" my="4px">
-                      {user.username}
+                      {isSuperuser ? (
+                        <AironeLink
+                          to={userPath(user.id)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {user.username}
+                        </AironeLink>
+                      ) : (
+                        user.username
+                      )}
                     </Typography>
                   </StyledListItem>
                 ))}
                 {role.groups.map((group) => (
                   <StyledListItem key={group.id}>
-                    <Typography ml="58px" my="4px">
-                      <Typography title={group.name}>
-                        {getGroupDisplayName(group)}
-                      </Typography>
+                    <Typography title={group.name} ml="58px" my="4px">
+                      {isSuperuser ? (
+                        <AironeLink
+                          to={groupPath(group.id)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {getGroupDisplayName(group)}
+                        </AironeLink>
+                      ) : (
+                        getGroupDisplayName(group)
+                      )}
                     </Typography>
                   </StyledListItem>
                 ))}
@@ -127,7 +147,19 @@ const RoleListContent: FC = () => {
                       >
                         {t("role.list.adminBadge")}
                       </Box>
-                      <Typography>{user.username}</Typography>
+                      <Typography>
+                        {isSuperuser ? (
+                          <AironeLink
+                            to={userPath(user.id)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {user.username}
+                          </AironeLink>
+                        ) : (
+                          user.username
+                        )}
+                      </Typography>
                     </Box>
                   </StyledListItem>
                 ))}
@@ -148,7 +180,17 @@ const RoleListContent: FC = () => {
                         {t("role.list.adminBadge")}
                       </Box>
                       <Typography title={group.name}>
-                        {getGroupDisplayName(group)}
+                        {isSuperuser ? (
+                          <AironeLink
+                            to={groupPath(group.id)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {getGroupDisplayName(group)}
+                          </AironeLink>
+                        ) : (
+                          getGroupDisplayName(group)
+                        )}
                       </Typography>
                     </Box>
                   </StyledListItem>
