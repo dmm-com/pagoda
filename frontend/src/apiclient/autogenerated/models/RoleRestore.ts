@@ -25,7 +25,24 @@ export interface RoleRestore {
    * @memberof RoleRestore
    */
   historyId: number;
+  /**
+   * * `role` - role
+   * * `permission` - permission
+   * @type {RoleRestoreHistorySourceEnum}
+   * @memberof RoleRestore
+   */
+  historySource?: RoleRestoreHistorySourceEnum;
 }
+
+/**
+ * @export
+ */
+export const RoleRestoreHistorySourceEnum = {
+  Role: "role",
+  Permission: "permission",
+} as const;
+export type RoleRestoreHistorySourceEnum =
+  (typeof RoleRestoreHistorySourceEnum)[keyof typeof RoleRestoreHistorySourceEnum];
 
 /**
  * Check if a given object implements the RoleRestore interface.
@@ -54,6 +71,8 @@ export function RoleRestoreFromJSONTyped(
   }
   return {
     historyId: json["history_id"],
+    historySource:
+      json["history_source"] == null ? undefined : json["history_source"],
   };
 }
 
@@ -71,5 +90,6 @@ export function RoleRestoreToJSONTyped(
 
   return {
     history_id: value["historyId"],
+    history_source: value["historySource"],
   };
 }

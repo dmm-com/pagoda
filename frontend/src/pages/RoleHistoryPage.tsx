@@ -46,10 +46,17 @@ export const RoleHistoryPage: FC = () => {
   );
   const readonly = ServerContext.getInstance()?.user?.isReadonly ?? false;
 
-  const restore = async (historyId: number) => {
+  const restore = async (
+    historyId: number,
+    historySource: "role" | "permission",
+  ) => {
     setSubmitting(true);
     try {
-      await aironeApiClient.restoreRoleHistory(roleId, historyId);
+      await aironeApiClient.restoreRoleHistory(
+        roleId,
+        historyId,
+        historySource,
+      );
       enqueueSnackbar(t("role.history.accepted"), { variant: "success" });
       navigate(jobsPath());
     } catch {
@@ -111,7 +118,7 @@ export const RoleHistoryPage: FC = () => {
           </TableHead>
           <TableBody>
             {histories.results.map((history, index) => (
-              <TableRow key={history.history_id}>
+              <TableRow key={`${history.history_source}-${history.history_id}`}>
                 <TableCell>
                   {formatDateTime(new Date(history.history_date))}
                 </TableCell>
@@ -181,7 +188,9 @@ export const RoleHistoryPage: FC = () => {
                       </IconButton>
                     )}
                     dialogTitle={t("role.history.confirm")}
-                    onClickYes={() => restore(history.history_id)}
+                    onClickYes={() =>
+                      restore(history.history_id, history.history_source)
+                    }
                   />
                 </TableCell>
               </TableRow>

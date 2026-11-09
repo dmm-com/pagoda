@@ -41,6 +41,7 @@ class JobParamsRootModel(RootModel[RootValue], Generic[RootValue]):
 
 
 class RoleChangeParams(JobParamsModel):
+    history_source: Literal["role", "permission"] = "role"
     role_id: int
     data: dict[str, Any] = Field(default_factory=dict)
     history_id: int | None = None

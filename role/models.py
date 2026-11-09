@@ -11,19 +11,12 @@ from simple_history.models import HistoricalRecords
 
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrType
+from role.history_records import RoleHistoricalRecords
 
 if TYPE_CHECKING:
     from acl.models import ACLBase
     from group.models import Group
     from user.models import User
-
-
-class RoleHistoryRelations(models.Model):
-    # Reverse permission relations cannot be tracked with m2m_fields.
-    relations = models.JSONField(default=dict)
-
-    class Meta:
-        abstract = True
 
 
 class Role(models.Model):
@@ -36,7 +29,7 @@ class Role(models.Model):
     admin_users = models.ManyToManyField("user.User", related_name="admin_role", blank=True)
     admin_groups = models.ManyToManyField("group.Group", related_name="admin_role", blank=True)
 
-    history = HistoricalRecords(bases=[RoleHistoryRelations])
+    history = RoleHistoricalRecords(m2m_fields=[users, groups, admin_users, admin_groups])
     _history_user: "User | None"
     _change_reason: str
     skip_history_when_saving: bool

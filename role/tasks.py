@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 
 from django.db import transaction
 from rest_framework.exceptions import PermissionDenied
@@ -10,8 +10,7 @@ from airone.lib.log import Logger
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus
 from job.params import RoleChangeParams, RoleImportParams, RoleReferralParams
-from role.history import suppress_role_history
-from role.models import Role
+from role.models import HistoricalPermission, Role
 from role.services import restore_data, validate_role_data
 from user.models import User
 
@@ -178,18 +177,29 @@ def change_role(self: Any, job: Job) -> JobStatus:
         if job.operation == JobOperation.RESTORE_ROLE:
             if params.history_id is None:
                 raise ValueError("history_id is required")
-            data, permission_ids = restore_data(role, params.history_id, user)
-            role._change_reason += f"; restored history #{params.history_id}"
+            data, permission_ids = restore_data(
+                role, params.history_id, user, params.history_source
+            )
+            role._change_reason += (
+                f"; restored history #{params.history_id} ({params.history_source})"
+            )
         serializer = validate_role_data(role, data, user)
-        token = suppress_role_history.set(True)
         role.skip_history_when_saving = True
         try:
             serializer.save()
             if permission_ids is not None:
-                role.permissions.set(permission_ids)
+                current_ids = set(role.permissions.values_list("pk", flat=True))
+                changed_ids = current_ids.symmetric_difference(permission_ids)
+                for raw_permission in HistoricalPermission.objects.filter(pk__in=changed_ids):
+                    permission = cast(HistoricalPermission, raw_permission)
+                    permission._history_user = user
+                    permission._change_reason = role._change_reason
+                    if permission.pk in permission_ids:
+                        permission.roles.add(role)
+                    else:
+                        permission.roles.remove(role)
         finally:
             del role.skip_history_when_saving
-            suppress_role_history.reset(token)
         role.save()
         if old_name != role.name:
             referral_job = Job.new_register_referrals(

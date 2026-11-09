@@ -8,7 +8,6 @@ from rest_framework import serializers
 from acl.models import ACLBase
 from airone.lib.drf import RequiredParameterError
 from group.models import Group
-from role.history import permission_target_names
 from role.models import Role
 from user.models import User
 
@@ -284,59 +283,26 @@ class RoleImportSerializer(serializers.ListSerializer[Role]):
         return roles
 
 
-class RoleHistorySerializer(serializers.ModelSerializer[Any]):
-    relations = serializers.SerializerMethodField()
-
-    @extend_schema_field(serializers.DictField())
-    def get_relations(self, obj: Any) -> dict[str, Any]:
-        if not hasattr(self, "_permission_names"):
-            records = (
-                self.parent.instance
-                if isinstance(self.parent, serializers.ListSerializer)
-                else [obj]
-            )
-            if records is None:
-                records = [obj]
-            permissions = [
-                permission
-                for record in records
-                for permission in record.relations.get("permissions", [])
-                if not permission.get("name")
-            ]
-            self._permission_names = permission_target_names(permissions)
-        names = self._permission_names
-        return {
-            **obj.relations,
-            "permissions": [
-                {
-                    **permission,
-                    "name": permission.get("name") or names.get(permission.get("codename")),
-                }
-                for permission in obj.relations.get("permissions", [])
-            ],
-        }
-
+class RoleHistorySerializer(serializers.Serializer[Any]):
+    history_id = serializers.IntegerField(read_only=True)
+    history_source = serializers.ChoiceField(choices=["role", "permission"])
+    history_date = serializers.DateTimeField()
     history_user: serializers.SlugRelatedField[User] = serializers.SlugRelatedField(
-        slug_field="username", read_only=True
+        slug_field="username", read_only=True, allow_null=True
     )
-
-    class Meta:
-        model = Role.history.model
-        fields = [
-            "history_id",
-            "history_date",
-            "history_user",
-            "history_type",
-            "history_change_reason",
-            "name",
-            "description",
-            "is_active",
-            "relations",
-        ]
+    history_type = serializers.ChoiceField(
+        choices=[("+", "Created"), ("~", "Changed"), ("-", "Deleted")]
+    )
+    history_change_reason = serializers.CharField(allow_null=True, required=False)
+    name = serializers.CharField()
+    description = serializers.CharField(allow_blank=True, required=False)
+    is_active = serializers.BooleanField(required=False)
+    relations = serializers.DictField(read_only=True)
 
 
 class RoleRestoreSerializer(serializers.Serializer[Any]):
     history_id = serializers.IntegerField(min_value=1)
+    history_source = serializers.ChoiceField(choices=["role", "permission"], default="role")
 
 
 class RoleJobSerializer(serializers.Serializer[Any]):

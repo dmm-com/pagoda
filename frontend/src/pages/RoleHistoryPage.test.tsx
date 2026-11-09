@@ -8,6 +8,7 @@ import { aironeApiClient, RoleHistoryRecord } from "repository/AironeApiClient";
 
 const history: RoleHistoryRecord = {
   history_id: 2,
+  history_source: "role",
   history_date: "2026-11-05T00:00:00Z",
   history_user: "admin",
   history_type: "~",
@@ -25,11 +26,11 @@ const history: RoleHistoryRecord = {
   },
 };
 
-const setup = (page = 1) => {
+const setup = (page = 1, source: "role" | "permission" = "role") => {
   vi.spyOn(aironeApiClient, "getRoleHistories").mockResolvedValue({
     role: { id: 1, name: "role", is_active: true, is_editable: true },
     count: 12,
-    results: [history, { ...history, history_id: 1 }],
+    results: [history, { ...history, history_id: 1, history_source: source }],
   });
   const restore = vi
     .spyOn(aironeApiClient, "restoreRoleHistory")
@@ -62,7 +63,7 @@ test("shows actor, job and relations, and restores after confirmation", async ()
   fireEvent.click(buttons[1]!);
   expect(restore).not.toHaveBeenCalled();
   fireEvent.click(await screen.findByRole("button", { name: "Yes" }));
-  await waitFor(() => expect(restore).toHaveBeenCalledWith(1, 1));
+  await waitFor(() => expect(restore).toHaveBeenCalledWith(1, 1, "role"));
 });
 
 test("allows restoring the first row on later pages", async () => {
@@ -70,4 +71,12 @@ test("allows restoring the first row on later pages", async () => {
   const buttons = await screen.findAllByRole("button", { name: "復旧" });
   expect(buttons[0]).toBeEnabled();
   expect(aironeApiClient.getRoleHistories).toHaveBeenCalledWith(1, 2);
+});
+
+test("restores a permission event with its own history source", async () => {
+  const { restore } = setup(1, "permission");
+  const buttons = await screen.findAllByRole("button", { name: "復旧" });
+  fireEvent.click(buttons[1]!);
+  fireEvent.click(await screen.findByRole("button", { name: "Yes" }));
+  await waitFor(() => expect(restore).toHaveBeenCalledWith(1, 1, "permission"));
 });

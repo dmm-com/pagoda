@@ -1584,14 +1584,21 @@ class AironeApiClient {
     return response.json();
   }
 
-  async restoreRoleHistory(roleId: number, historyId: number): Promise<void> {
+  async restoreRoleHistory(
+    roleId: number,
+    historyId: number,
+    historySource: "role" | "permission" = "role",
+  ): Promise<void> {
     const response = await fetch(`/role/api/v2/${roleId}/restore/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-CSRFToken": getCsrfToken(),
       },
-      body: JSON.stringify({ history_id: historyId }),
+      body: JSON.stringify({
+        history_id: historyId,
+        history_source: historySource,
+      }),
     });
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
   }
@@ -1601,6 +1608,7 @@ export const aironeApiClient = new AironeApiClient();
 
 export interface RoleHistoryRecord {
   history_id: number;
+  history_source: "role" | "permission";
   history_date: string;
   history_user: string | null;
   history_type: string;

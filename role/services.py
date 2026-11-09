@@ -8,23 +8,23 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from acl.models import ACLBase
 from airone.lib.acl import ACLType
 from role.api_v2.serializers import RoleCreateUpdateSerializer
-from role.history import ROLE_RELATIONS
+from role.history import ROLE_RELATIONS, get_role_history_event
 from role.models import HistoricalPermission, Role
 from user.models import User
 
 
-def restore_data(role: Role, history_id: int, user: User) -> tuple[dict[str, Any], list[int]]:
-    record = role.history.filter(history_id=history_id, is_active=True).first()
-    if record is None:
-        raise ValidationError("The specified role history does not exist or is inactive")
+def restore_data(
+    role: Role, history_id: int, user: User, history_source: str = "role"
+) -> tuple[dict[str, Any], list[int]]:
+    event = get_role_history_event(role, history_id, history_source)
     data: dict[str, Any] = {
-        "name": record.name,
-        "description": record.description,
+        "name": event["name"],
+        "description": event["description"],
         "is_active": True,
     }
     for key in ROLE_RELATIONS:
-        data[key] = [value["id"] for value in record.relations.get(key, [])]
-    permission_ids = [value["id"] for value in record.relations.get("permissions", [])]
+        data[key] = [value["id"] for value in event["relations"][key]]
+    permission_ids = [value["id"] for value in event["relations"]["permissions"]]
     permissions = HistoricalPermission.objects.filter(pk__in=permission_ids)
     if permissions.count() != len(permission_ids):
         raise ValidationError("A permission in this history no longer exists")

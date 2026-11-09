@@ -23,6 +23,7 @@ from role.api_v2.serializers import (
     RoleRestoreSerializer,
     RoleSerializer,
 )
+from role.history import role_history_events
 from role.models import Role
 from role.services import restore_data, validate_role_data
 from user.models import User
@@ -131,13 +132,13 @@ class RoleAPI(viewsets.ModelViewSet[Role]):
     @extend_schema(responses=RoleHistoryListSerializer)
     def histories(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         role = self.get_object()
-        histories = role.history.select_related("history_user").order_by(
-            "-history_date", "-history_id"
-        )
+        histories = role_history_events(role)
         pagination = LimitOffsetPagination()
         pagination.default_limit = 10
         pagination.max_limit = 100
-        page = pagination.paginate_queryset(histories, request, view=self)
+        page: list[dict[str, Any]] | None = pagination.paginate_queryset(
+            cast(Any, histories), request, view=self
+        )
         serializer = RoleHistorySerializer(page if page is not None else histories, many=True)
         response = pagination.get_paginated_response(serializer.data)
         response.data["role"] = {
@@ -154,9 +155,14 @@ class RoleAPI(viewsets.ModelViewSet[Role]):
         serializer = RoleRestoreSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         history_id = serializer.validated_data["history_id"]
-        data, _ = restore_data(role, history_id, cast(User, request.user))
+        history_source = serializer.validated_data["history_source"]
+        data, _ = restore_data(role, history_id, cast(User, request.user), history_source)
         validate_role_data(role, data, cast(User, request.user))
-        return self.enqueue_change(role, JobOperation.RESTORE_ROLE, {"history_id": history_id})
+        return self.enqueue_change(
+            role,
+            JobOperation.RESTORE_ROLE,
+            {"history_id": history_id, "history_source": history_source},
+        )
 
 
 class RoleImportAPI(generics.GenericAPIView[Any]):

@@ -2,9 +2,11 @@ import json
 from unittest.mock import patch
 
 from airone.lib.test import AironeViewTest
+from group.models import Group
 from job.api_v2.serializers import JobSerializers
 from job.models import Job, JobOperation, JobStatus
-from role.models import Role
+from role.history import role_history_events
+from role.models import HistoricalPermission, Role
 from user.models import User
 
 
@@ -45,7 +47,7 @@ class RoleHistoryTest(AironeViewTest):
         history = self.role.history.first()
         self.assertEqual(history.name, "changed")
         self.assertEqual(history.history_user, self.admin)
-        self.assertEqual(history.relations["users"], [])
+        self.assertEqual(list(history.users.all()), [])
         self.assertIn(str(job.pk), history.history_change_reason)
         self.assertEqual(JobSerializers(job).data["target"]["id"], self.role.pk)
         jobs = self.client.get("/job/api/v2/jobs").json()["results"]
@@ -119,17 +121,27 @@ class RoleHistoryTest(AironeViewTest):
         permission = entity.readable
         permission._history_user = self.admin
         permission.roles.add(self.role)
-        granted = self.role.history.first()
-        self.assertEqual(granted.relations["permissions"][0]["id"], permission.pk)
-        self.assertEqual(granted.history_user, self.admin)
+        granted = permission.history.first()
+        history_count = self.role.history.count()
+        event = role_history_events(self.role)[0]
+        self.assertEqual(event["history_source"], "permission")
+        self.assertEqual(event["relations"]["permissions"][0]["id"], permission.pk)
+        self.assertEqual(event["history_user"], self.admin)
         permission.roles.clear()
-        self.assertEqual(self.role.history.first().relations["permissions"], [])
+        self.assertEqual(self.role.history.count(), history_count)
+        self.assertEqual(role_history_events(self.role)[0]["relations"]["permissions"], [])
         response = self.client.post(
-            f"/role/api/v2/{self.role.pk}/restore/", {"history_id": granted.history_id}
+            f"/role/api/v2/{self.role.pk}/restore/",
+            {"history_id": granted.history_id, "history_source": "permission"},
         )
         self.assertEqual(response.status_code, 202)
-        Job.objects.get(pk=response.json()["job_id"]).run(will_delay=False)
+        job = Job.objects.get(pk=response.json()["job_id"])
+        job.run(will_delay=False)
+        job.refresh_from_db()
+        self.assertEqual(job.status, JobStatus.DONE)
         self.assertEqual(list(self.role.permissions.all()), [permission])
+        self.assertEqual(permission.history.first().history_user, self.admin)
+        self.assertIn("restored history", permission.history.first().history_change_reason)
 
     def test_readonly_and_unrelated_user_cannot_restore(self):
         self.admin.is_readonly = True
@@ -147,7 +159,7 @@ class RoleHistoryTest(AironeViewTest):
         self.role.history.all().delete()
         self.update()
         self.assertEqual(self.role.history.last().name, "original")
-        self.assertEqual(self.role.history.last().relations["users"][0]["id"], self.member.pk)
+        self.assertEqual(self.role.history.last().users.first().user_id, self.member.pk)
 
     def test_deleted_role_history_remains_accessible_and_can_be_restored(self):
         job = Job.new_role_change(self.admin, self.role.pk, JobOperation.DELETE_ROLE, {})
@@ -173,21 +185,22 @@ class RoleHistoryTest(AironeViewTest):
         entity = self.create_entity(self.admin, "protected", is_public=False)
         permission = entity.full
         permission.roles.add(self.role)
-        granted = self.role.history.first()
+        granted = permission.history.first()
         permission.roles.remove(self.role)
         self.admin.is_superuser = False
         self.admin.save()
         response = self.client.post(
-            f"/role/api/v2/{self.role.pk}/restore/", {"history_id": granted.history_id}
+            f"/role/api/v2/{self.role.pk}/restore/",
+            {"history_id": granted.history_id, "history_source": "permission"},
         )
         self.assertEqual(response.status_code, 403)
         self.assertFalse(Job.objects.filter(operation=JobOperation.RESTORE_ROLE).exists())
 
     def test_reverse_membership_change_is_recorded(self):
         self.member.role.clear()
-        self.assertEqual(self.role.history.first().relations["users"], [])
+        self.assertEqual(list(self.role.history.first().users.all()), [])
         self.member.role.add(self.role)
-        self.assertEqual(self.role.history.first().relations["users"][0]["id"], self.member.pk)
+        self.assertEqual(self.role.history.first().users.first().user_id, self.member.pk)
 
     def test_history_is_paginated_without_changing_role_list_response(self):
         for i in range(12):
@@ -222,24 +235,93 @@ class RoleHistoryTest(AironeViewTest):
     def test_permission_names_are_preserved_when_target_is_renamed(self):
         entity = self.create_entity(self.admin, "original target")
         entity.readable.roles.add(self.role)
-        history = self.role.history.first()
-        self.assertEqual(history.relations["permissions"][0]["name"], "original target")
+        event = role_history_events(self.role)[0]
         entity.name = "renamed target"
         entity.save()
         response = self.client.get(f"/role/api/v2/{self.role.pk}/histories/")
+        self.assertEqual(event["relations"]["permissions"][0]["name"], "original target")
         self.assertEqual(
             response.json()["results"][0]["relations"]["permissions"][0]["name"], "original target"
         )
 
-    def test_older_permission_history_resolves_target_names_without_rewriting_it(self):
+    def test_permission_history_before_role_tracking_reconstructs_initial_permissions(self):
         entity = self.create_entity(self.admin, "existing target")
+        self.role.history.all().delete()
         entity.readable.roles.add(self.role)
-        history = self.role.history.first()
-        del history.relations["permissions"][0]["name"]
-        history.save()
-        response = self.client.get(f"/role/api/v2/{self.role.pk}/histories/")
-        self.assertEqual(
-            response.json()["results"][0]["relations"]["permissions"][0]["name"], "existing target"
+        self.role.save()
+        events = role_history_events(self.role)
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0]["history_source"], "role")
+        self.assertEqual(events[0]["relations"]["permissions"][0]["id"], entity.readable.pk)
+
+    def test_permission_changes_for_another_role_are_not_shown(self):
+        entity = self.create_entity(self.admin, "shared target")
+        permission = entity.readable
+        permission.roles.add(self.role)
+        count = len(role_history_events(self.role))
+        another = Role.objects.create(name="another")
+        permission.roles.add(another)
+        permission.roles.remove(another)
+        self.assertEqual(len(role_history_events(self.role)), count)
+
+    def test_cannot_restore_permission_history_of_another_role(self):
+        another = Role.objects.create(name="another")
+        permission = self.create_entity(self.admin, "target").readable
+        permission.roles.add(another)
+        response = self.client.post(
+            f"/role/api/v2/{self.role.pk}/restore/",
+            {"history_id": permission.history.first().history_id, "history_source": "permission"},
         )
-        history.refresh_from_db()
-        self.assertNotIn("name", history.relations["permissions"][0])
+        self.assertEqual(response.status_code, 400)
+
+    def test_json_snapshot_field_is_not_used(self):
+        self.assertNotIn("relations", [field.name for field in Role.history.model._meta.fields])
+        self.assertEqual(HistoricalPermission.history.model.roles.model.objects.count(), 0)
+
+    def test_restores_all_four_native_membership_relations(self):
+        member_group = Group.objects.create(name="members")
+        admin_group = Group.objects.create(name="administrators")
+        self.role.groups.add(member_group)
+        self.role.admin_groups.add(admin_group)
+        original = self.role.history.first()
+        self.update()
+        response = self.client.post(
+            f"/role/api/v2/{self.role.pk}/restore/", {"history_id": original.history_id}
+        )
+        self.assertEqual(response.status_code, 202)
+        job = Job.objects.get(pk=response.json()["job_id"])
+        job.run(will_delay=False)
+        job.refresh_from_db()
+        self.assertEqual(job.status, JobStatus.DONE)
+        self.assertEqual(list(self.role.users.all()), [self.member])
+        self.assertEqual(list(self.role.admin_users.all()), [self.admin])
+        self.assertEqual(list(self.role.groups.all()), [member_group])
+        self.assertEqual(list(self.role.admin_groups.all()), [admin_group])
+
+    def test_role_history_restore_uses_permission_state_at_that_time(self):
+        permission = self.create_entity(self.admin, "target").readable
+        permission.roles.add(self.role)
+        self.update()
+        original = self.role.history.first()
+        permission.roles.remove(self.role)
+        response = self.client.post(
+            f"/role/api/v2/{self.role.pk}/restore/", {"history_id": original.history_id}
+        )
+        self.assertEqual(response.status_code, 202)
+        Job.objects.get(pk=response.json()["job_id"]).run(will_delay=False)
+        self.assertEqual(list(self.role.permissions.all()), [permission])
+
+    def test_permission_restore_uses_membership_state_at_that_time(self):
+        permission = self.create_entity(self.admin, "target").readable
+        permission.roles.add(self.role)
+        original = permission.history.first()
+        self.update()
+        response = self.client.post(
+            f"/role/api/v2/{self.role.pk}/restore/",
+            {"history_id": original.history_id, "history_source": "permission"},
+        )
+        self.assertEqual(response.status_code, 202)
+        Job.objects.get(pk=response.json()["job_id"]).run(will_delay=False)
+        self.role.refresh_from_db()
+        self.assertEqual(self.role.name, "original")
+        self.assertEqual(list(self.role.users.all()), [self.member])

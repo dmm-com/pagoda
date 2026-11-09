@@ -26,17 +26,24 @@ export interface RoleHistory {
    */
   readonly historyId: number;
   /**
+   * * `role` - role
+   * * `permission` - permission
+   * @type {RoleHistoryHistorySourceEnum}
+   * @memberof RoleHistory
+   */
+  historySource: RoleHistoryHistorySourceEnum;
+  /**
    *
    * @type {Date}
    * @memberof RoleHistory
    */
   historyDate: Date;
   /**
-   * Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
+   *
    * @type {string}
    * @memberof RoleHistory
    */
-  readonly historyUser: string;
+  readonly historyUser: string | null;
   /**
    * * `+` - Created
    * * `~` - Changed
@@ -80,6 +87,16 @@ export interface RoleHistory {
 /**
  * @export
  */
+export const RoleHistoryHistorySourceEnum = {
+  Role: "role",
+  Permission: "permission",
+} as const;
+export type RoleHistoryHistorySourceEnum =
+  (typeof RoleHistoryHistorySourceEnum)[keyof typeof RoleHistoryHistorySourceEnum];
+
+/**
+ * @export
+ */
 export const RoleHistoryHistoryTypeEnum = {
   Plus: "+",
   Tilde: "~",
@@ -97,6 +114,13 @@ export function instanceOfRoleHistory(value: object): value is RoleHistory {
       !("history_id" in (value as Record<string, any>))) ||
     ((value as Record<string, any>)["historyId"] === undefined &&
       (value as Record<string, any>)["history_id"] === undefined)
+  )
+    return false;
+  if (
+    (!("historySource" in (value as Record<string, any>)) &&
+      !("history_source" in (value as Record<string, any>))) ||
+    ((value as Record<string, any>)["historySource"] === undefined &&
+      (value as Record<string, any>)["history_source"] === undefined)
   )
     return false;
   if (
@@ -138,6 +162,7 @@ export function RoleHistoryFromJSONTyped(
   }
   return {
     historyId: json["history_id"],
+    historySource: json["history_source"],
     historyDate: new Date(json["history_date"]),
     historyUser: json["history_user"],
     historyType: json["history_type"],
@@ -167,6 +192,7 @@ export function RoleHistoryToJSONTyped(
   }
 
   return {
+    history_source: value["historySource"],
     history_date: value["historyDate"].toISOString(),
     history_type: value["historyType"],
     history_change_reason: value["historyChangeReason"],
