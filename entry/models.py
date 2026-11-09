@@ -1797,7 +1797,11 @@ class Attribute(ACLBase):
             if updated_data and self.is_updated(updated_data):
                 self.add_value(user, updated_data, boolean=attrv.boolean)
 
-    def may_remove_referral(self) -> None:
+    def may_remove_referral(self, *, user: User | None = None) -> None:
+        # Actorless maintenance must not grant access to referenced entries.
+        if user is None:
+            return
+
         def _may_remove_referral(referral: ACLBase | None) -> None:
             if not referral:
                 # the case this refers no entry, do nothing
@@ -1806,6 +1810,9 @@ class Attribute(ACLBase):
             entry = Entry.objects.filter(id=referral.id, is_active=True).first()
             if not entry:
                 # the case referred entry is already deleted, do nothing
+                return
+
+            if not user.has_permission(entry, ACLType.Writable):
                 return
 
             exclude_entity_names = list(
@@ -1820,7 +1827,8 @@ class Attribute(ACLBase):
                 # the case other entries also refer target referral, do nothing
                 return
 
-            entry.delete()
+            entry._history_user = user
+            entry.delete(deleted_user=user)
 
         # delete referral object that isn't referred from any objects if it's necessary
         if self.schema.is_delete_in_chain and self.schema.type & AttrType.OBJECT:
@@ -1834,10 +1842,10 @@ class Attribute(ACLBase):
                     _may_remove_referral(attrv.referral)
 
     # NOTE: Type-Write
-    def delete(self) -> None:  # type: ignore[override]
-        super().delete()
+    def delete(self, *, user: User | None = None) -> None:  # type: ignore[override]
+        super().delete(deleted_user=user)
 
-        self.may_remove_referral()
+        self.may_remove_referral(user=user)
 
     # implementation for Attribute
     def check_duplication_entry_at_restoring(self, entry_chain: list["Entry"]) -> bool:
@@ -1879,7 +1887,7 @@ class Attribute(ACLBase):
         return False
 
     # NOTE: Type-Write
-    def restore(self) -> None:
+    def restore(self, *, user: User | None = None) -> None:
         super().restore()
 
         def _may_restore_referral(referral: ACLBase | None) -> None:
@@ -1892,7 +1900,11 @@ class Attribute(ACLBase):
                 # the case referred entry is already restored, do nothing
                 return
 
-            entry.restore()
+            if user is None or not user.has_permission(entry, ACLType.Writable):
+                return
+
+            entry._history_user = user
+            entry.restore(user=user)
 
         # restore referral object that isn't referred from any objects if it's necessary
         if self.schema.is_delete_in_chain and self.schema.type & AttrType.OBJECT:
@@ -2020,7 +2032,7 @@ class Entry(ACLBase):
             },
         )
         if attr.is_active is False:
-            attr.restore()
+            attr.restore(user=request_user)
         return attr
 
     def get_prev_refers_objects(self) -> QuerySet["Entry"]:
@@ -2341,6 +2353,7 @@ class Entry(ACLBase):
         return super().save(*args, **kwargs)
 
     def delete(self, *args: Any, **kwargs: Any) -> None:  # type: ignore[override]
+        """Soft-delete this entry; cascade only with an authorized deleted_user."""
         super().delete(*args, **kwargs)
 
         # update Elasticsearch index info which refered this entry not to refer this link
@@ -2351,7 +2364,7 @@ class Entry(ACLBase):
         # also delete each attributes
         for attr in self.attrs.filter(is_active=True):
             # delete Attribute object
-            attr.delete()
+            attr.delete(user=kwargs.get("deleted_user"))
 
         if settings.ES_CONFIG:
             self.unregister_es()
@@ -2374,13 +2387,16 @@ class Entry(ACLBase):
         # It means it's safe to restore this Entry.
         return False
 
-    def restore(self) -> None:
+    def restore(self, *, user: User | None = None) -> None:
+        """Restore this entry; cascade only to entries writable by the given user."""
+        if user is not None:
+            self._history_user = user
         super().restore()
 
         # also restore each attributes
         for attr in self.attrs.filter(is_active=False):
             # restore Attribute object
-            attr.restore()
+            attr.restore(user=user)
 
         # update Elasticsearch index info which refered this entry to refer this link
         es_object = ESS()
