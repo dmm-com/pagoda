@@ -91,6 +91,7 @@ describe("AdvancedSearchPage", () => {
     // write down text to the input field
     fireEvent.change(elemInputEntity, { target: { value: "2" } });
     expect(elemInputEntity).toHaveValue("2");
+    expect(screen.queryByPlaceholderText("属性を選択")).not.toBeInTheDocument();
 
     // check expected values that are retrieved from API will be displaied.
     const options = screen.getAllByRole("option");
@@ -107,6 +108,68 @@ describe("AdvancedSearchPage", () => {
     expect(options).toHaveLength(2);
     expect(options[0]).toHaveTextContent("entity1");
     expect(options[1]).toHaveTextContent("entity2");
+  });
+
+  test("hide attributes again when the last model is removed", async () => {
+    const modelInput = screen.getByPlaceholderText("モデルを選択");
+    fireEvent.change(modelInput, { target: { value: "2" } });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("option", { name: "entity2" }));
+    });
+
+    const attrInput = screen.getByPlaceholderText("属性を選択");
+    expect(modelInput.compareDocumentPosition(attrInput)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByLabelText("Clear"));
+    });
+    expect(screen.queryByPlaceholderText("属性を選択")).not.toBeInTheDocument();
+  });
+
+  test("show attributes when searching all models", async () => {
+    expect(screen.queryByPlaceholderText("属性を選択")).not.toBeInTheDocument();
+    const searchAllModels = screen.getByRole("checkbox");
+
+    await act(async () => {
+      fireEvent.click(searchAllModels);
+    });
+    expect(screen.getByPlaceholderText("属性を選択")).toBeVisible();
+
+    await act(async () => {
+      fireEvent.click(searchAllModels);
+    });
+    expect(screen.queryByPlaceholderText("属性を選択")).not.toBeInTheDocument();
+  });
+
+  test("clear selected attributes when the model scope becomes empty", async () => {
+    const searchAllModels = screen.getByRole("checkbox");
+    await act(async () => {
+      fireEvent.click(searchAllModels);
+    });
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText("属性を選択")).not.toBeDisabled();
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getAllByRole("button", { name: "Open" })[1]);
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("option", { name: "str" }));
+    });
+    expect(screen.getByRole("button", { name: "str" })).toBeInTheDocument();
+
+    // hide the attribute section, then show it again
+    await act(async () => {
+      fireEvent.click(searchAllModels);
+    });
+    await act(async () => {
+      fireEvent.click(searchAllModels);
+    });
+    expect(
+      screen.queryByRole("button", { name: "str" }),
+    ).not.toBeInTheDocument();
   });
 
   test("show all attributes that are related to the entity", async () => {
@@ -296,6 +359,9 @@ describe("AdvancedSearchPage", () => {
     });
     expect(screen.getByPlaceholderText("Select models")).toBeInTheDocument();
     expect(screen.getByText("Target models to search")).toBeInTheDocument();
+    await act(async () => {
+      fireEvent.click(screen.getByRole("checkbox"));
+    });
     expect(screen.getByText("Attributes")).toBeInTheDocument();
     expect(screen.getByText("Search")).toBeInTheDocument();
   });

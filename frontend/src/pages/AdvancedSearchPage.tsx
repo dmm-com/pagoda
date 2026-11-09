@@ -63,10 +63,9 @@ export const AdvancedSearchPage: FC = () => {
   );
 
   const entityIds = selectedEntities.map((e) => e.id);
+  const hasModelScope = entityIds.length > 0 || searchAllEntities;
   const { data: attrs, isLoading: attrsLoading } = usePagodaSWR(
-    selectedEntities.length > 0 || searchAllEntities
-      ? ["entityAttrs", entityIds, searchAllEntities]
-      : null,
+    hasModelScope ? ["entityAttrs", entityIds, searchAllEntities] : null,
     () => aironeApiClient.getEntityAttrs(entityIds, searchAllEntities),
   );
 
@@ -86,6 +85,21 @@ export const AdvancedSearchPage: FC = () => {
       hasReferral,
     });
   }, [selectedEntities, searchAllEntities, selectedAttrs, hasReferral]);
+
+  // Attribute selections only make sense within a model scope, so drop them
+  // when the scope becomes empty instead of keeping hidden stale state.
+  const updateModelScope = (
+    entities: Array<EntityList>,
+    allEntities: boolean,
+  ) => {
+    setSelectedEntities(entities);
+    setSearchAllEntities(allEntities);
+    if (entities.length === 0 && !allEntities) {
+      setSelectedAttrs([]);
+      setAttrName("");
+      setHasReferral(false);
+    }
+  };
 
   const handleChangeInputEntityName = (
     event: SyntheticEvent,
@@ -129,7 +143,7 @@ export const AdvancedSearchPage: FC = () => {
             color="secondary"
             component={Link}
             to={`${advancedSearchResultPath()}?${searchParams}`}
-            disabled={selectedEntities.length === 0 && !searchAllEntities}
+            disabled={!hasModelScope}
           >
             {t("advancedSearch.page.search")}
           </Button>
@@ -149,7 +163,7 @@ export const AdvancedSearchPage: FC = () => {
             inputValue={entityName}
             disabled={entitiesLoading}
             onChange={(_, value: Array<EntityList>) =>
-              setSelectedEntities(value)
+              updateModelScope(value, searchAllEntities)
             }
             onInputChange={handleChangeInputEntityName}
             renderInput={(params) => (
@@ -167,43 +181,47 @@ export const AdvancedSearchPage: FC = () => {
             {t("advancedSearch.page.searchAllEntities")}
             <Checkbox
               checked={searchAllEntities}
-              onChange={(e) => setSearchAllEntities(e.target.checked)}
+              onChange={(e) =>
+                updateModelScope(selectedEntities, e.target.checked)
+              }
             />
           </Box>
         </StyledFlexColumnBox>
 
-        <StyledFlexColumnBox>
-          <StyledTypography variant="h4">
-            {t("advancedSearch.page.attr")}
-          </StyledTypography>
+        {hasModelScope && (
+          <StyledFlexColumnBox>
+            <StyledTypography variant="h4">
+              {t("advancedSearch.page.attr")}
+            </StyledTypography>
 
-          <AutocompleteWithAllSelector
-            selectAllLabel={t("advancedSearch.page.selectAll")}
-            options={Array.from(new Set(attrs?.map((x) => x.name) ?? []))}
-            value={selectedAttrs}
-            inputValue={attrName}
-            disabled={attrsLoading}
-            onChange={(_, value: Array<string>) => setSelectedAttrs(value)}
-            onInputChange={handleChangeInputAttrName}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="outlined"
-                placeholder={t("advancedSearch.page.selectAttrPlaceholder")}
+            <AutocompleteWithAllSelector
+              selectAllLabel={t("advancedSearch.page.selectAll")}
+              options={Array.from(new Set(attrs?.map((x) => x.name) ?? []))}
+              value={selectedAttrs}
+              inputValue={attrName}
+              disabled={attrsLoading}
+              onChange={(_, value: Array<string>) => setSelectedAttrs(value)}
+              onInputChange={handleChangeInputAttrName}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="outlined"
+                  placeholder={t("advancedSearch.page.selectAttrPlaceholder")}
+                />
+              )}
+              multiple
+              disableCloseOnSelect
+              fullWidth
+            />
+            <Box>
+              {t("advancedSearch.page.includeReferral")}
+              <Checkbox
+                checked={hasReferral}
+                onChange={(e) => setHasReferral(e.target.checked)}
               />
-            )}
-            multiple
-            disableCloseOnSelect
-            fullWidth
-          />
-          <Box>
-            {t("advancedSearch.page.includeReferral")}
-            <Checkbox
-              checked={hasReferral}
-              onChange={(e) => setHasReferral(e.target.checked)}
-            />
-          </Box>
-        </StyledFlexColumnBox>
+            </Box>
+          </StyledFlexColumnBox>
+        )}
       </Container>
     </Box>
   );
