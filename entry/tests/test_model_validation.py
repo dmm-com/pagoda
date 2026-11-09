@@ -735,7 +735,7 @@ class ModelValidationTest(BaseModelTest):
             attr.add_value(self._user, info["value"])
 
         # delete target entry at first
-        entry.delete()
+        entry.delete(deleted_user=self._user)
 
         # create same name entry
         Entry.objects.create(name="ref-1", created_user=self._user, schema=ref_entity)
@@ -815,7 +815,7 @@ class ModelValidationTest(BaseModelTest):
             attr.add_value(self._user, info["value"])
 
         # delete target entry at first
-        entry.delete()
+        entry.delete(deleted_user=self._user)
         # sync referral entries from database
         [x.refresh_from_db() for x in ref_entries]
         [x.refresh_from_db() for x in ref_entries_2]
@@ -862,7 +862,7 @@ class ModelValidationTest(BaseModelTest):
             attr.add_value(self._user, info["value"])
 
         # delete target entry at first
-        entry.delete()
+        entry.delete(deleted_user=self._user)
         # sync referral entry from database
         ref_entry.refresh_from_db()
         self.assertFalse(ref_entry.is_active)
@@ -901,7 +901,7 @@ class ModelValidationTest(BaseModelTest):
         entry1 = Entry.objects.create(name="entry1", schema=self._entity, created_user=self._user)
         entry1.complement_attrs(self._user)
         entry1.attrs.get(schema__name="obj").add_value(self._user, shared_ref_entry)
-        entry1.delete()
+        entry1.delete(deleted_user=self._user)
 
         shared_ref_entry.refresh_from_db()
         self.assertFalse(shared_ref_entry.is_active)
@@ -915,7 +915,7 @@ class ModelValidationTest(BaseModelTest):
         entry2 = Entry.objects.create(name="entry2", schema=self._entity, created_user=self._user)
         entry2.complement_attrs(self._user)
         entry2.attrs.get(schema__name="obj").add_value(self._user, shared_ref_entry)
-        entry2.delete()
+        entry2.delete(deleted_user=self._user)
 
         # create a duplicate-named active entry, so a correct, independent
         # check for entry2 must now return True.

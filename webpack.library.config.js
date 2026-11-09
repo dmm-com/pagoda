@@ -23,14 +23,6 @@ module.exports = {
           transpileOnly: true,
         }
       },
-      {
-        test: /\.ts$/,
-        include: /node_modules\/@dmm-com\/airone-apiclient-typescript-fetch/,
-        loader: 'ts-loader',
-        options: {
-          transpileOnly: true,
-        }
-      },
     ],
   },
   resolve: {

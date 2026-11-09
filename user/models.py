@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from datetime import datetime
 from importlib import import_module
@@ -161,7 +161,14 @@ class User(AbstractUser):
 
         return list(belonging.values())
 
-    def has_permission(self, target_obj: "ACLBase", permission_level: ACLType | int | None) -> bool:
+    def has_permission(
+        self,
+        target_obj: "ACLBase",
+        permission_level: ACLType | int | None,
+        *,
+        role_permissions: Callable[[], dict[str, int]] | None = None,
+    ) -> bool:
+        """Check the full ACL hierarchy, optionally using a request-local role snapshot."""
         # A bypass processing to rapidly return.
         # This condition is effective when the public objects are majority.
         if self.is_superuser:
@@ -182,20 +189,30 @@ class User(AbstractUser):
         # doesn't permit, access to the children's objects are also not permitted.
         if (
             isinstance(target_obj, import_module("entry.models").Entry)
-        ) and not self.has_permission(target_obj.schema, permission_level):
+        ) and not self.has_permission(
+            target_obj.schema, permission_level, role_permissions=role_permissions
+        ):
             return False
 
         # This also checks Entity permission if object is EntityAttr
         if (
             isinstance(target_obj, import_module("entity.models").EntityAttr)
-        ) and not self.has_permission(target_obj.parent_entity, permission_level):
+        ) and not self.has_permission(
+            target_obj.parent_entity, permission_level, role_permissions=role_permissions
+        ):
             return False
 
         # Check all superior object's permission if object is Attribute
         if (isinstance(target_obj, import_module("entry.models").Attribute)) and (
-            not self.has_permission(target_obj.schema, permission_level)
-            or not self.has_permission(target_obj.schema.parent_entity, permission_level)
-            or not self.has_permission(target_obj.parent_entry, permission_level)
+            not self.has_permission(
+                target_obj.schema, permission_level, role_permissions=role_permissions
+            )
+            or not self.has_permission(
+                target_obj.schema.parent_entity, permission_level, role_permissions=role_permissions
+            )
+            or not self.has_permission(
+                target_obj.parent_entry, permission_level, role_permissions=role_permissions
+            )
         ):
             return False
 
@@ -206,6 +223,9 @@ class User(AbstractUser):
         # Checks that the default permission permits to access, or not
         if permission_level <= target_obj.default_permission:
             return True
+
+        if role_permissions is not None:
+            return permission_level.id <= role_permissions().get(str(target_obj.id), 0)
 
         # This checks Roles that this user and groups, which this user belongs to,
         # have permission of specified permission_level
