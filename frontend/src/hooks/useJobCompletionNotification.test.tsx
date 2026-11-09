@@ -71,14 +71,12 @@ describe("useJobCompletionNotification", () => {
       status: JobStatuses.DONE,
       createdAt: new Date(Date.now() + 1000),
     });
-    const firstTab = renderHook(
-      () => useJobCompletionNotification([job]),
-      { wrapper },
-    );
-    const secondTab = renderHook(
-      () => useJobCompletionNotification([job]),
-      { wrapper },
-    );
+    const firstTab = renderHook(() => useJobCompletionNotification([job]), {
+      wrapper,
+    });
+    const secondTab = renderHook(() => useJobCompletionNotification([job]), {
+      wrapper,
+    });
 
     expect(HTMLAnchorElement.prototype.click).toHaveBeenCalledTimes(1);
 
