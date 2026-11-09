@@ -29,6 +29,7 @@ import { Loading } from "../common/Loading";
 import { useTranslation } from "hooks/useTranslation";
 import { groupPath, rolePath, userPath } from "routes/Routes";
 import { ServerContext } from "services";
+import { getGroupDisplayName } from "services/GroupUtil";
 
 const StyledList = styled(List)(() => ({
   padding: "0",

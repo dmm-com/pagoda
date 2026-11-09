@@ -80,7 +80,7 @@ import {
   JobListParam,
 } from "services/Constants";
 
-export type GroupTree = Pick<_GroupTree, "id" | "name"> & {
+export type GroupTree = Pick<GroupTreeV2, "id" | "name"> & {
   children: Array<GroupTree>;
 };
 
