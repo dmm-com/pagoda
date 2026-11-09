@@ -1,7 +1,10 @@
+from urllib.parse import quote
+
 from django.conf import settings
+from django.test import override_settings
 
 from airone.auth.social_auth import create_user
-from airone.lib.test import AironeViewTest
+from airone.lib.test import AironeViewTest, extract_json_script
 from user.models import User
 
 
@@ -26,6 +29,60 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.context["note_link"], "NOTE_LINK")
         self.assertEqual(resp.context["sso_desc"], "SSO_DESC")
         self.assertEqual(resp.context["password_reset_disabled"], True)
+
+    def test_login_context_payload(self):
+        resp = self.client.get("/auth/login/", {"next": "/ui/entries/"})
+        self.assertEqual(resp.status_code, 200)
+
+        payload = extract_json_script(resp.content.decode("utf-8"), "django-context")
+        self.assertEqual(payload["next"], "/ui/entries/")
+        self.assertEqual(payload["title"], "TITLE")
+        self.assertEqual(payload["subtitle"], "SUBTITLE")
+        self.assertEqual(payload["note_desc"], "NOTE_DESC")
+        self.assertEqual(payload["note_link"], "NOTE_LINK")
+        self.assertEqual(payload["password_reset_disabled"], True)
+        self.assertNotIn("singleSignOnLoginUrl", payload)
+
+    def test_login_page_does_not_emit_raw_next_value(self):
+        # A next value that contains a script closing tag must not be emitted
+        # verbatim into the page.
+        payload = "</script><script>alert(1)</script>/ui/"
+
+        resp = self.client.get("/auth/login/", {"next": payload})
+        self.assertEqual(resp.status_code, 200)
+
+        content = resp.content.decode("utf-8")
+        self.assertNotIn(payload, content)
+        self.assertNotIn("</script><script>alert(1)</script>", content)
+
+        # The value is still delivered to the client as JSON data
+        self.assertEqual(extract_json_script(content, "django-context")["next"], payload)
+
+    @override_settings(SOCIAL_AUTH_SAML_ENABLED_IDPS={"idp1": {}})
+    def test_legacy_login_page_sso_url_is_encoded(self):
+        # A next value without '/ui/' renders the legacy (non-SPA) form, which
+        # must use the same URL-encoded SSO link.
+        resp = self.client.get("/auth/login/", {"next": "/dashboard/?a=1&b=2"})
+        self.assertEqual(resp.status_code, 200)
+
+        content = resp.content.decode("utf-8")
+        self.assertIn("idp=idp1", content)
+        self.assertIn("next=%2Fdashboard%2F%3Fa%3D1%26b%3D2", content)
+
+    @override_settings(SOCIAL_AUTH_SAML_ENABLED_IDPS={"idp1": {}})
+    def test_login_page_does_not_emit_raw_next_value_in_sso_url(self):
+        payload = '</script><script>alert(1)</script>/ui/"'
+
+        resp = self.client.get("/auth/login/", {"next": payload})
+        self.assertEqual(resp.status_code, 200)
+
+        content = resp.content.decode("utf-8")
+        self.assertNotIn("</script><script>alert(1)</script>", content)
+
+        sso_url = extract_json_script(content, "django-context")["singleSignOnLoginUrl"]
+        self.assertIsNotNone(sso_url)
+        self.assertIn("idp=idp1", sso_url)
+        self.assertIn("next=" + quote(payload, safe=""), sso_url)
 
     def test_logout_with_get(self):
         self.guest_login()
