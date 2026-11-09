@@ -499,12 +499,21 @@ class AironeApiClient {
   }
 
   async exportEntities(): Promise<void> {
-    await this.entity.entityApiV2ExportRetrieveRaw();
+    const response = await fetch("/entity/api/v2/export", {
+      method: "POST",
+      headers: { "X-CSRFToken": getCsrfToken() },
+    });
+    if (!response.ok) {
+      throw new Error(
+        `Failed to register entity export (status: ${response.status})`,
+      );
+    }
   }
 
   async exportEntitySchema(entityId: number): Promise<void> {
     const response = await fetch(
-      `/entity/api/v2/export?entity_id=${encodeURIComponent(entityId)}`,
+      `/entity/api/v2/${encodeURIComponent(entityId)}/export`,
+      { method: "POST", headers: { "X-CSRFToken": getCsrfToken() } },
     );
     if (!response.ok) {
       throw new Error(
@@ -792,7 +801,15 @@ class AironeApiClient {
   }
 
   async exportGroups(): Promise<void> {
-    await this.group.groupApiV2GroupsExportListRaw();
+    const response = await fetch("/group/api/v2/groups/export", {
+      method: "POST",
+      headers: { "X-CSRFToken": getCsrfToken() },
+    });
+    if (!response.ok) {
+      throw new Error(
+        `Failed to register group export (status: ${response.status})`,
+      );
+    }
   }
 
   async getRoles(keyword?: string): Promise<Role[]> {
@@ -946,7 +963,15 @@ class AironeApiClient {
   }
 
   async exportRoles(): Promise<void> {
-    await this.role.roleApiV2ExportListRaw();
+    const response = await fetch("/role/api/v2/export", {
+      method: "POST",
+      headers: { "X-CSRFToken": getCsrfToken() },
+    });
+    if (!response.ok) {
+      throw new Error(
+        `Failed to register role export (status: ${response.status})`,
+      );
+    }
   }
 
   async getCategories(
@@ -1326,7 +1351,15 @@ class AironeApiClient {
   }
 
   async exportUsers(): Promise<void> {
-    await this.user.userApiV2ExportListRaw();
+    const response = await fetch("/user/api/v2/export/", {
+      method: "POST",
+      headers: { "X-CSRFToken": getCsrfToken() },
+    });
+    if (!response.ok) {
+      throw new Error(
+        `Failed to register user export (status: ${response.status})`,
+      );
+    }
   }
 
   async updateUserPassword(
