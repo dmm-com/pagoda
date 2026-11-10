@@ -107,13 +107,13 @@ describe("UserForm", () => {
           {
             id: 10,
             name: "child_group",
-            displayName: "",
+            displayName: "child_group",
             isDirect: true,
           },
           {
             id: 11,
             name: "parent_group",
-            displayName: "",
+            displayName: "parent_group",
             isDirect: false,
           },
         ],
@@ -130,14 +130,18 @@ describe("UserForm", () => {
             name: "group_role",
             isDirect: false,
             isAdmin: false,
-            viaGroups: [{ id: 10, name: "child_group", displayName: "" }],
+            viaGroups: [
+              { id: 10, name: "child_group", displayName: "child_group" },
+            ],
           },
           {
             id: 22,
             name: "admin_role",
             isDirect: false,
             isAdmin: true,
-            viaGroups: [{ id: 11, name: "parent_group", displayName: "" }],
+            viaGroups: [
+              { id: 11, name: "parent_group", displayName: "parent_group" },
+            ],
           },
         ],
       },

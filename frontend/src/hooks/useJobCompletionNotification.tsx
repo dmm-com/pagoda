@@ -16,6 +16,8 @@ import { isExportJob, jobOperationLabel } from "services/JobUtil";
 import { NotificationMessages } from "services/NotificationMessages";
 
 const NOTIFICATION_AUTO_HIDE_DURATION_MS = 8000;
+const AUTO_DOWNLOADED_EXPORTS_KEY = "job__auto_downloaded_export_ids";
+const AUTO_DOWNLOAD_LOCK = "airone-auto-export-download";
 
 const isTerminalStatus = (status: number | undefined): boolean =>
   status === JobStatuses.DONE ||
@@ -37,6 +39,40 @@ const saveNotifiedIds = (ids: Set<number>) => {
     LocalStorageKey.JobNotifiedIds,
     JSON.stringify([...ids]),
   );
+};
+
+const downloadExportOnce = (jobId: number): void => {
+  const download = () => {
+    const raw = localStorage.getItem(AUTO_DOWNLOADED_EXPORTS_KEY);
+    let downloadedIds: number[] = [];
+    try {
+      downloadedIds = raw ? (JSON.parse(raw) as number[]) : [];
+    } catch {
+      downloadedIds = [];
+    }
+    if (downloadedIds.includes(jobId)) return;
+
+    // Persist the claim before clicking so a re-render or another tab cannot
+    // start a second automatic download for this job.
+    localStorage.setItem(
+      AUTO_DOWNLOADED_EXPORTS_KEY,
+      JSON.stringify([...downloadedIds, jobId].slice(-500)),
+    );
+    const link = document.createElement("a");
+    link.href = `/job/api/v2/${jobId}/download?encode=utf-8`;
+    link.download = "";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
+
+  if (navigator.locks) {
+    void navigator.locks.request(AUTO_DOWNLOAD_LOCK, download);
+  } else {
+    // Older browsers lack Web Locks. localStorage still suppresses repeated
+    // calls in the normal same-origin tab polling flow.
+    download();
+  }
 };
 
 export const useJobCompletionNotification = (
@@ -88,12 +124,7 @@ export const useJobCompletionNotification = (
 
       if (job.status === JobStatuses.DONE) {
         if (isExportJob(job.operation)) {
-          const link = document.createElement("a");
-          link.href = `/job/api/v2/${job.id}/download?encode=utf-8`;
-          link.download = "";
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
+          downloadExportOnce(job.id);
           enqueueSnackbar(NotificationMessages.exportReady(targetName), {
             variant: "success",
             persist: true,

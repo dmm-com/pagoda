@@ -370,6 +370,7 @@ class AdvancedSearchService:
         join_attrs: list["AdvancedSearchJoinAttrInfo"],
         *,
         expand_arrays: bool = True,
+        pair_array_values: bool = False,
     ) -> AdvancedSearchResults:
         """Join referred Entry attributes based on join_attrs and filter/expand the results.
 
@@ -383,6 +384,8 @@ class AdvancedSearchService:
            join_attr.name.subattr_name
         4. Expand ARRAY-type attrs into one row per referral for exports, or
            retain one row with aligned joined_attrs for the search table.
+           With pair_array_values, keep only the corresponding source element
+           in each expanded row (CSV). Otherwise retain the full array (YAML).
         """
         for join_attr in join_attrs:
             has_filter = any(a.keyword or a.filter_key for a in join_attr.attrinfo)
@@ -466,13 +469,34 @@ class AdvancedSearchService:
                         }
                     new_ret_values.append(new_info)
                 elif is_array:
+                    assert attr is not None
                     # ARRAY type: expand into one row per referral
                     expanded = False
-                    for ref_id in ref_ids:
-                        matched = matched_results.get(ref_id)
+                    referrals = (
+                        [
+                            (
+                                next(
+                                    iter(
+                                        kls._extract_ref_ids(
+                                            {"type": attr["type"], "value": [source_value]}
+                                        )
+                                    ),
+                                    None,
+                                ),
+                                source_value,
+                            )
+                            for source_value in attr.get("value", [])
+                        ]
+                        if pair_array_values
+                        else [(ref_id, None) for ref_id in ref_ids]
+                    )
+                    for ref_id, source_value in referrals:
+                        matched = matched_results.get(ref_id) if ref_id is not None else None
                         if has_filter and matched is None:
                             continue  # this ref did not match the filter → skip
                         new_info = entry_info.model_copy(deep=True)
+                        if pair_array_values:
+                            new_info.attrs[join_attr.name]["value"] = [source_value]
                         if matched:
                             for attr_name, attr_val in matched.attrs.items():
                                 new_info.attrs[f"{join_attr.name}.{attr_name}"] = attr_val

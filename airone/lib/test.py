@@ -2,7 +2,9 @@ import atexit
 import functools
 import inspect
 import io
+import json
 import os
+import re
 import sys
 from collections.abc import Callable
 from typing import Any, cast
@@ -336,6 +338,19 @@ class DisableStderr:
     def __exit__(self, *arg: object, **kwargs: object) -> None:
         sys.stderr = self.tmp_stderr
         self.f.close()
+
+
+def extract_json_script(content: str, element_id: str) -> dict[str, Any]:
+    """Return the JSON payload that the json_script template filter rendered."""
+    matched = re.search(
+        r'<script id="%s" type="application/json">(.*?)</script>' % element_id,
+        content,
+        re.S,
+    )
+    if matched is None:
+        raise AssertionError("json_script payload %s is not rendered" % element_id)
+
+    return cast(dict[str, Any], json.loads(matched.group(1)))
 
 
 def with_airone_settings(info: dict[str, object] = {}) -> Callable[..., Callable[..., None]]:

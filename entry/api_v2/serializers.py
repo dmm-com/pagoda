@@ -1,7 +1,9 @@
 import re
+from collections.abc import Mapping
 from datetime import date, datetime
 from typing import Any, Literal, NotRequired, TypedDict, cast
 
+from django.contrib.auth.models import Permission
 from django.db.models import Prefetch, QuerySet
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
@@ -336,15 +338,55 @@ _DISPLAY_LABEL_ALLOWED_TYPES: frozenset[int] = frozenset(
 )
 
 
-def _resolve_display_label(display_attr_name: str, referred_entry: Entry | None) -> str | None:
+class _DisplayLabelReader:
+    """Share a lazy role snapshot within one response without caching across requests."""
+
+    def __init__(self, user: User):
+        self.user = user
+        self._role_permissions: dict[str, int] | None = None
+
+    def _get_role_permissions(self) -> dict[str, int]:
+        if self._role_permissions is None:
+            roles = [belonging.role.id for belonging in self.user.belonging_roles()]
+            self._role_permissions = {}
+            codenames = Permission.objects.filter(
+                historicalpermission__roles__id__in=roles,
+                name__in=[level.name for level in ACLType.all()],
+            ).values_list("codename", flat=True)
+            for codename in codenames:
+                object_id, separator, _ = codename.partition(".")
+                if not separator:
+                    continue
+                level = int(codename.rsplit(".", 1)[-1])
+                self._role_permissions[object_id] = max(
+                    self._role_permissions.get(object_id, 0), level
+                )
+        return self._role_permissions
+
+    def has_permission(self, obj: ACLBase, level: ACLType) -> bool:
+        return self.user.has_permission(obj, level, role_permissions=self._get_role_permissions)
+
+
+def _display_label_reader(context: Mapping[str, Any]) -> _DisplayLabelReader | None:
+    request = context.get("request")
+    if request is None:
+        return None
+    if not hasattr(request, "_display_label_reader"):
+        request._display_label_reader = _DisplayLabelReader(request.user)
+    return cast(_DisplayLabelReader, request._display_label_reader)
+
+
+def _resolve_display_label(
+    display_attr_name: str, referred_entry: Entry | None, reader: _DisplayLabelReader | None
+) -> str | None:
     """Resolve the value of `display_attr_name` on `referred_entry` as a label string.
 
     Returns None when: display_attr_name is empty, the referred entry has no such
-    active attribute, no latest value exists, or the source attr type is not
-    supported for label rendering. Recursion is bounded to a single hop
+    active readable attribute, no latest value exists, or the source attr type
+    is not supported for label rendering. Recursion is bounded to a single hop
     (OBJECT display_attr yields the referred entry's own name, never a chain).
     """
-    if not display_attr_name or referred_entry is None:
+    if not display_attr_name or referred_entry is None or reader is None:
         return None
 
     # Prefer prefetched list to avoid N+1; fall back to direct query for
@@ -356,17 +398,21 @@ def _resolve_display_label(display_attr_name: str, referred_entry: Entry | None)
         matched = list(
             referred_entry.attrs.filter(
                 is_active=True, schema__name=display_attr_name
-            ).select_related("schema")
+            ).select_related("schema__parent_entity", "parent_entry__schema")
         )
     if not matched:
         return None
     target_attr = matched[0]
+    if not target_attr.schema.is_active or not reader.has_permission(target_attr, ACLType.Readable):
+        return None
 
     prefetched_vals = getattr(target_attr, "_display_attrv_list", None)
     if prefetched_vals is not None:
         latest_values = prefetched_vals
     else:
-        latest_values = list(target_attr.values.filter(is_latest=True).select_related("referral"))
+        latest_values = list(
+            target_attr.values.filter(is_latest=True).select_related("referral__entry__schema")
+        )
     if not latest_values:
         return None
     val = latest_values[0]
@@ -387,13 +433,19 @@ def _resolve_display_label(display_attr_name: str, referred_entry: Entry | None)
     if attr_type_int == AttrType.DATETIME:
         return val.datetime.isoformat() if val.datetime else None
     if attr_type_int == AttrType.OBJECT:
-        if val.referral and val.referral.is_active:
-            return str(val.referral.name)
+        if (
+            val.referral
+            and val.referral.is_active
+            and reader.has_permission(val.referral.entry, ACLType.Readable)
+        ):
+            return str(val.referral.entry.name)
         return None
     return None
 
 
-def _build_object_payload(referral: ACLBase, display_attr_name: str) -> EntryAttributeValueObject:
+def _build_object_payload(
+    referral: ACLBase, display_attr_name: str, reader: _DisplayLabelReader | None
+) -> EntryAttributeValueObject:
     """Build the object payload dict for an object-like attribute value.
 
     Adds an optional `display_label` key only when `display_attr_name` resolves
@@ -406,7 +458,7 @@ def _build_object_payload(referral: ACLBase, display_attr_name: str) -> EntryAtt
         "name": referral.name,
         "schema": {"id": entry.schema.id, "name": entry.schema.name},
     }
-    label = _resolve_display_label(display_attr_name, entry)
+    label = _resolve_display_label(display_attr_name, entry, reader)
     if label is not None:
         payload["display_label"] = label
     return payload
@@ -420,13 +472,15 @@ def _make_display_attr_prefetch(display_attr_names: set[str]) -> "Prefetch[Any]"
     """
     display_attrv_prefetch = Prefetch(
         "values",
-        queryset=AttributeValue.objects.filter(is_latest=True).select_related("referral"),
+        queryset=AttributeValue.objects.filter(is_latest=True).select_related(
+            "referral__entry__schema"
+        ),
         to_attr="_display_attrv_list",
     )
     return Prefetch(
         "referral__entry__attrs",
         queryset=Attribute.objects.filter(is_active=True, schema__name__in=display_attr_names)
-        .select_related("schema")
+        .select_related("schema__parent_entity", "parent_entry__schema")
         .prefetch_related(display_attrv_prefetch),
         to_attr="_display_attr_list",
     )
@@ -919,6 +973,9 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
 
     @extend_schema_field(serializers.ListField(child=EntryAttributeTypeSerializer()))
     def get_attrs(self, obj: Entry) -> list[EntryAttributeType]:
+        user: User = self.context["request"].user
+        label_reader = _display_label_reader(self.context)
+
         def get_attr_value(attr: Attribute) -> EntryAttributeValue:
             # attrv_list is dynamically populated via Prefetch(to_attr="attrv_list")
             attrv_list = attr.attrv_list  # type: ignore[attr-defined]
@@ -950,7 +1007,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                     # referral chain, so bare .all() uses the cache.
                     return {
                         "as_array_object": [
-                            _build_object_payload(x.referral, display_attr_name)
+                            _build_object_payload(x.referral, display_attr_name, label_reader)
                             for x in attrv.data_array.all()
                             if x.referral and x.referral.is_active
                         ]
@@ -961,7 +1018,9 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                     array_named_object: list[EntryAttributeValueNamedObject] = [
                         {
                             "name": x.value,
-                            "object": _build_object_payload(x.referral, display_attr_name)
+                            "object": _build_object_payload(
+                                x.referral, display_attr_name, label_reader
+                            )
                             if x.referral and x.referral.is_active
                             else None,
                         }
@@ -1024,7 +1083,9 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
 
                 case AttrType.OBJECT:
                     return {
-                        "as_object": _build_object_payload(attrv.referral, attr.schema.display_attr)
+                        "as_object": _build_object_payload(
+                            attrv.referral, attr.schema.display_attr, label_reader
+                        )
                         if attrv.referral and attrv.referral.is_active
                         else None,
                     }
@@ -1032,7 +1093,9 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                 case AttrType.NAMED_OBJECT:
                     named: EntryAttributeValueNamedObject = {
                         "name": attrv.value,
-                        "object": _build_object_payload(attrv.referral, attr.schema.display_attr)
+                        "object": _build_object_payload(
+                            attrv.referral, attr.schema.display_attr, label_reader
+                        )
                         if attrv.referral and attrv.referral.is_active
                         else None,
                     }
@@ -1187,8 +1250,6 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
             .prefetch_related(attr_prefetch)
             .order_by("index")
         )
-
-        user: User = self.context["request"].user
 
         attrinfo: list[EntryAttributeType] = []
         for entity_attr in entity_attrs:
@@ -1345,7 +1406,9 @@ class GetEntryAttrReferralSerializer(serializers.ModelSerializer[ACLBase]):
             data.pop("display_label", None)
             return data
         if display_attr_name and isinstance(obj, Entry):
-            data["display_label"] = _resolve_display_label(display_attr_name, obj)
+            data["display_label"] = _resolve_display_label(
+                display_attr_name, obj, _display_label_reader(self.context)
+            )
         else:
             data["display_label"] = None
         return data
@@ -1415,6 +1478,7 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer[Attribute
         list_serializer_class = EntryHistoryAttributeValueListSerializer
 
     def _get_value(self, obj: AttributeValue) -> EntryAttributeValue:
+        label_reader = _display_label_reader(self.context)
         try:
             attr_type = AttrType(obj.data_type)
         except ValueError:
@@ -1438,7 +1502,7 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer[Attribute
                 # select_related for referral chain; bare .all() uses the cache.
                 return {
                     "as_array_object": [
-                        _build_object_payload(x.referral, display_attr_name)
+                        _build_object_payload(x.referral, display_attr_name, label_reader)
                         if x.referral and x.referral.is_active
                         else None
                         for x in obj.data_array.all()
@@ -1449,7 +1513,7 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer[Attribute
                 array_named_object: list[EntryAttributeValueNamedObject] = [
                     {
                         "name": x.value,
-                        "object": _build_object_payload(x.referral, display_attr_name)
+                        "object": _build_object_payload(x.referral, display_attr_name, label_reader)
                         if x.referral and x.referral.is_active
                         else None,
                     }
@@ -1527,7 +1591,9 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer[Attribute
 
             case AttrType.OBJECT:
                 return {
-                    "as_object": _build_object_payload(obj.referral, display_attr_name)
+                    "as_object": _build_object_payload(
+                        obj.referral, display_attr_name, label_reader
+                    )
                     if obj.referral and obj.referral.is_active
                     else None,
                 }
@@ -1535,7 +1601,7 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer[Attribute
             case AttrType.NAMED_OBJECT:
                 named: EntryAttributeValueNamedObject = {
                     "name": obj.value,
-                    "object": _build_object_payload(obj.referral, display_attr_name)
+                    "object": _build_object_payload(obj.referral, display_attr_name, label_reader)
                     if obj.referral and obj.referral.is_active
                     else None,
                 }

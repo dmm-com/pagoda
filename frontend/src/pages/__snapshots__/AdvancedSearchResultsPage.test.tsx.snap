@@ -221,11 +221,32 @@ exports[`should match snapshot 1`] = `
                       </th>
                       <th
                         class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-msxbr9-MuiTableCell-root"
+                        data-search-column="__entry_name__"
                         scope="col"
                       >
                         <div
                           class="MuiBox-root css-1p22ljb"
                         >
+                          <button
+                            aria-label="アイテム名列をドラッグして移動"
+                            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-yfojyy-MuiButtonBase-root-MuiIconButton-root"
+                            data-mui-internal-clone-element="true"
+                            draggable="true"
+                            tabindex="0"
+                            type="button"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
+                              data-testid="DragIndicatorIcon"
+                              focusable="false"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2m-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"
+                              />
+                            </svg>
+                          </button>
                           <span
                             class="MuiButtonBase-root MuiTableSortLabel-root MuiTableSortLabel-directionAsc css-iykaik-MuiButtonBase-root-MuiTableSortLabel-root"
                             role="button"
@@ -303,6 +324,7 @@ exports[`should match snapshot 1`] = `
                       </td>
                       <td
                         class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
+                        data-search-entry-name="true"
                       >
                         <a
                           class="MuiBox-root css-p5ouq3"
@@ -615,11 +637,32 @@ exports[`should match snapshot 1`] = `
                     </th>
                     <th
                       class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-msxbr9-MuiTableCell-root"
+                      data-search-column="__entry_name__"
                       scope="col"
                     >
                       <div
                         class="MuiBox-root css-1p22ljb"
                       >
+                        <button
+                          aria-label="アイテム名列をドラッグして移動"
+                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-yfojyy-MuiButtonBase-root-MuiIconButton-root"
+                          data-mui-internal-clone-element="true"
+                          draggable="true"
+                          tabindex="0"
+                          type="button"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
+                            data-testid="DragIndicatorIcon"
+                            focusable="false"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2m-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"
+                            />
+                          </svg>
+                        </button>
                         <span
                           class="MuiButtonBase-root MuiTableSortLabel-root MuiTableSortLabel-directionAsc css-iykaik-MuiButtonBase-root-MuiTableSortLabel-root"
                           role="button"
@@ -697,6 +740,7 @@ exports[`should match snapshot 1`] = `
                     </td>
                     <td
                       class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
+                      data-search-entry-name="true"
                     >
                       <a
                         class="MuiBox-root css-p5ouq3"

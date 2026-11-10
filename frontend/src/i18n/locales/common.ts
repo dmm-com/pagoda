@@ -150,6 +150,12 @@ export const commonMessages = defineMessages({
     "importPreview.job.confirmFailed": "変更内容の確認に失敗しました",
     "importPreview.job.confirmTimedOut": "変更内容の確認がタイムアウトしました",
     "importPreview.job.confirmCancelled": "変更内容の確認を中止しました",
+
+    // Import from the common endpoint (the file decides what it contains)
+    "commonImport.title": "データのインポート",
+    "commonImport.description": "インポートするファイルを選択してください。",
+    "commonImport.caption":
+      "※モデル・アイテム・ユーザ他、いずれのインポートファイルも受け付けます。CSV形式のファイルは選択できません。",
   },
   en: {
     // Generic actions
@@ -300,5 +306,11 @@ export const commonMessages = defineMessages({
     "importPreview.job.confirmFailed": "Failed to preview changes",
     "importPreview.job.confirmTimedOut": "Timed out previewing changes",
     "importPreview.job.confirmCancelled": "Cancelled previewing changes",
+
+    // Import from the common endpoint (the file decides what it contains)
+    "commonImport.title": "Import data",
+    "commonImport.description": "Please select a file to import.",
+    "commonImport.caption":
+      "* The kind of data (models, items, users, groups or roles) is detected from the file. CSV files cannot be selected.",
   },
 });

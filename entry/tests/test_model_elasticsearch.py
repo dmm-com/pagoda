@@ -1164,14 +1164,14 @@ class ModelElasticsearchTest(BaseModelTest):
             attr.add_value(self._user, info["value"])
 
         # delete target entry at first
-        entry.delete()
+        entry.delete(deleted_user=self._user)
 
         self.assertFalse(entry.is_active)
         self.assertTrue(entry.name.find("_deleted_") > 0)
         self.assertFalse(any([Entry.objects.get(id=x.id).is_active for x in ref_entries]))
 
         # restore target entry
-        entry.restore()
+        entry.restore(user=self._user)
 
         self.assertTrue(entry.is_active)
         self.assertEqual(entry.name.find("_deleted_"), -1)

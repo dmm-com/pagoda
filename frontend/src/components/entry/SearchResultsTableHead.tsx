@@ -1,6 +1,7 @@
 import AddIcon from "@mui/icons-material/Add";
 import CheckBoxOutlineBlankOutlinedIcon from "@mui/icons-material/CheckBoxOutlineBlankOutlined";
 import CheckBoxOutlinedIcon from "@mui/icons-material/CheckBoxOutlined";
+import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import {
@@ -98,6 +99,8 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 
 interface Props {
   hasReferral: boolean;
+  columnNames?: string[];
+  onReorderColumn?: (source: string, target: string) => void;
   attrTypes: Record<string, number | undefined>;
   defaultEntryFilter?: EntryHint;
   defaultReferralFilter?: string;
@@ -129,6 +132,8 @@ export interface handleSelectFilterConditionsParams {
 
 export const SearchResultsTableHead: FC<Props> = ({
   hasReferral,
+  columnNames: orderedColumnNames,
+  onReorderColumn,
   attrTypes,
   defaultEntryFilter,
   defaultReferralFilter,
@@ -209,10 +214,20 @@ export const SearchResultsTableHead: FC<Props> = ({
   }>({});
   const [referralMenuEls, setReferralMenuEls] =
     useState<HTMLButtonElement | null>(null);
+  const [draggedColumnName, setDraggedColumnName] = useState<string | null>(
+    null,
+  );
+  const [dropTargetColumnName, setDropTargetColumnName] = useState<
+    string | null
+  >(null);
 
-  const attrNames = useMemo(() => {
+  const defaultAttrNames = useMemo(() => {
     return Object.keys(defaultAttrsFilter);
   }, [defaultAttrsFilter]);
+  const columnNames = orderedColumnNames ?? [
+    ENTRY_NAME_SORT_TARGET,
+    ...defaultAttrNames,
+  ];
 
   const isFiltered = useMemo(
     (): Record<string, boolean> =>
@@ -353,157 +368,224 @@ export const SearchResultsTableHead: FC<Props> = ({
           </TableCell>
         )}
 
-        <StyledTableCell
-          {...(omitHeadline
-            ? { sx: { minWidth: "0px" } }
-            : { sx: { outline: "1px solid #FFFFFF" } })}
-        >
-          <HeaderBox>
-            {omitHeadline ? (
-              <Typography />
-            ) : (
-              <TableSortLabel
-                active={defaultSort?.targetAttrname === ENTRY_NAME_SORT_TARGET}
-                direction={getSortDirection(ENTRY_NAME_SORT_TARGET) ?? "asc"}
-                onClick={() => handleSort(ENTRY_NAME_SORT_TARGET)}
-                sx={{
-                  color: "primary.contrastText",
-                  "&:hover, &.Mui-active, &.Mui-active .MuiTableSortLabel-icon":
-                    {
-                      color: "primary.contrastText",
-                    },
-                }}
-              >
-                <Typography>
-                  {t("advancedSearch.tableHead.entryName")}
-                </Typography>
-              </TableSortLabel>
-            )}
-
-            {/* SearchControlMenu would be invisible when NarrowDown Mode is True */}
-            {isNarrowDown && !omitHeadline && (
-              <>
+        {columnNames.map((attrName) => (
+          <StyledTableCell
+            key={attrName}
+            data-search-column={attrName}
+            sx={
+              dropTargetColumnName === attrName
+                ? { boxShadow: "inset 4px 0 0 #90caf9" }
+                : attrName === ENTRY_NAME_SORT_TARGET && omitHeadline
+                  ? { minWidth: "0px" }
+                  : attrName === ENTRY_NAME_SORT_TARGET
+                    ? { outline: "1px solid #FFFFFF" }
+                    : undefined
+            }
+            onDragOver={(event) => {
+              if (draggedColumnName && draggedColumnName !== attrName) {
+                event.preventDefault();
+                event.dataTransfer.dropEffect = "move";
+                setDropTargetColumnName(attrName);
+              }
+            }}
+            onDragLeave={() => setDropTargetColumnName(null)}
+            onDrop={(event) => {
+              event.preventDefault();
+              if (draggedColumnName) {
+                onReorderColumn?.(draggedColumnName, attrName);
+              }
+              setDraggedColumnName(null);
+              setDropTargetColumnName(null);
+            }}
+          >
+            <HeaderBox>
+              {onReorderColumn && (
                 <Tooltip
-                  title={t("advancedSearch.tableHead.filterByEntryName")}
+                  title={t("advancedSearch.tableHead.moveColumn", {
+                    name:
+                      attrName === ENTRY_NAME_SORT_TARGET
+                        ? t("advancedSearch.tableHead.entryName")
+                        : defaultAttrsFilter[attrName]?.alterName || attrName,
+                  })}
                 >
                   <StyledIconButton
-                    onClick={(e) => {
-                      setEntryMenuEls(e.currentTarget);
+                    size="small"
+                    draggable
+                    aria-label={t("advancedSearch.tableHead.moveColumn", {
+                      name:
+                        attrName === ENTRY_NAME_SORT_TARGET
+                          ? t("advancedSearch.tableHead.entryName")
+                          : defaultAttrsFilter[attrName]?.alterName || attrName,
+                    })}
+                    onDragStart={(event) => {
+                      event.dataTransfer.effectAllowed = "move";
+                      event.dataTransfer.setData("text/plain", attrName);
+                      setDraggedColumnName(attrName);
                     }}
+                    onDragEnd={() => {
+                      setDraggedColumnName(null);
+                      setDropTargetColumnName(null);
+                    }}
+                    sx={{ cursor: "grab", mr: 1 }}
                   >
-                    {hintEntry.keyword ? <FilterAltIcon /> : <FilterListIcon />}
+                    <DragIndicatorIcon fontSize="small" />
                   </StyledIconButton>
                 </Tooltip>
-                <SearchResultControlMenuForEntry
-                  hintEntry={hintEntry}
-                  anchorElem={entryMenuEls}
-                  handleClose={() => setEntryMenuEls(null)}
-                  hintEntryDispatcher={hintEntryDispatcher}
-                  handleSelectFilterConditions={handleSelectFilterConditions()}
-                />
-              </>
-            )}
-          </HeaderBox>
-        </StyledTableCell>
-
-        {attrNames.map((attrName) => (
-          <StyledTableCell key={attrName}>
-            <HeaderBox>
-              {isSortableAttrType(attrTypes[attrName]) &&
-              defaultAttrsFilter[attrName]?.joinedAttrname === undefined ? (
-                <TableSortLabel
-                  active={defaultSort?.targetAttrname === attrName}
-                  direction={getSortDirection(attrName) ?? "asc"}
-                  onClick={() => handleSort(attrName)}
-                  sx={{
-                    color: "primary.contrastText",
-                    "&:hover, &.Mui-active, &.Mui-active .MuiTableSortLabel-icon":
-                      {
-                        color: "primary.contrastText",
-                      },
-                  }}
-                >
-                  <Typography>
-                    {defaultAttrsFilter[attrName]?.alterName
-                      ? defaultAttrsFilter[attrName].alterName
-                      : attrName}
-                  </Typography>
-                </TableSortLabel>
-              ) : (
-                <Typography>
-                  {defaultAttrsFilter[attrName]?.alterName
-                    ? defaultAttrsFilter[attrName].alterName
-                    : attrName}
-                </Typography>
               )}
-
-              {/* Bulk operation checkbox would be invisible when NarrowDown mode is true */}
-              {((attrTypes[attrName] ?? 0) &
-                EntryAttributeTypeTypeEnum.OBJECT) >
-                0 &&
-                isNarrowDown &&
-                attrsFilter[attrName]?.joinedAttrname === undefined && (
-                  <Tooltip title={t("advancedSearch.tableHead.joinAttr")}>
-                    <StyledIconButton onClick={() => setJoinAttrname(attrName)}>
-                      <AddIcon />
-                    </StyledIconButton>
-                  </Tooltip>
-                )}
-              {attrName === joinAttrName && (
-                <AdvancedSearchJoinModal
-                  targetEntityIds={entityIds}
-                  searchAllEntities={searchAllEntities}
-                  targetAttrname={joinAttrName}
-                  joinAttrs={joinAttrs}
-                  handleClose={() => setJoinAttrname("")}
-                />
-              )}
-              {isNarrowDown && (
+              {attrName === ENTRY_NAME_SORT_TARGET ? (
                 <>
-                  <Tooltip
-                    title={t("advancedSearch.tableHead.filterByAttrValue")}
-                  >
-                    <StyledIconButton
-                      onClick={(e) => {
-                        setAttributeMenuEls({
-                          ...attributeMenuEls,
-                          [attrName]: e.currentTarget,
-                        });
+                  {omitHeadline ? (
+                    <Typography />
+                  ) : (
+                    <TableSortLabel
+                      active={
+                        defaultSort?.targetAttrname === ENTRY_NAME_SORT_TARGET
+                      }
+                      direction={
+                        getSortDirection(ENTRY_NAME_SORT_TARGET) ?? "asc"
+                      }
+                      onClick={() => handleSort(ENTRY_NAME_SORT_TARGET)}
+                      sx={{
+                        color: "primary.contrastText",
+                        "&:hover, &.Mui-active, &.Mui-active .MuiTableSortLabel-icon":
+                          {
+                            color: "primary.contrastText",
+                          },
                       }}
-                      sx={{ marginLeft: "auto" }}
                     >
-                      {(isFiltered[attrName] ?? false) ? (
-                        <FilterAltIcon />
-                      ) : (
-                        <FilterListIcon />
-                      )}
-                    </StyledIconButton>
-                  </Tooltip>
-                  <SearchResultControlMenu
-                    attrname={attrName}
-                    attrFilter={attrsFilter[attrName]}
-                    anchorElem={attributeMenuEls[attrName]}
-                    handleClose={() =>
-                      setAttributeMenuEls({
-                        ...attributeMenuEls,
-                        [attrName]: null,
-                      })
-                    }
-                    handleSelectFilterConditions={handleSelectFilterConditions(
-                      attrName,
+                      <Typography>
+                        {t("advancedSearch.tableHead.entryName")}
+                      </Typography>
+                    </TableSortLabel>
+                  )}
+                  {isNarrowDown && !omitHeadline && (
+                    <>
+                      <Tooltip
+                        title={t("advancedSearch.tableHead.filterByEntryName")}
+                      >
+                        <StyledIconButton
+                          onClick={(e) => setEntryMenuEls(e.currentTarget)}
+                        >
+                          {hintEntry.keyword ? (
+                            <FilterAltIcon />
+                          ) : (
+                            <FilterListIcon />
+                          )}
+                        </StyledIconButton>
+                      </Tooltip>
+                      <SearchResultControlMenuForEntry
+                        hintEntry={hintEntry}
+                        anchorElem={entryMenuEls}
+                        handleClose={() => setEntryMenuEls(null)}
+                        hintEntryDispatcher={hintEntryDispatcher}
+                        handleSelectFilterConditions={handleSelectFilterConditions()}
+                      />
+                    </>
+                  )}
+                </>
+              ) : (
+                <>
+                  {isSortableAttrType(attrTypes[attrName]) &&
+                  defaultAttrsFilter[attrName]?.joinedAttrname === undefined ? (
+                    <TableSortLabel
+                      active={defaultSort?.targetAttrname === attrName}
+                      direction={getSortDirection(attrName) ?? "asc"}
+                      onClick={() => handleSort(attrName)}
+                      sx={{
+                        color: "primary.contrastText",
+                        "&:hover, &.Mui-active, &.Mui-active .MuiTableSortLabel-icon":
+                          {
+                            color: "primary.contrastText",
+                          },
+                      }}
+                    >
+                      <Typography>
+                        {defaultAttrsFilter[attrName]?.alterName
+                          ? defaultAttrsFilter[attrName].alterName
+                          : attrName}
+                      </Typography>
+                    </TableSortLabel>
+                  ) : (
+                    <Typography>
+                      {defaultAttrsFilter[attrName]?.alterName
+                        ? defaultAttrsFilter[attrName].alterName
+                        : attrName}
+                    </Typography>
+                  )}
+
+                  {/* Bulk operation checkbox would be invisible when NarrowDown mode is true */}
+                  {((attrTypes[attrName] ?? 0) &
+                    EntryAttributeTypeTypeEnum.OBJECT) >
+                    0 &&
+                    isNarrowDown &&
+                    attrsFilter[attrName]?.joinedAttrname === undefined && (
+                      <Tooltip title={t("advancedSearch.tableHead.joinAttr")}>
+                        <StyledIconButton
+                          onClick={() => setJoinAttrname(attrName)}
+                        >
+                          <AddIcon />
+                        </StyledIconButton>
+                      </Tooltip>
                     )}
-                    handleUpdateAttrFilter={handleUpdateAttrFilter(attrName)}
-                    attrType={attrTypes[attrName]}
-                    setOpenEditModal={setOpenEditModal}
-                    isDisabledEditModal={
-                      joinAttrs.length > 0 || searchAllEntities
-                    }
-                    entityAttrs={entityAttrs}
-                    setEditTargetAttrID={setEditTargetAttrID}
-                    setEditTargetAttrname={setEditTargetAttrname}
-                    setEditTargetAttrtype={setEditTargetAttrtype}
-                    totalCount={totalCount}
-                  />
+                  {attrName === joinAttrName && (
+                    <AdvancedSearchJoinModal
+                      targetEntityIds={entityIds}
+                      searchAllEntities={searchAllEntities}
+                      targetAttrname={joinAttrName}
+                      joinAttrs={joinAttrs}
+                      handleClose={() => setJoinAttrname("")}
+                    />
+                  )}
+                  {isNarrowDown && (
+                    <>
+                      <Tooltip
+                        title={t("advancedSearch.tableHead.filterByAttrValue")}
+                      >
+                        <StyledIconButton
+                          onClick={(e) => {
+                            setAttributeMenuEls({
+                              ...attributeMenuEls,
+                              [attrName]: e.currentTarget,
+                            });
+                          }}
+                          sx={{ marginLeft: "auto" }}
+                        >
+                          {(isFiltered[attrName] ?? false) ? (
+                            <FilterAltIcon />
+                          ) : (
+                            <FilterListIcon />
+                          )}
+                        </StyledIconButton>
+                      </Tooltip>
+                      <SearchResultControlMenu
+                        attrname={attrName}
+                        attrFilter={attrsFilter[attrName]}
+                        anchorElem={attributeMenuEls[attrName]}
+                        handleClose={() =>
+                          setAttributeMenuEls({
+                            ...attributeMenuEls,
+                            [attrName]: null,
+                          })
+                        }
+                        handleSelectFilterConditions={handleSelectFilterConditions(
+                          attrName,
+                        )}
+                        handleUpdateAttrFilter={handleUpdateAttrFilter(
+                          attrName,
+                        )}
+                        attrType={attrTypes[attrName]}
+                        setOpenEditModal={setOpenEditModal}
+                        isDisabledEditModal={
+                          joinAttrs.length > 0 || searchAllEntities
+                        }
+                        entityAttrs={entityAttrs}
+                        setEditTargetAttrID={setEditTargetAttrID}
+                        setEditTargetAttrname={setEditTargetAttrname}
+                        setEditTargetAttrtype={setEditTargetAttrtype}
+                        totalCount={totalCount}
+                      />
+                    </>
+                  )}
                 </>
               )}
             </HeaderBox>

@@ -1,5 +1,7 @@
+import csv
 import datetime
 import errno
+import io
 import json
 import logging
 from datetime import date
@@ -2187,7 +2189,15 @@ class ViewTest(BaseViewTest):
             self.assertEqual(header, 'Name,Entity,"%s,""ATTR"""' % type_name)
 
             data = content.replace(header, "", 1).strip()
-            self.assertEqual(data, '"%s,""ENTRY""",%s,%s' % (type_name, test_entity.name, expected))
+            if type == AttrType.ARRAY_STRING:
+                self.assertEqual(
+                    list(csv.reader(io.StringIO(content)))[1:],
+                    [[test_entry.name, test_entity.name, item] for item in value],
+                )
+            else:
+                self.assertEqual(
+                    data, '"%s,""ENTRY""",%s,%s' % (type_name, test_entity.name, expected)
+                )
 
     @patch(
         "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
@@ -2241,6 +2251,16 @@ class ViewTest(BaseViewTest):
         self.assertEqual(resp.status_code, 200)
 
         content = Job.objects.last().get_cache()
+
+        self.assertEqual(
+            list(csv.reader(io.StringIO(content))),
+            [
+                ["Name", "Entity", "arr"],
+                ["entry1", "ArrayStringEntity", "one"],
+                ["entry1", "ArrayStringEntity", "two"],
+                ["entry1", "ArrayStringEntity", "three"],
+            ],
+        )
 
         has_crlf = "\r\n" in content
         has_bare_lf = "\n" in content.replace("\r\n", "")
