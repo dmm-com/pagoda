@@ -1,5 +1,7 @@
 import csv
 import io
+from collections.abc import Iterator
+from itertools import product
 from typing import Any
 
 import yaml
@@ -15,6 +17,32 @@ from job.models import Job, JobOperation
 from job.params import SearchExportParams
 
 
+def iter_csv_records(
+    values: list[AdvancedSearchResultRecord], attr_names: list[str]
+) -> Iterator[AdvancedSearchResultRecord]:
+    """Emit one element per array cell, repeating other values on each row.
+
+    Independent arrays produce all combinations. Joined source arrays have
+    already been narrowed to the reference belonging to each joined row.
+    """
+    for record in values:
+        arrays = {
+            name: record.attrs[name]["value"] or [None]
+            for name in dict.fromkeys(attr_names)
+            if name in record.attrs
+            and record.attrs[name].get("type", 0) & AttrType._ARRAY
+            and isinstance(record.attrs[name].get("value"), list)
+        }
+        if not arrays:
+            yield record
+            continue
+        for items in product(*arrays.values()):
+            row = record.model_copy(deep=True)
+            for name, item in zip(arrays, items):
+                row.attrs[name]["value"] = [] if item is None else [item]
+            yield row
+
+
 def _csv_export(
     job: Job,
     values: list[AdvancedSearchResultRecord],
@@ -22,9 +50,7 @@ def _csv_export(
     has_referral: bool,
 ) -> io.StringIO | None:
     output = io.StringIO(newline="")
-    # Use LF as the row terminator to match the LF used when joining array
-    # values; mixing CRLF terminators with bare-LF cell separators makes
-    # editors render the row-terminating CR as a stray ^M control character.
+    # Keep LF row terminators consistent with multiline text values.
     writer = csv.writer(output, lineterminator="\n")
 
     # write first line of CSV
@@ -35,7 +61,8 @@ def _csv_export(
     else:
         writer.writerow(["Name"] + ["Entity"] + [x["name"] for x in recv_data["attrinfo"]])
 
-    for index, entry_info in enumerate(values):
+    attr_names = [attr["name"] for attr in recv_data["attrinfo"]]
+    for index, entry_info in enumerate(iter_csv_records(values, attr_names)):
         line_data = [entry_info.entry["name"]]
 
         # Abort processing when job is canceled
@@ -85,6 +112,12 @@ def _csv_export(
                     line_data.append(
                         "%s: %s" % (k, v["name"]) if isinstance(v, dict) else "%s: " % k
                     )
+
+                case AttrType.SELECT:
+                    line_data.append(str(vval.get("label", "")) if isinstance(vval, dict) else "")
+
+                case AttrType.MULTI_SELECT:
+                    line_data.append("\n".join(str(item.get("label", "")) for item in vval))
 
                 case AttrType.ARRAY_STRING:
                     line_data.append("\n".join(natsorted(vval)))

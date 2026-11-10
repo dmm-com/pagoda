@@ -34,7 +34,7 @@ from airone.lib.job import (
 from airone.lib.log import Logger
 from airone.lib.types import AttrType
 from common.lib.import_detector import ImportType, wrap_envelope
-from dashboard.tasks import _csv_export
+from dashboard.tasks import _csv_export, iter_csv_records
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import (
     AdvancedSearchJoinAttrInfoList,
@@ -968,9 +968,7 @@ def _csv_export_v2(
 ) -> io.StringIO | None:
     """CSV export for v2. No Entity column; adds sub-attribute columns from join_attrs."""
     output = io.StringIO(newline="")
-    # Use LF as the row terminator to match the LF used when joining array
-    # values; mixing CRLF terminators with bare-LF cell separators makes
-    # editors render the row-terminating CR as a stray ^M control character.
+    # Keep LF row terminators consistent with multiline text values.
     writer = csv.writer(output, lineterminator="\n")
 
     join_attrs = recv_data.get("join_attrs", [])
@@ -1029,7 +1027,12 @@ def _csv_export_v2(
                 return "\n".join(natsorted(items))
         return ""
 
-    for index, entry_info in enumerate(values):
+    attr_names = [attr["name"] for attr in recv_data["attrinfo"]] + [
+        f"{join_attr['name']}.{attr['name']}"
+        for join_attr in join_attrs
+        for attr in join_attr["attrinfo"]
+    ]
+    for index, entry_info in enumerate(iter_csv_records(values, attr_names)):
         if index % Job.STATUS_CHECK_FREQUENCY == 0 and job.is_canceled():
             return None
 
@@ -1108,6 +1111,7 @@ def export_search_result_v2(self: Any, job: Job) -> tuple[JobStatus, str, ACLBas
         user,
         resp,
         join_attr_objects,
+        pair_array_values=params["export_style"] == "csv",
     )
 
     output: io.StringIO | None = None

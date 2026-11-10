@@ -1,8 +1,12 @@
+import csv
+import io
 import json
 from unittest.mock import Mock, patch
 
 from airone.lib.elasticsearch import FilterKey
+from airone.lib.test import load_export_payload
 from airone.lib.types import AttrType
+from common.lib.import_detector import ImportType
 from entity.models import EntityAttr
 from entry import tasks
 from entry.tests.test_api_v2 import BaseViewTest
@@ -499,3 +503,100 @@ class ViewTest(BaseViewTest):
         # check data contents, both age and ability are filtered,
         # so only Power matches the condition.
         self.assertEqual(csv_contents[1], "Power,19,blood,Half-Immotal")
+
+    @patch(
+        "entry.tasks.export_search_result_v2.delay",
+        Mock(side_effect=tasks.export_search_result_v2),
+    )
+    def test_array_join_exports_pair_source_with_joined_values(self):
+        user = self.admin_login()
+        ip_entity = self.create_entity(
+            user,
+            "IP",
+            attrs=[{"name": "Network", "type": AttrType.STRING}],
+        )
+        pairs = [
+            ("172.27.24.100", "172.27.16.0/20"),
+            ("172.27.163.32", "172.27.163.0/24"),
+            ("172.27.164.32", "172.27.164.0/24"),
+        ]
+        ips = [
+            self.add_entry(user, ip, ip_entity, values={"Network": network})
+            for ip, network in pairs
+        ]
+        for attr_type in [AttrType.ARRAY_OBJECT, AttrType.ARRAY_NAMED_OBJECT]:
+            with self.subTest(attr_type=attr_type):
+                vm_entity = self.create_entity(
+                    user,
+                    f"VM-{attr_type}",
+                    attrs=[{"name": "IP Addresses", "type": attr_type, "ref": ip_entity.id}],
+                )
+                source_values = (
+                    [ip.id for ip in ips]
+                    if attr_type == AttrType.ARRAY_OBJECT
+                    else [{"name": f"nic-{i}", "id": ip.id} for i, ip in enumerate(ips)]
+                )
+                self.add_entry(user, "vm7264", vm_entity, values={"IP Addresses": source_values})
+                self.add_entry(user, "empty", vm_entity, values={"IP Addresses": []})
+                for style in ["csv", "yaml"]:
+                    for keyword in ["", "164"]:
+                        with self.subTest(style=style, keyword=keyword):
+                            response = self.client.post(
+                                "/entry/api/v2/advanced_search_result_export/",
+                                json.dumps(
+                                    {
+                                        "entities": [vm_entity.id],
+                                        "attrinfo": [{"name": "IP Addresses"}],
+                                        "join_attrs": [
+                                            {
+                                                "name": "IP Addresses",
+                                                "attrinfo": [
+                                                    {"name": "Network", "keyword": keyword}
+                                                ],
+                                            }
+                                        ],
+                                        "export_style": style,
+                                    }
+                                ),
+                                "application/json",
+                            )
+                            self.assertEqual(response.status_code, 200)
+                            cache = Job.objects.last().get_cache()
+                            expected = [pair for pair in pairs if keyword in pair[1]]
+                            if style == "csv":
+                                rows = list(csv.reader(io.StringIO(cache)))
+                                self.assertEqual(rows[0], ["Name", "IP Addresses", "Network"])
+                                vm_rows = [row for row in rows[1:] if row[0] == "vm7264"]
+                                expected_rows = [
+                                    [
+                                        "vm7264",
+                                        ip
+                                        if attr_type == AttrType.ARRAY_OBJECT
+                                        else f"nic-{pairs.index((ip, network))}: {ip}",
+                                        network,
+                                    ]
+                                    for ip, network in expected
+                                ]
+                                self.assertCountEqual(vm_rows, expected_rows)
+                                empty_rows = [row for row in rows[1:] if row[0] == "empty"]
+                                self.assertEqual(empty_rows, [] if keyword else [["empty", "", ""]])
+                            else:
+                                payload = load_export_payload(cache, ImportType.ENTRY)
+                                entries = payload[0]["entries"]
+                                vm_rows = [row for row in entries if row["name"] == "vm7264"]
+                                # YAML keeps the original full source array on every
+                                # joined row and does not add joined attributes.
+                                self.assertEqual(len(vm_rows), len(expected))
+                                expected_sources = [
+                                    {"entity": "IP", "name": ip}
+                                    if attr_type == AttrType.ARRAY_OBJECT
+                                    else {f"nic-{i}": {"entity": "IP", "name": ip}}
+                                    for i, (ip, _) in enumerate(pairs)
+                                ]
+                                for row in vm_rows:
+                                    self.assertEqual(
+                                        row["attrs"],
+                                        [{"name": "IP Addresses", "value": expected_sources}],
+                                    )
+                                empty_rows = [row for row in entries if row["name"] == "empty"]
+                                self.assertEqual(len(empty_rows), 0 if keyword else 1)
