@@ -40,6 +40,7 @@ const formatChangeValue = (value: unknown): string => {
 const formatChanges = (
   changes: EntityHistoryChange[] | undefined,
   type: "before" | "after",
+  referralLabel: string,
 ): ReactElement => {
   if (!changes || changes.length === 0) {
     return <Typography>-</Typography>;
@@ -49,8 +50,16 @@ const formatChanges = (
     <Box>
       {changes.map((change, idx) => (
         <Typography key={idx} variant="body2">
-          <strong>{change.target}:</strong>{" "}
-          {formatChangeValue(type === "before" ? change.before : change.after)}
+          <strong>
+            {change.target === "referral" ? referralLabel : change.target}:
+          </strong>{" "}
+          {change.target === "referral" &&
+          Array.isArray(type === "before" ? change.before : change.after)
+            ? (type === "before" ? change.before : change.after).join(", ") ||
+              "-"
+            : formatChangeValue(
+                type === "before" ? change.before : change.after,
+              )}
         </Typography>
       ))}
     </Box>
@@ -135,10 +144,28 @@ export const EntityHistoryList: FC<Props> = ({
                       return (
                         <Typography>{t("entity.history.opAddAttr")}</Typography>
                       );
-                    case TargetOperation.MOD_ATTR:
+                    case TargetOperation.MOD_ATTR: {
+                      const isReferralAddition =
+                        history.changes?.length &&
+                        history.changes.every(
+                          (change) =>
+                            change.target === "referral" &&
+                            (change.before == null ||
+                              (Array.isArray(change.before) &&
+                                change.before.length === 0)) &&
+                            Array.isArray(change.after) &&
+                            change.after.length > 0,
+                        );
                       return (
-                        <Typography>{t("entity.history.opModAttr")}</Typography>
+                        <Typography>
+                          {t(
+                            isReferralAddition
+                              ? "entity.history.opAddAttr"
+                              : "entity.history.opModAttr",
+                          )}
+                        </Typography>
                       );
+                    }
                     case TargetOperation.DEL_ATTR:
                       return (
                         <Typography>{t("entity.history.opDelAttr")}</Typography>
@@ -151,6 +178,15 @@ export const EntityHistoryList: FC<Props> = ({
                       );
                   }
                 })()}
+                {[
+                  TargetOperation.ADD_ATTR,
+                  TargetOperation.MOD_ATTR,
+                  TargetOperation.DEL_ATTR,
+                ].includes(history.operation) && (
+                  <Typography variant="body2">
+                    {history.targetObj.replace(/_deleted_[0-9_]*$/, "")}
+                  </Typography>
+                )}
               </TableCell>
               <TableCell>
                 {(() => {
@@ -169,7 +205,11 @@ export const EntityHistoryList: FC<Props> = ({
                     case TargetOperation.DEL_ENTITY:
                     case TargetOperation.MOD_ATTR:
                       // Use changes from simple-history
-                      return formatChanges(history.changes, "before");
+                      return formatChanges(
+                        history.changes,
+                        "before",
+                        t("entity.history.referral"),
+                      );
                     default:
                       return <Typography>-</Typography>;
                   }
@@ -180,13 +220,35 @@ export const EntityHistoryList: FC<Props> = ({
                   switch (history.operation) {
                     case TargetOperation.ADD_ENTITY:
                       // Use changes from simple-history for create
-                      return formatChanges(history.changes, "after");
+                      return formatChanges(
+                        history.changes,
+                        "after",
+                        t("entity.history.referral"),
+                      );
                     case TargetOperation.ADD_ATTR:
-                      return <Typography>{history.targetObj}</Typography>;
+                      return (
+                        <>
+                          <Typography>{history.targetObj}</Typography>
+                          {history.changes?.some(
+                            (change) => change.target === "referral",
+                          ) &&
+                            formatChanges(
+                              history.changes.filter(
+                                (change) => change.target === "referral",
+                              ),
+                              "after",
+                              t("entity.history.referral"),
+                            )}
+                        </>
+                      );
                     case TargetOperation.MOD_ATTR:
                       // Use changes from simple-history
                       if (history.changes && history.changes.length > 0) {
-                        return formatChanges(history.changes, "after");
+                        return formatChanges(
+                          history.changes,
+                          "after",
+                          t("entity.history.referral"),
+                        );
                       }
                       return <Typography>{history.targetObj}</Typography>;
                     case TargetOperation.DEL_ATTR:
@@ -198,7 +260,11 @@ export const EntityHistoryList: FC<Props> = ({
                     case TargetOperation.MOD_ENTITY:
                     case TargetOperation.DEL_ENTITY:
                       // Use changes from simple-history
-                      return formatChanges(history.changes, "after");
+                      return formatChanges(
+                        history.changes,
+                        "after",
+                        t("entity.history.referral"),
+                      );
                     default:
                       return <Typography>-</Typography>;
                   }

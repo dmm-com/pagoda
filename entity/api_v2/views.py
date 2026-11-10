@@ -421,20 +421,31 @@ class EntityHistoryAPI(viewsets.ReadOnlyModelViewSet[History]):
         entity = Entity.objects.get(id=entity_id)
         historical_cache = self._build_historical_cache(entity, cached_histories)
 
-        # Build serializer context with historical caches
+        entity_histories = [h for h in cached_histories if h.operation & History.TARGET_ENTITY]
+        previous_entity_history_times = {
+            current.time: previous.time
+            for current, previous in zip(entity_histories, entity_histories[1:])
+        }
         serializer_context = {
             "request": request,
             "historical_cache": historical_cache,
+            "previous_entity_history_times": previous_entity_history_times,
         }
-
-        # paginate_queryset accepts pre-fetched sequences too; drf-stubs annotates it
-        # tighter than the runtime accepts.
-        page = self.paginate_queryset(cached_histories)  # type: ignore[arg-type]
+        change_reader = EntityHistorySerializer(context=serializer_context)
+        # Filter before pagination so counts and page sizes reflect visible rows.
+        # Parent History records remain stored to group their attribute details.
+        visible_histories = [
+            history
+            for history in cached_histories
+            if history.operation != History.MOD_ENTITY or change_reader.get_changes(history)
+        ]
+        # DRF also accepts pre-fetched sequences at runtime.
+        page = self.paginate_queryset(visible_histories)  # type: ignore[arg-type]
         if page is not None:
             serializer = self.get_serializer(page, many=True, context=serializer_context)
             return self.get_paginated_response(serializer.data)
 
-        serializer = self.get_serializer(cached_histories, many=True, context=serializer_context)
+        serializer = self.get_serializer(visible_histories, many=True, context=serializer_context)
         return Response(serializer.data)
 
     def _build_historical_cache(

@@ -149,6 +149,7 @@ export const entityMessages = defineMessages({
     "entity.form.defaultObjectValuePlaceholder": "デフォルトのアイテム",
 
     // Entity history
+    "entity.history.referral": "参照先",
     "entity.history.contentHeader": "内容",
     "entity.history.beforeHeader": "変更前",
     "entity.history.afterHeader": "変更後",
@@ -329,6 +330,7 @@ export const entityMessages = defineMessages({
     "entity.form.defaultObjectValuePlaceholder": "Default entry",
 
     // Entity history
+    "entity.history.referral": "References",
     "entity.history.contentHeader": "Content",
     "entity.history.beforeHeader": "Before",
     "entity.history.afterHeader": "After",
