@@ -21,7 +21,7 @@ import { usePrompt } from "hooks/usePrompt";
 import { useTranslation } from "hooks/useTranslation";
 import { translate } from "i18n/config";
 import { aironeApiClient } from "repository/AironeApiClient";
-import { jobsPath, roleHistoryPath, rolesPath, topPath } from "routes/Routes";
+import { roleHistoryPath, rolesPath, topPath } from "routes/Routes";
 import { TITLE_TEMPLATES } from "services";
 import {
   extractAPIException,
@@ -77,8 +77,8 @@ export const RoleEditPage: FC = () => {
   }, [role, roleLoading]);
 
   useEffect(() => {
-    isSubmitSuccessful && navigate(willCreate ? rolesPath() : jobsPath());
-  }, [isSubmitSuccessful, navigate, willCreate]);
+    isSubmitSuccessful && navigate(rolesPath());
+  }, [isSubmitSuccessful, navigate]);
 
   usePageTitle(
     roleLoading ? t("role.edit.loading") : TITLE_TEMPLATES.roleEdit,

@@ -27,7 +27,7 @@ import { usePageTitle } from "hooks/usePageTitle";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { useTranslation } from "hooks/useTranslation";
 import { aironeApiClient } from "repository/AironeApiClient";
-import { jobsPath, rolePath, rolesPath, topPath } from "routes/Routes";
+import { rolePath, rolesPath, topPath } from "routes/Routes";
 import { ServerContext } from "services";
 import { ACLType, ACLTypeLabels } from "services/ACLUtil";
 import { formatDateTime } from "services/DateUtil";
@@ -58,7 +58,7 @@ export const RoleHistoryPage: FC = () => {
         historySource,
       );
       enqueueSnackbar(t("role.history.accepted"), { variant: "success" });
-      navigate(jobsPath());
+      navigate(rolesPath());
     } catch {
       enqueueSnackbar(t("role.history.failed"), { variant: "error" });
     } finally {

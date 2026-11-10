@@ -38,7 +38,7 @@ const setup = (page = 1, source: "role" | "permission" = "role") => {
   const router = createMemoryRouter(
     [
       { path: "/ui/roles/:roleId/history", element: <RoleHistoryPage /> },
-      { path: "/ui/jobs", element: <div>Jobs</div> },
+      { path: "/ui/roles", element: <div>Roles</div> },
     ],
     { initialEntries: [`/ui/roles/1/history?page=${page}`] },
   );
@@ -51,7 +51,7 @@ const setup = (page = 1, source: "role" | "permission" = "role") => {
 afterEach(() => vi.restoreAllMocks());
 
 test("shows actor, job and relations, and restores after confirmation", async () => {
-  const { restore } = setup();
+  const { router, restore } = setup();
   const buttons = await screen.findAllByRole("button", { name: "復旧" });
   expect(screen.getAllByText("member", { exact: false })).toHaveLength(2);
   expect(screen.getAllByText("Job #123")).toHaveLength(2);
@@ -64,6 +64,7 @@ test("shows actor, job and relations, and restores after confirmation", async ()
   expect(restore).not.toHaveBeenCalled();
   fireEvent.click(await screen.findByRole("button", { name: "Yes" }));
   await waitFor(() => expect(restore).toHaveBeenCalledWith(1, 1, "role"));
+  await waitFor(() => expect(router.state.location.pathname).toBe("/ui/roles"));
 });
 
 test("allows restoring the first row on later pages", async () => {
