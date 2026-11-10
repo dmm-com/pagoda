@@ -123,7 +123,7 @@ describe("EntityListPage", () => {
       fireEvent.click(importButton);
 
       await waitFor(() => {
-        expect(screen.getByText("モデルのインポート")).toBeInTheDocument();
+        expect(screen.getByText("データのインポート")).toBeInTheDocument();
       });
     });
   });

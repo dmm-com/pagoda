@@ -1,6 +1,9 @@
 import {
   ACL,
   ACLHistory,
+  CommonApi,
+  CommonImportJob,
+  ResponseError,
   ACLObjtypeEnum,
   ACLSetting,
   AclApi,
@@ -77,9 +80,7 @@ import {
   JobListParam,
 } from "services/Constants";
 
-export type { Group, GroupCreateUpdate, PaginatedGroupList };
-
-export type GroupTree = Omit<GroupTreeV2, "children"> & {
+export type GroupTree = Pick<GroupTreeV2, "id" | "name"> & {
   children: Array<GroupTree>;
 };
 
@@ -155,6 +156,7 @@ class AironeApiClient {
   private group: GroupApi;
   private user: UserApi;
   private role: RoleApi;
+  private common: CommonApi;
   private job: JobApi;
 
   constructor() {
@@ -170,6 +172,7 @@ class AironeApiClient {
     this.group = new GroupApi(config);
     this.user = new UserApi(config);
     this.role = new RoleApi(config);
+    this.common = new CommonApi(config);
     this.job = new JobApi(config);
   }
 
@@ -711,7 +714,7 @@ class AironeApiClient {
   }
 
   async getGroups(page = 1, keyword?: string): Promise<PaginatedGroupList> {
-    return this.group.groupApiV2GroupsList({
+    return await this.group.groupApiV2GroupsList({
       page: page,
       search: keyword,
       ordering: "name",
@@ -720,7 +723,7 @@ class AironeApiClient {
 
   async getGroup(id: number): Promise<Group> {
     // groupApiV2GroupsRetrieve: associated with
-    return this.group.groupApiV2GroupsRetrieve({ id });
+    return await this.group.groupApiV2GroupsRetrieve({ id });
   }
 
   async createGroup(group: GroupCreateUpdate): Promise<void> {
@@ -762,8 +765,25 @@ class AironeApiClient {
   }
 
   async getGroupTrees(): Promise<GroupTree[]> {
+    interface APIGroupTreeData {
+      id: number;
+      name: string;
+      children: APIGroupTreeData[];
+    }
+
     const groupTrees = await this.group.groupApiV2GroupsTreeList();
-    return groupTrees as GroupTree[];
+
+    const toTyped = (groupTree: Partial<APIGroupTreeData>): GroupTree => ({
+      id: groupTree.id as number,
+      name: groupTree.name as string,
+      children: (groupTree.children || []).map(
+        (child: Partial<APIGroupTreeData>) => toTyped(child),
+      ),
+    });
+
+    return groupTrees.map((groupTree) =>
+      toTyped(groupTree as unknown as Partial<APIGroupTreeData>),
+    );
   }
 
   async importGroups(data: string | ArrayBuffer): Promise<void> {
@@ -884,6 +904,46 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
+      },
+    );
+  }
+
+  // The preview endpoint is not in the generated client yet, so it is called
+  // directly, as getEntityDiff does.
+  async startCommonImportPreview(
+    data: string | ArrayBuffer,
+  ): Promise<{ jobIds: number[]; errors: string[] }> {
+    const resp = await fetch("/common/api/v2/import/preview", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/yaml",
+        "X-CSRFToken": getCsrfToken(),
+      },
+      body: new Blob([data]),
+    });
+    if (!resp.ok) {
+      throw new ResponseError(
+        resp,
+        `Failed to preview import (status: ${resp.status})`,
+      );
+    }
+    const body: { job_ids: number[]; error: string[] } = await resp.json();
+    return { jobIds: body.job_ids, errors: body.error };
+  }
+
+  async importCommon(
+    data: string | ArrayBuffer,
+    force: boolean,
+    previewJobId?: number,
+  ): Promise<CommonImportJob> {
+    return await this.common.commonApiV2ImportCreate(
+      { force, previewJobId },
+      {
+        headers: {
+          "Content-Type": "application/yaml",
+          "X-CSRFToken": getCsrfToken(),
+        },
+        body: new Blob([data]),
       },
     );
   }

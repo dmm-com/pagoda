@@ -11,7 +11,6 @@ import { FC } from "react";
 
 import { GroupTree } from "../../repository/AironeApiClient";
 import { groupPath } from "../../routes/Routes";
-import { getGroupDisplayName } from "../../services/GroupUtil";
 import { ServerContext } from "../../services/ServerContext";
 
 import { GroupTreeItem } from "./GroupTreeItem";
@@ -59,14 +58,10 @@ export const GroupTreeRoot: FC<Props> = ({
               />
               {isSuperuser ? (
                 <Typography component={AironeLink} to={groupPath(groupTree.id)}>
-                  <span title={groupTree.name}>
-                    {getGroupDisplayName(groupTree)}
-                  </span>
+                  {groupTree.name}
                 </Typography>
               ) : (
-                <Typography title={groupTree.name}>
-                  {getGroupDisplayName(groupTree)}
-                </Typography>
+                <Typography>{groupTree.name}</Typography>
               )}
               {isSuperuser && setGroupAnchorEls != null && (
                 <IconButton
