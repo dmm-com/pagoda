@@ -1565,6 +1565,16 @@ class EntityHistorySerializer(serializers.ModelSerializer[History]):
         if not historical:
             return []
 
+        # A save without model changes reuses the last historical snapshot.
+        # Do not attribute that older snapshot's delta to a later parent event.
+        previous_time = self.context.get("previous_entity_history_times", {}).get(history_time)
+        if (
+            operation == History.MOD_ENTITY
+            and previous_time is not None
+            and historical.history_date <= previous_time
+        ):
+            return []
+
         # For create operation (ADD_ENTITY)
         if operation == History.ADD_ENTITY:
             return [

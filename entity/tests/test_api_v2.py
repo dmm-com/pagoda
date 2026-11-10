@@ -4974,6 +4974,82 @@ class EntityHistoryAPITest(AironeViewTest):
                     ],
                 )
 
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
+    def test_empty_parent_history_is_hidden_before_pagination(self):
+        entity = self._create_entity_via_api(
+            "server",
+            attrs=[
+                {"name": "hostname", "type": AttrType.STRING},
+            ],
+        )
+        attr = entity.attrs.get()
+        for note in ["first change", "second change"]:
+            resp = self.client.put(
+                f"/entity/api/v2/{entity.id}/",
+                json.dumps({"attrs": [{"id": attr.id, "note": note}]}),
+                "application/json",
+            )
+            self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        parents = list(History.objects.filter(target_obj=entity, operation=History.MOD_ENTITY))
+        self.assertEqual(len(parents), 2)
+        self.assertTrue(all(parent.details.count() == 1 for parent in parents))
+
+        url = f"/entity/api/v2/{entity.id}/histories/"
+        data = self.client.get(url + "?limit=2").json()
+        self.assertEqual(data["count"], 4)
+        self.assertEqual(len(data["results"]), 2)
+        self.assertTrue(all(h["operation"] == History.MOD_ATTR for h in data["results"]))
+        remaining = self.client.get(url + "?limit=2&offset=2").json()
+        self.assertEqual(remaining["count"], 4)
+        self.assertCountEqual(
+            [h["operation"] for h in remaining["results"]], [History.ADD_ENTITY, History.ADD_ATTR]
+        )
+        self.assertIsNone(remaining["next"])
+        # Filtering the list must preserve both parent records and their details.
+        self.assertEqual(History.objects.filter(id__in=[p.id for p in parents]).count(), 2)
+
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
+    def test_empty_save_after_rename_does_not_repeat_previous_change(self):
+        entity = self._create_entity_via_api("old-name")
+        for payload in [{"name": "new-name"}, {"name": "new-name"}]:
+            resp = self.client.put(
+                f"/entity/api/v2/{entity.id}/", json.dumps(payload), "application/json"
+            )
+            self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        resp = self.client.get(f"/entity/api/v2/{entity.id}/histories/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.json()
+        self.assertEqual(data["count"], 2)
+        changes = [h for h in data["results"] if h["operation"] == History.MOD_ENTITY]
+        self.assertEqual(len(changes), 1)
+        self.assertIn(
+            {"action": "update", "target": "name", "before": "old-name", "after": "new-name"},
+            changes[0]["changes"],
+        )
+        self.assertEqual(
+            History.objects.filter(target_obj=entity, operation=History.MOD_ENTITY).count(), 2
+        )
+
+    def test_empty_create_and_delete_history_are_preserved(self):
+        entity = Entity.objects.create(name="server", created_user=self.user)
+        entity.history.all().delete()
+        self.user.seth_entity_add(entity)
+        self.user.seth_entity_mod(entity)
+        self.user.seth_entity_del(entity)
+        resp = self.client.get(f"/entity/api/v2/{entity.id}/histories/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(resp.json()["count"], 2)
+        self.assertCountEqual(
+            [h["operation"] for h in resp.json()["results"]],
+            [History.ADD_ENTITY, History.DEL_ENTITY],
+        )
+
     def test_added_attribute_history_includes_referral_names(self):
         entity = Entity.objects.create(name="server", created_user=self.user)
         referred = Entity.objects.create(name="network", created_user=self.user)
