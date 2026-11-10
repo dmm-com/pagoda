@@ -1097,7 +1097,7 @@ class ViewTest(AironeViewTest):
             [AttrType.OBJECT, dummy_entry, '"D,U""MM""Y"'],
             [AttrType.TEXT, "1st line\r\n2nd line", '"1st line' + "\r\n" + '2nd line"'],
             [AttrType.NAMED_OBJECT, {"key": dummy_entry}, '"key: D,U""MM""Y"'],
-            [AttrType.ARRAY_STRING, ["one", "two", "three"], '"one\nthree\ntwo"'],
+            [AttrType.ARRAY_STRING, ["one", "two", "three"], ["one", "two", "three"]],
             [AttrType.ARRAY_OBJECT, [dummy_entry], '"D,U""MM""Y"'],
             [AttrType.ARRAY_NAMED_OBJECT, [{"key1": dummy_entry}], '"key1: D,U""MM""Y"'],
         ]
@@ -1196,7 +1196,14 @@ class ViewTest(AironeViewTest):
             self.assertEqual(header, 'Name,Entity,"%s,""ATTR"""' % type_name)
 
             data = content.replace(header, "", 1).strip()
-            self.assertEqual(data, '"%s,""ENTRY""",%s,%s' % (type_name, test_entity.name, expected))
+            expected_cells = expected if isinstance(expected, list) else [expected]
+            self.assertEqual(
+                data,
+                "\n".join(
+                    '"%s,""ENTRY""",%s,%s' % (type_name, test_entity.name, cell)
+                    for cell in expected_cells
+                ),
+            )
 
     @patch("entry.tasks.import_entries.delay", Mock(side_effect=entry_tasks.import_entries))
     @patch(
