@@ -4,7 +4,38 @@ import { ExportButton } from "./ExportButton";
 
 import { TestWrapper } from "TestWrapper";
 
+beforeEach(() => {
+  localStorage.clear();
+});
+
 describe("ExportButton", () => {
+  test("registers only one export across tabs during the debounce window", async () => {
+    localStorage.clear();
+    let resolveFirstExport!: () => void;
+    const firstExport = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveFirstExport = resolve;
+        }),
+    );
+    const secondExport = vi.fn().mockResolvedValue(undefined);
+    render(
+      <>
+        <ExportButton onExport={firstExport} />
+        <ExportButton onExport={secondExport} />
+      </>,
+      { wrapper: TestWrapper },
+    );
+
+    fireEvent.click(screen.getAllByRole("button", { name: "エクスポート" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: "エクスポート" })[1]);
+
+    expect(firstExport).toHaveBeenCalledTimes(1);
+    expect(secondExport).not.toHaveBeenCalled();
+
+    await act(async () => resolveFirstExport());
+  });
+
   test("notifies success only after the export job is registered", async () => {
     let resolveExport!: () => void;
     const onExport = vi.fn(
