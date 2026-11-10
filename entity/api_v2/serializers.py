@@ -5,6 +5,7 @@ import json
 import math
 import re
 from datetime import datetime
+from functools import cached_property
 from typing import TYPE_CHECKING, Any, List, Optional, Self, TypedDict, cast
 
 if TYPE_CHECKING:
@@ -22,6 +23,7 @@ from requests.exceptions import ConnectionError
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
+from acl.models import ACLBase
 from airone.lib import custom_view, drf
 from airone.lib.acl import ACLType, get_permission_level
 from airone.lib.drf import (
@@ -889,6 +891,44 @@ class EntitySerializer(serializers.ModelSerializer[Entity]):
 
         return default_value
 
+    @transaction.atomic
+    def _save_attribute(
+        self,
+        user: User,
+        entity: Entity,
+        attr_data: dict[str, Any],
+        referrals: list[Any] | None,
+    ) -> tuple[EntityAttr, bool, bool]:
+        """Save only real changes and record the complete attribute state once."""
+        attr_id = attr_data.get("id")
+        values = {key: value for key, value in attr_data.items() if key != "id"}
+        is_created = attr_id is None
+        if attr_id is None:
+            attr = EntityAttr.objects.create(parent_entity=entity, created_user=user, **values)
+            fields_changed = False
+        else:
+            attr = EntityAttr.objects.select_for_update().get(id=attr_id, parent_entity=entity)
+            fields_changed = any(getattr(attr, key) != value for key, value in values.items())
+            for key, value in values.items():
+                setattr(attr, key, value)
+
+        referrals_changed = False
+        if attr.type & AttrType.OBJECT and referrals is not None:
+            referral_ids = {getattr(ref, "pk", ref) for ref in referrals}
+            referrals_changed = set(attr.referral.values_list("id", flat=True)) != referral_ids
+            if referrals_changed:
+                # M2M remove/add signals would otherwise record intermediate states.
+                attr.skip_history_when_saving = True
+                try:
+                    attr.referral.set(referral_ids)
+                finally:
+                    del attr.skip_history_when_saving
+
+        changed = fields_changed or referrals_changed
+        if changed:
+            attr.save()
+        return attr, is_created, changed
+
     def _update_or_create(
         self,
         user: User,
@@ -937,7 +977,7 @@ class EntitySerializer(serializers.ModelSerializer[Entity]):
                     pass
 
             # This is necessary not to pass invalid parameter to DRF DB-register
-            attr_referrals = attr_data.pop("referral", [])
+            attr_referrals = attr_data.pop("referral", None)
 
             # delete EntityAttr if necessary
             attr_id = attr_data.get("id", None)
@@ -970,8 +1010,8 @@ class EntitySerializer(serializers.ModelSerializer[Entity]):
                 attr_data["choices"] = EntityAttr.normalize_choices(attr_data["choices"])
 
             # create, update EntityAttr instance with user specified params
-            (entity_attr, is_created_attr) = EntityAttr.objects.update_or_create(
-                id=attr_id, defaults={**attr_data, "parent_entity": entity, "created_user": user}
+            entity_attr, is_created_attr, is_changed_attr = self._save_attribute(
+                user, entity, attr_data, attr_referrals
             )
 
             # If SELECT label(s) changed for the same value(s), mark for batched reindex.
@@ -993,16 +1033,10 @@ class EntitySerializer(serializers.ModelSerializer[Entity]):
                 if any(v in old_map and new_map.get(v) != old_map.get(v) for v in new_map):
                     needs_reindex_for_label = True
 
-            # set referrals if necessary
-            if entity_attr.type & AttrType.OBJECT:
-                entity_attr.referral_clear()
-                for x in attr_referrals:
-                    entity_attr.referral.add(x)
-
-            # register history to create, update EntityAttr
+            # Register a detail only when this attribute was created or changed.
             if is_created_attr:
                 history.add_attr(entity_attr)
-            else:
+            elif is_changed_attr:
                 history.mod_attr(entity_attr)
 
         # Fire a single reindex job per entity if any SELECT label changed.
@@ -1583,7 +1617,7 @@ class EntityHistorySerializer(serializers.ModelSerializer[History]):
 
         # For create operation (ADD_ATTR)
         if operation == History.ADD_ATTR:
-            return [
+            changes = [
                 {
                     "action": "create",
                     "target": field,
@@ -1594,22 +1628,56 @@ class EntityHistorySerializer(serializers.ModelSerializer[History]):
                 if getattr(historical, field, None) is not None
             ]
 
+            referrals = list(historical.referral.values("aclbase"))
+            if referrals:
+                _, names = self._get_referral_names([], referrals)
+                changes.append(
+                    {"action": "create", "target": "referral", "before": None, "after": names}
+                )
+            return changes
+
         # For update/delete operations, find the previous record
         prev_record = self._find_prev_record(historicals, historical)
         if prev_record:
             delta = historical.diff_against(prev_record, excluded_fields=["status", "updated_time"])
             action = "delete" if operation == History.DEL_ATTR else "update"
-            return [
-                {
-                    "action": action,
-                    "target": change.field,
-                    "before": change.old,
-                    "after": change.new,
-                }
-                for change in delta.changes
-            ]
+            changes = []
+            for change in delta.changes:
+                before, after = change.old, change.new
+                if change.field == "referral":
+                    before, after = self._get_referral_names(before, after)
+                changes.append(
+                    {"action": action, "target": change.field, "before": before, "after": after}
+                )
+            return changes
 
         return []
+
+    @cached_property
+    def _referral_names(self) -> dict[int, str]:
+        return {}
+
+    def _get_referral_names(
+        self, before: list[dict[str, Any]], after: list[dict[str, Any]]
+    ) -> tuple[list[str], list[str]]:
+        """Resolve historical M2M rows without exposing their internal relation IDs."""
+        names = self._referral_names
+        referral_ids = {row["aclbase"] for row in before + after}
+        missing_ids = referral_ids - names.keys()
+        if missing_ids:
+            objects = ACLBase.objects.in_bulk(missing_ids)
+            names.update(
+                {
+                    pk: re.sub(r"_deleted_[0-9_]*$", "", objects[pk].name)
+                    if pk in objects
+                    else f"Deleted object (ID: {pk})"
+                    for pk in missing_ids
+                }
+            )
+        return (
+            [names[row["aclbase"]] for row in before],
+            [names[row["aclbase"]] for row in after],
+        )
 
     def _find_closest_historical(self, historicals: list[Any], target_time: datetime) -> Any | None:
         """Find the historical record closest to the target time."""

@@ -4810,6 +4810,255 @@ class EntityHistoryAPITest(AironeViewTest):
     @mock.patch(
         "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
     )
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
+    def test_saving_unchanged_attributes_preserves_history_and_timestamps(self):
+        first = Entity.objects.create(name="network-a", created_user=self.user)
+        second = Entity.objects.create(name="network-b", created_user=self.user)
+        attrs = [
+            {"name": "hostname", "type": AttrType.STRING, "index": 0},
+            {
+                "name": "network",
+                "type": AttrType.OBJECT,
+                "index": 1,
+                "referral": [first.id, second.id],
+            },
+        ]
+        entity = self._create_entity_via_api("server", attrs=attrs)
+        objects = list(entity.attrs.order_by("index"))
+        timestamps = {a.id: a.updated_time for a in objects}
+        snapshots = {a.id: a.history.count() for a in objects}
+        histories = list(History.objects.filter(target_obj__in=objects).values_list("id", "time"))
+        payload = [{**data, "id": obj.id} for data, obj in zip(attrs, objects)]
+        # Referral order has no effect on the relation.
+        payload[1]["referral"] = [second.id, first.id]
+        for _ in range(2):
+            resp = self.client.put(
+                f"/entity/api/v2/{entity.id}/", json.dumps({"attrs": payload}), "application/json"
+            )
+            self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        for attr in objects:
+            attr.refresh_from_db()
+            self.assertEqual(attr.updated_time, timestamps[attr.id])
+            self.assertEqual(attr.history.count(), snapshots[attr.id])
+        self.assertEqual(
+            list(History.objects.filter(target_obj__in=objects).values_list("id", "time")),
+            histories,
+        )
+
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
+    def test_saving_one_changed_attribute_leaves_other_attributes_untouched(self):
+        entity = self._create_entity_via_api(
+            "server",
+            attrs=[
+                {"name": "hostname", "type": AttrType.STRING},
+                {"name": "description", "type": AttrType.STRING},
+            ],
+        )
+        changed, unchanged = list(entity.attrs.order_by("id"))
+        old_time = unchanged.updated_time
+        old_snapshots = unchanged.history.count()
+        old_ids = set(History.objects.values_list("id", flat=True))
+        resp = self.client.put(
+            f"/entity/api/v2/{entity.id}/",
+            json.dumps(
+                {
+                    "attrs": [
+                        {"id": changed.id, "note": "new note"},
+                        {"id": unchanged.id},
+                    ]
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        unchanged.refresh_from_db()
+        self.assertEqual(unchanged.updated_time, old_time)
+        self.assertEqual(unchanged.history.count(), old_snapshots)
+        details = History.objects.exclude(id__in=old_ids).filter(is_detail=True)
+        self.assertEqual(list(details.values_list("target_obj_id", flat=True)), [changed.id])
+
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
+    def test_referral_update_records_complete_before_and_after_once(self):
+        refs = [
+            Entity.objects.create(name=f"network-{i}", created_user=self.user) for i in range(4)
+        ]
+        entity = self._create_entity_via_api(
+            "server",
+            attrs=[
+                {"name": "network", "type": AttrType.OBJECT, "referral": [r.id for r in refs[:2]]},
+            ],
+        )
+        attr = entity.attrs.get()
+        old_snapshots = attr.history.count()
+        old_ids = set(History.objects.values_list("id", flat=True))
+        resp = self.client.put(
+            f"/entity/api/v2/{entity.id}/",
+            json.dumps(
+                {
+                    "attrs": [
+                        {"id": attr.id, "note": "updated", "referral": [r.id for r in refs[2:]]}
+                    ]
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        self.assertEqual(attr.history.count(), old_snapshots + 1)
+        detail = History.objects.exclude(id__in=old_ids).get(is_detail=True)
+        self.assertEqual(detail.target_obj_id, attr.id)
+        resp = self.client.get(f"/entity/api/v2/{entity.id}/histories/")
+        latest = next(h for h in resp.json()["results"] if h["operation"] == History.MOD_ATTR)
+        changes = {change["target"]: change for change in latest["changes"]}
+        self.assertEqual(changes["referral"]["before"], [r.name for r in refs[:2]])
+        self.assertEqual(changes["referral"]["after"], [r.name for r in refs[2:]])
+        self.assertEqual(changes["note"]["after"], "updated")
+        # Omitting referrals in a subsequent partial update must preserve them.
+        resp = self.client.put(
+            f"/entity/api/v2/{entity.id}/",
+            json.dumps({"attrs": [{"id": attr.id, "note": "another note"}]}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        self.assertCountEqual(attr.referral.values_list("id", flat=True), [r.id for r in refs[2:]])
+
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
+    def test_referral_only_changes_and_clear_each_record_one_history(self):
+        old_ref = Entity.objects.create(name="old-network", created_user=self.user)
+        new_ref = Entity.objects.create(name="new-network", created_user=self.user)
+        entity = self._create_entity_via_api(
+            "server",
+            attrs=[
+                {"name": "network", "type": AttrType.OBJECT, "referral": [old_ref.id]},
+            ],
+        )
+        attr = entity.attrs.get()
+        for referral_ids, before, after in [
+            ([new_ref.id], [old_ref.name], [new_ref.name]),
+            ([], [new_ref.name], []),
+        ]:
+            with self.subTest(referral_ids=referral_ids):
+                old_snapshots = attr.history.count()
+                old_ids = set(History.objects.values_list("id", flat=True))
+                resp = self.client.put(
+                    f"/entity/api/v2/{entity.id}/",
+                    json.dumps({"attrs": [{"id": attr.id, "referral": referral_ids}]}),
+                    "application/json",
+                )
+                self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+                self.assertEqual(attr.history.count(), old_snapshots + 1)
+                self.assertEqual(
+                    History.objects.exclude(id__in=old_ids).filter(is_detail=True).count(), 1
+                )
+                resp = self.client.get(f"/entity/api/v2/{entity.id}/histories/")
+                latest = next(
+                    h for h in resp.json()["results"] if h["operation"] == History.MOD_ATTR
+                )
+                self.assertEqual(
+                    latest["changes"],
+                    [
+                        {
+                            "action": "update",
+                            "target": "referral",
+                            "before": before,
+                            "after": after,
+                        },
+                    ],
+                )
+
+    def test_added_attribute_history_includes_referral_names(self):
+        entity = Entity.objects.create(name="server", created_user=self.user)
+        referred = Entity.objects.create(name="network", created_user=self.user)
+        attr = EntityAttr.objects.create(
+            name="connected-network",
+            type=AttrType.OBJECT,
+            parent_entity=entity,
+            created_user=self.user,
+        )
+        attr.referral.add(referred)
+        self.user.seth_entity_add(entity).add_attr(attr)
+
+        resp = self.client.get(f"/entity/api/v2/{entity.id}/histories/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        histories = [h for h in resp.json()["results"] if h["operation"] == History.ADD_ATTR]
+        self.assertEqual(len(histories), 1)
+        self.assertEqual(histories[0]["target_obj"], "connected-network")
+        self.assertIn(
+            {"action": "create", "target": "referral", "before": None, "after": ["network"]},
+            histories[0]["changes"],
+        )
+
+    def test_referral_history_displays_names(self):
+        entity = Entity.objects.create(name="server", created_user=self.user)
+        old_model = Entity.objects.create(name="old-model", created_user=self.user)
+        new_model = Entity.objects.create(name="new-model", created_user=self.user)
+        attr = EntityAttr.objects.create(
+            name="related-object",
+            type=AttrType.OBJECT,
+            parent_entity=entity,
+            created_user=self.user,
+        )
+        other_attr = EntityAttr.objects.create(
+            name="related-attribute",
+            type=AttrType.STRING,
+            parent_entity=entity,
+            created_user=self.user,
+        )
+        item = Entry.objects.create(name="related-item", schema=new_model, created_user=self.user)
+        attr.referral.add(old_model)
+        attr.referral_clear()
+        attr.referral.add(new_model, other_attr, item)
+        self.user.seth_entity_mod(entity).mod_attr(attr)
+
+        # Soft deletion must preserve a readable name in existing history.
+        old_model.delete()
+        resp = self.client.get(f"/entity/api/v2/{entity.id}/histories/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        changes = [
+            change
+            for history in resp.json()["results"]
+            for change in history["changes"]
+            if change["target"] == "referral"
+        ]
+        self.assertEqual(len(changes), 1)
+        self.assertEqual(changes[0]["before"], ["old-model"])
+        self.assertCountEqual(
+            changes[0]["after"], ["new-model", "related-attribute", "related-item"]
+        )
+
+    def test_referral_history_displays_empty_list_after_clear(self):
+        entity = Entity.objects.create(name="server", created_user=self.user)
+        referred = Entity.objects.create(name="network", created_user=self.user)
+        attr = EntityAttr.objects.create(
+            name="network", type=AttrType.OBJECT, parent_entity=entity, created_user=self.user
+        )
+        attr.referral.add(referred)
+        attr.referral.clear()
+        self.user.seth_entity_mod(entity).mod_attr(attr)
+
+        resp = self.client.get(f"/entity/api/v2/{entity.id}/histories/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        changes = [
+            change
+            for history in resp.json()["results"]
+            for change in history["changes"]
+            if change["target"] == "referral"
+        ]
+        self.assertEqual(len(changes), 1)
+        self.assertEqual(changes[0]["before"], ["network"])
+        self.assertEqual(changes[0]["after"], [])
+
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
     def test_get_entity_history_returns_changes_field(self):
         """Test that EntityHistory API returns changes field in response."""
         # Create an entity via API
