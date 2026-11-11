@@ -130,6 +130,18 @@ class RoleCreateUpdateSerializer(serializers.ModelSerializer[Role]):
             "admin_groups",
         ]
 
+    def create(self, validated_data: dict[str, Any]) -> Role:
+        members = {
+            key: validated_data.pop(key, [])
+            for key in ("users", "groups", "admin_users", "admin_groups")
+        }
+        role = Role(**validated_data)
+        role._history_user = self.context["request"].user
+        role.save()
+        for key, values in members.items():
+            getattr(role, key).set(values)
+        return role
+
     def validate(self, role: OrderedDict[str, Any]) -> OrderedDict[str, Any]:
         if not role.get("admin_users") and not role.get("admin_groups"):
             raise RequiredParameterError("admin_users or admin_groups field is required")
@@ -269,3 +281,44 @@ class RoleImportSerializer(serializers.ListSerializer[Role]):
         if errors:
             raise serializers.ValidationError({"roles": errors})
         return roles
+
+
+class RoleHistorySerializer(serializers.Serializer[Any]):
+    history_id = serializers.IntegerField(read_only=True)
+    history_source = serializers.ChoiceField(choices=["role", "permission"])
+    history_date = serializers.DateTimeField()
+    history_user: serializers.SlugRelatedField[User] = serializers.SlugRelatedField(
+        slug_field="username", read_only=True, allow_null=True
+    )
+    history_type = serializers.ChoiceField(
+        choices=[("+", "Created"), ("~", "Changed"), ("-", "Deleted")]
+    )
+    history_change_reason = serializers.CharField(allow_null=True, required=False)
+    name = serializers.CharField()
+    description = serializers.CharField(allow_blank=True, required=False)
+    is_active = serializers.BooleanField(required=False)
+    relations = serializers.DictField(read_only=True)
+
+
+class RoleRestoreSerializer(serializers.Serializer[Any]):
+    history_id = serializers.IntegerField(min_value=1)
+    history_source = serializers.ChoiceField(choices=["role", "permission"], default="role")
+
+
+class RoleJobSerializer(serializers.Serializer[Any]):
+    job_id = serializers.IntegerField()
+
+
+class RoleHistoryTargetSerializer(serializers.Serializer[Any]):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    is_active = serializers.BooleanField()
+    is_editable = serializers.BooleanField()
+
+
+class RoleHistoryListSerializer(serializers.Serializer[Any]):
+    role = RoleHistoryTargetSerializer()
+    count = serializers.IntegerField()
+    next = serializers.URLField(allow_null=True)
+    previous = serializers.URLField(allow_null=True)
+    results = RoleHistorySerializer(many=True)

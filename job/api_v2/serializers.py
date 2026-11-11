@@ -7,7 +7,9 @@ from rest_framework import serializers
 
 from airone.lib.acl import ACLObjType
 from entry.models import Entry
-from job.models import Job, JobStatus
+from job.models import Job, JobOperation, JobStatus
+from job.params import RoleChangeParams
+from role.models import Role
 from user.models import User
 
 
@@ -49,6 +51,19 @@ class JobSerializers(serializers.ModelSerializer[Job]):
 
     @extend_schema_field(JobTargetSerializer())
     def get_target(self, obj: Job) -> JobTarget | None:
+        if obj.operation in (
+            JobOperation.EDIT_ROLE,
+            JobOperation.DELETE_ROLE,
+            JobOperation.RESTORE_ROLE,
+        ):
+            role_id = obj.get_typed_params(RoleChangeParams).role_id
+            role = Role.objects.filter(pk=role_id).first()
+            return {
+                "id": role_id,
+                "name": role.name if role else str(role_id),
+                "schema_id": None,
+                "schema_name": None,
+            }
         if obj.target is not None:
             if obj.target.objtype == ACLObjType.Entry:
                 sub: dict[str, Any] = self.context.get(self.PREFETCHED_ENTRIES_KEY, {}).get(

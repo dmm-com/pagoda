@@ -895,7 +895,7 @@ class AironeApiClient {
   }
 
   async deleteRole(roleId: number): Promise<void> {
-    return await this.role.roleApiV2Destroy(
+    await this.role.roleApiV2Destroy(
       {
         id: roleId,
       },
@@ -1624,6 +1624,65 @@ class AironeApiClient {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
   }
+  async getRoleHistories(
+    roleId: number,
+    page: number,
+  ): Promise<{
+    count: number;
+    results: RoleHistoryRecord[];
+    role: {
+      id: number;
+      name: string;
+      is_active: boolean;
+      is_editable: boolean;
+    };
+  }> {
+    const response = await fetch(
+      `/role/api/v2/${roleId}/histories/?limit=10&offset=${(page - 1) * 10}`,
+    );
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return response.json();
+  }
+
+  async restoreRoleHistory(
+    roleId: number,
+    historyId: number,
+    historySource: "role" | "permission" = "role",
+  ): Promise<void> {
+    const response = await fetch(`/role/api/v2/${roleId}/restore/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCsrfToken(),
+      },
+      body: JSON.stringify({
+        history_id: historyId,
+        history_source: historySource,
+      }),
+    });
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+  }
 }
 
 export const aironeApiClient = new AironeApiClient();
+
+export interface RoleHistoryRecord {
+  history_id: number;
+  history_source: "role" | "permission";
+  history_date: string;
+  history_user: string | null;
+  history_type: string;
+  history_change_reason: string | null;
+  name: string;
+  description: string;
+  is_active: boolean;
+  relations: Record<
+    string,
+    Array<{
+      id: number;
+      username?: string;
+      name?: string | null;
+      codename?: string;
+    }>
+  >;
+}

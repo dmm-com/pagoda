@@ -9,6 +9,7 @@ from entity.models import Entity
 from entry import tasks
 from entry.models import Entry
 from job.models import Job, JobOperation, JobStatus
+from role.models import Role
 
 # constants using this tests
 _TEST_MAX_LIST_VIEW = 2
@@ -277,6 +278,42 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["count"], 1)
         self.assertEqual(resp.json()["results"][0]["operation"], JobOperation.IMPORT_ROLE_V2)
+
+    def test_get_jobs_includes_role_changes_without_acl_target(self):
+        user = self.guest_login()
+        role = Role.objects.create(name="role")
+        jobs = []
+        for operation, status in (
+            (JobOperation.EDIT_ROLE, JobStatus.PREPARING),
+            (JobOperation.DELETE_ROLE, JobStatus.DONE),
+            (JobOperation.RESTORE_ROLE, JobStatus.ERROR),
+        ):
+            job = Job.new_role_change(user, role.pk, operation, {}, text="Role change")
+            job.update(status)
+            jobs.append(job)
+
+        response = self.client.get("/job/api/v2/jobs")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["count"], len(jobs))
+        self.assertEqual(
+            [row["id"] for row in response.json()["results"]],
+            [job.pk for job in reversed(jobs)],
+        )
+        for row in response.json()["results"]:
+            self.assertEqual(row["target"]["id"], role.pk)
+            self.assertEqual(row["target"]["name"], role.name)
+
+        # Deleting a role must not hide the audit trail of its changes.
+        role.is_active = False
+        role.save()
+        response = self.client.get("/job/api/v2/jobs", {"operation": JobOperation.DELETE_ROLE})
+        self.assertEqual([row["id"] for row in response.json()["results"]], [jobs[1].pk])
+
+        # Role jobs retain the same user scoping as other jobs.
+        self.admin_login()
+        self.assertEqual(self.client.get("/job/api/v2/jobs").json()["count"], 0)
+        response = self.client.get("/job/api/v2/jobs", {"all_users": "true"})
+        self.assertEqual(response.json()["count"], len(jobs))
 
     def test_get_jobs_deleted_target(self):
         user = self.guest_login()

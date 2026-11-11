@@ -101,6 +101,9 @@ class JobOperation(BaseIntEnum):
     IMPORT_ENTRY_PREVIEW = 33
     EXPORT_CONFIGURATION_V2 = 34
     IMPORT_GENERAL_V2 = 35
+    EDIT_ROLE = 36
+    DELETE_ROLE = 37
+    RESTORE_ROLE = 38
 
 
 # Core operation additions must never silently fall through to the untyped
@@ -935,6 +938,29 @@ class Job(models.Model):
             operation=JobOperation.IMPORT_GENERAL_V2,
             text=f"Preparing to import {kind} data",
             params={"kind": kind, "data": data},
+        )
+
+    @classmethod
+    def new_role_change(
+        kls,
+        user: User,
+        role_id: int,
+        operation: JobOperation,
+        params: JobParams,
+        text: str = "",
+    ) -> "Job":
+        if operation not in (
+            JobOperation.EDIT_ROLE,
+            JobOperation.DELETE_ROLE,
+            JobOperation.RESTORE_ROLE,
+        ):
+            raise ValueError("Invalid role operation")
+        return kls._create_new_job(
+            user=user,
+            target=None,
+            operation=operation,
+            text=text,
+            params={**params, "role_id": role_id},
         )
 
     @classmethod

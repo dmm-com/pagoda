@@ -1,4 +1,7 @@
-from typing import Any
+from typing import Any, cast
+
+from django.db import transaction
+from rest_framework.exceptions import PermissionDenied
 
 from acl.models import ACLBase
 from airone.celery import app
@@ -6,8 +9,9 @@ from airone.lib.job import may_schedule_until_job_is_ready, register_job_task
 from airone.lib.log import Logger
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus
-from job.params import RoleImportParams, RoleReferralParams
-from role.models import Role
+from job.params import RoleChangeParams, RoleImportParams, RoleReferralParams
+from role.models import HistoricalPermission, Role
+from role.services import restore_data, validate_role_data
 from user.models import User
 
 
@@ -72,14 +76,23 @@ def import_role_v2(self: Any, job: Job) -> tuple[JobStatus, str, None] | None:
                 )
                 continue
 
+            role._history_user = job.user
+            role._change_reason = f"Job #{job.pk}; import"
+            if not role.history.exists():
+                role.save()
             role.name = role_data.name
         else:
             # Update the group by name
             role = Role.objects.filter(name=role_data.name).first()
             if not role:
                 # create group
-                role = Role.objects.create(name=role_data.name)
+                role = Role(name=role_data.name)
+                role._history_user = job.user
+                role._change_reason = f"Job #{job.pk}; import"
+                role.save()
             else:
+                role._history_user = job.user
+                role._change_reason = f"Job #{job.pk}; import"
                 # Clear registered members (users, groups, and administrative ones) for that role
                 for key in ["users", "groups", "admin_users", "admin_groups"]:
                     getattr(role, key).clear()
@@ -112,12 +125,11 @@ def import_role_v2(self: Any, job: Job) -> tuple[JobStatus, str, None] | None:
             acl = ACLBase.objects.filter(id=permission["obj_id"]).first()
             if not acl:
                 raise ValueError(f"Invalid obj_id: {permission['obj_id']}")
-            if permission["permission"] == "readable":
-                acl.readable.roles.add(role)
-            elif permission["permission"] == "writable":
-                acl.writable.roles.add(role)
-            elif permission["permission"] == "full":
-                acl.full.roles.add(role)
+            if permission["permission"] in ("readable", "writable", "full"):
+                permission_obj = getattr(acl, permission["permission"])
+                permission_obj._history_user = job.user
+                permission_obj._change_reason = f"Job #{job.pk}; import"
+                permission_obj.roles.add(role)
 
         try:
             role.save()
@@ -135,3 +147,66 @@ def import_role_v2(self: Any, job: Job) -> tuple[JobStatus, str, None] | None:
         )
     else:
         return JobStatus.DONE, "Imported Role count: %d" % total_count, None
+
+
+@register_job_task(JobOperation.EDIT_ROLE)
+@register_job_task(JobOperation.DELETE_ROLE)
+@register_job_task(JobOperation.RESTORE_ROLE)
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def change_role(self: Any, job: Job) -> JobStatus:
+    params = job.get_typed_params(RoleChangeParams)
+    with transaction.atomic():
+        roles = Role.objects.select_for_update()
+        if job.operation != JobOperation.RESTORE_ROLE:
+            roles = roles.filter(is_active=True)
+        role = roles.get(pk=params.role_id)
+        user = User.objects.get(pk=job.user_id)
+        if not user.is_active or user.is_readonly or not role.is_editable(user):
+            raise PermissionDenied("You do not have permission to change this role")
+        role._history_user = user
+        role._change_reason = f"Job #{job.pk}"
+        if not role.history.exists():
+            role.save()
+        old_name = role.name
+        if job.operation == JobOperation.DELETE_ROLE:
+            role.delete()
+            return JobStatus.DONE
+        data = params.data
+        permission_ids = None
+        if job.operation == JobOperation.RESTORE_ROLE:
+            if params.history_id is None:
+                raise ValueError("history_id is required")
+            data, permission_ids = restore_data(
+                role, params.history_id, user, params.history_source
+            )
+            role._change_reason += (
+                f"; restored history #{params.history_id} ({params.history_source})"
+            )
+        serializer = validate_role_data(role, data, user)
+        role.skip_history_when_saving = True
+        try:
+            serializer.save()
+            if permission_ids is not None:
+                current_ids = set(role.permissions.values_list("pk", flat=True))
+                changed_ids = current_ids.symmetric_difference(permission_ids)
+                for raw_permission in HistoricalPermission.objects.filter(pk__in=changed_ids):
+                    permission = cast(HistoricalPermission, raw_permission)
+                    permission._history_user = user
+                    permission._change_reason = role._change_reason
+                    if permission.pk in permission_ids:
+                        permission.roles.add(role)
+                    else:
+                        permission.roles.remove(role)
+        finally:
+            del role.skip_history_when_saving
+        role.save()
+        if old_name != role.name:
+            referral_job = Job.new_register_referrals(
+                user,
+                None,
+                operation_value=JobOperation.ROLE_REGISTER_REFERRAL,
+                params={"role_id": role.pk},
+            )
+            transaction.on_commit(referral_job.run)
+    return JobStatus.DONE

@@ -1,5 +1,6 @@
 from typing import Any, cast
 
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.http.response import JsonResponse
 
@@ -128,12 +129,15 @@ def do_create(request: HttpRequest, recv_data: dict[str, Any]) -> HttpResponse:
         )
 
     # create role instance that has specified name and description parameters
-    role = Role.objects.create(
+    role = Role(
         **{
             "name": recv_data["name"],
             "description": recv_data["description"] if recv_data["description"] else "",
         }
     )
+
+    role._history_user = cast(User, request.user)
+    role.save()
 
     # set users and groups, which include administrative ones, to role instance
     set_role_members(role, recv_data)
@@ -148,7 +152,7 @@ def edit(request: HttpRequest, role_id: int) -> HttpResponse:
     if not role:
         return HttpResponse("Specified Role(id:%d) does not exist" % role_id, status=400)
 
-    if not role.is_editable(user):
+    if user.is_readonly or not role.is_editable(user):
         return HttpResponse("You do not have permission to change this role", status=400)
 
     # get user and group members that are selectable as role members
@@ -195,7 +199,7 @@ def do_edit(request: HttpRequest, role_id: int, recv_data: dict[str, Any]) -> Ht
     if dup_role and dup_role.id != int(role_id):
         return HttpResponse("Other duplicate named role has already been registered", status=400)
 
-    if not role.is_editable(user):
+    if user.is_readonly or not role.is_editable(user):
         return HttpResponse("You do not have permission to change this role", status=400)
 
     # This checks whether specified parameter might make this role not to be able to
@@ -205,32 +209,16 @@ def do_edit(request: HttpRequest, role_id: int, recv_data: dict[str, Any]) -> Ht
             "You can't edit this role. Please set administrative members", status=400
         )
 
-    # clear registered members (users, groups and administrative ones) to that role
-    for key in ["users", "groups", "admin_users", "admin_groups"]:
-        getattr(role, key).clear()
-
-    # set users and groups, which include administrative ones, to role instance
-    set_role_members(role, recv_data)
-
-    job_register_referrals = None
-    if role.name != recv_data["name"]:
-        job_register_referrals = Job.new_register_referrals(
-            user,
-            None,
-            operation_value=JobOperation.ROLE_REGISTER_REFERRAL,
-            params={"role_id": role.id},
-        )
-
-    # update attributes of role instance
-    update_fields = []
-    for key in ["name", "description"]:
-        if getattr(role, key) != recv_data.get(key):
-            setattr(role, key, recv_data.get(key))
-            update_fields.append(key)
-
-    role.save(update_fields=update_fields)
-
-    if job_register_referrals:
-        job_register_referrals.run()
+    data = {"name": recv_data["name"], "description": recv_data["description"]}
+    for key in ("users", "groups", "admin_users", "admin_groups"):
+        data[key] = [obj["id"] for obj in recv_data[key]]
+    job = Job.new_role_change(
+        user,
+        role.pk,
+        JobOperation.EDIT_ROLE,
+        {"data": data},
+        text=f"EDIT_ROLE: {role.name} (role #{role.pk})",
+    )
+    transaction.on_commit(job.run)
 
     return JsonResponse({"msg": 'Succeeded in updating Role "%s"' % recv_data["name"]})
