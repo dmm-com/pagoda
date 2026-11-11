@@ -5,6 +5,7 @@ export * from "./AironeTableHeadCell";
 export * from "./AironeTableHeadRow";
 export * from "./AutocompleteWithAllSelector";
 export * from "./ClipboardCopyButton";
+export * from "./CommonImportModal";
 export * from "./Confirmable";
 export * from "./ExportButton";
 export * from "./FlexBox";
