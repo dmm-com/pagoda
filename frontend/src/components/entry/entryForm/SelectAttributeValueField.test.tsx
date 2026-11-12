@@ -3,7 +3,7 @@
 
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { FC } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 
 import { Schema } from "./EntryFormSchema";
 import {
@@ -46,6 +46,7 @@ const FieldHarness: FC<{ multiple?: boolean; disabled?: boolean }> = ({
   disabled = false,
 }) => {
   const form = useForm<Schema>({ defaultValues });
+  const value = useWatch({ control: form.control, name: "attrs.1.value" });
   return (
     <form data-testid="form">
       {multiple ? (
@@ -63,9 +64,7 @@ const FieldHarness: FC<{ multiple?: boolean; disabled?: boolean }> = ({
           isDisabled={disabled}
         />
       )}
-      <output data-testid="value">
-        {JSON.stringify(form.watch("attrs.1.value"))}
-      </output>
+      <output data-testid="value">{JSON.stringify(value)}</output>
     </form>
   );
 };

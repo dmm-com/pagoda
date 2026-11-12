@@ -11,7 +11,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { FC, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 
 import { Schema, schema } from "./entryForm/EntryFormSchema";
 
@@ -243,14 +243,14 @@ describe("EntryForm", () => {
 
   test("should update entry name on input change", async () => {
     const Wrapper: FC = () => {
-      const { control, setValue, watch } = useForm<Schema>({
+      const { control, setValue } = useForm<Schema>({
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues: entryInfo,
       });
 
       // Test helper to verify form state
-      const nameValue = watch("name");
+      const nameValue = useWatch({ control, name: "name" });
       useEffect(() => {
         if (nameValue === "updated entry name") {
           // Mark successful update for test verification

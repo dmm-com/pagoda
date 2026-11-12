@@ -38,6 +38,18 @@ export interface JobApiV2DownloadRetrieveRequest {
   encode?: JobApiV2DownloadRetrieveEncodeEnum;
 }
 
+export interface JobApiV2JobsCreateRequest {
+  allUsers?: boolean;
+  createdAfter?: Date;
+  createdBefore?: Date;
+  jobId?: number;
+  operation?: string;
+  status?: number;
+  targetId?: number;
+  text?: string;
+  user?: string;
+}
+
 export interface JobApiV2JobsListRequest {
   allUsers?: boolean;
   createdAfter?: Date;
@@ -192,6 +204,97 @@ export class JobApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<JobSerializers> {
     const response = await this.jobApiV2DownloadRetrieveRaw(
+      requestParameters,
+      initOverrides,
+    );
+    return await response.value();
+  }
+
+  /**
+   * Creates request options for jobApiV2JobsCreate without sending the request
+   */
+  async jobApiV2JobsCreateRequestOpts(
+    requestParameters: JobApiV2JobsCreateRequest,
+  ): Promise<runtime.RequestOpts> {
+    const queryParameters: any = {};
+
+    if (requestParameters["allUsers"] != null) {
+      queryParameters["all_users"] = requestParameters["allUsers"];
+    }
+
+    if (requestParameters["createdAfter"] != null) {
+      queryParameters["created_after"] = (
+        requestParameters["createdAfter"] as any
+      ).toISOString();
+    }
+
+    if (requestParameters["createdBefore"] != null) {
+      queryParameters["created_before"] = (
+        requestParameters["createdBefore"] as any
+      ).toISOString();
+    }
+
+    if (requestParameters["jobId"] != null) {
+      queryParameters["job_id"] = requestParameters["jobId"];
+    }
+
+    if (requestParameters["operation"] != null) {
+      queryParameters["operation"] = requestParameters["operation"];
+    }
+
+    if (requestParameters["status"] != null) {
+      queryParameters["status"] = requestParameters["status"];
+    }
+
+    if (requestParameters["targetId"] != null) {
+      queryParameters["target_id"] = requestParameters["targetId"];
+    }
+
+    if (requestParameters["text"] != null) {
+      queryParameters["text"] = requestParameters["text"];
+    }
+
+    if (requestParameters["user"] != null) {
+      queryParameters["user"] = requestParameters["user"];
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        await this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    let urlPath = `/job/api/v2/jobs`;
+
+    return {
+      path: urlPath,
+      method: "POST",
+      headers: headerParameters,
+      query: queryParameters,
+    };
+  }
+
+  /**
+   */
+  async jobApiV2JobsCreateRaw(
+    requestParameters: JobApiV2JobsCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<{ [key: string]: any }>> {
+    const requestOptions =
+      await this.jobApiV2JobsCreateRequestOpts(requestParameters);
+    const response = await this.request(requestOptions, initOverrides);
+
+    return new runtime.JSONApiResponse<any>(response);
+  }
+
+  /**
+   */
+  async jobApiV2JobsCreate(
+    requestParameters: JobApiV2JobsCreateRequest = {},
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<{ [key: string]: any }> {
+    const response = await this.jobApiV2JobsCreateRaw(
       requestParameters,
       initOverrides,
     );

@@ -13,7 +13,8 @@ export const isExportJob = (operation: number | undefined): boolean =>
   operation === JobOperations.EXPORT_SEARCH_RESULT ||
   operation === JobOperations.EXPORT_ENTRY_V2 ||
   operation === JobOperations.EXPORT_SEARCH_RESULT_V2 ||
-  operation === JobOperations.EXPORT_CONFIGURATION_V2;
+  operation === JobOperations.EXPORT_CONFIGURATION_V2 ||
+  operation === JobOperations.EXPORT_JOB_HISTORY;
 
 export const jobStatusLabel = (jobStatus: number | undefined): string => {
   switch (jobStatus) {
@@ -80,6 +81,7 @@ export const jobOperationLabel = (jobOperation: number | undefined): string => {
       return translate("job.operation.import");
     case JobOperations.EXPORT_ENTRY:
     case JobOperations.EXPORT_CONFIGURATION_V2:
+    case JobOperations.EXPORT_JOB_HISTORY:
     case JobOperations.EXPORT_SEARCH_RESULT:
     case JobOperations.EXPORT_ENTRY_V2:
     case JobOperations.EXPORT_SEARCH_RESULT_V2:

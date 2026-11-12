@@ -3,7 +3,7 @@
 
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { FC } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 
 import {
   AttributeTypes,
@@ -138,6 +138,7 @@ const Harness: FC<{
   const form = useForm<Schema>({
     defaultValues: values ?? createValues(withRule),
   });
+  const rules = useWatch({ control: form.control, name: "isolationRules" });
   onForm?.(form);
   return (
     <>
@@ -145,9 +146,7 @@ const Harness: FC<{
         control={form.control}
         referralEntities={referralEntities}
       />
-      <output data-testid="rules">
-        {JSON.stringify(form.watch("isolationRules"))}
-      </output>
+      <output data-testid="rules">{JSON.stringify(rules)}</output>
     </>
   );
 };

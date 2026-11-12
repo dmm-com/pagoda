@@ -50,6 +50,7 @@ const CANCELABLE_JOB_OPERATIONS = new Set([
   JobOperations.REGISTER_REFERRALS,
   JobOperations.EXPORT_SEARCH_RESULT,
   JobOperations.EXPORT_SEARCH_RESULT_V2,
+  JobOperations.EXPORT_JOB_HISTORY,
   JobOperations.BULK_EDIT_ENTRY,
 ]);
 
@@ -366,29 +367,31 @@ export const JobList: FC<Props> = ({ jobs, showUser }) => {
                   <Typography
                     sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}
                   >
-                    {expandedJobs.has(job.id)
+                    {job.status === JobStatuses.ERROR ||
+                    expandedJobs.has(job.id)
                       ? job.text
                       : getJobTextForDisplay(job.text)}
                   </Typography>
-                  {job.text.length > JOB_TEXT_DISPLAY_LIMIT && (
-                    <Button
-                      size="small"
-                      onClick={() =>
-                        setExpandedJobs((current) => {
-                          const next = new Set(current);
-                          if (next.has(job.id)) next.delete(job.id);
-                          else next.add(job.id);
-                          return next;
-                        })
-                      }
-                    >
-                      {t(
-                        expandedJobs.has(job.id)
-                          ? "job.list.showLess"
-                          : "job.list.showMore",
-                      )}
-                    </Button>
-                  )}
+                  {job.status !== JobStatuses.ERROR &&
+                    job.text.length > JOB_TEXT_DISPLAY_LIMIT && (
+                      <Button
+                        size="small"
+                        onClick={() =>
+                          setExpandedJobs((current) => {
+                            const next = new Set(current);
+                            if (next.has(job.id)) next.delete(job.id);
+                            else next.add(job.id);
+                            return next;
+                          })
+                        }
+                      >
+                        {t(
+                          expandedJobs.has(job.id)
+                            ? "job.list.showLess"
+                            : "job.list.showMore",
+                        )}
+                      </Button>
+                    )}
                 </>
               )}
             </TableCell>

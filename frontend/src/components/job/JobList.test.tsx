@@ -47,12 +47,12 @@ describe("JobList", () => {
       }),
     ).toHaveLength(38);
 
-    // All five export operations should have a download link.
+    // All six export operations should have a download link.
     expect(
       screen.queryAllByRole("link", {
         name: (content) => content.includes("Download"),
       }),
-    ).toHaveLength(5);
+    ).toHaveLength(6);
   });
 
   test("should show operation buttons based on job status", async () => {
@@ -128,6 +128,32 @@ describe("JobList", () => {
     expect(screen.getByText("a".repeat(300) + "...")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "全文を表示" }));
     expect(screen.getByText(text)).toBeInTheDocument();
+  });
+
+  test("shows the complete error message without expansion", () => {
+    const text = "error details ".repeat(30).trim();
+    render(
+      <JobList
+        jobs={[
+          {
+            id: 1,
+            user: "test-user",
+            text,
+            status: JobStatuses.ERROR,
+            operation: JobOperations.CREATE_ENTRY,
+            target: { id: 1, name: "test", schemaId: null, schemaName: null },
+            createdAt: new Date(),
+            passedTime: 0,
+          },
+        ]}
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByText(text)).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "全文を表示" }),
+    ).not.toBeInTheDocument();
   });
 
   describe("English", () => {

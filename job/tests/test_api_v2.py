@@ -1,7 +1,10 @@
+import csv
+import io
 import json
 from datetime import timedelta
 from unittest.mock import Mock, patch
 
+from django.core.files.storage import default_storage
 from django.utils import timezone
 
 from airone.lib.test import AironeViewTest
@@ -21,6 +24,116 @@ class ViewTest(AironeViewTest):
 
     def tearDown(self):
         super(ViewTest, self).tearDown()
+
+    def test_export_search_results_as_downloadable_job(self):
+        user = self.guest_login()
+        entity = Entity.objects.create(name="entity", created_user=user)
+        entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
+        message = "Failure in entity 日本語\n" + "full traceback\n" * 100
+        matched = Job.new_create(
+            user, entry, message, params={"entry_name": entry.name, "attrs": []}
+        )
+        matched.update(JobStatus.ERROR)
+        Job.new_create(user, entry, "success", params={"entry_name": entry.name, "attrs": []})
+        from user.models import User
+
+        other = User.objects.create(username="other", password="passwd")
+        other_job = Job.new_create(
+            other, entry, message, params={"entry_name": entry.name, "attrs": []}
+        )
+        other_job.update(JobStatus.ERROR)
+        query = {"status": str(JobStatus.ERROR), "text": "ENTITY", "all_users": "true"}
+        with patch.object(Job, "run") as enqueue:
+            response = self.client.post("/job/api/v2/jobs", query_params=query)
+        self.assertEqual(response.status_code, 202)
+        enqueue.assert_called_once_with()
+        export = Job.objects.get(id=response.json()["id"])
+        self.assertEqual(export.operation, JobOperation.EXPORT_JOB_HISTORY)
+        self.assertEqual(export.status, JobStatus.PREPARING)
+        self.assertEqual(export.text, f"job_history_{export.id}.csv")
+        download_url = f"/job/api/v2/{export.id}/download"
+        self.assertEqual(self.client.get(download_url).status_code, 400)
+        export.run(will_delay=False)
+        export.refresh_from_db()
+        self.assertEqual(export.status, JobStatus.DONE)
+        with default_storage.open(export.text, "rb") as file:
+            rows = list(csv.DictReader(io.StringIO(file.read().decode("utf-8-sig"))))
+        self.assertEqual([row["job_id"] for row in rows], [str(matched.id)])
+        self.assertEqual(rows[0]["message"], message)
+        self.assertEqual(rows[0]["target_entity"], entity.name)
+        self.assertEqual(rows[0]["target_entry"], entry.name)
+        download = self.client.get(download_url)
+        self.assertEqual(download.status_code, 200)
+        self.assertIn(export.text, download["Content-Disposition"])
+        self.assertEqual(
+            list(csv.DictReader(io.StringIO(download.content.decode("utf-8"))))[0]["message"],
+            message,
+        )
+        self.assertEqual(
+            list(
+                csv.DictReader(
+                    io.StringIO(
+                        self.client.get(download_url, {"encode": "shift_jis"}).content.decode(
+                            "shift_jis"
+                        )
+                    )
+                )
+            )[0]["message"],
+            message,
+        )
+
+        self.admin_login()
+        self.assertEqual(self.client.get(download_url).status_code, 403)
+        with patch.object(Job, "run"):
+            response = self.client.post("/job/api/v2/jobs", query_params=query)
+        admin_export = Job.objects.get(id=response.json()["id"])
+        admin_export.run(will_delay=False)
+        with default_storage.open(admin_export.text, "rb") as file:
+            rows = list(csv.DictReader(io.StringIO(file.read().decode("utf-8-sig"))))
+        self.assertEqual({row["job_id"] for row in rows}, {str(matched.id), str(other_job.id)})
+
+    def test_export_rejects_invalid_search_without_creating_job(self):
+        self.guest_login()
+        before = Job.objects.count()
+        response = self.client.post("/job/api/v2/jobs", query_params={"created_after": "invalid"})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Job.objects.count(), before)
+
+    def test_legacy_history_export_does_not_break_role_job_list(self):
+        user = self.guest_login()
+        role = Role.objects.create(name="role")
+        role_job = Job.new_role_change(user, role.pk, JobOperation.EDIT_ROLE, {}, text="edit")
+        legacy = Job.objects.create(
+            user=user,
+            operation=36,
+            status=JobStatus.DONE,
+            text="temporary",
+            params=json.dumps({"filters": {"status": "3"}}),
+        )
+        legacy.text = f"job_history_{legacy.id}.csv"
+        legacy.save(update_fields=["text"])
+
+        response = self.client.get("/job/api/v2/jobs")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["count"], 2)
+        self.assertEqual(
+            response.json()["results"][0]["operation"], JobOperation.EXPORT_JOB_HISTORY
+        )
+        self.assertIsNone(response.json()["results"][0]["target"])
+        self.assertEqual(legacy.operation, JobOperation.EDIT_ROLE)
+        self.assertEqual(role_job.operation, JobOperation.EDIT_ROLE)
+        filtered = self.client.get(
+            "/job/api/v2/jobs", {"operation": JobOperation.EXPORT_JOB_HISTORY}
+        )
+        self.assertEqual([row["id"] for row in filtered.json()["results"]], [legacy.id])
+        with patch(
+            "job.api_v2.views.default_storage.open",
+            return_value=io.BytesIO(b"job_id,message\n1,error\n"),
+        ):
+            download = self.client.get(f"/job/api/v2/{legacy.id}/download")
+        self.assertEqual(download.status_code, 200)
+        self.assertIn(b"job_id,message", download.content)
+        self.assertEqual(self.client.get(f"/job/api/v2/{role_job.id}/download").status_code, 400)
 
     def test_get_jobs(self):
         user = self.guest_login()
