@@ -104,6 +104,8 @@ class JobOperation(BaseIntEnum):
     EDIT_ROLE = 36
     DELETE_ROLE = 37
     RESTORE_ROLE = 38
+    # ID 36 was briefly used for history exports; keep new exports distinct.
+    EXPORT_JOB_HISTORY = 39
 
 
 # Core operation additions must never silently fall through to the untyped
@@ -171,6 +173,7 @@ class Job(models.Model):
     ] + CUSTOM_HIDDEN_OPERATIONS
 
     CANCELABLE_OPERATIONS: list[JobOperation | JobOperationCustom] = [
+        JobOperation.EXPORT_JOB_HISTORY,
         JobOperation.EXPORT_CONFIGURATION_V2,
         JobOperation.CREATE_ENTRY,
         JobOperation.COPY_ENTRY,
@@ -188,6 +191,7 @@ class Job(models.Model):
     ] + CUSTOM_CANCELABLE_OPERATIONS
 
     PARALLELIZABLE_OPERATIONS: list[JobOperation | JobOperationCustom] = [
+        JobOperation.EXPORT_JOB_HISTORY,
         JobOperation.EXPORT_CONFIGURATION_V2,
         JobOperation.NOTIFY_CREATE_ENTRY,
         JobOperation.NOTIFY_UPDATE_ENTRY,
@@ -211,6 +215,7 @@ class Job(models.Model):
     ]
 
     DOWNLOADABLE_OPERATIONS: list[JobOperation | JobOperationCustom] = [
+        JobOperation.EXPORT_JOB_HISTORY,
         JobOperation.EXPORT_CONFIGURATION_V2,
         JobOperation.EXPORT_ENTRY,
         JobOperation.EXPORT_ENTRY_V2,
@@ -235,6 +240,24 @@ class Job(models.Model):
     # This describes dependent jobs. Before executing a job processing, this must check this value.
     # When this has another job, this job have to wait until it would be finished.
     dependent_job = models.ForeignKey("Job", null=True, on_delete=models.SET_NULL)
+
+    def is_legacy_history_export(self) -> bool:
+        """Recognize history exports saved before operation 36 became EDIT_ROLE."""
+        if self.operation != JobOperation.EDIT_ROLE or self.text != f"job_history_{self.id}.csv":
+            return False
+        try:
+            payload = json.loads(self.params)
+        except (TypeError, ValueError):
+            return False
+        return (
+            isinstance(payload, dict)
+            and set(payload) == {"filters"}
+            and isinstance(payload["filters"], dict)
+            and all(
+                isinstance(key, str) and isinstance(value, str)
+                for key, value in payload["filters"].items()
+            )
+        )
 
     def get_typed_params(self, expected_type: type[Any] | None = None) -> Any:
         """Return validated job parameters, parsing persisted JSON only once."""
@@ -487,6 +510,18 @@ class Job(models.Model):
         if int(operation) in CORE_JOB_PARAMS:
             raise ValueError("Use the operation-specific factory for core jobs")
         return kls._create_new_job(user, target, operation, text, params, depend_on)
+
+    @classmethod
+    def new_export_job_history(kls, user: User, filters: dict[str, str]) -> "Job":
+        job = kls._create_new_job(
+            user,
+            None,
+            JobOperation.EXPORT_JOB_HISTORY,
+            "job_history.csv",
+            {"filters": filters},
+        )
+        job.update(text=f"job_history_{job.id}.csv")
+        return job
 
     @classmethod
     def get_task_module(kls, component: str) -> ModuleType:

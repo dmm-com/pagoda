@@ -33,8 +33,15 @@ class JobSerializers(serializers.ModelSerializer[Job]):
     )
     target = serializers.SerializerMethodField(method_name="get_target")
     passed_time = serializers.SerializerMethodField(method_name="get_passed_time")
+    operation = serializers.SerializerMethodField(method_name="get_operation")
 
     PREFETCHED_ENTRIES_KEY = "__prefetched_entries"
+
+    @extend_schema_field(serializers.IntegerField())
+    def get_operation(self, obj: Job) -> int:
+        return int(
+            JobOperation.EXPORT_JOB_HISTORY if obj.is_legacy_history_export() else obj.operation
+        )
 
     class Meta:
         model = Job
@@ -51,6 +58,8 @@ class JobSerializers(serializers.ModelSerializer[Job]):
 
     @extend_schema_field(JobTargetSerializer())
     def get_target(self, obj: Job) -> JobTarget | None:
+        if obj.is_legacy_history_export():
+            return None
         if obj.operation in (
             JobOperation.EDIT_ROLE,
             JobOperation.DELETE_ROLE,

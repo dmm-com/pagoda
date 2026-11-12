@@ -1464,6 +1464,35 @@ class AironeApiClient {
     });
   }
 
+  async exportJobHistory(
+    targetId?: number,
+    allUsers?: boolean,
+    filters?: JobSearchFilters,
+  ): Promise<{ id: number; filename: string }> {
+    const params = new URLSearchParams();
+    if (targetId !== undefined) params.set("target_id", String(targetId));
+    if (allUsers) params.set("all_users", "true");
+    for (const [name, value] of Object.entries({
+      job_id: filters?.jobId,
+      status: filters?.status,
+      operation: filters?.operation,
+      user: filters?.user,
+      text: filters?.text,
+      created_after: jobSearchDate(filters?.createdAfter),
+      created_before: jobSearchDate(filters?.createdBefore),
+    })) {
+      if (value) params.set(name, value);
+    }
+    const url = new URL("/job/api/v2/jobs", window.location.origin);
+    url.search = params.toString();
+    const response = await fetch(url.toString(), {
+      method: "POST",
+      headers: { "X-CSRFToken": getCsrfToken() },
+    });
+    if (!response.ok) throw new Error(`Job export failed: ${response.status}`);
+    return response.json();
+  }
+
   async getJob(id: number): Promise<JobSerializers> {
     return await this.job.jobApiV2Retrieve({ id });
   }
