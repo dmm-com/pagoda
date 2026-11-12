@@ -300,7 +300,7 @@ class JobListAPI(viewsets.ModelViewSet[Job]):
     def get_queryset(self) -> QuerySet[Job]:
         return filter_jobs(cast(User, self.request.user), self.request.query_params)
 
-    @extend_schema(responses={202: OpenApiTypes.OBJECT})
+    @extend_schema(request=None, responses={202: OpenApiTypes.OBJECT})
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         allowed = {
             "created_after",
