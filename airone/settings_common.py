@@ -50,7 +50,12 @@ class Common(Configuration):  # type: ignore[misc]
     CELERY_TASK_SERIALIZER = "json"
     CELERY_BROKER_HEARTBEAT = 10
 
-    ALLOWED_HOSTS = ["*"]
+    # Host header validation. Production must set AIRONE_ALLOWED_HOSTS to the
+    # real service hostnames (comma separated); "*" disables Django's Host
+    # header validation entirely. The first concrete hostname also drives the
+    # domain of externally-visible links (see airone.lib.canonical); without
+    # one, password reset emails are only sent for requests to localhost.
+    ALLOWED_HOSTS = env.list("AIRONE_ALLOWED_HOSTS", default=["*"])
 
     # https://github.com/adamchainz/django-cors-headers
     # No origins are allowed by default; set AIRONE_CORS_ALLOWED_ORIGINS to a
