@@ -345,13 +345,23 @@ const ActionValue: FC<PropsActionValue> = ({
     entity.attrs.find((attr) => attr.id === attrId)?.type ?? -1,
   );
 
+  const emptyActionValue = () => ({
+    id: 0,
+    strCond: "",
+    refCond: null,
+  });
+
   const handleAddActionValue = (index: number) => {
-    insert(index, {
-      id: 0,
-      strCond: "",
-      refCond: null,
-    });
+    insert(index, emptyActionValue());
     focusInsertedRow(index);
+  };
+
+  // Keep at least one (empty) value. An action without any value renders no
+  // input once its attribute is switched to a single-value type, and such an
+  // action is silently dropped from the request on save.
+  const handleDelActionValue = (index: number) => {
+    remove(index);
+    fields.length === 1 && insert(0, emptyActionValue());
   };
 
   return (
@@ -369,13 +379,13 @@ const ActionValue: FC<PropsActionValue> = ({
               control={control}
               entity={entity}
               attrId={attrId}
-              handleDelInputValue={remove}
+              handleDelInputValue={handleDelActionValue}
             />
           </StyledListItem>
         );
       })}
-      <StyledListItem>
-        {canHoldMultipleValues && (
+      {canHoldMultipleValues && (
+        <StyledListItem>
           <AddRowButton
             onAdd={() => handleAddActionValue(fields.length)}
             label={t("trigger.form.appendActionValue")}
@@ -384,8 +394,8 @@ const ActionValue: FC<PropsActionValue> = ({
             })}
             testId={`append-action-value-${indexAction}`}
           />
-        )}
-      </StyledListItem>
+        </StyledListItem>
+      )}
     </StyledList>
   );
 };

@@ -75,7 +75,7 @@ const AppendButton = styled(Button, {
 
 interface AddRowButtonProps {
   onAdd: () => void;
-  label?: string;
+  label: string;
   ariaLabel?: string;
   testId?: string;
   disabled?: boolean;
@@ -89,7 +89,7 @@ interface AddRowButtonProps {
  */
 export const AddRowButton: FC<AddRowButtonProps> = ({
   onAdd,
-  label = "追加",
+  label,
   ariaLabel,
   testId = "append-row",
   disabled = false,
@@ -219,7 +219,7 @@ export const InsertBandRow: FC<InsertBandRowProps> = ({
 interface AppendRowProps {
   onAdd: () => void;
   colSpan: number;
-  label?: string;
+  label: string;
   ariaLabel?: string;
   testId?: string;
 }

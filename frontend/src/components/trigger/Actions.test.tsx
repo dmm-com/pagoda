@@ -1,7 +1,7 @@
 /**
  */
 
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { FC } from "react";
 import { useForm } from "react-hook-form";
 
@@ -290,5 +290,33 @@ describe("ActionForm", () => {
     expect(within(row6).getByDisplayValue("ref1")).toBeInTheDocument();
     expect(within(row6).getByDisplayValue("name2")).toBeInTheDocument();
     expect(within(row6).getByDisplayValue("ref2")).toBeInTheDocument();
+  });
+
+  test("keeps one empty value when the last value is deleted", () => {
+    const Wrapper: FC = () => {
+      const { control } = useForm<Schema>({
+        defaultValues,
+      });
+      return <Actions control={control} entity={entity} />;
+    };
+
+    render(<Wrapper />, {
+      wrapper: TestWrapper,
+    });
+
+    // array-string action, which starts with two values
+    const values = screen.getByTestId("action-values-1");
+    const deleteFirstValue = () =>
+      fireEvent.click(within(values).getAllByRole("button")[0]);
+
+    deleteFirstValue();
+    expect(within(values).getAllByRole("textbox")).toHaveLength(1);
+    expect(within(values).getByDisplayValue("str cond 2")).toBeInTheDocument();
+
+    // An action must never end up without any value: it would render no input
+    // after switching to a single-value attribute and be dropped on save.
+    deleteFirstValue();
+    expect(within(values).getAllByRole("textbox")).toHaveLength(1);
+    expect(within(values).getByRole("textbox")).toHaveValue("");
   });
 });
