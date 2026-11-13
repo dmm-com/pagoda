@@ -86,6 +86,28 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+class EntryAliasPermission(BasePermission):
+    """Reserve/remove alias names only for users who can write the entry.
+
+    ``create`` and ``bulk_create`` never reach object permissions, so the
+    per-entry check for those actions lives in ``EntryAliasSerializer.validate``.
+    """
+
+    def has_permission(self, request: Request, view: Any) -> bool:
+        user = cast("User", request.user)
+        if view.action in ("create", "bulk_create"):
+            return not user.is_readonly
+
+        return True
+
+    def has_object_permission(self, request: Request, view: Any, obj: AliasEntry) -> bool:
+        user = cast("User", request.user)
+        if view.action == "destroy":
+            return not user.is_readonly and bool(user.has_permission(obj.entry, ACLType.Writable))
+
+        return bool(user.has_permission(obj.entry, ACLType.Readable))
+
+
 class EntryPermission(BasePermission):
     def has_object_permission(self, request: Request, view: Any, obj: Any) -> bool:
         user = cast("User", request.user)
@@ -1398,6 +1420,7 @@ class EntryAliasAPI(viewsets.ModelViewSet[AliasEntry]):
     pagination_class = LimitOffsetPagination
     serializer_class = EntryAliasSerializer
     queryset = AliasEntry.objects.filter(entry__is_active=True)
+    permission_classes = [IsAuthenticated & EntryAliasPermission]
 
     def bulk_create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         # refuse input that has duplicated name

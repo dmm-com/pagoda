@@ -1,8 +1,11 @@
+from rest_framework.exceptions import PermissionDenied
+
 from airone.lib.acl import ACLType
 from airone.lib.http import DRFRequest
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrType
 from entry.api_v2.serializers import (
+    EntryCreateSerializer,
     EntrySelfHistoryRestoreSerializer,
     EntrySelfHistorySerializer,
     PrivilegedEntryCreateSerializer,
@@ -87,6 +90,19 @@ class ViewTest(AironeViewTest):
         # check created Entry has proper Attribute value
         self.assertEqual(changed_entry.name, "e0 changed")
         self.assertEqual(changed_entry.get_attrv("secret").value, "caput draconis")
+
+    def test_create_entry_requires_writable_schema(self):
+        admin = User.objects.create(username="admin", is_superuser=True)
+        entity = self.create_entity(admin, "private-entity", is_public=False)
+        user = User.objects.create(username="userB")
+
+        # The serializer is shared by the v2 API, plugin overrides and async jobs,
+        # so it has to enforce the schema permission on its own.
+        serializer = EntryCreateSerializer(
+            data={"schema": entity.id, "name": "entry"}, context={"_user": user}
+        )
+        with self.assertRaises(PermissionDenied):
+            serializer.is_valid(raise_exception=True)
 
 
 class EntrySelfHistorySerializerTest(AironeViewTest):

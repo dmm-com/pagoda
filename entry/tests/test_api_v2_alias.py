@@ -215,3 +215,50 @@ class APITest(AironeViewTest):
         self.assertEqual(
             sorted([x.name for x in AliasEntry.objects.filter(entry=item)]), sorted(["PUYO"])
         )
+
+    def _create_private_entry(self, admin):
+        entity = self.create_entity(admin, "PrivateModel", is_public=False)
+        return self.add_entry(admin, "PrivateItem", entity)
+
+    def test_create_for_entry_without_permission(self):
+        admin: User = self.admin_login()
+        entry = self._create_private_entry(admin)
+
+        self.client.login(username="guest", password="guest")
+        resp = self.client.post(
+            "/entry/api/v2/alias/",
+            json.dumps({"name": "alias-name", "entry": entry.id}),
+            "application/json",
+        )
+
+        self.assertEqual(resp.status_code, 403)
+        self.assertFalse(entry.aliases.filter(name="alias-name").exists())
+
+    def test_delete_without_permission(self):
+        admin: User = self.admin_login()
+        entry = self._create_private_entry(admin)
+        alias = entry.add_alias("alias-name")
+
+        self.client.login(username="guest", password="guest")
+        resp = self.client.delete("/entry/api/v2/alias/%s" % alias.id)
+
+        self.assertEqual(resp.status_code, 403)
+        self.assertTrue(entry.aliases.filter(id=alias.id).exists())
+
+    def test_create_by_readonly_user(self):
+        admin: User = self.admin_login()
+        entity = self.create_entity(admin, "PublicModel")
+        entry = self.add_entry(admin, "PublicItem", entity)
+
+        readonly = User(username="readonly", is_readonly=True)
+        readonly.set_password("readonly")
+        readonly.save()
+        self.client.login(username="readonly", password="readonly")
+
+        resp = self.client.post(
+            "/entry/api/v2/alias/",
+            json.dumps({"name": "alias-name", "entry": entry.id}),
+            "application/json",
+        )
+
+        self.assertEqual(resp.status_code, 403)

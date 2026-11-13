@@ -13,6 +13,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import filters, generics, status, viewsets
 from rest_framework.authtoken.models import Token
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
@@ -657,6 +658,16 @@ class UserAuthAPI(generics.UpdateAPIView[User]):
         )
 
     def patch(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        target: User = self.get_object()
+
+        # Switching the authentication type of another account hands that account
+        # over whenever the caller knows an LDAP password bound to the same
+        # username, so it is limited to the owner or a superuser.
+        if target.id != request.user.id and not request.user.is_superuser:
+            raise PermissionDenied(
+                "You don't have permission to change the authentication type of this user"
+            )
+
         serializer: BaseSerializer[Any] = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()

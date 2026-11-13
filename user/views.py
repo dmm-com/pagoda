@@ -116,6 +116,13 @@ def do_edit(request: HttpRequest, user_id: int, recv_data: dict[str, Any]) -> Ht
     except ObjectDoesNotExist:
         return HttpResponse("Target user is not found", status=404)
 
+    # Only the account owner or a superuser may touch this account. The
+    # token_lifetime handling below used to run before the is_superuser gate,
+    # which let anyone change another user's token policy (0 means never
+    # expires).
+    if not (access_user.is_superuser or access_user.id == target_user.id):
+        return HttpResponse("You don't have permission to access this object", status=400)
+
     # The case token_lifetime prameter is specified to update
     if "token_lifetime" in recv_data:
         # Validate specified token_lifetime

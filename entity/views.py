@@ -177,6 +177,22 @@ def do_edit(request: HttpRequest, entity_id: int, recv_data: dict[str, Any]) -> 
         if any([not Entity.objects.filter(id=x).exists() for x in attr["ref_ids"]]):
             return HttpResponse("Specified referral is invalid", status=400)
 
+    # Attributes referenced by id must belong to this Entity. The edit job used to
+    # look them up globally, letting a request delete or rewrite attributes of an
+    # Entity the caller only knew the id of.
+    owned_attr_ids = set(entity.attrs.values_list("id", flat=True))
+    for attr in recv_data["attrs"]:
+        if attr.get("id") in (None, ""):
+            continue
+
+        try:
+            attr_id = int(attr["id"])
+        except (TypeError, ValueError):
+            return HttpResponse("Specified attribute id is invalid", status=400)
+
+        if attr_id not in owned_attr_ids:
+            return HttpResponse("Specified attribute does not belong to this Entity", status=400)
+
     # duplication checks
     counter = collections.Counter(
         [

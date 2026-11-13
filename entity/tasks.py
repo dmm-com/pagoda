@@ -7,6 +7,7 @@ from celery import Task
 from airone.celery import app
 from airone.lib import custom_view
 from airone.lib.job import may_schedule_until_job_is_ready, register_job_task
+from airone.lib.log import Logger
 from airone.lib.types import AttrType
 from entity.api_v2.serializers import EntityCreateSerializer, EntityUpdateSerializer
 from entity.models import Entity, EntityAttr
@@ -122,10 +123,33 @@ def edit_entity(self: Task[Any, Any], job: Job) -> JobStatus:
         # Abort when specified entity doesn't exist
         return JobStatus.CANCELED
 
+    try:
+        return _process_edit_entity(job, entity, user)
+    finally:
+        # The caller (entity.views.do_edit) sets the EDITING flag before queueing
+        # this job. Every exit path, including rejections and unexpected
+        # exceptions, has to clear it, otherwise the Entity stays locked for
+        # further edits until the flag is fixed by hand.
+        entity.del_status(Entity.STATUS_EDITING)
+
+
+def _process_edit_entity(job: Job, entity: Entity, user: User) -> JobStatus:
     # for history record
     entity._history_user = user
 
     params = job.get_typed_params(EditEntityParams)
+
+    # Every referenced attribute must belong to the Entity targeted by this job.
+    # Looking them up globally would let a user delete or rewrite attributes of an
+    # Entity they only referenced by id in the request body.
+    owned_attr_ids = set(entity.attrs.values_list("id", flat=True))
+    for attr in params.attrs:
+        if attr.id is not None and attr.id not in owned_attr_ids:
+            Logger.warning(
+                "EDIT_ENTITY job(id=%s) specified attribute(id=%s) that does not belong "
+                "to entity(id=%s)" % (job.id, attr.id, entity.id)
+            )
+            return JobStatus.ERROR
 
     # register history to modify Entity
     history = user.seth_entity_mod(entity)
@@ -147,7 +171,14 @@ def edit_entity(self: Task[Any, Any], job: Job) -> JobStatus:
             # In case of deleting attribute which has been already existed
             if attr.id is None:
                 continue
-            attr_obj = EntityAttr.objects.get(id=attr.id)
+            attr_obj = entity.attrs.filter(id=attr.id).first()
+            if attr_obj is None:
+                Logger.warning(
+                    "EDIT_ENTITY job(id=%s) cannot delete unknown attribute(id=%s)"
+                    % (job.id, attr.id)
+                )
+                return JobStatus.ERROR
+
             attr_obj.delete()
 
             # Save deleted EntityAttr id to update es_document of Entries
@@ -157,10 +188,10 @@ def edit_entity(self: Task[Any, Any], job: Job) -> JobStatus:
             # register History to register deleting EntityAttr
             history.del_attr(attr_obj)
 
-        elif attr.id is not None and EntityAttr.objects.filter(id=attr.id).exists():
+        elif attr.id is not None and entity.attrs.filter(id=attr.id).exists():
             # In case of updating attribute which has been already existed
             attr_id = attr.id
-            attr_obj = EntityAttr.objects.get(id=attr_id)
+            attr_obj = entity.attrs.get(id=attr_id)
 
             # register operaion history if the parameters are changed
             if attr_obj.name != attr.name:
@@ -211,9 +242,6 @@ def edit_entity(self: Task[Any, Any], job: Job) -> JobStatus:
 
             # register History to register adding EntityAttr
             history.add_attr(attr_obj)
-
-    # clear flag to specify this entity has been completed to edit
-    entity.del_status(Entity.STATUS_EDITING)
 
     # update job status and save it
     return JobStatus.DONE

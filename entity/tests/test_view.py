@@ -14,6 +14,7 @@ from entity.models import Entity, EntityAttr
 from entity.settings import CONFIG
 from entry.models import Attribute, Entry
 from entry.tasks import update_es_documents
+from job.models import Job, JobStatus
 from user.models import History, User
 
 
@@ -1620,3 +1621,87 @@ class ViewTest(AironeViewTest):
         entity.save()
         resp = self.client.get(reverse("entity:history", args=[entity.id]))
         self.assertEqual(resp.status_code, 200)
+
+    def test_post_edit_with_foreign_attribute_id(self):
+        admin = self.admin_login()
+        victim = self.create_entity(admin, "victim", attrs=[{"name": "victim-attr"}])
+        victim_attr = victim.attrs.first()
+
+        user = self.guest_login()
+        own = Entity.objects.create(name="own", created_user=user)
+
+        # The entity in the URL is writable, but the attribute belongs to another
+        # entity the caller cannot touch.
+        resp = self.client.post(
+            reverse("entity:do_edit", args=[own.id]),
+            json.dumps(
+                {
+                    "name": "own",
+                    "note": "",
+                    "is_toplevel": False,
+                    "attrs": [
+                        {
+                            "id": victim_attr.id,
+                            "name": "victim-attr",
+                            "type": str(AttrType.STRING),
+                            "is_mandatory": False,
+                            "is_delete_in_chain": False,
+                            "row_index": "0",
+                            "deleted": True,
+                        }
+                    ],
+                }
+            ),
+            "application/json",
+        )
+
+        self.assertEqual(resp.status_code, 400)
+        victim_attr.refresh_from_db()
+        self.assertTrue(victim_attr.is_active)
+
+        own.refresh_from_db()
+        self.assertEqual(own.get_status(Entity.STATUS_EDITING), 0)
+
+    def test_edit_entity_job_rejects_foreign_attribute_id(self):
+        admin = self.admin_login()
+        victim = self.create_entity(admin, "victim", attrs=[{"name": "victim-attr"}])
+        victim_attr = victim.attrs.first()
+
+        user = self.guest_login()
+        own = Entity.objects.create(name="own", created_user=user)
+
+        # Simulate the state entity.views.do_edit leaves behind before queueing.
+        own.set_status(Entity.STATUS_EDITING)
+
+        job = Job.new_edit_entity(
+            user,
+            own,
+            params={
+                "name": "own",
+                "note": "",
+                "is_toplevel": False,
+                "attrs": [
+                    {
+                        "id": victim_attr.id,
+                        "name": "victim-attr",
+                        "type": AttrType.STRING,
+                        "is_mandatory": False,
+                        "is_delete_in_chain": False,
+                        "row_index": "0",
+                        "deleted": True,
+                    }
+                ],
+            },
+        )
+        job.run(will_delay=False)
+
+        job.refresh_from_db()
+        self.assertEqual(job.status, JobStatus.ERROR)
+
+        victim_attr.refresh_from_db()
+        self.assertTrue(victim_attr.is_active)
+
+        # The EDITING flag has to be cleared on rejection, otherwise the entity is
+        # locked out of further edits forever.
+        own.refresh_from_db()
+        self.assertEqual(own.get_status(Entity.STATUS_EDITING), 0)
