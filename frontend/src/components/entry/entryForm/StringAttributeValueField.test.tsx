@@ -124,11 +124,9 @@ describe("StringAttributeValueField", () => {
       { value: "new value" },
     ]);
 
-    // add second element
+    // add second element from the labelled append row
     act(() => {
-      // now there is 1 element, and each element has 2 buttons (delete, add)
-      // click the add button of the first element
-      screen.getAllByRole("button")[1].click();
+      screen.getByTestId("append-row-1").click();
     });
     expect(screen.getAllByRole("textbox")).toHaveLength(2);
     expect(screen.getAllByRole("textbox")[0]).toHaveValue("new value");
@@ -140,9 +138,7 @@ describe("StringAttributeValueField", () => {
 
     // delete first element
     act(() => {
-      // now there is 1 element, and each element has 2 buttons (delete, add)
-      // click the delete button of the first element
-      screen.getAllByRole("button")[0].click();
+      screen.getByTestId("delete-row-1-0").click();
     });
     expect(screen.getAllByRole("textbox")).toHaveLength(1);
     expect(screen.getAllByRole("textbox")[0]).toHaveValue("");

@@ -262,10 +262,14 @@ describe("EntryEditPage", () => {
       })),
     });
 
+    // Only value rows count: the list also renders insertion bands and the
+    // append row as list items.
     const listItems = (attrName: string) => {
       const row = document.getElementById(`attrs-${attrName}`)?.closest("tr");
       expect(row).not.toBeNull();
-      return within(row as HTMLElement).getAllByRole("listitem");
+      return within(row as HTMLElement)
+        .getAllByRole("listitem")
+        .filter((item) => item.hasAttribute("data-row-index"));
     };
     const rowValues = (attrName: string) =>
       listItems(attrName).flatMap((item) =>

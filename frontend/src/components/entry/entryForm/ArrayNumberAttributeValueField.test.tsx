@@ -104,11 +104,9 @@ describe("ArrayNumberAttributeValueField", () => {
     expect(screen.getAllByRole("spinbutton")[0]).toHaveValue(456);
     expect(getValues("attrs.1.value.asArrayNumber")).toEqual([{ value: 456 }]);
 
-    // add second element
+    // add second element from the labelled append row
     act(() => {
-      // now there is 1 element, and each element has 2 buttons (delete, add)
-      // click the add button of the first element
-      screen.getAllByRole("button")[1].click();
+      screen.getByTestId("append-row-1").click();
     });
     expect(screen.getAllByRole("spinbutton")).toHaveLength(2);
     expect(screen.getAllByRole("spinbutton")[0]).toHaveValue(456);
@@ -120,9 +118,7 @@ describe("ArrayNumberAttributeValueField", () => {
 
     // delete first element
     act(() => {
-      // now there are 2 elements, and each element has 2 buttons (delete, add)
-      // click the delete button of the first element
-      screen.getAllByRole("button")[0].click();
+      screen.getByTestId("delete-row-1-0").click();
     });
     expect(screen.getAllByRole("spinbutton")).toHaveLength(1);
     expect(screen.getAllByRole("spinbutton")[0]).toHaveValue(null);
@@ -202,7 +198,7 @@ describe("ArrayNumberAttributeValueField", () => {
     expect(getValues("attrs.1.value.asArrayNumber.0.value")).toBe(null);
   });
 
-  test("should maintain at least one element when deleting the last item", async () => {
+  test("should keep one empty row and the append control after deleting the last item", async () => {
     const {
       result: {
         current: { control, getValues },
@@ -236,13 +232,14 @@ describe("ArrayNumberAttributeValueField", () => {
 
     // Delete the only element
     act(() => {
-      screen.getAllByRole("button")[0].click(); // Delete button
+      screen.getByTestId("delete-row-1-0").click();
     });
 
-    // Should still have 1 element (empty one)
+    // The component keeps one empty row and the append control stays available.
     expect(screen.getAllByRole("spinbutton")).toHaveLength(1);
     expect(getValues("attrs.1.value.asArrayNumber")).toHaveLength(1);
     expect(getValues("attrs.1.value.asArrayNumber.0.value")).toBe(null);
+    expect(screen.getByTestId("append-row-1")).toBeInTheDocument();
   });
 
   test("should add multiple elements correctly", async () => {
@@ -265,15 +262,15 @@ describe("ArrayNumberAttributeValueField", () => {
     // Start with 1 element
     expect(screen.getAllByRole("spinbutton")).toHaveLength(1);
 
-    // Add second element
+    // Append a second element
     act(() => {
-      screen.getAllByRole("button")[1].click(); // Add button
+      screen.getByTestId("append-row-1").click();
     });
     expect(screen.getAllByRole("spinbutton")).toHaveLength(2);
 
-    // Add third element after the second one
+    // Append a third element at the end
     act(() => {
-      screen.getAllByRole("button")[3].click(); // Add button of second element
+      screen.getByTestId("append-row-1").click();
     });
     expect(screen.getAllByRole("spinbutton")).toHaveLength(3);
 
@@ -331,7 +328,7 @@ describe("ArrayNumberAttributeValueField", () => {
 
     // Delete middle element (index 1)
     act(() => {
-      screen.getAllByRole("button")[2].click(); // Delete button of second element
+      screen.getByTestId("delete-row-1-1").click();
     });
 
     // Should have 2 elements left
@@ -345,7 +342,6 @@ describe("ArrayNumberAttributeValueField", () => {
 
 describe("NumberAttributeValueFieldForArray", () => {
   const mockHandleClickDeleteListItem = vi.fn();
-  const mockHandleClickAddListItem = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -392,7 +388,6 @@ describe("NumberAttributeValueFieldForArray", () => {
         index={0}
         control={control}
         handleClickDeleteListItem={mockHandleClickDeleteListItem}
-        handleClickAddListItem={mockHandleClickAddListItem}
       />,
       { wrapper: TestWrapper },
     );
@@ -420,12 +415,11 @@ describe("NumberAttributeValueFieldForArray", () => {
         index={0}
         control={control}
         handleClickDeleteListItem={mockHandleClickDeleteListItem}
-        handleClickAddListItem={mockHandleClickAddListItem}
       />,
       { wrapper: TestWrapper },
     );
 
-    const deleteButton = screen.getByRole("button", { name: /delete/i });
+    const deleteButton = screen.getByRole("button", { name: "1行目を削除" });
     act(() => {
       deleteButton.click();
     });
@@ -433,7 +427,7 @@ describe("NumberAttributeValueFieldForArray", () => {
     expect(mockHandleClickDeleteListItem).toHaveBeenCalledWith(0);
   });
 
-  test("should call add handler when add button is clicked", async () => {
+  test("should not render an add button inside the row", async () => {
     const {
       result: {
         current: { control },
@@ -452,17 +446,17 @@ describe("NumberAttributeValueFieldForArray", () => {
         index={0}
         control={control}
         handleClickDeleteListItem={mockHandleClickDeleteListItem}
-        handleClickAddListItem={mockHandleClickAddListItem}
       />,
       { wrapper: TestWrapper },
     );
 
-    const addButton = screen.getByRole("button", { name: /add/i });
-    act(() => {
-      addButton.click();
-    });
-
-    expect(mockHandleClickAddListItem).toHaveBeenCalledWith(0);
+    // Insertion lives on the list boundaries, not inside the row.
+    expect(
+      screen.queryByRole("button", { name: /add/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "1行目を削除" }),
+    ).toBeInTheDocument();
   });
 
   test("should not render buttons when handlers are not provided", async () => {
@@ -509,7 +503,6 @@ describe("NumberAttributeValueFieldForArray", () => {
         attrId={0}
         control={control}
         handleClickDeleteListItem={mockHandleClickDeleteListItem}
-        handleClickAddListItem={mockHandleClickAddListItem}
       />,
       { wrapper: TestWrapper },
     );

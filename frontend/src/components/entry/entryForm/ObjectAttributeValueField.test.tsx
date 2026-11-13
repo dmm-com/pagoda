@@ -400,11 +400,9 @@ describe("ObjectAttributeValueField", () => {
       },
     ]);
 
-    // add second element
+    // add second element from the labelled append row
     await act(async () => {
-      // now there is 1 element, and each element has 4 buttons (open-options, delete, add)
-      // click the add button of the first element
-      screen.getAllByRole("button")[2].click();
+      screen.getByTestId("append-row-3").click();
     });
     expect(screen.getAllByRole("textbox")).toHaveLength(2);
     expect(screen.getAllByRole("textbox")[0]).toHaveValue("new name");
@@ -426,9 +424,7 @@ describe("ObjectAttributeValueField", () => {
 
     // delete first element
     await act(async () => {
-      // now there is 1 element, and each element has 4 buttons (open-options, delete, add)
-      // click the add button of the first element
-      screen.getAllByRole("button")[1].click();
+      screen.getByTestId("delete-row-3-0").click();
     });
     expect(screen.getAllByRole("textbox")).toHaveLength(1);
     expect(screen.getAllByRole("textbox")[0]).toHaveValue("");
