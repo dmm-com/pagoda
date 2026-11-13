@@ -1,12 +1,8 @@
-// Escape a value before it is handed to bootstrap-treeview, which inserts node
-// text as HTML (jQuery .append), so that group/user names cannot inject markup.
+// bootstrap-treeview inserts node text as HTML (jQuery .append), so group/user
+// names must be escaped (escapeHtml is defined in http_request.js) before they
+// are handed to it.
 function escape_tree_node_text(value) {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+  return escapeHtml(String(value));
 }
 
 function convert_hierarchical_groups_to_tree_data(groups) {
