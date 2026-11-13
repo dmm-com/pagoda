@@ -328,7 +328,7 @@ class PasswordReset(auth_views.PasswordResetView):
 
         # Build the reset link from settings-derived parts instead of the
         # client-controlled Host header (reset-link poisoning, CWE-640).
-        url_parts = get_canonical_url_parts(self.request, use_https=self.request.is_secure())
+        url_parts = get_canonical_url_parts(self.request)
         extra_email_context: dict[str, str] | None = (
             dict(self.extra_email_context) if self.extra_email_context is not None else None
         )

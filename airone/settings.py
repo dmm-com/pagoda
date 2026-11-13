@@ -6,11 +6,6 @@ from airone.settings_common import Common
 class Dev(Common):
     DEBUG = True
 
-    # Local development convenience: derive externally-visible link hosts from
-    # the request when ALLOWED_HOSTS has no concrete hostname. Never enable
-    # this in production (reset-link poisoning, CWE-640).
-    CANONICAL_URL_FALLBACK = True
-
 
 class Prd(Common):
     pass

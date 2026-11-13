@@ -568,7 +568,7 @@ class PasswordResetAPI(viewsets.GenericViewSet[Any]):
         # Build the reset link from settings-derived parts instead of the
         # client-controlled Host header (reset-link poisoning, CWE-640).
         token_generator = default_token_generator
-        url_parts = get_canonical_url_parts(request, use_https=request.is_secure())
+        url_parts = get_canonical_url_parts(request)
         context = {
             "email": user_email,
             "uid": urlsafe_base64_encode(force_bytes(user.pk)),

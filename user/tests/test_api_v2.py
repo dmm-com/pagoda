@@ -656,9 +656,8 @@ class ViewTest(AironeViewTest):
 
     def test_password_reset_fails_fast_without_concrete_allowed_host(self):
         """
-        When ALLOWED_HOSTS has no concrete hostname and the fallback is
-        disabled, reset must fail instead of trusting the client-controlled
-        Host header.
+        When ALLOWED_HOSTS has no concrete hostname, reset must fail instead
+        of trusting the client-controlled Host header.
         """
         user = self._create_user("user")
         params = {
@@ -666,7 +665,7 @@ class ViewTest(AironeViewTest):
         }
         # mail.outbox is not cleared between tests in the same run
         mail.outbox = []
-        with override_settings(ALLOWED_HOSTS=["*"], CANONICAL_URL_FALLBACK=False):
+        with override_settings(ALLOWED_HOSTS=["*"]):
             with DisableStderr():
                 resp = self.client.post(
                     "/user/api/v2/password_reset",
