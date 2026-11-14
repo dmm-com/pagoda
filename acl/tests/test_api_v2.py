@@ -724,3 +724,46 @@ class ViewTest(AironeViewTest):
         resp = self.client.get("/acl/api/v2/acls/%s/history" % entity.id)
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(sorted(set(h["name"] for h in resp.json())), sorted(["string", "test"]))
+
+    def _create_private_entity_entry(self):
+        admin = self.admin_login()
+        entity = self.create_entity(admin, "private-entity", is_public=False)
+        entry = self.add_entry(admin, "private-entry", entity)
+        self.assertTrue(entry.is_public)
+        return admin, entity, entry
+
+    def test_retrieve_entry_acl_without_parent_permission(self):
+        _admin, _entity, entry = self._create_private_entity_entry()
+
+        self.guest_login()
+        resp = self.client.get("/acl/api/v2/acls/%s" % entry.id)
+
+        self.assertEqual(resp.status_code, 403)
+
+    def test_update_entry_acl_without_parent_permission(self):
+        _admin, _entity, entry = self._create_private_entity_entry()
+
+        self.guest_login()
+        resp = self.client.put(
+            "/acl/api/v2/acls/%s" % entry.id,
+            json.dumps(
+                {
+                    "is_public": False,
+                    "default_permission": ACLType.Writable.id,
+                    "acl_settings": [],
+                }
+            ),
+            "application/json",
+        )
+
+        self.assertEqual(resp.status_code, 403)
+        entry.refresh_from_db()
+        self.assertTrue(entry.is_public)
+
+    def test_retrieve_entry_acl_history_without_parent_permission(self):
+        _admin, _entity, entry = self._create_private_entity_entry()
+
+        self.guest_login()
+        resp = self.client.get("/acl/api/v2/acls/%s/history" % entry.id)
+
+        self.assertEqual(resp.status_code, 403)
