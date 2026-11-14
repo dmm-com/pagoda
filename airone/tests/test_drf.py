@@ -8,6 +8,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSetMixin
 
 from airone.lib.drf import custom_exception_handler, get_bound_parent
@@ -102,26 +103,20 @@ class PermissionClassGateTest(SimpleTestCase):
     # Views whose permission wiring is security critical. Removing the gate from any
     # of them would re-open a privilege escalation.
     EXPECTED_GATES = {
-        "GroupAPI": {
-            "create": "UserPermission",
-            "update": "UserPermission",
-            "destroy": "UserPermission",
-        },
-        "GroupImportAPI": {"post": "IsSuperuser"},
-        "UserImportAPI": {"post": "IsSuperuser"},
-        "RoleImportAPI": {"post": "IsSuperuser"},
+        "group.api_v2.views.GroupAPI": "UserPermission",
+        "group.api_v2.views.GroupImportAPI": "IsSuperuser",
+        "user.api_v2.views.UserImportAPI": "IsSuperuser",
+        "role.api_v2.views.RoleImportAPI": "IsSuperuser",
     }
 
-    def _iter_view_classes(self) -> Iterator[type[ViewSetMixin]]:
-        def walk(patterns: list[URLPattern | URLResolver]) -> Iterator[type[ViewSetMixin]]:
+    def _iter_view_classes(self) -> Iterator[type[APIView]]:
+        def walk(patterns: list[URLPattern | URLResolver]) -> Iterator[type[APIView]]:
             for pattern in patterns:
                 if isinstance(pattern, URLResolver):
                     yield from walk(pattern.url_patterns)
                 else:
                     view_class = getattr(pattern.callback, "cls", None)
-                    # GenericViewSet is not a subclass of ViewSet; both derive
-                    # from ViewSetMixin, so that is what we key on.
-                    if view_class and issubclass(view_class, ViewSetMixin):
+                    if view_class and issubclass(view_class, APIView):
                         yield view_class
 
         yield from walk(get_resolver().url_patterns)
@@ -137,6 +132,10 @@ class PermissionClassGateTest(SimpleTestCase):
     def test_no_object_only_permission_class_is_added(self) -> None:
         found: set[str] = set()
         for view_class in set(self._iter_view_classes()):
+            # GenericViewSet is not a subclass of ViewSet; both derive from
+            # ViewSetMixin, so that is what we key on.
+            if not issubclass(view_class, ViewSetMixin):
+                continue
             for permission in view_class.permission_classes:
                 for permission_class in self._permission_classes(permission):
                     # BasePermission.has_permission() always returns True, so a
@@ -154,18 +153,23 @@ class PermissionClassGateTest(SimpleTestCase):
         )
 
     def test_privileged_views_keep_their_gates(self) -> None:
-        for view_class in set(self._iter_view_classes()):
-            expected = self.EXPECTED_GATES.get(view_class.__name__)
-            if expected is None:
-                continue
+        # The import endpoints are plain GenericAPIViews, so this walks every DRF
+        # view rather than only viewsets.
+        views = {
+            "%s.%s" % (view_class.__module__, view_class.__name__): view_class
+            for view_class in self._iter_view_classes()
+        }
+        for view_name, expected in self.EXPECTED_GATES.items():
+            # A renamed or unrouted view must not make this gate pass vacuously.
+            self.assertIn(view_name, views)
 
             names = {
                 permission_class.__name__
-                for permission in view_class.permission_classes
+                for permission in views[view_name].permission_classes
                 for permission_class in self._permission_classes(permission)
             }
-            self.assertTrue(
-                set(expected.values()) <= names,
-                "%s lost its permission gate (expected %s, got %s)"
-                % (view_class.__name__, expected, names),
+            self.assertIn(
+                expected,
+                names,
+                "%s lost its permission gate (expected %s, got %s)" % (view_name, expected, names),
             )
