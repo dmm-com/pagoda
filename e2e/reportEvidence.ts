@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import type { Page, TestInfo } from "@playwright/test";
+import type { Locator, Page, TestInfo } from "@playwright/test";
 
 type Evidence = {
   name: string;
@@ -44,15 +44,21 @@ export const captureEvidence = async (
     name,
     title,
     note,
+    locator,
   }: {
     name: string;
     title: string;
     note: string;
+    locator?: Locator;
   },
 ) => {
   fs.mkdirSync(screenshotDir, { recursive: true });
   const screenshotPath = path.join(screenshotDir, `${name}.png`);
-  await page.screenshot({ path: screenshotPath, fullPage: true });
+  if (locator != null) {
+    await locator.screenshot({ path: screenshotPath });
+  } else {
+    await page.screenshot({ path: screenshotPath, fullPage: true });
+  }
   await testInfo.attach(title, {
     path: screenshotPath,
     contentType: "image/png",

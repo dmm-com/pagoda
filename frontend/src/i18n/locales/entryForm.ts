@@ -50,6 +50,13 @@ export const entryFormMessages = defineMessages({
     "entryForm.copyPage.submitName": "コピーを作成",
     "entryForm.copyPage.cannotCopy":
       "アイテム名の登録方法が「利用者が手動で設定」以外の場合はコピーできません",
+
+    // Repeatable attribute value rows
+    "entryForm.array.append": "{{name}}に値を追加",
+    "entryForm.array.appendNoName": "値を追加",
+    "entryForm.array.insertBefore": "{{name}}の{{row}}行目の前に値を追加",
+    "entryForm.array.insertBeforeNoName": "{{row}}行目の前に値を追加",
+    "entryForm.array.deleteRow": "{{row}}行目を削除",
   },
   en: {
     // EntryForm
@@ -101,5 +108,13 @@ export const entryFormMessages = defineMessages({
     "entryForm.copyPage.submitName": "Create copies",
     "entryForm.copyPage.cannotCopy":
       'Copying is not available unless the entry name registration method is set to "Set manually by the user"',
+
+    // Repeatable attribute value rows
+    "entryForm.array.append": "Add a value to {{name}}",
+    "entryForm.array.appendNoName": "Add value",
+    "entryForm.array.insertBefore":
+      "Insert a value before row {{row}} of {{name}}",
+    "entryForm.array.insertBeforeNoName": "Insert a value before row {{row}}",
+    "entryForm.array.deleteRow": "Delete row {{row}}",
   },
 });

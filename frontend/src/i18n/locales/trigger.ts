@@ -30,7 +30,18 @@ export const triggerMessages = defineMessages({
     "trigger.edit.actionsHeading": "アクション",
     "trigger.edit.columnAttrName": "属性名",
     "trigger.edit.columnValue": "値",
-    "trigger.edit.columnAdd": "追加",
+
+    // Repeatable condition / action rows
+    "trigger.form.appendCondition": "条件を追加",
+    "trigger.form.insertConditionBefore": "{{row}}行目の前に条件を追加",
+    "trigger.form.deleteCondition": "{{row}}行目の条件を削除",
+    "trigger.form.appendAction": "アクションを追加",
+    "trigger.form.insertActionBefore": "{{row}}行目の前にアクションを追加",
+    "trigger.form.deleteAction": "{{row}}行目のアクションを削除",
+    "trigger.form.appendActionValue": "値を追加",
+    "trigger.form.appendActionValueAriaLabel":
+      "{{row}}行目のアクションに値を追加",
+    "trigger.form.deleteActionValue": "{{value}}件目の値を削除",
   },
   en: {
     // TriggerFormSchema
@@ -60,6 +71,18 @@ export const triggerMessages = defineMessages({
     "trigger.edit.actionsHeading": "Actions",
     "trigger.edit.columnAttrName": "Attribute name",
     "trigger.edit.columnValue": "Value",
-    "trigger.edit.columnAdd": "Add",
+
+    // Repeatable condition / action rows
+    "trigger.form.appendCondition": "Add condition",
+    "trigger.form.insertConditionBefore":
+      "Insert a condition before row {{row}}",
+    "trigger.form.deleteCondition": "Delete condition in row {{row}}",
+    "trigger.form.appendAction": "Add action",
+    "trigger.form.insertActionBefore": "Insert an action before row {{row}}",
+    "trigger.form.deleteAction": "Delete action in row {{row}}",
+    "trigger.form.appendActionValue": "Add value",
+    "trigger.form.appendActionValueAriaLabel":
+      "Add a value to the action in row {{row}}",
+    "trigger.form.deleteActionValue": "Delete value {{value}}",
   },
 });
