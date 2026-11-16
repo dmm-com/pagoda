@@ -3,7 +3,7 @@
 
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { FC } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 
 import { ChoicesEditor } from "./ChoicesEditor";
 import { Schema } from "./EntityFormSchema";
@@ -25,12 +25,11 @@ const Harness: FC<{ disabled?: boolean }> = ({ disabled = false }) => {
       ],
     } as Schema,
   });
+  const choices = useWatch({ control: form.control, name: "attrs.0.choices" });
   return (
     <>
       <ChoicesEditor control={form.control} index={0} disabled={disabled} />
-      <output data-testid="choices">
-        {JSON.stringify(form.watch("attrs.0.choices"))}
-      </output>
+      <output data-testid="choices">{JSON.stringify(choices)}</output>
     </>
   );
 };

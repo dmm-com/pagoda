@@ -9,6 +9,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { useSnackbar } from "notistack";
 import { FC, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 
@@ -82,6 +83,8 @@ const JobListContent: FC<{
   filters: JobSearchFilters;
 }> = ({ page, changePage, targetId, allUsers, filters }) => {
   const { t } = useTranslation();
+  const { enqueueSnackbar } = useSnackbar();
+  const [exporting, setExporting] = useState(false);
   const {
     data: jobs,
     isLoading,
@@ -94,9 +97,31 @@ const JobListContent: FC<{
 
   if (isLoading || !jobs) return <Loading />;
 
+  const exportCsv = async () => {
+    setExporting(true);
+    try {
+      const result = await aironeApiClient.exportJobHistory(
+        targetId,
+        allUsers,
+        filters,
+      );
+      enqueueSnackbar(`${t("job.list.exportQueued")} #${result.id}`, {
+        variant: "info",
+      });
+      refreshJobs();
+    } catch {
+      enqueueSnackbar(t("job.list.exportFailed"), { variant: "error" });
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <Container maxWidth="xl">
-      <Box display="flex" justifyContent="flex-end" mb={2}>
+      <Box display="flex" justifyContent="flex-end" gap={1} mb={2}>
+        <Button variant="outlined" disabled={exporting} onClick={exportCsv}>
+          {t("job.list.exportCsv")}
+        </Button>
         <Button
           variant="outlined"
           color="success"

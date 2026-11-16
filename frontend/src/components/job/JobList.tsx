@@ -52,6 +52,7 @@ const CANCELABLE_JOB_OPERATIONS = new Set([
   JobOperations.REGISTER_REFERRALS,
   JobOperations.EXPORT_SEARCH_RESULT,
   JobOperations.EXPORT_SEARCH_RESULT_V2,
+  JobOperations.EXPORT_JOB_HISTORY,
   JobOperations.BULK_EDIT_ENTRY,
 ]);
 

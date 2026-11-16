@@ -79,6 +79,41 @@ describe("JobListPage", () => {
     expect(result!).toMatchSnapshot();
   });
 
+  test("queues CSV export with the active search filters", async () => {
+    const requests: URL[] = [];
+    server.use(
+      http.get("http://localhost:3000/job/api/v2/jobs", () =>
+        HttpResponse.json({
+          count: 0,
+          next: null,
+          previous: null,
+          results: [],
+        }),
+      ),
+      http.post("http://localhost:3000/job/api/v2/jobs", ({ request }) => {
+        requests.push(new URL(request.url));
+        return HttpResponse.json(
+          { id: 42, filename: "job_history_42.csv" },
+          { status: 202 },
+        );
+      }),
+    );
+    await act(async () => {
+      render(<JobListPage />, { wrapper: TestWrapper });
+    });
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "備考・エラー文を部分検索" }),
+      {
+        target: { value: "entity" },
+      },
+    );
+    fireEvent.click(screen.getByRole("button", { name: "検索" }));
+    await screen.findByRole("button", { name: "検索結果をCSV出力" });
+    fireEvent.click(screen.getByRole("button", { name: "検索結果をCSV出力" }));
+    await waitFor(() => expect(requests).toHaveLength(1));
+    expect(requests[0].searchParams.get("text")).toBe("entity");
+  });
+
   test("submits a message filter to the job API", async () => {
     const searches: URL[] = [];
     let finishSearch: () => void = () => {};
@@ -152,6 +187,7 @@ describe("JobListPage", () => {
       "20",
       "22",
       "34",
+      "39",
     ]);
   });
 

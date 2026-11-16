@@ -47,6 +47,10 @@ class RoleChangeParams(JobParamsModel):
     history_id: int | None = None
 
 
+class JobHistoryExportParams(JobParamsModel):
+    filters: dict[str, str]
+
+
 class EmptyParams(JobParamsModel):
     pass
 
@@ -611,7 +615,8 @@ CORE_JOB_PARAMS: dict[int, ParamsContract] = _build_core_registry(
         (36, RoleChangeParams),
         (37, RoleChangeParams),
         (38, RoleChangeParams),
-        (39, BulkEditRollbackParams),
+        (39, JobHistoryExportParams),
+        (40, BulkEditRollbackParams),
     ]
 )
 

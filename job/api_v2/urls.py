@@ -36,5 +36,5 @@ urlpatterns = [
             }
         ),
     ),
-    path("jobs", views.JobListAPI.as_view({"get": "list"})),
+    path("jobs", views.JobListAPI.as_view({"get": "list", "post": "create"})),
 ]

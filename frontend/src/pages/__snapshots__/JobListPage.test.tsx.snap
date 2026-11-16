@@ -378,8 +378,15 @@ exports[`JobListPage > should match snapshot 1`] = `
           class="MuiContainer-root MuiContainer-maxWidthXl css-hhdjsd-MuiContainer-root"
         >
           <div
-            class="MuiBox-root css-irrfx6"
+            class="MuiBox-root css-xdc660"
           >
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary css-1blvszr-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="button"
+            >
+              検索結果をCSV出力
+            </button>
             <button
               class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedSuccess MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorSuccess MuiButton-root MuiButton-outlined MuiButton-outlinedSuccess MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorSuccess css-deqglb-MuiButtonBase-root-MuiButton-root"
               tabindex="0"
@@ -1103,8 +1110,15 @@ exports[`JobListPage > should match snapshot 1`] = `
         class="MuiContainer-root MuiContainer-maxWidthXl css-hhdjsd-MuiContainer-root"
       >
         <div
-          class="MuiBox-root css-irrfx6"
+          class="MuiBox-root css-xdc660"
         >
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary css-1blvszr-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            検索結果をCSV出力
+          </button>
           <button
             class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedSuccess MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorSuccess MuiButton-root MuiButton-outlined MuiButton-outlinedSuccess MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorSuccess css-deqglb-MuiButtonBase-root-MuiButton-root"
             tabindex="0"

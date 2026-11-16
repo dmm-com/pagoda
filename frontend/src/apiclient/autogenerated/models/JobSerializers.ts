@@ -56,7 +56,7 @@ export interface JobSerializers {
    * @type {number}
    * @memberof JobSerializers
    */
-  operation?: number;
+  readonly operation: number;
   /**
    *
    * @type {Date}
@@ -86,6 +86,7 @@ export function instanceOfJobSerializers(
   if (!("id" in value) || value["id"] === undefined) return false;
   if (!("user" in value) || value["user"] === undefined) return false;
   if (!("text" in value) || value["text"] === undefined) return false;
+  if (!("operation" in value) || value["operation"] === undefined) return false;
   if (
     (!("createdAt" in (value as Record<string, any>)) &&
       !("created_at" in (value as Record<string, any>))) ||
@@ -120,7 +121,7 @@ export function JobSerializersFromJSONTyped(
     user: json["user"],
     text: json["text"],
     status: json["status"] == null ? undefined : json["status"],
-    operation: json["operation"] == null ? undefined : json["operation"],
+    operation: json["operation"],
     createdAt: new Date(json["created_at"]),
     target: JobTargetFromJSON(json["target"]),
     passedTime: json["passed_time"],
@@ -134,7 +135,7 @@ export function JobSerializersToJSON(json: any): JobSerializers {
 export function JobSerializersToJSONTyped(
   value?: Omit<
     JobSerializers,
-    "id" | "user" | "createdAt" | "target" | "passedTime"
+    "id" | "user" | "operation" | "createdAt" | "target" | "passedTime"
   > | null,
   ignoreDiscriminator: boolean = false,
 ): any {
@@ -145,6 +146,5 @@ export function JobSerializersToJSONTyped(
   return {
     text: value["text"],
     status: value["status"],
-    operation: value["operation"],
   };
 }

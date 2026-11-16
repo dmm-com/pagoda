@@ -61,7 +61,8 @@ class JobParamsTest(SimpleTestCase):
         36: {"role_id": 1, "data": {"name": "role"}},
         37: {"role_id": 1},
         38: {"role_id": 1, "history_id": 2},
-        39: {"job_id": 1},
+        39: {"filters": {"status": "3"}},
+        40: {"job_id": 1},
     }
 
     def test_all_core_operations_have_contracts(self) -> None:
