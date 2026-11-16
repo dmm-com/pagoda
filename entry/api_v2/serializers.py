@@ -2018,3 +2018,35 @@ class EntryBulkUpdateSerializer(serializers.Serializer[Any]):
 class ItemRollbackSerializer(serializers.Serializer[Any]):
     targets = serializers.ListField(child=serializers.IntegerField(), min_length=1)
     at = serializers.DateTimeField()
+
+
+class BulkRollbackJobSerializer(serializers.Serializer[Any]):
+    """Response of starting a bulk edit rollback job."""
+
+    job_id = serializers.IntegerField()
+
+
+class BulkRollbackCheckValueSerializer(serializers.Serializer[Any]):
+    """A stored attribute value as shown by the bulk rollback check."""
+
+    value = serializers.JSONField()
+    created_time = serializers.DateTimeField()
+    created_user = serializers.CharField()
+
+
+class BulkRollbackCheckItemSerializer(serializers.Serializer[Any]):
+    entry_id = serializers.IntegerField()
+    entry_name = serializers.CharField()
+    attr_id = serializers.IntegerField()
+    attr_name = serializers.CharField()
+    before = BulkRollbackCheckValueSerializer(allow_null=True)
+    after = BulkRollbackCheckValueSerializer(allow_null=True)
+    current = BulkRollbackCheckValueSerializer(allow_null=True)
+    rollbackable = serializers.BooleanField()
+
+
+class BulkRollbackCheckSerializer(serializers.Serializer[Any]):
+    job_id = serializers.IntegerField()
+    executed_at = serializers.DateTimeField()
+    executed_user = serializers.CharField()
+    items = BulkRollbackCheckItemSerializer(many=True)

@@ -50,6 +50,8 @@ from entry.api_v2.serializers import (
     AdvancedSearchResultExportSerializer,
     AdvancedSearchResultSerializer,
     AdvancedSearchSerializer,
+    BulkRollbackCheckSerializer,
+    BulkRollbackJobSerializer,
     EntryAliasSerializer,
     EntryAttributeValueRestoreSerializer,
     EntryBaseSerializer,
@@ -78,6 +80,7 @@ from entry.settings import CONFIG as ENTRY_CONFIG
 from group.models import Group
 from job.api_v2.serializers import ImportPreviewJobsSerializer
 from job.models import Job, JobOperation, JobStatus
+from job.params import BulkEditParams, BulkEditRollbackParams
 from role.models import Role
 
 if TYPE_CHECKING:
@@ -1188,7 +1191,167 @@ class EntryBulkUpdateAPI(generics.UpdateAPIView[Any]):
         job = Job.new_bulk_edit_entry_v2(user, model, params=request.data)
         job.run()
 
-        return Response({}, status=status.HTTP_202_ACCEPTED)
+        return Response({"job_id": job.id}, status=status.HTTP_202_ACCEPTED)
+
+
+def _get_bulk_edit_job_for_rollback(
+    user: "User", job_id: int, require_finished: bool
+) -> "Job | Response":
+    """Return the bulk edit job the user may roll back (or inspect), else an error response."""
+    job = Job.objects.filter(id=job_id).first()
+    if job is None:
+        return Response("The job does not exist.", status=status.HTTP_404_NOT_FOUND)
+    if job.user != user:
+        return Response("Cannot roll back another user's job.", status=status.HTTP_403_FORBIDDEN)
+    if job.operation != JobOperation.BULK_EDIT_ENTRY:
+        return Response("The job is not a bulk edit job.", status=status.HTTP_400_BAD_REQUEST)
+    if require_finished and job.status not in (
+        JobStatus.DONE,
+        JobStatus.ERROR,
+        JobStatus.CANCELED,
+    ):
+        return Response(
+            "The bulk edit job has not finished yet.", status=status.HTTP_400_BAD_REQUEST
+        )
+    if job.get_typed_params(BulkEditParams).changes is None:
+        return Response(
+            "The job has no change record, so it cannot be rolled back.",
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    return job
+
+
+class EntryBulkUpdateRollbackAPI(generics.GenericAPIView[Any]):
+    serializer_class = BulkRollbackJobSerializer
+
+    @extend_schema(request=None, responses={202: BulkRollbackJobSerializer})
+    def post(self, request: Request, job_id: int, *args: Any, **kwargs: Any) -> Response:
+        user = cast("User", request.user)
+        if user.is_readonly:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        result = _get_bulk_edit_job_for_rollback(user, job_id, require_finished=True)
+        if isinstance(result, Response):
+            return result
+        job = result
+
+        already_rolled_back = any(
+            rollback.get_typed_params(BulkEditRollbackParams).job_id == job.id
+            for rollback in Job.objects.filter(
+                operation=JobOperation.ROLLBACK_BULK_EDIT_ENTRY, target=job.target
+            )
+        )
+        if already_rolled_back:
+            return Response(
+                "The bulk edit job has already been rolled back.",
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        rollback_job = Job.new_rollback_bulk_edit_entry(
+            user, cast("Entity", job.target), params={"job_id": job.id}
+        )
+        rollback_job.run()
+
+        return Response({"job_id": rollback_job.id}, status=status.HTTP_202_ACCEPTED)
+
+
+def _render_bulk_rollback_value(attrv: AttributeValue | None) -> dict[str, Any] | None:
+    if attrv is None:
+        return None
+    return {
+        "value": attrv.get_value(serialize=True),
+        "created_time": attrv.created_time,
+        "created_user": attrv.created_user.username,
+    }
+
+
+class EntryBulkUpdateRollbackCheckAPI(generics.GenericAPIView[Any]):
+    """Show what a bulk edit job changed and what the values are now, before rolling back."""
+
+    serializer_class = BulkRollbackCheckSerializer
+
+    @extend_schema(
+        request=None,
+        responses={200: BulkRollbackCheckSerializer},
+    )
+    def get(self, request: Request, job_id: int, *args: Any, **kwargs: Any) -> Response:
+        user = cast("User", request.user)
+
+        result = _get_bulk_edit_job_for_rollback(user, job_id, require_finished=False)
+        if isinstance(result, Response):
+            return result
+        job = result
+
+        changes = job.get_typed_params(BulkEditParams).changes or []
+        entries = {
+            entry.id: entry
+            for entry in Entry.objects.filter(
+                id__in={change.entry_id for change in changes}, is_active=True
+            )
+        }
+        attrs = {
+            attr.id: attr
+            for attr in Attribute.objects.filter(
+                id__in={change.attr_id for change in changes}, is_active=True
+            ).select_related("schema")
+        }
+
+        value_ids = {change.new_attrv_id for change in changes} | {
+            change.old_attrv_id for change in changes if change.old_attrv_id is not None
+        }
+        value_qs = AttributeValue.objects.select_related(
+            "created_user", "parent_attr__schema", "referral", "group", "role"
+        ).prefetch_related("data_array__referral", "data_array__group", "data_array__role")
+        values = {v.id: v for v in value_qs.filter(id__in=value_ids)}
+
+        # Latest top-level value per attribute, fetched in one query.
+        current_by_attr: dict[int, AttributeValue] = {}
+        current_qs = value_qs.filter(
+            parent_attr_id__in=set(attrs.keys()), parent_attrv__isnull=True, is_latest=True
+        ).order_by("-id")
+        for current_value in current_qs:
+            current_by_attr.setdefault(current_value.parent_attr_id, current_value)
+
+        items: list[dict[str, Any]] = []
+        for change in changes:
+            entry = entries.get(change.entry_id)
+            attr = attrs.get(change.attr_id)
+            if entry is None or attr is None:
+                continue
+            if not (
+                user.has_permission(entry, ACLType.Readable)
+                and user.has_permission(attr, ACLType.Readable)
+            ):
+                continue
+
+            before = values.get(change.old_attrv_id) if change.old_attrv_id is not None else None
+            after = values.get(change.new_attrv_id)
+            current = current_by_attr.get(attr.id)
+            items.append(
+                {
+                    "entry_id": entry.id,
+                    "entry_name": entry.name,
+                    "attr_id": attr.id,
+                    "attr_name": attr.schema.name,
+                    "before": _render_bulk_rollback_value(before),
+                    "after": _render_bulk_rollback_value(after),
+                    "current": _render_bulk_rollback_value(current),
+                    "rollbackable": (
+                        before is not None
+                        and current is not None
+                        and after is not None
+                        and current.id == after.id
+                    ),
+                }
+            )
+
+        payload = {
+            "job_id": job.id,
+            "executed_at": job.created_at,
+            "executed_user": job.user.username,
+            "items": items,
+        }
+        return Response(BulkRollbackCheckSerializer(payload).data, status=status.HTTP_200_OK)
 
 
 class ItemRollbackAPI(generics.GenericAPIView[Any]):
@@ -1256,47 +1419,7 @@ class ItemRollbackAPI(generics.GenericAPIView[Any]):
                 ):
                     continue
 
-                value: Any
-                match v_before.data_type:
-                    case AttrType.STRING | AttrType.TEXT | AttrType.NUMBER:
-                        value = v_before.value
-                    case AttrType.BOOLEAN:
-                        value = v_before.boolean
-                    case AttrType.DATE:
-                        value = v_before.date.isoformat() if v_before.date else None
-                    case AttrType.DATETIME:
-                        value = v_before.datetime.isoformat() if v_before.datetime else None
-                    case AttrType.OBJECT:
-                        value = v_before.referral.id if v_before.referral else None
-                    case AttrType.GROUP:
-                        value = v_before.group.id if v_before.group else None
-                    case AttrType.ROLE:
-                        value = v_before.role.id if v_before.role else None
-                    case AttrType.NAMED_OBJECT:
-                        value = {
-                            "name": v_before.value or "",
-                            "id": v_before.referral.id if v_before.referral else None,
-                        }
-                    case AttrType.ARRAY_STRING | AttrType.ARRAY_NUMBER | AttrType.MULTI_SELECT:
-                        value = [item.value for item in v_before.data_array.all()]
-                    case AttrType.ARRAY_OBJECT:
-                        value = [
-                            item.referral.id for item in v_before.data_array.all() if item.referral
-                        ]
-                    case AttrType.ARRAY_GROUP:
-                        value = [item.group.id for item in v_before.data_array.all() if item.group]
-                    case AttrType.ARRAY_ROLE:
-                        value = [item.role.id for item in v_before.data_array.all() if item.role]
-                    case AttrType.ARRAY_NAMED_OBJECT:
-                        value = [
-                            {
-                                "name": item.value or "",
-                                "id": item.referral.id if item.referral else None,
-                            }
-                            for item in v_before.data_array.all()
-                        ]
-                    case _:
-                        value = v_before.value
+                value: Any = v_before.to_input_value()
 
                 attr.add_value(user, value)
 

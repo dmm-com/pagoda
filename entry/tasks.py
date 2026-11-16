@@ -49,7 +49,7 @@ from entry.api_v2.serializers import (
     ExportedEntryAttributeValueObject,
     ReferralEntry,
 )
-from entry.models import Attribute, Entry
+from entry.models import Attribute, AttributeValue, Entry
 from entry.services import (
     AdvancedSearchService,
     EntryImportPreviewService,
@@ -58,7 +58,10 @@ from entry.services import (
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus, JobTarget
 from job.params import (
+    BulkEditChange,
     BulkEditParams,
+    BulkEditRollbackParams,
+    BulkEditRollbackSkip,
     CopyEntryParams,
     CreateEntryV2Params,
     DoCopyEntryParams,
@@ -1324,37 +1327,157 @@ def bulk_update_entries(
         if selected_ids is None or record.entry["id"] in selected_ids
     ]
     total_count = len(records)
-    for index, record in enumerate(records):
-        job.text = "Now updating... (progress: [%5d/%5d])" % (index + 1, total_count)
-        job.save(update_fields=["text"])
+    # Attribute values written by this job, recorded so that the job can be rolled back.
+    changes: list[BulkEditChange] = []
+    try:
+        for index, record in enumerate(records):
+            job.text = "Now updating... (progress: [%5d/%5d])" % (index + 1, total_count)
+            job.save(update_fields=["text"])
 
-        # abort processing when job is canceled
-        if job.is_canceled():
-            job.status = JobStatus.CANCELED
-            job.save(update_fields=["status"])
-            return None
+            # abort processing when job is canceled
+            if job.is_canceled():
+                job.status = JobStatus.CANCELED
+                job.save(update_fields=["status"])
+                return None
 
-        entry = Entry.objects.get(id=record.entry["id"])
-        updating_data: dict[str, list[Any]] = {"attrs": []}
-        if job_params.get("value"):
-            updating_data["attrs"].append(
-                {
-                    "id": job_params.get("value")["id"],
-                    "value": job_params.get("value")["value"],
-                }
+            entry = Entry.objects.get(id=record.entry["id"])
+            updating_data: dict[str, list[Any]] = {"attrs": []}
+            if job_params.get("value"):
+                updating_data["attrs"].append(
+                    {
+                        "id": job_params.get("value")["id"],
+                        "value": job_params.get("value")["value"],
+                    }
+                )
+
+            old_attrv = _get_latest_top_level_value(entry, target_attr)
+
+            serializer = EntryUpdateSerializer(instance=entry, data=updating_data, context=context)
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                return (
+                    JobStatus.ERROR,
+                    "Validation error during bulk update (%s)" % serializer.error_messages,
+                    None,
+                )
+
+            # The attribute may have been created by the save, so look it up again.
+            attr = entry.attrs.filter(schema=target_attr, is_active=True).first()
+            new_attrv = _get_latest_top_level_value(entry, target_attr)
+            if attr is None or new_attrv is None:
+                continue
+            if old_attrv is not None and old_attrv.id == new_attrv.id:
+                continue
+            changes.append(
+                BulkEditChange(
+                    entry_id=entry.id,
+                    attr_id=attr.id,
+                    new_attrv_id=new_attrv.id,
+                    old_attrv_id=old_attrv.id if old_attrv else None,
+                )
             )
-
-        serializer = EntryUpdateSerializer(instance=entry, data=updating_data, context=context)
-        if serializer.is_valid():
-            serializer.save()
-        else:
-            return (
-                JobStatus.ERROR,
-                "Validation error during bulk update (%s)" % serializer.error_messages,
-                None,
-            )
+    finally:
+        # Only add the "changes" key; the user-provided keys stay as they were.
+        job.update_params({"changes": [change.model_dump(mode="json") for change in changes]})
 
     job.text = "Bulk update completed [%5d/%5d]" % (total_count, total_count)
+    job.save(update_fields=["text"])
+    return JobStatus.DONE
+
+
+def _get_latest_top_level_value(entry: Entry, target_attr: EntityAttr) -> AttributeValue | None:
+    attr = entry.attrs.filter(schema=target_attr, is_active=True).first()
+    if attr is None:
+        return None
+    return (
+        AttributeValue.objects.filter(parent_attr=attr, parent_attrv__isnull=True, is_latest=True)
+        .order_by("-id")
+        .first()
+    )
+
+
+@register_job_task(JobOperation.ROLLBACK_BULK_EDIT_ENTRY)
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def rollback_bulk_update_entries(
+    self: Any, job: Job
+) -> JobStatus | tuple[JobStatus, str, ACLBase | None] | None:
+    """Restore the values that a bulk edit job wrote.
+
+    An attribute is skipped when its latest value is no longer the one the bulk edit job
+    wrote, because someone changed it afterwards.
+    """
+    params = job.get_typed_params(BulkEditRollbackParams)
+    source_job = Job.objects.filter(
+        id=params.job_id, operation=JobOperation.BULK_EDIT_ENTRY
+    ).first()
+    if source_job is None:
+        return JobStatus.ERROR, "The bulk edit job to roll back does not exist.", None
+
+    changes = source_job.get_typed_params(BulkEditParams).changes or []
+    total_count = len(changes)
+    restored_count = 0
+    skipped: list[BulkEditRollbackSkip] = []
+
+    def _skip(entry_id: int, attr_id: int, reason: str) -> None:
+        skipped.append(BulkEditRollbackSkip(entry_id=entry_id, attr_id=attr_id, reason=reason))
+
+    try:
+        for index, change in enumerate(changes):
+            job.text = "Now rolling back... (progress: [%5d/%5d])" % (index + 1, total_count)
+            job.save(update_fields=["text"])
+
+            # abort processing when job is canceled
+            if job.is_canceled():
+                job.status = JobStatus.CANCELED
+                job.save(update_fields=["status"])
+                return None
+
+            entry = Entry.objects.filter(id=change.entry_id, is_active=True).first()
+            attr = entry.attrs.filter(id=change.attr_id, is_active=True).first() if entry else None
+            if entry is None or attr is None:
+                _skip(change.entry_id, change.attr_id, "The entry or attribute no longer exists.")
+                continue
+            if not job.user.has_permission(entry, ACLType.Writable) or not job.user.has_permission(
+                attr, ACLType.Writable
+            ):
+                _skip(entry.id, attr.id, "No writable permission.")
+                continue
+
+            current = _get_latest_top_level_value(entry, attr.schema)
+            # The case after current attribute value was changed after bulk updating
+            # NOTE: 1. Forcely rollback
+            #     : 2. Manually rollback by the user if needed
+            if current is None or current.id != change.new_attrv_id:
+                _skip(entry.id, attr.id, "The value was changed after the bulk edit job.")
+                continue
+            if change.old_attrv_id is None:
+                _skip(entry.id, attr.id, "The attribute had no value before the bulk edit job.")
+                continue
+
+            old_attrv = AttributeValue.objects.filter(id=change.old_attrv_id).first()
+            if old_attrv is None:
+                _skip(entry.id, attr.id, "The previous value no longer exists.")
+                continue
+
+            try:
+                attr.add_value(job.user, old_attrv.to_input_value())
+            except TypeError as e:
+                _skip(entry.id, attr.id, "The previous value cannot be restored (%s)." % e)
+                continue
+
+            entry.register_es()
+            Job.new_notify_update_entry(job.user, entry).run()
+            restored_count += 1
+    finally:
+        # Only add the "skipped" key; the source job id stays as the user sent it.
+        job.update_params({"skipped": [item.model_dump(mode="json") for item in skipped]})
+
+    job.text = "Rollback completed [restored %5d / skipped %5d]" % (
+        restored_count,
+        len(skipped),
+    )
     job.save(update_fields=["text"])
     return JobStatus.DONE
 

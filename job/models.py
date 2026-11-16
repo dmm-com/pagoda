@@ -104,6 +104,7 @@ class JobOperation(BaseIntEnum):
     EDIT_ROLE = 36
     DELETE_ROLE = 37
     RESTORE_ROLE = 38
+    ROLLBACK_BULK_EDIT_ENTRY = 39
 
 
 # Core operation additions must never silently fall through to the untyped
@@ -182,6 +183,7 @@ class Job(models.Model):
         JobOperation.EXPORT_SEARCH_RESULT,
         JobOperation.EXPORT_SEARCH_RESULT_V2,
         JobOperation.BULK_EDIT_ENTRY,
+        JobOperation.ROLLBACK_BULK_EDIT_ENTRY,
         JobOperation.IMPORT_ENTITY_PREVIEW,
         JobOperation.IMPORT_ENTRY_PREVIEW,
         JobOperation.IMPORT_ROLE_V2,
@@ -978,3 +980,26 @@ class Job(models.Model):
         return kls._create_new_job(
             user=user, target=target, operation=JobOperation.BULK_EDIT_ENTRY, text="", params=params
         )
+
+    @classmethod
+    def new_rollback_bulk_edit_entry(
+        kls, user: User, target: Entity, params: JobParams | None = None
+    ) -> "Job":
+        return kls._create_new_job(
+            user=user,
+            target=target,
+            operation=JobOperation.ROLLBACK_BULK_EDIT_ENTRY,
+            text="",
+            params=params,
+        )
+
+    def update_params(self, updates: dict[str, Any]) -> None:
+        """Add or replace keys of the stored params without touching the other keys.
+
+        The stored params hold the request payload, so this must only ever be used
+        to add keys that the user did not send.
+        """
+        current: dict[str, Any] = json.loads(self.params)
+        current.update(updates)
+        self.params = self._serialize_params(self.operation, current)
+        self.save(update_fields=["params"])
