@@ -124,6 +124,7 @@ class AttributeValue(models.Model):
 
     def to_input_value(self) -> Any:
         """Convert this stored value into the input form accepted by add_value()."""
+        value: Any
         match self.data_type:
             case AttrType.STRING | AttrType.TEXT | AttrType.NUMBER:
                 value = self.value
