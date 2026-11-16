@@ -1296,6 +1296,25 @@ class ViewTest(BaseViewTest):
         self.assertEqual(resp.status_code, 404)
 
     @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))
+    @patch(
+        "entry.tasks.rollback_bulk_update_entries.delay",
+        Mock(side_effect=tasks.rollback_bulk_update_entries),
+    )
+    def test_rollback_check_reports_already_rolled_back(self):
+        self._create_items_for_bulk_rollback(["foo"])
+        job_id = self._put_bulk_update("updated")
+
+        before = self.client.get("/entry/api/v2/bulk/%d/rollback_check/" % job_id)
+        self.assertIs(before.json()["has_already_been_rolled_back"], False)
+
+        self.assertEqual(
+            self.client.post("/entry/api/v2/bulk/%d/rollback/" % job_id).status_code, 202
+        )
+
+        after = self.client.get("/entry/api/v2/bulk/%d/rollback_check/" % job_id)
+        self.assertIs(after.json()["has_already_been_rolled_back"], True)
+
+    @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))
     def test_rollback_check_shows_before_after_and_current_values(self):
         self._create_items_for_bulk_rollback(["foo", "bar"])
         job_id = self._put_bulk_update("updated")

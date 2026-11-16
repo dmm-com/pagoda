@@ -43,17 +43,19 @@ export const jobMessages = defineMessages({
     "job.list.noteColumn": "備考",
     "job.list.confirmCancelTitle": "本当にキャンセルしますか？",
     "job.list.cancelFailed": "キャンセルに失敗しました。",
-    "job.list.rollbackCheckButton": "切り戻し確認",
-    "job.rollbackCheck.title": "一括更新の切り戻し確認",
+    "job.list.rollbackCheckButton": "切り戻し",
+    "job.rollbackCheck.title": "一括更新の切り戻し",
     "job.rollbackCheck.executedInfo":
       "一括更新の実行日時: {{datetime}} / 実行ユーザ: {{user}}",
     "job.rollbackCheck.loadFailed": "切り戻し情報の取得に失敗しました。",
     "job.rollbackCheck.noItems": "切り戻し対象の変更はありません。",
-    "job.rollbackCheck.rollbackWithSkip": "更新後の修正（青字部分）を除き、切り戻す。",
+    "job.rollbackCheck.rollbackWithSkip":
+      "更新後の修正（青字部分）を除き、切り戻す。",
     "job.rollbackCheck.rollbackWithoutSkip": "全て切り戻す",
     "job.rollbackCheck.rollbackStarted":
       "切り戻しジョブ (ID: {{jobId}}) を開始しました。",
     "job.rollbackCheck.rollbackFailed": "切り戻しの開始に失敗しました。",
+    "job.rollbackCheck.alreadyRolledBack": "このジョブは既に切り戻し済みです",
     "job.rollbackCheck.highlightLegend":
       "青色の行は、一括更新後に値がさらに変更されたため切り戻しできない項目です。",
     "job.rollbackCheck.entryColumn": "アイテム名",
@@ -117,6 +119,8 @@ export const jobMessages = defineMessages({
     "job.rollbackCheck.rollbackStarted":
       "Started rollback job (ID: {{jobId}}).",
     "job.rollbackCheck.rollbackFailed": "Failed to start the rollback.",
+    "job.rollbackCheck.alreadyRolledBack":
+      "This job has already been rolled back.",
     "job.rollbackCheck.highlightLegend":
       "Rows highlighted in blue were changed again after the bulk update and cannot be rolled back.",
     "job.rollbackCheck.entryColumn": "Item name",

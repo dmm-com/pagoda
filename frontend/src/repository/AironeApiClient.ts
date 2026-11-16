@@ -670,10 +670,15 @@ class AironeApiClient {
   ): Promise<number> {
     const bulkRollbackRequest: BulkRollbackRequest | undefined =
       skipUpdated === undefined ? undefined : { skipUpdated };
-    const result = await this.entry.entryApiV2BulkRollbackCreate({
-      jobId,
-      bulkRollbackRequest,
-    });
+    const result = await this.entry.entryApiV2BulkRollbackCreate(
+      { jobId, bulkRollbackRequest },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      },
+    );
     return result.jobId;
   }
 

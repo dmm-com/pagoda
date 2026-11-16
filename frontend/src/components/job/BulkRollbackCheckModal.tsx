@@ -78,7 +78,10 @@ export const BulkRollbackCheckModal: FC<Props> = ({ jobId, onClose }) => {
   }, [jobId]);
 
   const rollbackDisabled =
-    submitting || state.status !== "loaded" || state.data.items.length === 0;
+    submitting ||
+    state.status !== "loaded" ||
+    state.data.items.length === 0 ||
+    state.data.hasAlreadyBeenRolledBack;
 
   const handleRollback = async (skipUpdated?: boolean) => {
     setSubmitting(true);
@@ -196,6 +199,11 @@ export const BulkRollbackCheckModal: FC<Props> = ({ jobId, onClose }) => {
         )}
       </DialogContent>
       <DialogActions>
+        {state.status === "loaded" && state.data.hasAlreadyBeenRolledBack && (
+          <Typography variant="body2" color="error" sx={{ mr: 1 }}>
+            {t("job.rollbackCheck.alreadyRolledBack")}
+          </Typography>
+        )}
         <Button
           variant="contained"
           color="secondary"

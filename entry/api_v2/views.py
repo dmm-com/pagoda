@@ -1361,6 +1361,12 @@ class EntryBulkUpdateRollbackCheckAPI(generics.GenericAPIView[Any]):
             "executed_at": job.created_at,
             "executed_user": job.user.username,
             "items": items,
+            "has_already_been_rolled_back": any(
+                rollback.get_typed_params(BulkEditRollbackParams).job_id == job.id
+                for rollback in Job.objects.filter(
+                    operation=JobOperation.ROLLBACK_BULK_EDIT_ENTRY, target=job.target
+                )
+            ),
         }
         return Response(BulkRollbackCheckSerializer(payload).data, status=status.HTTP_200_OK)
 

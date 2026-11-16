@@ -2016,4 +2016,5 @@ class BulkRollbackCheckSerializer(serializers.Serializer[Any]):
     job_id = serializers.IntegerField()
     executed_at = serializers.DateTimeField()
     executed_user = serializers.CharField()
+    has_already_been_rolled_back = serializers.BooleanField()
     items = BulkRollbackCheckItemSerializer(many=True)
