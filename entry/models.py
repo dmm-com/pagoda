@@ -144,6 +144,12 @@ class AttributeValue(models.Model):
                     "name": self.value or "",
                     "id": self.referral.id if self.referral else None,
                 }
+            case AttrType.NAMED_OBJECT_BOOLEAN:
+                value = {
+                    "name": self.value or "",
+                    "id": self.referral.id if self.referral else None,
+                    "boolean": self.boolean,
+                }
             case AttrType.ARRAY_STRING | AttrType.ARRAY_NUMBER | AttrType.MULTI_SELECT:
                 value = [item.value for item in self.data_array.all()]
             case AttrType.ARRAY_OBJECT:
@@ -157,6 +163,15 @@ class AttributeValue(models.Model):
                     {
                         "name": item.value or "",
                         "id": item.referral.id if item.referral else None,
+                    }
+                    for item in self.data_array.all()
+                ]
+            case AttrType.ARRAY_NAMED_OBJECT_BOOLEAN:
+                value = [
+                    {
+                        "name": item.value or "",
+                        "id": item.referral.id if item.referral else None,
+                        "boolean": item.boolean,
                     }
                     for item in self.data_array.all()
                 ]

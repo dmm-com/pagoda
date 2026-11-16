@@ -27,6 +27,7 @@ import {
   EntryAlias,
   EntryApi,
   EntryBase,
+  BulkRollbackCheck,
   EntryBulkUpdateToJSON,
   EntryCopy,
   EntryHint,
@@ -655,6 +656,10 @@ class AironeApiClient {
       body: JSON.stringify({ ...body, entry_ids: entryIds }),
     });
     if (!response.ok) throw new Error(`Bulk update failed: ${response.status}`);
+  }
+
+  async getBulkRollbackCheck(jobId: number): Promise<BulkRollbackCheck> {
+    return await this.entry.entryApiV2BulkRollbackCheckRetrieve({ jobId });
   }
 
   async restoreEntry(id: number): Promise<void> {

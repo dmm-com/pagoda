@@ -29,6 +29,16 @@ import {
   AdvancedSearchResultExportToJSON,
 } from "../models/AdvancedSearchResultExport";
 import {
+  type BulkRollbackCheck,
+  BulkRollbackCheckFromJSON,
+  BulkRollbackCheckToJSON,
+} from "../models/BulkRollbackCheck";
+import {
+  type BulkRollbackJob,
+  BulkRollbackJobFromJSON,
+  BulkRollbackJobToJSON,
+} from "../models/BulkRollbackJob";
+import {
   type EntryAlias,
   EntryAliasFromJSON,
   EntryAliasToJSON,
@@ -180,6 +190,14 @@ export interface EntryApiV2BulkDeleteDestroyRequest {
 
 export interface EntryApiV2BulkPartialUpdateRequest {
   patchedEntryBulkUpdate?: PatchedEntryBulkUpdate;
+}
+
+export interface EntryApiV2BulkRollbackCheckRetrieveRequest {
+  jobId: number;
+}
+
+export interface EntryApiV2BulkRollbackCreateRequest {
+  jobId: number;
 }
 
 export interface EntryApiV2BulkUpdateRequest {
@@ -1023,6 +1041,138 @@ export class EntryApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<EntryBulkUpdate> {
     const response = await this.entryApiV2BulkPartialUpdateRaw(
+      requestParameters,
+      initOverrides,
+    );
+    return await response.value();
+  }
+
+  /**
+   * Creates request options for entryApiV2BulkRollbackCheckRetrieve without sending the request
+   */
+  async entryApiV2BulkRollbackCheckRetrieveRequestOpts(
+    requestParameters: EntryApiV2BulkRollbackCheckRetrieveRequest,
+  ): Promise<runtime.RequestOpts> {
+    if (requestParameters["jobId"] == null) {
+      throw new runtime.RequiredError(
+        "jobId",
+        'Required parameter "jobId" was null or undefined when calling entryApiV2BulkRollbackCheckRetrieve().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        await this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    let urlPath = `/entry/api/v2/bulk/{job_id}/rollback_check/`;
+    urlPath = urlPath.replace(
+      "{job_id}",
+      encodeURIComponent(String(requestParameters["jobId"])),
+    );
+
+    return {
+      path: urlPath,
+      method: "GET",
+      headers: headerParameters,
+      query: queryParameters,
+    };
+  }
+
+  /**
+   * Show what a bulk edit job changed and what the values are now, before rolling back.
+   */
+  async entryApiV2BulkRollbackCheckRetrieveRaw(
+    requestParameters: EntryApiV2BulkRollbackCheckRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<BulkRollbackCheck>> {
+    const requestOptions =
+      await this.entryApiV2BulkRollbackCheckRetrieveRequestOpts(
+        requestParameters,
+      );
+    const response = await this.request(requestOptions, initOverrides);
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      BulkRollbackCheckFromJSON(jsonValue),
+    );
+  }
+
+  /**
+   * Show what a bulk edit job changed and what the values are now, before rolling back.
+   */
+  async entryApiV2BulkRollbackCheckRetrieve(
+    requestParameters: EntryApiV2BulkRollbackCheckRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<BulkRollbackCheck> {
+    const response = await this.entryApiV2BulkRollbackCheckRetrieveRaw(
+      requestParameters,
+      initOverrides,
+    );
+    return await response.value();
+  }
+
+  /**
+   * Creates request options for entryApiV2BulkRollbackCreate without sending the request
+   */
+  async entryApiV2BulkRollbackCreateRequestOpts(
+    requestParameters: EntryApiV2BulkRollbackCreateRequest,
+  ): Promise<runtime.RequestOpts> {
+    if (requestParameters["jobId"] == null) {
+      throw new runtime.RequiredError(
+        "jobId",
+        'Required parameter "jobId" was null or undefined when calling entryApiV2BulkRollbackCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        await this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    let urlPath = `/entry/api/v2/bulk/{job_id}/rollback/`;
+    urlPath = urlPath.replace(
+      "{job_id}",
+      encodeURIComponent(String(requestParameters["jobId"])),
+    );
+
+    return {
+      path: urlPath,
+      method: "POST",
+      headers: headerParameters,
+      query: queryParameters,
+    };
+  }
+
+  /**
+   */
+  async entryApiV2BulkRollbackCreateRaw(
+    requestParameters: EntryApiV2BulkRollbackCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<BulkRollbackJob>> {
+    const requestOptions =
+      await this.entryApiV2BulkRollbackCreateRequestOpts(requestParameters);
+    const response = await this.request(requestOptions, initOverrides);
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      BulkRollbackJobFromJSON(jsonValue),
+    );
+  }
+
+  /**
+   */
+  async entryApiV2BulkRollbackCreate(
+    requestParameters: EntryApiV2BulkRollbackCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<BulkRollbackJob> {
+    const response = await this.entryApiV2BulkRollbackCreateRaw(
       requestParameters,
       initOverrides,
     );
