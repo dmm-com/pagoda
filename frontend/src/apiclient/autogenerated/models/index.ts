@@ -26,6 +26,7 @@ export * from "./BulkRollbackCheck";
 export * from "./BulkRollbackCheckItem";
 export * from "./BulkRollbackCheckValue";
 export * from "./BulkRollbackJob";
+export * from "./BulkRollbackRequest";
 export * from "./CategoryCreate";
 export * from "./CategoryEntity";
 export * from "./CategoryList";

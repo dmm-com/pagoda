@@ -1405,8 +1405,9 @@ def rollback_bulk_update_entries(
 ) -> JobStatus | tuple[JobStatus, str, ACLBase | None] | None:
     """Restore the values that a bulk edit job wrote.
 
-    An attribute is skipped when its latest value is no longer the one the bulk edit job
-    wrote, because someone changed it afterwards.
+    When skip_updated is set, an attribute is skipped if its latest value is no longer the
+    one the bulk edit job wrote, because someone changed it afterwards. Otherwise every
+    attribute is restored.
     """
     params = job.get_typed_params(BulkEditRollbackParams)
     source_job = Job.objects.filter(
@@ -1446,10 +1447,8 @@ def rollback_bulk_update_entries(
                 continue
 
             current = _get_latest_top_level_value(entry, attr.schema)
-            # The case after current attribute value was changed after bulk updating
-            # NOTE: 1. Forcely rollback
-            #     : 2. Manually rollback by the user if needed
-            if current is None or current.id != change.new_attrv_id:
+            changed_after_bulk_edit = current is None or current.id != change.new_attrv_id
+            if changed_after_bulk_edit and params.skip_updated:
                 _skip(entry.id, attr.id, "The value was changed after the bulk edit job.")
                 continue
             if change.old_attrv_id is None:

@@ -514,6 +514,9 @@ class BulkEditRollbackSkip(JobParamsModel):
 
 class BulkEditRollbackParams(JobParamsModel):
     job_id: int
+    # True: keep values that were changed after the bulk edit job. False: restore every value.
+    # Jobs stored before this key existed behave as True.
+    skip_updated: bool = True
     # Written by the rollback task after it runs; lists what was not restored.
     skipped: list[BulkEditRollbackSkip] | None = None
 

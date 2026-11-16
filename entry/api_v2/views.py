@@ -52,6 +52,7 @@ from entry.api_v2.serializers import (
     AdvancedSearchSerializer,
     BulkRollbackCheckSerializer,
     BulkRollbackJobSerializer,
+    BulkRollbackRequestSerializer,
     EntryAliasSerializer,
     EntryAttributeValueRestoreSerializer,
     EntryBaseSerializer,
@@ -1224,7 +1225,10 @@ def _get_bulk_edit_job_for_rollback(
 class EntryBulkUpdateRollbackAPI(generics.GenericAPIView[Any]):
     serializer_class = BulkRollbackJobSerializer
 
-    @extend_schema(request=None, responses={202: BulkRollbackJobSerializer})
+    @extend_schema(
+        request=BulkRollbackRequestSerializer,
+        responses={202: BulkRollbackJobSerializer},
+    )
     def post(self, request: Request, job_id: int, *args: Any, **kwargs: Any) -> Response:
         user = cast("User", request.user)
         if user.is_readonly:
@@ -1234,6 +1238,11 @@ class EntryBulkUpdateRollbackAPI(generics.GenericAPIView[Any]):
         if isinstance(result, Response):
             return result
         job = result
+
+        request_serializer = BulkRollbackRequestSerializer(data=request.data or {})
+        if not request_serializer.is_valid():
+            return Response(request_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        skip_updated = request_serializer.validated_data["skip_updated"]
 
         already_rolled_back = any(
             rollback.get_typed_params(BulkEditRollbackParams).job_id == job.id
@@ -1248,7 +1257,9 @@ class EntryBulkUpdateRollbackAPI(generics.GenericAPIView[Any]):
             )
 
         rollback_job = Job.new_rollback_bulk_edit_entry(
-            user, cast("Entity", job.target), params={"job_id": job.id}
+            user,
+            cast("Entity", job.target),
+            params={"job_id": job.id, "skip_updated": skip_updated},
         )
         rollback_job.run()
 

@@ -1984,6 +1984,15 @@ class BulkRollbackJobSerializer(serializers.Serializer[Any]):
     job_id = serializers.IntegerField()
 
 
+class BulkRollbackRequestSerializer(serializers.Serializer[Any]):
+    """Request body of starting a bulk edit rollback job."""
+
+    skip_updated = serializers.BooleanField(
+        default=True,
+        help_text="If true, values changed after the bulk edit are not restored.",
+    )
+
+
 class BulkRollbackCheckValueSerializer(serializers.Serializer[Any]):
     """A stored attribute value as shown by the bulk rollback check."""
 

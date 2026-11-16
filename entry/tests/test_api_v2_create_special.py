@@ -1206,6 +1206,68 @@ class ViewTest(BaseViewTest):
         "entry.tasks.rollback_bulk_update_entries.delay",
         Mock(side_effect=tasks.rollback_bulk_update_entries),
     )
+    def test_rollback_bulk_update_skip_updated_false_restores_changed_value(self):
+        self._create_items_for_bulk_rollback(["foo", "bar"])
+        job_id = self._put_bulk_update("updated")
+
+        updating_attr = self.entity.attrs.get(name="val")
+        later_item = Entry.objects.get(name="item-1", schema=self.entity)
+        later_item.attrs.get(schema=updating_attr).add_value(self.user, "later")
+
+        resp = self.client.post(
+            "/entry/api/v2/bulk/%d/rollback/" % job_id, {"skip_updated": False}, "application/json"
+        )
+
+        self.assertEqual(resp.status_code, 202)
+        rollback_job = Job.objects.get(id=resp.json()["job_id"])
+        self.assertEqual(json.loads(rollback_job.params)["skip_updated"], False)
+        self.assertEqual(rollback_job.text, "Rollback completed [restored     2 / skipped     0]")
+        self.assertEqual(
+            Entry.objects.get(name="item-0", schema=self.entity).get_attrv("val").value, "foo"
+        )
+        self.assertEqual(later_item.get_attrv("val").value, "bar")
+
+    @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))
+    @patch(
+        "entry.tasks.rollback_bulk_update_entries.delay",
+        Mock(side_effect=tasks.rollback_bulk_update_entries),
+    )
+    def test_rollback_bulk_update_skip_updated_true_keeps_changed_value(self):
+        self._create_items_for_bulk_rollback(["foo", "bar"])
+        job_id = self._put_bulk_update("updated")
+
+        updating_attr = self.entity.attrs.get(name="val")
+        later_item = Entry.objects.get(name="item-1", schema=self.entity)
+        later_item.attrs.get(schema=updating_attr).add_value(self.user, "later")
+
+        resp = self.client.post(
+            "/entry/api/v2/bulk/%d/rollback/" % job_id, {"skip_updated": True}, "application/json"
+        )
+
+        self.assertEqual(resp.status_code, 202)
+        rollback_job = Job.objects.get(id=resp.json()["job_id"])
+        self.assertEqual(rollback_job.text, "Rollback completed [restored     1 / skipped     1]")
+        self.assertEqual(later_item.get_attrv("val").value, "later")
+
+    @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))
+    def test_rollback_bulk_update_rejects_invalid_skip_updated(self):
+        self._create_items_for_bulk_rollback(["foo"])
+        job_id = self._put_bulk_update("updated")
+
+        resp = self.client.post(
+            "/entry/api/v2/bulk/%d/rollback/" % job_id,
+            {"skip_updated": "maybe"},
+            "application/json",
+        )
+
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("skip_updated", resp.json())
+
+    @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))
+    @patch(
+        "entry.tasks.rollback_bulk_update_entries.delay",
+        Mock(side_effect=tasks.rollback_bulk_update_entries),
+    )
     def test_rollback_bulk_update_twice_is_rejected(self):
         self._create_items_for_bulk_rollback(["foo"])
         job_id = self._put_bulk_update("updated")

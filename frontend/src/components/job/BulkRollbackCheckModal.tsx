@@ -1,6 +1,8 @@
 import {
   Box,
+  Button,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   LinearProgress,
@@ -12,7 +14,9 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import { useSnackbar } from "notistack";
 import { FC, useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 
 import {
   BulkRollbackCheck,
@@ -54,6 +58,9 @@ export const BulkRollbackCheckModal: FC<Props> = ({ jobId, onClose }) => {
   const { t } = useTranslation();
   // The modal is mounted only while open, so the initial state is the loading state.
   const [state, setState] = useState<CheckState>({ status: "loading" });
+  const [submitting, setSubmitting] = useState(false);
+  const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
     let cancelled = false;
@@ -69,6 +76,32 @@ export const BulkRollbackCheckModal: FC<Props> = ({ jobId, onClose }) => {
       cancelled = true;
     };
   }, [jobId]);
+
+  const rollbackDisabled =
+    submitting || state.status !== "loaded" || state.data.items.length === 0;
+
+  const handleRollback = async (skipUpdated?: boolean) => {
+    setSubmitting(true);
+    try {
+      const newJobId = await aironeApiClient.rollbackBulkUpdate(
+        jobId,
+        skipUpdated,
+      );
+      enqueueSnackbar(
+        t("job.rollbackCheck.rollbackStarted", { jobId: newJobId }),
+        {
+          variant: "success",
+        },
+      );
+      onClose();
+      navigate(0);
+    } catch {
+      enqueueSnackbar(t("job.rollbackCheck.rollbackFailed"), {
+        variant: "error",
+      });
+      setSubmitting(false);
+    }
+  };
 
   return (
     <Dialog open onClose={onClose} maxWidth="lg" fullWidth>
@@ -162,6 +195,27 @@ export const BulkRollbackCheckModal: FC<Props> = ({ jobId, onClose }) => {
           </Box>
         )}
       </DialogContent>
+      <DialogActions>
+        <Button
+          variant="contained"
+          color="secondary"
+          disabled={rollbackDisabled}
+          onClick={() => handleRollback(true)}
+        >
+          {t("job.rollbackCheck.rollbackWithSkip")}
+        </Button>
+        <Button
+          variant="contained"
+          color="warning"
+          disabled={rollbackDisabled}
+          onClick={() => handleRollback(undefined)}
+        >
+          {t("job.rollbackCheck.rollbackWithoutSkip")}
+        </Button>
+        <Button variant="outlined" disabled={submitting} onClick={onClose}>
+          {t("common.cancel")}
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 };

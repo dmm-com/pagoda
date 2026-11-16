@@ -39,6 +39,11 @@ import {
   BulkRollbackJobToJSON,
 } from "../models/BulkRollbackJob";
 import {
+  type BulkRollbackRequest,
+  BulkRollbackRequestFromJSON,
+  BulkRollbackRequestToJSON,
+} from "../models/BulkRollbackRequest";
+import {
   type EntryAlias,
   EntryAliasFromJSON,
   EntryAliasToJSON,
@@ -198,6 +203,7 @@ export interface EntryApiV2BulkRollbackCheckRetrieveRequest {
 
 export interface EntryApiV2BulkRollbackCreateRequest {
   jobId: number;
+  bulkRollbackRequest?: BulkRollbackRequest;
 }
 
 export interface EntryApiV2BulkUpdateRequest {
@@ -1132,6 +1138,8 @@ export class EntryApi extends runtime.BaseAPI {
 
     const headerParameters: runtime.HTTPHeaders = {};
 
+    headerParameters["Content-Type"] = "application/json";
+
     if (this.configuration && this.configuration.apiKey) {
       headerParameters["Authorization"] =
         await this.configuration.apiKey("Authorization"); // tokenAuth authentication
@@ -1148,6 +1156,7 @@ export class EntryApi extends runtime.BaseAPI {
       method: "POST",
       headers: headerParameters,
       query: queryParameters,
+      body: BulkRollbackRequestToJSON(requestParameters["bulkRollbackRequest"]),
     };
   }
 
