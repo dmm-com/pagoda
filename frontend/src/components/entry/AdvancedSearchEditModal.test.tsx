@@ -24,6 +24,57 @@ vi.mock("react-router", async () => ({
 }));
 
 describe("AdvancedSearchEditModal", () => {
+  test.each([
+    [EntryAttributeTypeTypeEnum.OBJECT, null],
+    [EntryAttributeTypeTypeEnum.ARRAY_OBJECT, []],
+  ])("submits an empty value for untouched object type %s", async (type, emptyValue) => {
+    await act(async () => {
+      await i18n.changeLanguage("ja");
+    });
+    const referral = vi
+      .spyOn(aironeApiClient, "getEntryReferral")
+      .mockResolvedValue({ count: 0, results: [] });
+    const attrs = vi
+      .spyOn(aironeApiClient, "getEntityAttrs")
+      .mockResolvedValue([{ id: 10, name: "attrA", type }]);
+    const update = vi
+      .spyOn(aironeApiClient, "bulkUpdateEntries")
+      .mockResolvedValue();
+    try {
+      render(
+        <AdvancedSearchEditModal
+          openModal={true}
+          handleClose={() => {}}
+          modelIds={[1]}
+          attrsFilter={{}}
+          targetAttrID={10}
+          targetAttrname="attrA"
+          targetAttrtype={type}
+          selectedEntries={[{ id: 5, name: "更新アイテム", modelId: 1 }]}
+        />,
+        { wrapper: TestWrapper },
+      );
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: "更新" })).toBeEnabled(),
+      );
+      fireEvent.click(screen.getByRole("button", { name: "更新" }));
+      await waitFor(() =>
+        expect(update).toHaveBeenCalledWith(
+          1,
+          { id: 10, value: emptyValue },
+          [],
+          "",
+          undefined,
+          [5],
+        ),
+      );
+    } finally {
+      referral.mockRestore();
+      attrs.mockRestore();
+      update.mockRestore();
+    }
+  });
+
   test("submits an array attribute for selected items", async () => {
     await act(async () => {
       await i18n.changeLanguage("ja");

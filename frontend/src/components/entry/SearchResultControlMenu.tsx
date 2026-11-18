@@ -617,30 +617,32 @@ export const SearchResultControlMenu: FC<Props> = ({
             {t("advancedSearch.controlMenu.otherFunctions")}
           </Typography>
         </Box>
-        <StyledBox>
-          <Button
-            variant="outlined"
-            fullWidth
-            startIcon={<EditNoteIcon />}
-            // Defense-in-depth for #3449: refuse to open the modal when the
-            // attribute type is unknown (would cause AttributeValueField to
-            // throw "Unknown attribute type: 0").
-            disabled={isDisabledEditModal || (attrType ?? 0) === 0}
-            onClick={() => {
-              setEditTargetAttrID &&
-                setEditTargetAttrID(
-                  entityAttrs.find((attr) => attr.name === attrname)?.id ?? 0,
-                );
-              setEditTargetAttrname && setEditTargetAttrname(attrname);
-              setEditTargetAttrtype && setEditTargetAttrtype(attrType ?? 0);
-              setOpenEditModal(true);
-            }}
-          >
-            <Typography>
-              {t("advancedSearch.controlMenu.bulkUpdate")}
-            </Typography>
-          </Button>
-        </StyledBox>
+        {attrFilter?.joinedAttrname === undefined && (
+          <StyledBox>
+            <Button
+              variant="outlined"
+              fullWidth
+              startIcon={<EditNoteIcon />}
+              // Defense-in-depth for #3449: refuse to open the modal when the
+              // attribute type is unknown (would cause AttributeValueField to
+              // throw "Unknown attribute type: 0").
+              disabled={isDisabledEditModal || (attrType ?? 0) === 0}
+              onClick={() => {
+                setEditTargetAttrID &&
+                  setEditTargetAttrID(
+                    entityAttrs.find((attr) => attr.name === attrname)?.id ?? 0,
+                  );
+                setEditTargetAttrname && setEditTargetAttrname(attrname);
+                setEditTargetAttrtype && setEditTargetAttrtype(attrType ?? 0);
+                setOpenEditModal(true);
+              }}
+            >
+              <Typography>
+                {t("advancedSearch.controlMenu.bulkUpdate")}
+              </Typography>
+            </Button>
+          </StyledBox>
+        )}
         <StyledBox>
           <Button
             variant="outlined"

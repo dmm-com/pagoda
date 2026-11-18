@@ -575,9 +575,7 @@ export const SearchResultsTableHead: FC<Props> = ({
                         )}
                         attrType={attrTypes[attrName]}
                         setOpenEditModal={setOpenEditModal}
-                        isDisabledEditModal={
-                          joinAttrs.length > 0 || searchAllEntities
-                        }
+                        isDisabledEditModal={searchAllEntities}
                         entityAttrs={entityAttrs}
                         setEditTargetAttrID={setEditTargetAttrID}
                         setEditTargetAttrname={setEditTargetAttrname}

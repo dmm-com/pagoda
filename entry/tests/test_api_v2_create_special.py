@@ -848,6 +848,39 @@ class ViewTest(BaseViewTest):
             item = Entry.objects.get(name=itemname, schema=self.entity)
             self.assertEqual(item.get_attrv("val").value, expected_value)
 
+    @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))
+    def test_bulk_update_empty_object(self):
+        attr = self.entity.attrs.get(name="ref")
+        for mandatory in (False, True):
+            with self.subTest(mandatory=mandatory):
+                attr.is_mandatory = mandatory
+                attr.save(update_fields=["is_mandatory"])
+                entry = self.add_entry(
+                    self.user,
+                    f"clear-object-{mandatory}",
+                    self.entity,
+                    values={"ref": self.ref_entry.id},
+                )
+                response = self.client.put(
+                    "/entry/api/v2/bulk/",
+                    {
+                        "modelid": self.entity.id,
+                        "entry_ids": [entry.id],
+                        "value": {"id": attr.id, "value": None},
+                    },
+                    "application/json",
+                )
+                self.assertEqual(response.status_code, 202)
+                job = Job.objects.filter(operation=JobOperation.BULK_EDIT_ENTRY).last()
+                if mandatory:
+                    self.assertEqual(job.status, JobStatus.ERROR, job.text)
+                    self.assertIn(f"attrs id({attr.id})", job.text)
+                    self.assertIn("mandatory attrs value is not specified", job.text)
+                    self.assertEqual(entry.get_attrv("ref").referral_id, self.ref_entry.id)
+                else:
+                    self.assertEqual(job.status, JobStatus.DONE, job.text)
+                    self.assertIsNone(entry.get_attrv("ref").referral_id)
+
     def test_bulk_update_rejects_attribute_outside_model(self):
         original_job_count = Job.objects.filter(operation=JobOperation.BULK_EDIT_ENTRY).count()
         wrong_model_response = self.client.put(
@@ -878,6 +911,7 @@ class ViewTest(BaseViewTest):
         for attr, name, old_value, new_value, expected in (
             (self.entity.attrs.get(name="vals"), "vals", ["old"], ["new", "next"], ["new", "next"]),
             (multi_select, "multi-select", ["old"], ["new"], [choices[1]]),
+            (self.entity.attrs.get(name="refs"), "refs", [self.ref_entry.id], [], []),
         ):
             with self.subTest(attr_type=attr.type):
                 selected = self.add_entry(
@@ -886,6 +920,7 @@ class ViewTest(BaseViewTest):
                 unchanged = self.add_entry(
                     self.user, f"unchanged-{name}", self.entity, values={name: old_value}
                 )
+                unchanged_value = unchanged.get_attrv(name).get_value()
                 response = self.client.put(
                     "/entry/api/v2/bulk/",
                     {
@@ -901,7 +936,7 @@ class ViewTest(BaseViewTest):
                 self.assertEqual(selected.get_attrv(name).get_value(), expected)
                 self.assertEqual(
                     unchanged.get_attrv(name).get_value(),
-                    ["old"] if name == "vals" else [choices[0]],
+                    unchanged_value,
                 )
 
     @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))
