@@ -1976,10 +1976,18 @@ class Entry(ACLBase):
 
         return self.name
 
-    def save_autoname(self, past_path: list[int] = []) -> None:
-        """This method saves auto-generated name according to the Entity settings"""
+    def save_autoname(
+        self, past_path: list[int] | None = None, *, name_changed: bool = False
+    ) -> None:
+        """Save the generated name and propagate name changes to referring entries.
+
+        Set name_changed when the caller has already changed and saved the name.
+        """
+        if past_path is None:
+            past_path = []
         autoname = self.autoname
         if self.name != autoname:
+            name_changed = True
             # check duplication
             duplicated_item = Entry.objects.filter(
                 schema=self.schema, name=autoname, is_active=True
@@ -1990,6 +1998,10 @@ class Entry(ACLBase):
                 self.name = autoname
 
             self.save(update_fields=["name"])
+
+        # A caller may have already saved a manually changed name.
+        if not name_changed:
+            return
 
         # This may also change name of referred items
         # when its Model is configured to set item names from Attribute values by itemNameType=ATTR.
