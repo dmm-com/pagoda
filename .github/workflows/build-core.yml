@@ -102,6 +102,8 @@ jobs:
     needs: setup_python
     permissions:
       contents: read
+    env:
+      COVERAGE_FILE: coverage-data
     strategy:
       fail-fast: false
       matrix:
@@ -153,30 +155,48 @@ jobs:
           uv run python manage.py migrate
           uv run python manage.py collectstatic
           uv run coverage run manage.py test ${{ matrix.target }} --parallel
-          uv run coverage report
-          uv run coverage xml
-      - name: Upload coverage report
+          uv run coverage combine
+      - name: Upload coverage data
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: coverage-${{ matrix.target }}
-          path: coverage.xml
+          name: backend-coverage-data-${{ matrix.target }}
+          path: coverage-data
+          if-no-files-found: error
+          retention-days: 1
 
   report-coverage:
     runs-on: ubuntu-24.04
     needs: test
     permissions:
       contents: read
-      pull-requests: write
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-      - name: Download coverage reports
+      - name: Set up Pagoda env
+        uses: ./.github/actions/setup-pagoda-env
+        with:
+          clone: "false"
+          base-dir: .
+      - name: Download coverage data
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          pattern: coverage-*
-          path: coverage-reports
-      - name: octocov
-        uses: k1LoW/octocov-action@b3b6ee60482a667950f87553abf1df63217235d9 # v1
+          pattern: backend-coverage-data-*
+          path: backend-coverage-data
+      - name: Generate backend coverage report
+        run: |
+          mv custom_view_sample custom_view
+          uv run coverage combine backend-coverage-data/*/coverage-data
+          uv run coverage html -d backend-coverage-html
+      - name: Upload backend coverage report
+        id: coverage-artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          config: .octocov.yml
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
+          name: backend-coverage
+          path: backend-coverage-html/
+          if-no-files-found: error
+      - name: Publish backend coverage summary
+        env:
+          REPORT_URL: ${{ steps.coverage-artifact.outputs.artifact-url }}
+        run: |
+          coverage=$(uv run coverage report --format=total)
+          printf '## Backend coverage\n\nLine coverage: **%s%%**\n\n[Download HTML report](%s)\n' \
+            "$coverage" "$REPORT_URL" >> "$GITHUB_STEP_SUMMARY"

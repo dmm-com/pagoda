@@ -17,6 +17,7 @@ on:
       # that enforces it.
       - 'tsconfig.json'
       - 'tsconfig.lib.json'
+      - 'vitest.config.ts'
       - '*.config.{js,mjs,ts}'
 
 concurrency:
@@ -90,27 +91,18 @@ jobs:
       - name: test
         run: npm run test
       - name: Upload coverage report
+        id: coverage-artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: coverage-frontend
-          path: coverage/lcov.info
-
-  report-coverage:
-    runs-on: ubuntu-24.04
-    needs: test
-    permissions:
-      contents: read
-      pull-requests: write
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-      - name: Download coverage report
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          name: coverage-frontend
-          path: coverage
-      - name: octocov
-        uses: k1LoW/octocov-action@b3b6ee60482a667950f87553abf1df63217235d9 # v1
-        with:
-          config: .octocov.yml
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
+          name: frontend-coverage
+          path: |
+            coverage/
+            !coverage/coverage-summary.json
+          if-no-files-found: error
+      - name: Publish frontend coverage summary
+        env:
+          REPORT_URL: ${{ steps.coverage-artifact.outputs.artifact-url }}
+        run: |
+          coverage=$(jq -er '.total.lines.pct' coverage/coverage-summary.json)
+          printf '## Frontend coverage\n\nLine coverage: **%s%%**\n\n[Download HTML report](%s)\n' \
+            "$coverage" "$REPORT_URL" >> "$GITHUB_STEP_SUMMARY"
