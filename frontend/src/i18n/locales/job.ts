@@ -53,7 +53,7 @@ export const jobMessages = defineMessages({
     "job.rollbackCheck.loadFailed": "切り戻し情報の取得に失敗しました。",
     "job.rollbackCheck.noItems": "切り戻し対象の変更はありません。",
     "job.rollbackCheck.rollbackWithSkip":
-      "更新後の修正（青字部分）を除き、切り戻す。",
+      "更新後の修正（青字部分）を除き、切り戻す",
     "job.rollbackCheck.rollbackWithoutSkip": "全て切り戻す",
     "job.rollbackCheck.rollbackStarted":
       "切り戻しジョブ (ID: {{jobId}}) を開始しました。",
