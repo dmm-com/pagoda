@@ -18,6 +18,7 @@ on:
       - 'tsconfig.json'
       - 'tsconfig.lib.json'
       - 'vitest.config.ts'
+      - 'tools/publish_coverage_summary.py'
       - '*.config.{js,mjs,ts}'
 
 concurrency:
@@ -99,10 +100,29 @@ jobs:
             coverage/
             !coverage/coverage-summary.json
           if-no-files-found: error
-      - name: Publish frontend coverage summary
+      - name: Restore frontend coverage baseline
+        id: baseline
+        if: github.event_name == 'pull_request'
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: .frontend-coverage-baseline
+          key: frontend-line-coverage-v1-${{ github.event.pull_request.base.sha }}
+      - name: Publish and check frontend coverage
         env:
           REPORT_URL: ${{ steps.coverage-artifact.outputs.artifact-url }}
+          BASELINE_HIT: ${{ steps.baseline.outputs.cache-hit }}
         run: |
           coverage=$(jq -er '.total.lines.pct' coverage/coverage-summary.json)
-          printf '## Frontend coverage\n\nLine coverage: **%s%%**\n\n[Download HTML report](%s)\n' \
-            "$coverage" "$REPORT_URL" >> "$GITHUB_STEP_SUMMARY"
+          args=()
+          if [[ "$BASELINE_HIT" == true ]]; then
+            args+=(--baseline .frontend-coverage-baseline)
+          elif [[ "$GITHUB_EVENT_NAME" == push ]]; then
+            printf '%s\n' "$coverage" > .frontend-coverage-baseline
+          fi
+          python3 tools/publish_coverage_summary.py Frontend "$coverage" "${args[@]}"
+      - name: Save frontend coverage baseline
+        if: github.event_name == 'push'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: .frontend-coverage-baseline
+          key: frontend-line-coverage-v1-${{ github.sha }}

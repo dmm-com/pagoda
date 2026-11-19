@@ -186,6 +186,7 @@ jobs:
           mv custom_view_sample custom_view
           uv run coverage combine backend-coverage-data/*/coverage-data
           uv run coverage html -d backend-coverage-html
+          uv run coverage json -o backend-coverage.json
       - name: Upload backend coverage report
         id: coverage-artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -193,10 +194,29 @@ jobs:
           name: backend-coverage
           path: backend-coverage-html/
           if-no-files-found: error
-      - name: Publish backend coverage summary
+      - name: Restore backend coverage baseline
+        id: baseline
+        if: github.event_name == 'pull_request'
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: .backend-coverage-baseline
+          key: backend-line-coverage-v1-${{ github.event.pull_request.base.sha }}
+      - name: Publish and check backend coverage
         env:
           REPORT_URL: ${{ steps.coverage-artifact.outputs.artifact-url }}
+          BASELINE_HIT: ${{ steps.baseline.outputs.cache-hit }}
         run: |
-          coverage=$(uv run coverage report --format=total)
-          printf '## Backend coverage\n\nLine coverage: **%s%%**\n\n[Download HTML report](%s)\n' \
-            "$coverage" "$REPORT_URL" >> "$GITHUB_STEP_SUMMARY"
+          coverage=$(jq -er '.totals.percent_covered' backend-coverage.json)
+          args=()
+          if [[ "$BASELINE_HIT" == true ]]; then
+            args+=(--baseline .backend-coverage-baseline)
+          elif [[ "$GITHUB_EVENT_NAME" == push ]]; then
+            printf '%s\n' "$coverage" > .backend-coverage-baseline
+          fi
+          python3 tools/publish_coverage_summary.py Backend "$coverage" "${args[@]}"
+      - name: Save backend coverage baseline
+        if: github.event_name == 'push'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: .backend-coverage-baseline
+          key: backend-line-coverage-v1-${{ github.sha }}
