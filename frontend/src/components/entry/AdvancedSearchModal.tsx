@@ -14,7 +14,10 @@ import { Dispatch, FC, SetStateAction, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { useTranslation } from "../../hooks/useTranslation";
-import { formatAdvancedSearchParams } from "../../services/entry/AdvancedSearch";
+import {
+  extractAdvancedSearchParams,
+  formatAdvancedSearchParams,
+} from "../../services/entry/AdvancedSearch";
 import { AironeModal } from "../common/AironeModal";
 import { AutocompleteWithAllSelector } from "../common/AutocompleteWithAllSelector";
 
@@ -107,6 +110,8 @@ const AdvancedSearchModalForm: FC<Props & { initialHasReferral: boolean }> = ({
   };
 
   const handleUpdatePageURL = () => {
+    const currentParams = new URLSearchParams(location.search);
+    const { hintEntry } = extractAdvancedSearchParams(currentParams);
     const attributeGroups = selectedAttrNames.map((name) => [
       name,
       ...joinAttrs
@@ -133,7 +138,8 @@ const AdvancedSearchModalForm: FC<Props & { initialHasReferral: boolean }> = ({
         }),
       ),
       hasReferral,
-      baseParams: new URLSearchParams(location.search),
+      baseParams: currentParams,
+      hintEntry,
       joinAttrs: joinAttrs.filter((joinAttr) =>
         selectedAttrNames.includes(joinAttr.name),
       ),
