@@ -645,6 +645,7 @@ export const SearchResultsTableHead: FC<Props> = ({
             : entityIds
         }
         attrsFilter={attrsFilter}
+        joinAttrs={joinAttrs}
         targetAttrID={editTargetAttrID}
         targetAttrname={editTargetAttrname}
         targetAttrtype={editTargetAttrtype}
