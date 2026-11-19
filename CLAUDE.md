@@ -72,6 +72,7 @@ search-semantics changes).
 - **Fix lint:** `npm run fix`
 - **Run tests:** `npm run test`
 - **Run specific test:** `npm run test -- -t "test name pattern"`
+- **Check test strength locally:** After ordinary tests pass for changed frontend behavior, run `npm run test:mutation -- --since <base>` with Node 24+ and the mutation dependencies installed. Use `--include <source-path>` for a source outside the default scope. Read the agent report, strengthen assertions on observable behavior, and recheck selected mutants with `--only <id>`. See [Mutation testing](docs/content/getting_started/mutation_testing.md).
 - **Watch mode:** `npm run watch`
 
 ### API Client Generation

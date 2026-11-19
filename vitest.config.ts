@@ -9,8 +9,10 @@ import { frontendSrcResolver } from "./tools/viteFrontendSrcResolver";
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 const frontendSrc = path.resolve(rootDir, "frontend/src");
+const mutationRun = process.env.PAGODA_MUTATION === "1";
 
 export default defineConfig({
+  envDir: mutationRun ? false : undefined,
   plugins: [frontendSrcResolver(frontendSrc), tsconfigPaths()],
   test: {
     globals: true,
@@ -36,6 +38,7 @@ export default defineConfig({
       },
     },
     onFinished: async () => {
+      if (mutationRun) return;
       const coverageError = checkFrontendCoverageThresholds(rootDir);
       if (coverageError) {
         throw coverageError;
