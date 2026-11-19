@@ -93,6 +93,140 @@ describe("AdvancedSearchEditModal", () => {
     return vi.spyOn(aironeApiClient, "bulkUpdateEntries").mockResolvedValue();
   };
 
+  test("shows only the resolved post-join count and submits only those targets", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("ja");
+    });
+    const update = mockJoinedBulkDependencies();
+    let finishSearch: (result: ReturnType<typeof joinedResult>) => void =
+      () => {};
+    const pendingSearch = new Promise<ReturnType<typeof joinedResult>>(
+      (resolve) => {
+        finishSearch = resolve;
+      },
+    );
+    vi.spyOn(aironeApiClient, "advancedSearch").mockReturnValue(pendingSearch);
+    try {
+      render(<AdvancedSearchEditModal {...joinedBulkProps} />, {
+        wrapper: TestWrapper,
+      });
+      expect(screen.getByRole("progressbar")).toBeInTheDocument();
+      expect(
+        screen.queryByText(
+          "チェックがないため、検索条件に一致する全5000件が変更対象です。",
+        ),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", {
+          name: "更新対象のアイテムと依存関係（5000件）",
+        }),
+      ).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "更新" })).toBeDisabled();
+      await act(async () => {
+        finishSearch(joinedResult([2, 5]));
+      });
+      await screen.findByText(
+        "チェックがないため、検索条件に一致する全2件が変更対象です。",
+      );
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: "更新対象のアイテムと依存関係（2件）",
+        }),
+      );
+      expect(screen.getByText("対象2")).toBeInTheDocument();
+      expect(screen.getByText("対象5")).toBeInTheDocument();
+      expect(screen.queryByText("対象1")).not.toBeInTheDocument();
+      fireEvent.change(screen.getByRole("textbox"), {
+        target: { value: "changed" },
+      });
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: "更新" })).toBeEnabled(),
+      );
+      fireEvent.click(screen.getByRole("button", { name: "更新" }));
+      await waitFor(() =>
+        expect(update).toHaveBeenCalledWith(
+          1,
+          { id: 10, value: "changed" },
+          baseFilters,
+          "",
+          undefined,
+          [2, 5],
+        ),
+      );
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  test("does not reuse a resolved count or IDs after the joined filter changes", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("ja");
+    });
+    const update = mockJoinedBulkDependencies();
+    let finishSearch: (result: ReturnType<typeof joinedResult>) => void =
+      () => {};
+    const pendingSearch = new Promise<ReturnType<typeof joinedResult>>(
+      (resolve) => {
+        finishSearch = resolve;
+      },
+    );
+    const search = vi
+      .spyOn(aironeApiClient, "advancedSearch")
+      .mockResolvedValue(joinedResult([2, 5]));
+    try {
+      const view = render(<AdvancedSearchEditModal {...joinedBulkProps} />, {
+        wrapper: TestWrapper,
+      });
+      await screen.findByText(
+        "チェックがないため、検索条件に一致する全2件が変更対象です。",
+      );
+      search.mockReturnValue(pendingSearch);
+      view.rerender(
+        <AdvancedSearchEditModal
+          {...joinedBulkProps}
+          attrsFilter={{
+            ...joinedBulkProps.attrsFilter,
+            "refs.status": {
+              ...joinedBulkProps.attrsFilter["refs.status"],
+              keyword: "different",
+            },
+          }}
+        />,
+      );
+      expect(
+        screen.queryByText(
+          "チェックがないため、検索条件に一致する全2件が変更対象です。",
+        ),
+      ).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "更新" })).toBeDisabled();
+      await act(async () => {
+        finishSearch(joinedResult([8]));
+      });
+      await screen.findByText(
+        "チェックがないため、検索条件に一致する全1件が変更対象です。",
+      );
+      fireEvent.change(screen.getByRole("textbox"), {
+        target: { value: "changed" },
+      });
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: "更新" })).toBeEnabled(),
+      );
+      fireEvent.click(screen.getByRole("button", { name: "更新" }));
+      await waitFor(() =>
+        expect(update).toHaveBeenCalledWith(
+          1,
+          { id: 10, value: "changed" },
+          baseFilters,
+          "",
+          undefined,
+          [8],
+        ),
+      );
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
   test("resolves all joined matches across pages and updates only their IDs per model", async () => {
     await act(async () => {
       await i18n.changeLanguage("ja");

@@ -75,29 +75,22 @@ export const AdvancedSearchEditModal: FC<Props> = ({
   const [previewEntries, setPreviewEntries] = useState<
     Array<{ id: number; name: string; modelId: number }>
   >([]);
-  const [previewCount, setPreviewCount] = useState(matchedCount);
+  const [previewCount, setPreviewCount] = useState(
+    joinAttrs.length > 0 ? 0 : matchedCount,
+  );
+  const [resolvedJoinedQueryKey, setResolvedJoinedQueryKey] = useState<
+    string | null
+  >(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewFailed, setPreviewFailed] = useState(false);
   const isAllMode = selectedEntries.length === 0;
   const isJoinedAllMode = isAllMode && joinAttrs.length > 0;
   const targetPageSize = 10;
-  const targetCount = isAllMode ? previewCount : selectedEntries.length;
-  const targetPageCount = Math.ceil(targetCount / targetPageSize);
-  const displayedTargetPage = Math.min(
-    targetPage,
-    Math.max(targetPageCount, 1),
-  );
-  const displayedTargets =
-    isAllMode && !isJoinedAllMode
-      ? previewEntries
-      : (isJoinedAllMode ? previewEntries : selectedEntries).slice(
-          (displayedTargetPage - 1) * targetPageSize,
-          displayedTargetPage * targetPageSize,
-        );
 
   const closeModal = () => {
     setTargetsExpanded(false);
     setTargetPage(1);
+    setResolvedJoinedQueryKey(null);
     handleClose();
   };
 
@@ -137,13 +130,37 @@ export const AdvancedSearchEditModal: FC<Props> = ({
     referralExcludeModelIds,
   });
 
+  const joinedTargetsReady =
+    !isJoinedAllMode || resolvedJoinedQueryKey === previewQueryKey;
+  const resolvingTargets = isAllMode && (previewLoading || !joinedTargetsReady);
+  const targetCount = isAllMode
+    ? isJoinedAllMode
+      ? joinedTargetsReady
+        ? previewEntries.length
+        : 0
+      : previewCount
+    : selectedEntries.length;
+  const targetPageCount = Math.ceil(targetCount / targetPageSize);
+  const displayedTargetPage = Math.min(
+    targetPage,
+    Math.max(targetPageCount, 1),
+  );
+  const displayedTargets =
+    isAllMode && !isJoinedAllMode
+      ? previewEntries
+      : (isJoinedAllMode ? previewEntries : selectedEntries).slice(
+          (displayedTargetPage - 1) * targetPageSize,
+          displayedTargetPage * targetPageSize,
+        );
+
   useEffect(() => {
     if (!openModal || !isAllMode || (!isJoinedAllMode && matchedCount === 0))
       return;
     let active = true;
     setPreviewLoading(true);
     setPreviewFailed(false);
-    setPreviewCount(matchedCount);
+    setPreviewCount(isJoinedAllMode ? 0 : matchedCount);
+    setResolvedJoinedQueryKey(null);
     setPreviewEntries([]);
     const loadTargets = async () => {
       if (isJoinedAllMode) {
@@ -179,6 +196,7 @@ export const AdvancedSearchEditModal: FC<Props> = ({
         if (active) {
           setPreviewEntries([...targets.values()]);
           setPreviewCount(targets.size);
+          setResolvedJoinedQueryKey(previewQueryKey);
         }
         return;
       }
@@ -311,7 +329,7 @@ export const AdvancedSearchEditModal: FC<Props> = ({
       checking ||
       checkFailed ||
       updating ||
-      previewLoading ||
+      resolvingTargets ||
       previewFailed ||
       targetCount === 0
     )
@@ -394,7 +412,13 @@ export const AdvancedSearchEditModal: FC<Props> = ({
       open={openModal}
       onClose={closeModal}
     >
-      {targetCount === 0 && !previewLoading ? (
+      {previewFailed ? (
+        <Alert severity="error">
+          {t("advancedSearch.editModal.previewFailed")}
+        </Alert>
+      ) : resolvingTargets ? (
+        <CircularProgress size={20} />
+      ) : targetCount === 0 ? (
         <Alert severity="info">{t("advancedSearch.editModal.noTargets")}</Alert>
       ) : (
         <Box>
@@ -405,12 +429,7 @@ export const AdvancedSearchEditModal: FC<Props> = ({
               })}
             </Alert>
           )}
-          {(checking || previewLoading) && <CircularProgress size={20} />}
-          {previewFailed && (
-            <Alert severity="error">
-              {t("advancedSearch.editModal.previewFailed")}
-            </Alert>
-          )}
+          {checking && <CircularProgress size={20} />}
           {checkFailed && (
             <Alert severity="error">
               {t("entry.control.referenceCheckFailure")}
@@ -483,7 +502,7 @@ export const AdvancedSearchEditModal: FC<Props> = ({
             checking ||
             checkFailed ||
             updating ||
-            previewLoading ||
+            resolvingTargets ||
             previewFailed
           }
         >

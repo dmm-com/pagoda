@@ -644,7 +644,7 @@ export const SearchResultsTableHead: FC<Props> = ({
             ? [...new Set(selectedEntries.map((entry) => entry.modelId))]
             : entityIds
         }
-        attrsFilter={attrsFilter}
+        attrsFilter={defaultAttrsFilter}
         joinAttrs={joinAttrs}
         targetAttrID={editTargetAttrID}
         targetAttrname={editTargetAttrname}
