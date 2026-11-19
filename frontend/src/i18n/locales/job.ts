@@ -18,6 +18,7 @@ export const jobMessages = defineMessages({
     "job.operation.copy": "コピー",
     "job.operation.restore": "復旧",
     "job.operation.bulkEdit": "一括更新",
+    "job.operation.rollbackBulkUpdate": "切り戻し",
     "job.operation.unknown": "不明",
 
     // Job list page
@@ -60,7 +61,7 @@ export const jobMessages = defineMessages({
     "job.rollbackCheck.rollbackFailed": "切り戻しの開始に失敗しました。",
     "job.rollbackCheck.alreadyRolledBack": "このジョブは既に切り戻し済みです",
     "job.rollbackCheck.highlightLegend":
-      "青色の行は、一括更新後に値がさらに変更されたため切り戻しできない項目です。",
+      "青色の行は、一括更新後に値がさらに変更された項目です。",
     "job.rollbackCheck.entryColumn": "アイテム名",
     "job.rollbackCheck.attrColumn": "属性名",
     "job.rollbackCheck.beforeColumn": "変更前の値",
@@ -86,6 +87,7 @@ export const jobMessages = defineMessages({
     "job.operation.copy": "Copy",
     "job.operation.restore": "Restore",
     "job.operation.bulkEdit": "Bulk update",
+    "job.operation.rollbackBulkUpdate": "Rollback bulk update",
     "job.operation.unknown": "Unknown",
 
     // Job list page
