@@ -36,6 +36,31 @@ describe("ExportButton", () => {
     await act(async () => resolveFirstExport());
   });
 
+  test("allows another export when the 15-second debounce expires", async () => {
+    const start = Date.UTC(2026, 0, 1);
+    const clock = vi.spyOn(Date, "now").mockReturnValue(start);
+    try {
+      const onExport = vi.fn().mockResolvedValue(undefined);
+      render(<ExportButton onExport={onExport} />, { wrapper: TestWrapper });
+      const button = screen.getByRole("button", { name: "エクスポート" });
+      const clickExport = () =>
+        act(async () => {
+          fireEvent.click(button);
+        });
+
+      await clickExport();
+      clock.mockReturnValue(start + 14_999);
+      await clickExport();
+      expect(onExport).toHaveBeenCalledTimes(1);
+
+      clock.mockReturnValue(start + 15_000);
+      await clickExport();
+      expect(onExport).toHaveBeenCalledTimes(2);
+    } finally {
+      clock.mockRestore();
+    }
+  });
+
   test("notifies success only after the export job is registered", async () => {
     let resolveExport!: () => void;
     const onExport = vi.fn(
