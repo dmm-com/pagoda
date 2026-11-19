@@ -11,7 +11,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UsernameField
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.sites.shortcuts import get_current_site
+from django.core.exceptions import ImproperlyConfigured
 from django.core.mail import EmailMultiAlternatives
 from django.http import HttpRequest
 from django.template import loader
@@ -91,12 +91,18 @@ class UsernameBasedPasswordResetForm(forms.Form):
         username = self.cleaned_data["username"]
         user = self.get_user(username)
         if user:
+            # The reset link domain must never come from the request: with
+            # django.contrib.sites uninstalled, get_current_site() would fall
+            # back to the client-controlled Host header (CWE-640). Callers
+            # must always pass an explicit domain_override (see
+            # airone.lib.canonical.get_canonical_url_parts).
             if not domain_override:
-                current_site = get_current_site(request)
-                site_name = current_site.name
-                domain = current_site.domain
-            else:
-                site_name = domain = domain_override
+                raise ImproperlyConfigured(
+                    "A password reset link domain must be provided explicitly "
+                    "via domain_override; deriving it from the request is not "
+                    "allowed (reset-link poisoning, CWE-640)."
+                )
+            site_name = domain = domain_override
             user_email = getattr(user, self.EMAIL_FIELD)
             context = {
                 "email": user_email,

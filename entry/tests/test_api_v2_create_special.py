@@ -565,6 +565,24 @@ class ViewTest(BaseViewTest):
         )
 
     @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
+    def test_manual_rename_propagates_to_autoname_referrals(self):
+        model_lb, model_sg = self._create_lb_models_for_autoname()
+        item_lb = self.add_entry(self.user, "LB0001", model_lb)
+        item_sg = self.add_entry(self.user, "temporary", model_sg, values={"LB": item_lb})
+        item_sg.save_autoname()
+        previous_name = item_sg.name
+        self.assertIn("LB0001", previous_name)
+
+        resp = self.client.put(
+            f"/entry/api/v2/{item_lb.id}/",
+            json.dumps({"name": "LB0002"}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        item_sg.refresh_from_db()
+        self.assertEqual(item_sg.name, previous_name.replace("LB0001", "LB0002"))
+
+    @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
     def test_update_for_autoname_item(self):
         (model_lb, model_sg) = self._create_lb_models_for_autoname()
 

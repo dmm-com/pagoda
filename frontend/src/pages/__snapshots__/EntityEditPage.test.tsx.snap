@@ -547,6 +547,7 @@ exports[`EditEntityPage > should match snapshot 1`] = `
                 </th>
                 <th
                   class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
+                  id="attr-type-header"
                   scope="col"
                   width="300px"
                 >
@@ -571,63 +572,45 @@ exports[`EditEntityPage > should match snapshot 1`] = `
                   scope="col"
                   width="100px"
                 >
-                  追加
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
-                  scope="col"
-                  width="100px"
-                >
                   詳細
                 </th>
               </tr>
             </thead>
             <tbody
-              class="MuiTableBody-root css-x2c5vp-MuiTableBody-root"
+              class="MuiTableBody-root css-uoo635-MuiTableBody-root"
             >
               <tr
-                class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+                class="MuiTableRow-root css-1nskjn6-MuiTableRow-root"
+                data-append-row="true"
               >
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-                />
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-                />
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-                />
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-                />
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-                />
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
+                  colspan="6"
                 >
                   <button
-                    aria-label="属性を追加"
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary css-1h5jgc6-MuiButtonBase-root-MuiButton-root"
+                    data-testid="append-row-attribute"
                     tabindex="0"
                     type="button"
                   >
-                    <svg
-                      aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
-                      data-testid="AddIcon"
-                      focusable="false"
-                      viewBox="0 0 24 24"
+                    <span
+                      class="MuiButton-icon MuiButton-startIcon MuiButton-iconSizeMedium css-1sh91j5-MuiButton-startIcon"
                     >
-                      <path
-                        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
-                      />
-                    </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
+                        data-testid="AddIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
+                        />
+                      </svg>
+                    </span>
+                    属性を追加
                   </button>
                 </td>
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-                />
               </tr>
             </tbody>
           </table>
@@ -684,6 +667,7 @@ exports[`EditEntityPage > should match snapshot 1`] = `
                 >
                   <div
                     class="MuiBox-root css-1domaf0"
+                    id="isolation-attr-header"
                   >
                     属性
                   </div>
@@ -705,52 +689,41 @@ exports[`EditEntityPage > should match snapshot 1`] = `
                 >
                   削除
                 </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
-                  scope="col"
-                  width="60px"
-                >
-                  追加
-                </th>
               </tr>
             </thead>
             <tbody
               class="MuiTableBody-root css-gmh7jj-MuiTableBody-root"
             >
               <tr
-                class="MuiTableRow-root css-4w2o25-MuiTableRow-root"
+                class="MuiTableRow-root css-1nskjn6-MuiTableRow-root"
+                data-append-row="true"
               >
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-                />
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-                />
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-                />
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-                />
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
+                  colspan="4"
                 >
                   <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary css-1h5jgc6-MuiButtonBase-root-MuiButton-root"
+                    data-testid="append-row-isolation-rule"
                     tabindex="0"
                     type="button"
                   >
-                    <svg
-                      aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
-                      data-testid="AddIcon"
-                      focusable="false"
-                      viewBox="0 0 24 24"
+                    <span
+                      class="MuiButton-icon MuiButton-startIcon MuiButton-iconSizeMedium css-1sh91j5-MuiButton-startIcon"
                     >
-                      <path
-                        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
-                      />
-                    </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
+                        data-testid="AddIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
+                        />
+                      </svg>
+                    </span>
+                    設定を追加
                   </button>
                 </td>
               </tr>
@@ -1416,6 +1389,7 @@ exports[`EditEntityPage > should match snapshot 1`] = `
               </th>
               <th
                 class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
+                id="attr-type-header"
                 scope="col"
                 width="300px"
               >
@@ -1440,63 +1414,45 @@ exports[`EditEntityPage > should match snapshot 1`] = `
                 scope="col"
                 width="100px"
               >
-                追加
-              </th>
-              <th
-                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
-                scope="col"
-                width="100px"
-              >
                 詳細
               </th>
             </tr>
           </thead>
           <tbody
-            class="MuiTableBody-root css-x2c5vp-MuiTableBody-root"
+            class="MuiTableBody-root css-uoo635-MuiTableBody-root"
           >
             <tr
-              class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+              class="MuiTableRow-root css-1nskjn6-MuiTableRow-root"
+              data-append-row="true"
             >
               <td
                 class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-              />
-              <td
-                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-              />
-              <td
-                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-              />
-              <td
-                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-              />
-              <td
-                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-              />
-              <td
-                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
+                colspan="6"
               >
                 <button
-                  aria-label="属性を追加"
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary css-1h5jgc6-MuiButtonBase-root-MuiButton-root"
+                  data-testid="append-row-attribute"
                   tabindex="0"
                   type="button"
                 >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
-                    data-testid="AddIcon"
-                    focusable="false"
-                    viewBox="0 0 24 24"
+                  <span
+                    class="MuiButton-icon MuiButton-startIcon MuiButton-iconSizeMedium css-1sh91j5-MuiButton-startIcon"
                   >
-                    <path
-                      d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
-                    />
-                  </svg>
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
+                      data-testid="AddIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
+                      />
+                    </svg>
+                  </span>
+                  属性を追加
                 </button>
               </td>
-              <td
-                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-              />
             </tr>
           </tbody>
         </table>
@@ -1553,6 +1509,7 @@ exports[`EditEntityPage > should match snapshot 1`] = `
               >
                 <div
                   class="MuiBox-root css-1domaf0"
+                  id="isolation-attr-header"
                 >
                   属性
                 </div>
@@ -1574,52 +1531,41 @@ exports[`EditEntityPage > should match snapshot 1`] = `
               >
                 削除
               </th>
-              <th
-                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
-                scope="col"
-                width="60px"
-              >
-                追加
-              </th>
             </tr>
           </thead>
           <tbody
             class="MuiTableBody-root css-gmh7jj-MuiTableBody-root"
           >
             <tr
-              class="MuiTableRow-root css-4w2o25-MuiTableRow-root"
+              class="MuiTableRow-root css-1nskjn6-MuiTableRow-root"
+              data-append-row="true"
             >
               <td
                 class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-              />
-              <td
-                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-              />
-              <td
-                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-              />
-              <td
-                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-              />
-              <td
-                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
+                colspan="4"
               >
                 <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary css-1h5jgc6-MuiButtonBase-root-MuiButton-root"
+                  data-testid="append-row-isolation-rule"
                   tabindex="0"
                   type="button"
                 >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
-                    data-testid="AddIcon"
-                    focusable="false"
-                    viewBox="0 0 24 24"
+                  <span
+                    class="MuiButton-icon MuiButton-startIcon MuiButton-iconSizeMedium css-1sh91j5-MuiButton-startIcon"
                   >
-                    <path
-                      d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
-                    />
-                  </svg>
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
+                      data-testid="AddIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
+                      />
+                    </svg>
+                  </span>
+                  設定を追加
                 </button>
               </td>
             </tr>

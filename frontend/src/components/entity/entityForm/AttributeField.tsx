@@ -2,7 +2,6 @@ import {
   DraggableAttributes,
   DraggableSyntheticListeners,
 } from "@dnd-kit/core";
-import AddIcon from "@mui/icons-material/Add";
 import BadgeIcon from "@mui/icons-material/Badge";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
@@ -110,7 +109,6 @@ interface Props {
   control: Control<Schema>;
   setValue: UseFormSetValue<Schema>;
   referralEntities: Entity[];
-  handleAppendAttribute: (index: number) => void;
   handleDeleteAttribute: (index: number) => void;
   dragHandleProps?: AttributeDragHandleProps;
   attrId?: number;
@@ -121,7 +119,6 @@ export const AttributeField: FC<Props> = ({
   control,
   setValue,
   referralEntities,
-  handleAppendAttribute,
   handleDeleteAttribute,
   dragHandleProps,
   attrId,
@@ -462,18 +459,6 @@ export const AttributeField: FC<Props> = ({
         </IconButton>
       </TableCell>
 
-      {/* Add another Attribute button */}
-      <TableCell>
-        <IconButton
-          aria-label={t("entity.form.appendAttrAriaLabel", {
-            index: index + 1,
-          })}
-          onClick={() => handleAppendAttribute(index ?? 0)}
-        >
-          <AddIcon />
-        </IconButton>
-      </TableCell>
-
       {/* Icon other settings */}
       <TableCell>
         <Tooltip title={t("common.details")}>
@@ -619,14 +604,6 @@ export const AttributeField: FC<Props> = ({
       <TableCell />
       <TableCell />
       <TableCell />
-      <TableCell>
-        <IconButton
-          aria-label={t("entity.form.addAttrAriaLabel")}
-          onClick={() => handleAppendAttribute(index ?? 0)}
-        >
-          <AddIcon />
-        </IconButton>
-      </TableCell>
       <TableCell />
     </>
   );

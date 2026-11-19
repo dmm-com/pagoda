@@ -1,11 +1,13 @@
 from collections import defaultdict
 from typing import Any, cast
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, QuerySet
 from django.http import Http404
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, mixins, viewsets
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -22,15 +24,24 @@ from user.models import User
 class ACLPermission(BasePermission):
     def has_object_permission(self, request: Request, view: Any, obj: Any) -> bool:
         user = cast(User, request.user)
-        permisson = {
+        permission = {
             "retrieve": ACLType.Readable,
             "update": ACLType.Full,
-        }
-        if not isinstance(obj, ACLBase):
+        }.get(view.action)
+        if not isinstance(obj, ACLBase) or permission is None:
             return False
-        if not user.has_permission(obj, permisson.get(view.action)):
+
+        # Resolve the concrete subclass before authorizing. User.has_permission()
+        # only verifies the parent Entity/Entry chain for real Entry, Attribute and
+        # EntityAttr instances; authorizing the bare ACLBase row would skip those
+        # checks and let a user rewrite the ACL of an object whose parent denies
+        # them access.
+        try:
+            target_obj = obj.get_subclass_object()
+        except ObjectDoesNotExist:
             return False
-        return True
+
+        return bool(user.has_permission(target_obj, permission))
 
 
 class ACLAPI(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet[ACLBase]):
@@ -47,6 +58,7 @@ class ACLAPI(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.Generi
 )
 class ACLHistoryAPI(generics.ListAPIView[ACLBase]):
     serializer_class = ACLHistorySerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self) -> QuerySet[ACLBase]:
         """Unnecessary in this serializer"""
@@ -69,6 +81,11 @@ class ACLHistoryAPI(generics.ListAPIView[ACLBase]):
             raise Http404
 
         instance = cast(Entity | EntityAttr | Entry, acl.get_subclass_object())
+
+        # ACL history exposes who (which user/role) holds which permission, so it
+        # must be limited to users who can read the target object.
+        if not cast(User, request.user).has_permission(instance, ACLType.Readable):
+            raise PermissionDenied("You don't have permission to access this object")
 
         # 1. Bulk fetch ACL history data (including history_user information)
         acl_history = list(instance.history.select_related("history_user").all())

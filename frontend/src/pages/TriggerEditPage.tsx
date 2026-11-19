@@ -4,7 +4,6 @@ import {
   Box,
   Container,
   Table,
-  TableBody,
   TableCell,
   TableHead,
   TableRow,
@@ -25,6 +24,7 @@ import {
 import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { PageHeader } from "components/common/PageHeader";
+import { RepeatableTableBody } from "components/common/RowInsertion";
 import { SubmitButton } from "components/common/SubmitButton";
 import { Actions } from "components/trigger/Actions";
 import { Conditions } from "components/trigger/Conditions";
@@ -53,18 +53,6 @@ const HeaderTableCell = styled(TableCell)(({}) => ({
   color: "#FFFFFF",
   boxSizing: "border-box",
 }));
-
-const StyledTableBody = styled(TableBody)({
-  "tr:nth-of-type(odd)": {
-    backgroundColor: "white",
-  },
-  "tr:nth-of-type(even)": {
-    backgroundColor: "#607D8B0A",
-  },
-  "& td": {
-    padding: "8px",
-  },
-});
 
 export const TriggerEditPage: FC = () => {
   const { t } = useTranslation();
@@ -402,7 +390,7 @@ export const TriggerEditPage: FC = () => {
               <Table data-testid="conditions">
                 <TableHead>
                   <HeaderTableRow>
-                    <HeaderTableCell width="400px">
+                    <HeaderTableCell width="400px" id="condition-attr-header">
                       {t("trigger.edit.columnAttrName")}
                     </HeaderTableCell>
                     <HeaderTableCell width="100px">NOT</HeaderTableCell>
@@ -412,14 +400,11 @@ export const TriggerEditPage: FC = () => {
                     <HeaderTableCell width="100px">
                       {t("common.delete")}
                     </HeaderTableCell>
-                    <HeaderTableCell width="100px">
-                      {t("trigger.edit.columnAdd")}
-                    </HeaderTableCell>
                   </HeaderTableRow>
                 </TableHead>
-                <StyledTableBody>
+                <RepeatableTableBody>
                   {entity && <Conditions control={control} entity={entity} />}
-                </StyledTableBody>
+                </RepeatableTableBody>
               </Table>
             </StyledFlexColumnBox>
 
@@ -430,7 +415,7 @@ export const TriggerEditPage: FC = () => {
               <Table data-testid="actions">
                 <TableHead>
                   <HeaderTableRow>
-                    <HeaderTableCell width="400px">
+                    <HeaderTableCell width="400px" id="action-attr-header">
                       {t("trigger.edit.columnAttrName")}
                     </HeaderTableCell>
                     <HeaderTableCell width="400px">
@@ -439,14 +424,11 @@ export const TriggerEditPage: FC = () => {
                     <HeaderTableCell width="100px">
                       {t("common.delete")}
                     </HeaderTableCell>
-                    <HeaderTableCell width="100px">
-                      {t("trigger.edit.columnAdd")}
-                    </HeaderTableCell>
                   </HeaderTableRow>
                 </TableHead>
-                <StyledTableBody>
+                <RepeatableTableBody>
                   {entity && <Actions control={control} entity={entity} />}
-                </StyledTableBody>
+                </RepeatableTableBody>
               </Table>
             </StyledFlexColumnBox>
           </>

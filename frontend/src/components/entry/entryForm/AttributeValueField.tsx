@@ -33,6 +33,8 @@ interface Props {
   schemaId: number;
   choices?: Array<{ value?: string; label: string }>;
   isDisabled?: boolean;
+  /** Entry attribute name, used to build accessible names for row controls. */
+  attrName?: string;
 }
 
 export const AttributeValueField: FC<Props> = ({
@@ -42,6 +44,7 @@ export const AttributeValueField: FC<Props> = ({
   schemaId,
   choices,
   isDisabled = false,
+  attrName,
 }) => {
   switch (type) {
     case EntryAttributeTypeTypeEnum.STRING:
@@ -176,18 +179,27 @@ export const AttributeValueField: FC<Props> = ({
 
     case EntryAttributeTypeTypeEnum.ARRAY_STRING:
       return (
-        <ArrayStringAttributeValueField control={control} attrId={schemaId} />
+        <ArrayStringAttributeValueField
+          control={control}
+          attrId={schemaId}
+          attrName={attrName}
+        />
       );
 
     case EntryAttributeTypeTypeEnum.ARRAY_NUMBER:
       return (
-        <ArrayNumberAttributeValueField control={control} attrId={schemaId} />
+        <ArrayNumberAttributeValueField
+          control={control}
+          attrId={schemaId}
+          attrName={attrName}
+        />
       );
 
     case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
       return (
         <ArrayNamedObjectAttributeValueField
           attrId={schemaId}
+          attrName={attrName}
           control={control}
           setValue={setValue}
           isDisabled={isDisabled}
@@ -198,6 +210,7 @@ export const AttributeValueField: FC<Props> = ({
       return (
         <ArrayNamedObjectAttributeValueField
           attrId={schemaId}
+          attrName={attrName}
           control={control}
           setValue={setValue}
           isDisabled={isDisabled}
