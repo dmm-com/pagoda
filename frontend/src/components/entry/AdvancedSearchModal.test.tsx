@@ -184,7 +184,8 @@ describe("AdvancedSearchModal", () => {
   });
 
   test("saves the selected attribute order as the result column order", () => {
-    const columnOrderKey = getAdvancedSearchColumnOrderKey([100], false);
+    // Seed a key written by existing sessions independently of the key generator.
+    const columnOrderKey = "advanced_search_column_order:100,200";
     localStorage.setItem(
       columnOrderKey,
       JSON.stringify(["attrA", "__entry_name__", "attrC", "attrC.child"]),
@@ -197,7 +198,7 @@ describe("AdvancedSearchModal", () => {
         initialAttrNames={initialAttrNames}
         attrInfos={attrInfos}
         joinAttrs={[{ name: "attrC", attrinfo: [{ name: "child" }] }]}
-        entityIds={[100]}
+        entityIds={[200, 100]}
       />,
       { wrapper: TestWrapper },
     );

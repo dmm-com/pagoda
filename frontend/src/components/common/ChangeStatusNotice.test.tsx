@@ -56,10 +56,12 @@ test("shows the affected data while a change is running", async () => {
   );
 });
 
-test("calls out a long running change without claiming it has finished", async () => {
+test.each([
+  300, 301,
+])("calls out a change still running after %i seconds without claiming it has finished", async (passedTime) => {
   vi.spyOn(aironeApiClient, "getJobs").mockResolvedValue({
     count: 1,
-    results: [makeJob(JobStatuses.PROCESSING, 301)],
+    results: [makeJob(JobStatuses.PROCESSING, passedTime)],
   });
 
   render(<ChangeStatusNotice targetId={42} targetKind="item" />, {

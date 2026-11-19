@@ -82,11 +82,11 @@ describe("waitForImportPreview", () => {
           created: 2,
           updated: 0,
           unchanged: 1,
-          skipped: 0,
+          skipped: 1,
           errored: 0,
-          total: 3,
+          total: 4,
         },
-        count: 3,
+        count: 4,
         truncated: false,
         rows: [{ name: "a" }],
       })
@@ -95,11 +95,11 @@ describe("waitForImportPreview", () => {
           created: 0,
           updated: 1,
           unchanged: 0,
-          skipped: 0,
+          skipped: 3,
           errored: 1,
-          total: 2,
+          total: 5,
         },
-        count: 2,
+        count: 5,
         truncated: true,
         rows: [{ name: "b" }],
       });
@@ -111,11 +111,11 @@ describe("waitForImportPreview", () => {
       created: 2,
       updated: 1,
       unchanged: 1,
-      skipped: 0,
+      skipped: 4,
       errored: 1,
-      total: 5,
+      total: 9,
     });
-    expect(merged.count).toBe(5);
+    expect(merged.count).toBe(9);
     expect(merged.truncated).toBe(true);
     expect(merged.rows).toEqual([{ name: "a" }, { name: "b" }]);
   });
