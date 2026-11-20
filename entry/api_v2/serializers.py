@@ -900,8 +900,8 @@ class EntryUpdateSerializer(EntryBaseSerializer):
             attr.add_value(user, attr_data[0]["value"])
             is_updated = True
 
-        # Updating its name from attribute values if it's necessary
-        entry.save_autoname()
+        # Preserve propagation when the name was already changed above.
+        entry.save_autoname(name_changed=job_register_referrals is not None)
 
         if custom_view.is_custom("after_update_entry_v2", entity_name):
             custom_view.call_custom("after_update_entry_v2", entity_name, user, entry)

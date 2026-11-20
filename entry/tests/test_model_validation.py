@@ -1,5 +1,6 @@
 import math
 from datetime import date, datetime, timezone
+from unittest.mock import patch
 
 from django.conf import settings
 
@@ -1570,6 +1571,26 @@ class ModelValidationTest(BaseModelTest):
         )
 
         self.assertEqual(item.autoname, "date=2026-09-08")
+
+    def test_save_autoname_skips_referrals_when_name_is_unchanged(self):
+        model = self.create_entity(
+            self._user,
+            "Auto Name",
+            attrs=[
+                {"name": "label", "type": AttrType.STRING, "name_order": 1},
+                {"name": "description", "type": AttrType.STRING},
+            ],
+            item_name_type=ItemNameType.ATTR,
+        )
+        item = self.add_entry(self._user, "same", model, values={"label": "same"})
+        item.attrs.get(schema__name="description").add_value(self._user, "updated")
+
+        # An unrelated attribute edit must not query or traverse incoming references.
+        with patch.object(Entry, "get_referred_objects") as get_referrals:
+            item.save_autoname()
+        get_referrals.assert_not_called()
+        item.refresh_from_db()
+        self.assertEqual(item.name, "same")
 
     def test_save_autoname_with_duplicated_values(self):
         model = self.create_entity(

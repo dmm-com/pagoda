@@ -3,7 +3,7 @@ from typing import Any, cast
 from django.http import HttpRequest, HttpResponse
 from django.http.response import JsonResponse
 
-from airone.lib.acl import ACLObjType, ACLType
+from airone.lib.acl import ACLType
 from airone.lib.http import get_obj_with_check_perm, http_get, http_post, render
 from airone.lib.log import Logger
 from entity.models import Entity, EntityAttr
@@ -87,9 +87,15 @@ def index(request: HttpRequest, obj_id: int) -> HttpResponse:
 )
 def set(request: HttpRequest, recv_data: dict[str, Any]) -> JsonResponse | HttpResponse:
     user = cast(User, request.user)
-    acl_obj = getattr(_get_acl_model(recv_data["object_type"]), "objects").get(
-        id=recv_data["object_id"]
-    )
+
+    # The client used to be able to pick the model class through object_type, and
+    # falling back to the bare ACLBase row skipped the parent Entity/Entry
+    # permission checks. Always resolve the concrete subclass from the stored row.
+    acl_base = ACLBase.objects.filter(id=recv_data["object_id"]).first()
+    if not acl_base:
+        return HttpResponse("There is no object of specified id", status=400)
+
+    acl_obj = acl_base.get_subclass_object()
 
     # This checks that user currently has permission to change it
     if not user.has_permission(acl_obj, ACLType.Full):
@@ -157,19 +163,6 @@ def set(request: HttpRequest, recv_data: dict[str, Any]) -> JsonResponse | HttpR
             "msg": 'Success to update ACL of "%s"' % acl_obj.name,
         }
     )
-
-
-def _get_acl_model(object_id: str) -> type[ACLBase]:
-    if int(object_id) == ACLObjType.Entity:
-        return Entity
-    if int(object_id) == ACLObjType.Entry:
-        return Entry
-    elif int(object_id) == ACLObjType.EntityAttr:
-        return EntityAttr
-    elif int(object_id) == ACLObjType.EntryAttr:
-        return Attribute
-    else:
-        return ACLBase
 
 
 def _set_permission(role: Role, acl_obj: ACLBase, acl_type: ACLType) -> None:

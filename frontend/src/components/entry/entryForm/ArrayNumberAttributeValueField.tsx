@@ -1,11 +1,17 @@
-import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { Box, IconButton, List, ListItem, TextField } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { FC, useEffect } from "react";
+import { FC, Fragment, useEffect } from "react";
 import { Control, Controller, useFieldArray } from "react-hook-form";
 
 import { Schema } from "./EntryFormSchema";
+
+import {
+  AddRowButton,
+  InsertBand,
+  useInsertedRowFocus,
+} from "components/common/RowInsertion";
+import { useTranslation } from "hooks/useTranslation";
 
 const StyledList = styled(List)(({}) => ({
   padding: "0",
@@ -15,6 +21,7 @@ const StyledBox = styled(Box)(({}) => ({
   display: "flex",
   width: "100%",
   gap: "0 12px",
+  alignItems: "center",
 }));
 
 interface CommonProps {
@@ -22,21 +29,23 @@ interface CommonProps {
   index?: number;
   control: Control<Schema>;
   isDisabled?: boolean;
+  /** Shown in accessible names so repeated lists stay distinguishable. */
+  attrName?: string;
 }
 
 export const NumberAttributeValueFieldForArray: FC<
   CommonProps & {
     handleClickDeleteListItem?: (index: number) => void;
-    handleClickAddListItem?: (index: number) => void;
   }
 > = ({
   attrId,
   index,
   control,
   handleClickDeleteListItem,
-  handleClickAddListItem,
   isDisabled = false,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <StyledBox>
       <Controller
@@ -60,27 +69,14 @@ export const NumberAttributeValueFieldForArray: FC<
           />
         )}
       />
-      {index !== undefined && (
-        <>
-          {handleClickDeleteListItem != null && (
-            <IconButton
-              id="del_button"
-              aria-label="delete"
-              onClick={() => handleClickDeleteListItem(index)}
-            >
-              <DeleteOutlineIcon />
-            </IconButton>
-          )}
-          {handleClickAddListItem != null && (
-            <IconButton
-              id="add_button"
-              aria-label="add"
-              onClick={() => handleClickAddListItem(index)}
-            >
-              <AddIcon />
-            </IconButton>
-          )}
-        </>
+      {index !== undefined && handleClickDeleteListItem != null && (
+        <IconButton
+          data-testid={`delete-row-${attrId}-${index}`}
+          aria-label={t("entryForm.array.deleteRow", { row: index + 1 })}
+          onClick={() => handleClickDeleteListItem(index)}
+        >
+          <DeleteOutlineIcon />
+        </IconButton>
       )}
     </StyledBox>
   );
@@ -89,19 +85,19 @@ export const NumberAttributeValueFieldForArray: FC<
 export const ArrayNumberAttributeValueField: FC<CommonProps> = ({
   attrId,
   control,
+  attrName,
 }) => {
   const { fields, insert, remove, replace } = useFieldArray({
     control,
     name: `attrs.${attrId}.value.asArrayNumber`,
   });
+  const { t } = useTranslation();
+  const listId = `array-number-${attrId}`;
+  const focusInsertedRow = useInsertedRowFocus(listId);
 
-  const handleClickAddListItem = (index: number) => {
-    insert(index + 1, { value: null });
-  };
-
-  const handleClickDeleteListItem = (index: number) => {
-    remove(index);
-    fields.length === 1 && handleClickAddListItem(0);
+  const handleInsertListItem = (index: number) => {
+    insert(index, { value: null });
+    focusInsertedRow(index);
   };
 
   // Keep at least one (empty) row. This must not run during render: it
@@ -114,18 +110,47 @@ export const ArrayNumberAttributeValueField: FC<CommonProps> = ({
   }, [fields.length, replace]);
 
   return (
-    <StyledList>
+    <StyledList data-testid={`array-number-list-${attrId}`}>
       {fields.map((field, index) => (
-        <ListItem key={field.id} disablePadding={true}>
-          <NumberAttributeValueFieldForArray
-            control={control}
-            attrId={attrId}
-            index={index}
-            handleClickDeleteListItem={handleClickDeleteListItem}
-            handleClickAddListItem={handleClickAddListItem}
-          />
-        </ListItem>
+        <Fragment key={field.id}>
+          <ListItem disablePadding>
+            <InsertBand
+              index={index}
+              ariaLabel={
+                attrName != null
+                  ? t("entryForm.array.insertBefore", {
+                      name: attrName,
+                      row: index + 1,
+                    })
+                  : t("entryForm.array.insertBeforeNoName", { row: index + 1 })
+              }
+              onInsert={handleInsertListItem}
+              testId={`insert-band-${attrId}-${index}`}
+              dense
+            />
+          </ListItem>
+          <ListItem disablePadding data-list-id={listId} data-row-index={index}>
+            <NumberAttributeValueFieldForArray
+              control={control}
+              attrId={attrId}
+              index={index}
+              handleClickDeleteListItem={remove}
+            />
+          </ListItem>
+        </Fragment>
       ))}
+      <ListItem disablePadding>
+        <AddRowButton
+          onAdd={() => handleInsertListItem(fields.length)}
+          label={t("entryForm.array.appendNoName")}
+          ariaLabel={
+            attrName != null
+              ? t("entryForm.array.append", { name: attrName })
+              : undefined
+          }
+          testId={`append-row-${attrId}`}
+        />
+      </ListItem>
     </StyledList>
   );
 };
