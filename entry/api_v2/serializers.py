@@ -317,7 +317,20 @@ class EntryAliasSerializer(serializers.ModelSerializer[AliasEntry]):
         ]
 
     def validate(self, params: dict[str, Any]) -> dict[str, Any]:
-        if not params["entry"].schema.is_available(params["name"]):
+        # An alias reserves a name inside an Entity, so it may only be managed by
+        # users who are allowed to write the Entry it belongs to.
+        user: User | None = getattr(self.context.get("request"), "user", None)
+        if user is None or not user.is_authenticated:
+            raise PermissionDenied("Authentication is required")
+
+        entry = params["entry"]
+        if user.is_readonly or not user.has_permission(entry, ACLType.Writable):
+            raise PermissionDenied("You don't have permission to change the alias of this entry")
+
+        if not entry.is_active:
+            raise ObjectNotExistsError("Specified entry is inactive")
+
+        if not entry.schema.is_available(params["name"]):
             raise DuplicatedObjectExistsError("A duplicated named Alias exists in this model")
 
         return params
@@ -587,6 +600,15 @@ class EntryBaseSerializer(serializers.ModelSerializer[Entry]):
         if not self.instance:
             if user is None:
                 raise RequiredParameterError("user is required")
+
+            # Creating an Entry mutates the Entity, so it requires write permission
+            # on the schema. This serializer is shared by the v2 API, plugin
+            # overrides and async jobs, so the check belongs here rather than in a
+            # single view.
+            if user.is_readonly or not user.has_permission(schema, ACLType.Writable):
+                raise PermissionDenied(
+                    "You don't have permission to create an entry of this entity"
+                )
 
             for mandatory_attr in schema.attrs.filter(is_mandatory=True, is_active=True):
                 if not user.has_permission(mandatory_attr, ACLType.Writable):
