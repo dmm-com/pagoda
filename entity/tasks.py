@@ -139,17 +139,14 @@ def _process_edit_entity(job: Job, entity: Entity, user: User) -> JobStatus:
 
     params = job.get_typed_params(EditEntityParams)
 
-    # Every referenced attribute must belong to the Entity targeted by this job.
-    # Looking them up globally would let a user delete or rewrite attributes of an
-    # Entity they only referenced by id in the request body.
-    owned_attr_ids = set(entity.attrs.values_list("id", flat=True))
-    for attr in params.attrs:
-        if attr.id is not None and attr.id not in owned_attr_ids:
-            Logger.warning(
-                "EDIT_ENTITY job(id=%s) specified attribute(id=%s) that does not belong "
-                "to entity(id=%s)" % (job.id, attr.id, entity.id)
-            )
-            return JobStatus.ERROR
+    attr_ids = [attr.id for attr in params.attrs if attr.id is not None]
+    owned_attrs = entity.attrs.filter(is_active=True).in_bulk(attr_ids)
+    if len(owned_attrs) != len(attr_ids):
+        Logger.warning(
+            "EDIT_ENTITY job(id=%s) specified duplicate or invalid attributes for entity(id=%s)"
+            % (job.id, entity.id)
+        )
+        return JobStatus.ERROR
 
     # register history to modify Entity
     history = user.seth_entity_mod(entity)
@@ -171,14 +168,7 @@ def _process_edit_entity(job: Job, entity: Entity, user: User) -> JobStatus:
             # In case of deleting attribute which has been already existed
             if attr.id is None:
                 continue
-            attr_obj = entity.attrs.filter(id=attr.id).first()
-            if attr_obj is None:
-                Logger.warning(
-                    "EDIT_ENTITY job(id=%s) cannot delete unknown attribute(id=%s)"
-                    % (job.id, attr.id)
-                )
-                return JobStatus.ERROR
-
+            attr_obj = owned_attrs[attr.id]
             attr_obj.delete()
 
             # Save deleted EntityAttr id to update es_document of Entries
@@ -188,10 +178,9 @@ def _process_edit_entity(job: Job, entity: Entity, user: User) -> JobStatus:
             # register History to register deleting EntityAttr
             history.del_attr(attr_obj)
 
-        elif attr.id is not None and entity.attrs.filter(id=attr.id).exists():
+        elif attr.id is not None:
             # In case of updating attribute which has been already existed
-            attr_id = attr.id
-            attr_obj = entity.attrs.get(id=attr_id)
+            attr_obj = owned_attrs[attr.id]
 
             # register operaion history if the parameters are changed
             if attr_obj.name != attr.name:

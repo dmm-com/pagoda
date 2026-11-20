@@ -497,11 +497,12 @@ class ViewTest(AironeViewTest):
                     "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
-                    "id": attr.id,
+                    "id": str(attr.id),
                     "row_index": "1",
                 },
                 {
                     "name": "bar",
+                    "id": "",
                     "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
@@ -516,6 +517,16 @@ class ViewTest(AironeViewTest):
                 },
             ],
         }
+        duplicate_attr = {**params["attrs"][0], "name": "duplicate", "id": attr.id}
+        resp = self.client.post(
+            reverse("entity:do_edit", args=[entity.id]),
+            json.dumps({**params, "attrs": [*params["attrs"], duplicate_attr]}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        entity.refresh_from_db()
+        self.assertEqual(entity.get_status(Entity.STATUS_EDITING), 0)
+
         resp = self.client.post(
             reverse("entity:do_edit", args=[entity.id]),
             json.dumps(params),

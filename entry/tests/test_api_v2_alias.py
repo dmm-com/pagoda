@@ -262,3 +262,22 @@ class APITest(AironeViewTest):
         )
 
         self.assertEqual(resp.status_code, 403)
+
+    def test_bulk_create_rejects_inactive_entry_without_creating_aliases(self):
+        inactive = self.add_entry(self.user, "InactiveItem", self.model)
+        inactive.is_active = False
+        inactive.save(update_fields=["is_active"])
+
+        resp = self.client.post(
+            "/entry/api/v2/alias/bulk/",
+            json.dumps(
+                [
+                    {"name": "active-alias", "entry": self.item.id},
+                    {"name": "inactive-alias", "entry": inactive.id},
+                ]
+            ),
+            "application/json",
+        )
+
+        self.assertEqual(resp.status_code, 400)
+        self.assertFalse(AliasEntry.objects.filter(entry__in=[self.item, inactive]).exists())

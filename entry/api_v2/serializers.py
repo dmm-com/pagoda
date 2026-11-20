@@ -323,10 +323,14 @@ class EntryAliasSerializer(serializers.ModelSerializer[AliasEntry]):
         if user is None or not user.is_authenticated:
             raise PermissionDenied("Authentication is required")
 
-        if user.is_readonly or not user.has_permission(params["entry"], ACLType.Writable):
+        entry = params["entry"]
+        if user.is_readonly or not user.has_permission(entry, ACLType.Writable):
             raise PermissionDenied("You don't have permission to change the alias of this entry")
 
-        if not params["entry"].schema.is_available(params["name"]):
+        if not entry.is_active:
+            raise ObjectNotExistsError("Specified entry is inactive")
+
+        if not entry.schema.is_available(params["name"]):
             raise DuplicatedObjectExistsError("A duplicated named Alias exists in this model")
 
         return params
