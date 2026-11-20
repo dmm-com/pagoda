@@ -489,13 +489,6 @@ class TriggerListParams(
     pass
 
 
-class OrgPositionBulkUpdateItem(JobParamsModel):
-    """One entry's complete role-array value for a bulk role update."""
-
-    entry_id: int
-    value: Any = None
-
-
 class BulkEditChange(JobParamsModel):
     """One attribute value that a bulk edit job wrote, recorded for rollback."""
 
@@ -507,13 +500,11 @@ class BulkEditChange(JobParamsModel):
 
 class BulkEditParams(JobParamsModel):
     modelid: int
-    attr_id: int | None = None
     entry_ids: list[int] | None = None
     attrinfo: list[AttrHintParams] = Field(default_factory=list)
     hint_entry: dict[str, Any] | None = None
     referral_name: str | None = None
-    value: AttributeValue | None = None
-    org_position_updates: list[OrgPositionBulkUpdateItem] | None = None
+    value: AttributeValue
     # Written by the bulk edit task after it runs. None means no record exists
     # (for example, the job predates change recording).
     changes: list[BulkEditChange] | None = None

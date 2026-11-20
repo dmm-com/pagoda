@@ -118,8 +118,6 @@ models/IsolationParentCreateUpdate.ts
 models/ItemRollback.ts
 models/JobSerializers.ts
 models/JobTarget.ts
-models/OrgPositionBulkUpdate.ts
-models/OrgPositionBulkUpdateItem.ts
 models/PaginatedCategoryListList.ts
 models/PaginatedEntityHistoryList.ts
 models/PaginatedEntityListList.ts

@@ -119,11 +119,6 @@ import {
   ItemRollbackToJSON,
 } from "../models/ItemRollback";
 import {
-  type OrgPositionBulkUpdate,
-  OrgPositionBulkUpdateFromJSON,
-  OrgPositionBulkUpdateToJSON,
-} from "../models/OrgPositionBulkUpdate";
-import {
   type PaginatedEntryAliasList,
   PaginatedEntryAliasListFromJSON,
   PaginatedEntryAliasListToJSON,
@@ -196,10 +191,6 @@ export interface EntryApiV2BulkDeleteDestroyRequest {
   attrinfo?: string;
   ids?: Array<number>;
   isAll?: boolean;
-}
-
-export interface EntryApiV2BulkOrgPositionsCreateRequest {
-  orgPositionBulkUpdate: OrgPositionBulkUpdate;
 }
 
 export interface EntryApiV2BulkPartialUpdateRequest {
@@ -1002,70 +993,6 @@ export class EntryApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<void> {
     await this.entryApiV2BulkDeleteDestroyRaw(requestParameters, initOverrides);
-  }
-
-  /**
-   * Creates request options for entryApiV2BulkOrgPositionsCreate without sending the request
-   */
-  async entryApiV2BulkOrgPositionsCreateRequestOpts(
-    requestParameters: EntryApiV2BulkOrgPositionsCreateRequest,
-  ): Promise<runtime.RequestOpts> {
-    if (requestParameters["orgPositionBulkUpdate"] == null) {
-      throw new runtime.RequiredError(
-        "orgPositionBulkUpdate",
-        'Required parameter "orgPositionBulkUpdate" was null or undefined when calling entryApiV2BulkOrgPositionsCreate().',
-      );
-    }
-
-    const queryParameters: any = {};
-
-    const headerParameters: runtime.HTTPHeaders = {};
-
-    headerParameters["Content-Type"] = "application/json";
-
-    if (this.configuration && this.configuration.apiKey) {
-      headerParameters["Authorization"] =
-        await this.configuration.apiKey("Authorization"); // tokenAuth authentication
-    }
-
-    let urlPath = `/entry/api/v2/bulk_org_positions/`;
-
-    return {
-      path: urlPath,
-      method: "POST",
-      headers: headerParameters,
-      query: queryParameters,
-      body: OrgPositionBulkUpdateToJSON(
-        requestParameters["orgPositionBulkUpdate"],
-      ),
-    };
-  }
-
-  /**
-   * Queue complete role-array updates as one job instead of one job per entry.
-   */
-  async entryApiV2BulkOrgPositionsCreateRaw(
-    requestParameters: EntryApiV2BulkOrgPositionsCreateRequest,
-    initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<void>> {
-    const requestOptions =
-      await this.entryApiV2BulkOrgPositionsCreateRequestOpts(requestParameters);
-    const response = await this.request(requestOptions, initOverrides);
-
-    return new runtime.VoidApiResponse(response);
-  }
-
-  /**
-   * Queue complete role-array updates as one job instead of one job per entry.
-   */
-  async entryApiV2BulkOrgPositionsCreate(
-    requestParameters: EntryApiV2BulkOrgPositionsCreateRequest,
-    initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<void> {
-    await this.entryApiV2BulkOrgPositionsCreateRaw(
-      requestParameters,
-      initOverrides,
-    );
   }
 
   /**

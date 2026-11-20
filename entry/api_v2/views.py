@@ -71,7 +71,6 @@ from entry.api_v2.serializers import (
     GetEntryAttrReferralListSerializer,
     GetEntryAttrReferralSerializer,
     ItemRollbackSerializer,
-    OrgPositionBulkUpdateSerializer,
     _make_display_attr_prefetch,
 )
 from entry.import_service import start_entry_import_jobs, start_entry_import_previews
@@ -1370,52 +1369,6 @@ class EntryBulkUpdateRollbackCheckAPI(generics.GenericAPIView[Any]):
             ),
         }
         return Response(BulkRollbackCheckSerializer(payload).data, status=status.HTTP_200_OK)
-
-
-class OrgPositionBulkUpdateAPI(generics.GenericAPIView[Any]):
-    """Queue complete role-array updates as one job instead of one job per entry."""
-
-    serializer_class = OrgPositionBulkUpdateSerializer
-    permission_classes = [IsAuthenticated]
-
-    @extend_schema(request=OrgPositionBulkUpdateSerializer, responses={202: None})
-    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        user = cast("User", request.user)
-        serializer = OrgPositionBulkUpdateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
-
-        entity = Entity.objects.filter(id=data["modelid"], is_active=True).first()
-        attr = EntityAttr.objects.filter(
-            id=data["attr_id"], parent_entity=entity, is_active=True
-        ).first()
-        if entity is None or attr is None or attr.type != AttrType.ARRAY_NAMED_OBJECT:
-            return Response("The entity or attribute does not exist.", status=400)
-        if not user.has_permission(entity, ACLType.Writable) or not user.has_permission(
-            attr, ACLType.Writable
-        ):
-            raise PermissionDenied
-
-        entry_ids = [item["entry_id"] for item in data["updates"]]
-        if len(entry_ids) != len(set(entry_ids)):
-            return Response("Duplicate entry IDs are not allowed.", status=400)
-        entries = {
-            entry.id: entry
-            for entry in Entry.objects.filter(id__in=entry_ids, schema=entity, is_active=True)
-        }
-        if len(entries) != len(set(entry_ids)):
-            return Response("One or more entries do not belong to the entity.", status=400)
-        if any(not user.has_permission(entry, ACLType.Writable) for entry in entries.values()):
-            raise PermissionDenied
-
-        params = {
-            "modelid": entity.id,
-            "attr_id": attr.id,
-            "org_position_updates": data["updates"],
-        }
-        job = Job.new_bulk_edit_entry_v2(user, entity, params=params)
-        job.run()
-        return Response({}, status=status.HTTP_202_ACCEPTED)
 
 
 class ItemRollbackAPI(generics.GenericAPIView[Any]):

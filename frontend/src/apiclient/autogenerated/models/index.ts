@@ -106,8 +106,6 @@ export * from "./IsolationParentCreateUpdate";
 export * from "./ItemRollback";
 export * from "./JobSerializers";
 export * from "./JobTarget";
-export * from "./OrgPositionBulkUpdate";
-export * from "./OrgPositionBulkUpdateItem";
 export * from "./PaginatedCategoryListList";
 export * from "./PaginatedEntityHistoryList";
 export * from "./PaginatedEntityListList";

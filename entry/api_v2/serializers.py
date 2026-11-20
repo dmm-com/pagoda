@@ -1978,22 +1978,6 @@ class EntryBulkUpdateSerializer(serializers.Serializer[Any]):
     hint_entry = EntryHintSerializer(required=False)
 
 
-class OrgPositionBulkUpdateItemSerializer(serializers.Serializer[Any]):
-    entry_id = serializers.IntegerField(min_value=1)
-    value = serializers.ListField(required=False, allow_null=True)
-
-
-class OrgPositionBulkUpdateSerializer(serializers.Serializer[Any]):
-    modelid = serializers.IntegerField(min_value=1)
-    attr_id = serializers.IntegerField(min_value=1)
-    updates = OrgPositionBulkUpdateItemSerializer(many=True)
-
-    def validate_updates(self, value: list[Any]) -> list[Any]:
-        if not value:
-            raise ValidationError("At least one organization position update is required.")
-        return value
-
-
 class ItemRollbackSerializer(serializers.Serializer[Any]):
     targets = serializers.ListField(child=serializers.IntegerField(), min_length=1)
     at = serializers.DateTimeField()
