@@ -489,13 +489,22 @@ class TriggerListParams(
     pass
 
 
+class OrgPositionBulkUpdateItem(JobParamsModel):
+    """One entry's complete role-array value for a bulk role update."""
+
+    entry_id: int
+    value: Any = None
+
+
 class BulkEditParams(JobParamsModel):
     modelid: int
+    attr_id: int | None = None
     entry_ids: list[int] | None = None
     attrinfo: list[AttrHintParams] = Field(default_factory=list)
     hint_entry: dict[str, Any] | None = None
     referral_name: str | None = None
-    value: AttributeValue
+    value: AttributeValue | None = None
+    org_position_updates: list[OrgPositionBulkUpdateItem] | None = None
 
 
 class EntityImportItem(JobParamsModel):

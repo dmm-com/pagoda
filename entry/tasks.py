@@ -19,6 +19,7 @@ from airone.lib.elasticsearch import (
     AdvancedSearchResultRecordAttr,
     AttrHint,
     EntryHint,
+    ESS,
 )
 from airone.lib.event_notification import (
     notify_entry_create,
@@ -1290,6 +1291,78 @@ def bulk_update_entries(
 ) -> JobStatus | tuple[JobStatus, str, ACLBase | None] | None:
     params = job.get_typed_params(BulkEditParams)
     job_params = params.model_dump(mode="json", by_alias=True, exclude_unset=True)
+
+    # OrgPosition synchronization sends different complete arrays per entry.
+    # Keeping these updates in one dedicated job avoids one Celery job per
+    # organization without changing the normal EntryUpdateSerializer path.
+    org_position_updates = job_params.get("org_position_updates")
+    if org_position_updates is not None:
+        entity = Entity.objects.filter(id=job_params["modelid"], is_active=True).first()
+        if entity is None or job.target is None:
+            return JobStatus.ERROR
+        target_attr_id = job_params.get("attr_id")
+        if target_attr_id is None:
+            return JobStatus.ERROR
+        total_count = len(org_position_updates)
+        updated_entries: list[Entry] = []
+        for index, update in enumerate(org_position_updates):
+            job.text = "OrgPosition bulk update... (progress: [%5d/%5d])" % (
+                index + 1,
+                total_count,
+            )
+            job.save(update_fields=["text"])
+            if job.is_canceled():
+                job.status = JobStatus.CANCELED
+                job.save(update_fields=["status"])
+                return None
+            entry = Entry.objects.filter(
+                id=update["entry_id"], schema=entity, is_active=True
+            ).first()
+            if entry is None:
+                return JobStatus.ERROR
+            role_attr = entry.attrs.filter(schema_id=target_attr_id, is_active=True).first()
+            if role_attr is None:
+                role_attr = entry.add_attribute_from_base(
+                    EntityAttr.objects.get(id=target_attr_id), job.user
+                )
+            value = update.get("value")
+            if not role_attr.is_updated(value):
+                continue
+            if not role_attr._validate_value(value):
+                return JobStatus.ERROR
+
+            entry.set_status(Entry.STATUS_EDITING)
+            entry._history_user = job.user
+            role_attr.add_value(job.user, value)
+            entry.save_autoname()
+            entry.del_status(Entry.STATUS_EDITING)
+            Job.new_invoke_trigger(
+                job.user,
+                entry,
+                [{"id": target_attr_id, "value": value}],
+            ).run()
+            Job.new_notify_update_entry(job.user, entry).run()
+            updated_entries.append(entry)
+
+        if updated_entries:
+            es = ESS()
+            entries_to_register: dict[int, Entry] = {
+                entry.id: entry for entry in updated_entries
+            }
+            for entry in updated_entries:
+                for referring_entry in entry.get_refers_objects():
+                    entries_to_register[referring_entry.id] = referring_entry
+
+            operations: list[dict[str, Any]] = []
+            for entry in entries_to_register.values():
+                operations.extend(
+                    [{"index": {"_id": entry.id}}, entry.get_es_document()]
+                )
+            es.bulk_entries(operations)
+            es.refresh_index()
+        job.text = "OrgPosition bulk update completed [%5d/%5d]" % (total_count, total_count)
+        job.save(update_fields=["text"])
+        return JobStatus.DONE
 
     target_attr = EntityAttr.objects.filter(
         id=job_params["value"]["id"], parent_entity_id=job_params["modelid"]

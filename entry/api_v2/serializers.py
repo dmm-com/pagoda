@@ -908,7 +908,12 @@ class EntryUpdateSerializer(EntryBaseSerializer):
 
         # update entry information to Elasticsearch
         if is_updated:
-            entry.register_es()
+            if self.context.get("defer_es", False):
+                deferred_entries = self.context.get("deferred_es_entries")
+                if isinstance(deferred_entries, list):
+                    deferred_entries.append(entry)
+            else:
+                entry.register_es()
 
         # run task that may run TriggerAction in response to TriggerCondition configuration
         if validated_data["delay_trigger"]:
@@ -2013,6 +2018,17 @@ class EntryBulkUpdateSerializer(serializers.Serializer[Any]):
     attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True, required=False)
     referral_name = serializers.CharField(required=False, allow_blank=True)
     hint_entry = EntryHintSerializer(required=False)
+
+
+class OrgPositionBulkUpdateItemSerializer(serializers.Serializer[Any]):
+    entry_id = serializers.IntegerField(min_value=1)
+    value = serializers.ListField(required=False, allow_null=True)
+
+
+class OrgPositionBulkUpdateSerializer(serializers.Serializer[Any]):
+    modelid = serializers.IntegerField(min_value=1)
+    attr_id = serializers.IntegerField(min_value=1)
+    updates = OrgPositionBulkUpdateItemSerializer(many=True, min_length=1)
 
 
 class ItemRollbackSerializer(serializers.Serializer[Any]):
