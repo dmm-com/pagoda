@@ -575,9 +575,7 @@ export const SearchResultsTableHead: FC<Props> = ({
                         )}
                         attrType={attrTypes[attrName]}
                         setOpenEditModal={setOpenEditModal}
-                        isDisabledEditModal={
-                          joinAttrs.length > 0 || searchAllEntities
-                        }
+                        isDisabledEditModal={searchAllEntities}
                         entityAttrs={entityAttrs}
                         setEditTargetAttrID={setEditTargetAttrID}
                         setEditTargetAttrname={setEditTargetAttrname}
@@ -646,7 +644,8 @@ export const SearchResultsTableHead: FC<Props> = ({
             ? [...new Set(selectedEntries.map((entry) => entry.modelId))]
             : entityIds
         }
-        attrsFilter={attrsFilter}
+        attrsFilter={defaultAttrsFilter}
+        joinAttrs={joinAttrs}
         targetAttrID={editTargetAttrID}
         targetAttrname={editTargetAttrname}
         targetAttrtype={editTargetAttrtype}

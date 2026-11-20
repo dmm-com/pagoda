@@ -317,7 +317,7 @@ export function convertAttrsFormatCtoS(
             .map((x) => x.value);
 
         case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
-          return attrValue.asArrayObject?.map((x) => x.id);
+          return attrValue.asArrayObject?.map((x) => x.id) ?? [];
 
         case EntryAttributeTypeTypeEnum.ARRAY_GROUP:
           return attrValue.asArrayGroup?.map((x) => x.id);
