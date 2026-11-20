@@ -173,6 +173,7 @@ static_root
 
 # JavaScript, TypeScript, React
 node_modules
+/.mutator/
 static/js/ui.js*
 coverage
 .artifacts/
