@@ -426,6 +426,23 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.context["user_grade"], "self")
         self.assertEqual(resp.context["has_password"], True)
 
+    def test_set_initial_password_for_authenticated_user(self):
+        user = User.objects.create_user(username="external-user")
+        self.client.force_login(user)
+
+        resp = self.client.get(reverse("user:edit_passwd", args=[user.id]))
+        self.assertFalse(resp.context["has_password"])
+
+        resp = self.client.post(
+            reverse("user:do_edit_passwd", args=[user.id]),
+            {"old_passwd": "unused", "new_passwd": "new-passwd", "chk_passwd": "new-passwd"},
+            content_type="application/json",
+        )
+
+        self.assertEqual(resp.status_code, 200)
+        user.refresh_from_db()
+        self.assertTrue(user.check_password("new-passwd"))
+
     def test_edit_passwd_get_with_admin_login(self):
         self._admin_login()
 
@@ -799,6 +816,16 @@ class ViewTest(AironeViewTest):
         body = mail.outbox[0].body
         self.assertIn("https://pagoda.example.com", body)
         self.assertNotIn("attacker.example", body)
+
+    @patch("user.forms.UsernameBasedPasswordResetForm.send_mail")
+    def test_password_reset_does_not_email_user_with_empty_password(self, mock_send_mail):
+        user = User.objects.create(username="empty-password", email="empty@example.com")
+
+        with override_settings(ALLOWED_HOSTS=["pagoda.example.com"]):
+            resp = self.client.post(reverse("user:password_reset"), {"username": user.username})
+
+        self.assertEqual(resp.status_code, 302)
+        mock_send_mail.assert_not_called()
 
     def _password_reset_confirm_url(self, user):
         return reverse(

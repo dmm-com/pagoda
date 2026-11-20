@@ -628,6 +628,19 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 400)
 
+    @mock.patch("user.api_v2.views.EmailMultiAlternatives")
+    def test_password_reset_does_not_email_user_with_empty_password(self, mock_email):
+        user = User.objects.create(username="empty-password", email="empty@example.com")
+
+        resp = self.client.post(
+            "/user/api/v2/password_reset",
+            {"username": user.username},
+            content_type="application/json",
+        )
+
+        self.assertEqual(resp.status_code, 400)
+        mock_email.assert_not_called()
+
     def test_password_reset_link_ignores_host_header(self):
         """
         Regression test for reset-link poisoning via the Host header (CWE-640).
@@ -866,6 +879,23 @@ class ViewTest(AironeViewTest):
             "/user/api/v2/%d/edit_passwd" % co_user.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+
+    def test_set_initial_co_user_password_by_guest(self):
+        user = self.guest_login()
+        co_user = User.objects.create_user(username="co-user", parent_user=user)
+        params = {
+            "old_passwd": "unused",
+            "new_passwd": "new-passwd",
+            "chk_passwd": "new-passwd",
+        }
+
+        resp = self.client.patch(
+            "/user/api/v2/%d/edit_passwd" % co_user.id, params, content_type="application/json"
+        )
+
+        self.assertEqual(resp.status_code, 200)
+        co_user.refresh_from_db()
+        self.assertTrue(co_user.check_password("new-passwd"))
 
     def test_patch_other_user_password_by_guest(self):
         self.guest_login()

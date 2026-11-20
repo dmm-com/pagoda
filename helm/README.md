@@ -13,7 +13,7 @@ airone` to see the charts.
 
 To install the airone chart:
 
-    helm install my-airone airone/airone --set airone.secretKey=<random value>
+    helm install my-airone airone/airone --set-file airone.secretKey=/path/to/secret-key
 
 The chart has no default signing key: rendering fails unless `airone.secretKey`
 is set or `airone.existingSecret` points at a Secret that contains a `secretKey`

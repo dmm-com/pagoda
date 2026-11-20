@@ -17,6 +17,10 @@ class EnsureSecureSecretKeyTest(SimpleTestCase):
         with self.assertRaises(ImproperlyConfigured):
             ensure_secure_secret_key("")
 
+    def test_whitespace_only_key_is_rejected(self):
+        with self.assertRaises(ImproperlyConfigured):
+            ensure_secure_secret_key(" \n")
+
     def test_default_key_is_rejected(self):
         with self.assertRaises(ImproperlyConfigured):
             ensure_secure_secret_key(DEFAULT_SECRET_KEY)

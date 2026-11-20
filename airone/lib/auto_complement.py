@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.auth.hashers import make_password
 
 from user.models import User
 
@@ -17,11 +18,8 @@ def get_or_create_auto_complement_user() -> User:
     The service user only stands in as the actor of background jobs and never
     logs in, so it is created without a usable password.
     """
-    user = get_auto_complement_user(None)
-    if user:
-        return user
-
-    user = User(username=settings.AIRONE["AUTO_COMPLEMENT_USER"])
-    user.set_unusable_password()
-    user.save()
+    user, _ = User.objects.get_or_create(
+        username=settings.AIRONE["AUTO_COMPLEMENT_USER"],
+        defaults={"password": lambda: make_password(None)},
+    )
     return user

@@ -364,7 +364,7 @@ class UserPasswordSerializer(serializers.Serializer[Any]):
             raise ValidationError("You don't have permission to access this object")
 
         # When not have a password, don't check old password.
-        if user.password:
+        if user.password and user.has_usable_password():
             # Whether recv_data matches the old password
             if not user.check_password(attrs["old_passwd"]):
                 raise ValidationError("old password is wrong")

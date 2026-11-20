@@ -177,7 +177,7 @@ def edit_passwd(request: HttpRequest, user_id: int) -> HttpResponse:
         "user_id": int(user_id),
         "user_name": user.username,
         "user_grade": user_grade,
-        "has_password": bool(user.password),
+        "has_password": bool(user.password) and user.has_usable_password(),
     }
 
     return render(request, "edit_passwd.html", context)
@@ -209,7 +209,7 @@ def do_edit_passwd(request: HttpRequest, user_id: int, recv_data: dict[str, Any]
         return HttpResponse("You don't have permission to access this object", status=400)
 
     # When not have a password, don't check old password.
-    if user.password:
+    if user.password and user.has_usable_password():
         # Whether recv_data matches the old password
         if not user.check_password(recv_data["old_passwd"]):
             return HttpResponse("old password is wrong", status=400)
