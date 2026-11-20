@@ -6,12 +6,9 @@ on:
       - master
   pull_request:
     paths:
-      - 'frontend/**/*.ts'
-      - 'frontend/**/*.tsx'
-      - 'e2e/list-search-url.spec.ts'
-      - 'e2e/browserQuality.ts'
-      - 'e2e/playwright.config.ts'
-      - 'e2e/server.mjs'
+      - 'frontend/**'
+      - 'e2e/**'
+      - '!e2e/live/**'
       - '.github/workflows/build-frontend.yml'
       - '.node-version'
       - 'package.json'
@@ -23,7 +20,9 @@ on:
       - 'tsconfig.lib.json'
       - 'vitest.config.ts'
       - 'tools/publish_coverage_summary.py'
-      - '*.config.{js,mjs,ts}'
+      - '*.config.js'
+      - '*.config.mjs'
+      - '*.config.ts'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
