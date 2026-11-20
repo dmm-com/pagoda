@@ -132,6 +132,7 @@ Setup on macOS or Linux with Node 24+: npm ci --prefix tools/mutation --ignore-s
 			PAGODA_MUTATION_ORIGINAL_PATH: originalPath,
 			PAGODA_MUTATION_ROOT: root,
 			TZ: "UTC",
+			UPDATE_SNAPSHOT: "none",
 		},
 		stdio: ["ignore", stdout, stderr],
 	});
