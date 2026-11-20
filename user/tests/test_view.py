@@ -427,7 +427,9 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.context["has_password"], True)
 
     def test_set_initial_password_for_authenticated_user(self):
-        user = User.objects.create_user(username="external-user")
+        user = self._create_user("external-user")
+        user.set_unusable_password()
+        user.save(update_fields=["password"])
         self.client.force_login(user)
 
         resp = self.client.get(reverse("user:edit_passwd", args=[user.id]))
@@ -822,7 +824,11 @@ class ViewTest(AironeViewTest):
         user = User.objects.create(username="empty-password", email="empty@example.com")
 
         with override_settings(ALLOWED_HOSTS=["pagoda.example.com"]):
-            resp = self.client.post(reverse("user:password_reset"), {"username": user.username})
+            resp = self.client.post(
+                reverse("user:password_reset"),
+                {"username": user.username},
+                HTTP_HOST="pagoda.example.com",
+            )
 
         self.assertEqual(resp.status_code, 302)
         mock_send_mail.assert_not_called()

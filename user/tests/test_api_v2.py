@@ -882,7 +882,9 @@ class ViewTest(AironeViewTest):
 
     def test_set_initial_co_user_password_by_guest(self):
         user = self.guest_login()
-        co_user = User.objects.create_user(username="co-user", parent_user=user)
+        co_user = self._create_user("co-user", parent_user=user)
+        co_user.set_unusable_password()
+        co_user.save(update_fields=["password"])
         params = {
             "old_passwd": "unused",
             "new_passwd": "new-passwd",
