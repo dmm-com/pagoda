@@ -20,6 +20,6 @@ def get_or_create_auto_complement_user() -> User:
     """
     user, _ = User.objects.get_or_create(
         username=settings.AIRONE["AUTO_COMPLEMENT_USER"],
-        defaults={"password": lambda: make_password(None)},
+        defaults={"password": make_password(None)},
     )
     return user
