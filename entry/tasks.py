@@ -15,11 +15,11 @@ from airone.celery import app
 from airone.lib import custom_view
 from airone.lib.acl import ACLType
 from airone.lib.elasticsearch import (
+    ESS,
     AdvancedSearchResultRecord,
     AdvancedSearchResultRecordAttr,
     AttrHint,
     EntryHint,
-    ESS,
 )
 from airone.lib.event_notification import (
     notify_entry_create,
