@@ -17,6 +17,17 @@ Pagoda provides two distinct user interfaces: a modern React-based SPA (New UI) 
 - Stable and proven interface
 - Simpler architecture for basic operations
 
+### Sharing filtered lists
+
+On list pages such as `/ui/entities`, the `query` parameter holds the search
+text. For example, `?query=100%25` searches for `100%`. When building a link,
+pass the text directly to `URLSearchParams.set("query", text)`.
+
+Older versions of Pagoda encoded list filters twice. For example, an old
+bookmark for `100%` ends in `query=100%2525&page=1`. Today that URL searches
+for the literal text `100%25`. If a bookmark shows encoded characters in the
+search box, enter the original text, press Enter and save the updated URL.
+
 ### Key Features
 
 #### Common Features

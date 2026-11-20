@@ -84,7 +84,7 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe("AliasEntryListPage", () => {
-  it("renders the alias entry list", async () => {
+  it("renders the alias entry list with the bookmarked filter", async () => {
     // Create memory router
     const router = createMemoryRouter(
       [
@@ -94,7 +94,7 @@ describe("AliasEntryListPage", () => {
         },
       ],
       {
-        initialEntries: ["/ui/entities/1/alias"],
+        initialEntries: ["/ui/entities/1/alias?query=100%25"],
       },
     );
 
@@ -110,6 +110,7 @@ describe("AliasEntryListPage", () => {
     // Verify page title is displayed
     const titleElement = screen.getByRole("heading", { name: "Entity1" });
     expect(titleElement).toBeInTheDocument();
+    expect(screen.getByDisplayValue("100%")).toBeInTheDocument();
   });
 
   it("renders in English", async () => {

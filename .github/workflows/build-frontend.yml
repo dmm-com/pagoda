@@ -8,6 +8,10 @@ on:
     paths:
       - 'frontend/**/*.ts'
       - 'frontend/**/*.tsx'
+      - 'e2e/list-search-url.spec.ts'
+      - 'e2e/browserQuality.ts'
+      - 'e2e/playwright.config.ts'
+      - 'e2e/server.mjs'
       - '.github/workflows/build-frontend.yml'
       - '.node-version'
       - 'package.json'
@@ -70,6 +74,10 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: build
         run: npm run build:development
+      - name: Check list search URLs in Chromium
+        run: |
+          npx playwright install --with-deps chromium
+          npx playwright test --config=e2e/playwright.config.ts list-search-url.spec.ts
       - name: build(library)
         run: npm run build:lib
   test:
