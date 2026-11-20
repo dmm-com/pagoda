@@ -830,3 +830,48 @@ class ModelTest(BaseModelTest):
         self.assertEqual(arr_entry["value"], [1, 2, 3.5])
         self.assertIsInstance(arr_entry["value"][0], int)
         self.assertNotIsInstance(arr_entry["value"][0], float)
+
+    def _make_named_boolean_attr(self, attr_type, name):
+        entity_attr = EntityAttr.objects.create(
+            name=name,
+            type=attr_type,
+            created_user=self._user,
+            parent_entity=self._entity,
+        )
+        return self._entry.add_attribute_from_base(entity_attr, self._user)
+
+    def test_named_object_boolean_to_input_value_round_trip(self):
+        attr = self._make_named_boolean_attr(AttrType.NAMED_OBJECT_BOOLEAN, "nb")
+        attrv = attr.add_value(self._user, {"name": "alpha", "id": None, "boolean": True})
+
+        self.assertEqual(attrv.to_input_value(), {"name": "alpha", "id": None, "boolean": True})
+
+        # Feeding the stored form back into add_value() keeps the boolean flag.
+        restored = attr.add_value(self._user, attrv.to_input_value())
+        self.assertTrue(restored.boolean)
+        self.assertEqual(restored.value, "alpha")
+
+    def test_array_named_object_boolean_to_input_value_round_trip(self):
+        attr = self._make_named_boolean_attr(AttrType.ARRAY_NAMED_OBJECT_BOOLEAN, "anb")
+        attr.add_value(
+            self._user,
+            [
+                {"name": "alpha", "id": None, "boolean": True},
+                {"name": "beta", "id": None, "boolean": False},
+            ],
+        )
+        attrv = attr.get_latest_value()
+
+        self.assertCountEqual(
+            attrv.to_input_value(),
+            [
+                {"name": "alpha", "id": None, "boolean": True},
+                {"name": "beta", "id": None, "boolean": False},
+            ],
+        )
+
+        restored = attr.add_value(self._user, attrv.to_input_value())
+        self.assertCountEqual(
+            [(x.value, x.boolean) for x in restored.data_array.all()],
+            [("alpha", True), ("beta", False)],
+        )

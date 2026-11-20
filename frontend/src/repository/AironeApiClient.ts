@@ -27,6 +27,8 @@ import {
   EntryAlias,
   EntryApi,
   EntryBase,
+  BulkRollbackCheck,
+  BulkRollbackRequest,
   EntryBulkUpdateToJSON,
   EntryCopy,
   EntryHint,
@@ -655,6 +657,29 @@ class AironeApiClient {
       body: JSON.stringify({ ...body, entry_ids: entryIds }),
     });
     if (!response.ok) throw new Error(`Bulk update failed: ${response.status}`);
+  }
+
+  async getBulkRollbackCheck(jobId: number): Promise<BulkRollbackCheck> {
+    return await this.entry.entryApiV2BulkRollbackCheckRetrieve({ jobId });
+  }
+
+  // skipUpdated is omitted from the request body when undefined, so the server default applies.
+  async rollbackBulkUpdate(
+    jobId: number,
+    skipUpdated?: boolean,
+  ): Promise<number> {
+    const bulkRollbackRequest: BulkRollbackRequest | undefined =
+      skipUpdated === undefined ? undefined : { skipUpdated };
+    const result = await this.entry.entryApiV2BulkRollbackCreate(
+      { jobId, bulkRollbackRequest },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      },
+    );
+    return result.jobId;
   }
 
   async restoreEntry(id: number): Promise<void> {

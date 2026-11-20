@@ -18,6 +18,7 @@ export const jobMessages = defineMessages({
     "job.operation.copy": "コピー",
     "job.operation.restore": "復旧",
     "job.operation.bulkEdit": "一括更新",
+    "job.operation.rollbackBulkUpdate": "切り戻し",
     "job.operation.unknown": "不明",
 
     // Job list page
@@ -46,6 +47,28 @@ export const jobMessages = defineMessages({
     "job.list.noteColumn": "備考",
     "job.list.confirmCancelTitle": "本当にキャンセルしますか？",
     "job.list.cancelFailed": "キャンセルに失敗しました。",
+    "job.list.rollbackCheckButton": "切り戻し",
+    "job.rollbackCheck.title": "一括更新の切り戻し",
+    "job.rollbackCheck.executedInfo":
+      "一括更新の実行日時: {{datetime}} / 実行ユーザ: {{user}}",
+    "job.rollbackCheck.loadFailed": "切り戻し情報の取得に失敗しました。",
+    "job.rollbackCheck.noItems": "切り戻し対象の変更はありません。",
+    "job.rollbackCheck.rollbackWithSkip":
+      "更新後の修正（青字部分）を除き、切り戻す",
+    "job.rollbackCheck.rollbackWithoutSkip": "全て切り戻す",
+    "job.rollbackCheck.rollbackStarted":
+      "切り戻しジョブ (ID: {{jobId}}) を開始しました。",
+    "job.rollbackCheck.rollbackFailed": "切り戻しの開始に失敗しました。",
+    "job.rollbackCheck.alreadyRolledBack": "このジョブは既に切り戻し済みです",
+    "job.rollbackCheck.highlightLegend":
+      "青色の行は、一括更新後に値がさらに変更された項目です。",
+    "job.rollbackCheck.entryColumn": "アイテム名",
+    "job.rollbackCheck.attrColumn": "属性名",
+    "job.rollbackCheck.beforeColumn": "変更前の値",
+    "job.rollbackCheck.afterColumn": "変更後の値",
+    "job.rollbackCheck.currentColumn": "現在の値",
+    "job.rollbackCheck.currentSetAtColumn": "現在の値の設定日時",
+    "job.rollbackCheck.currentSetByColumn": "現在の値の設定ユーザ",
   },
   en: {
     "job.status.preparing": "Preparing",
@@ -64,6 +87,7 @@ export const jobMessages = defineMessages({
     "job.operation.copy": "Copy",
     "job.operation.restore": "Restore",
     "job.operation.bulkEdit": "Bulk update",
+    "job.operation.rollbackBulkUpdate": "Rollback bulk update",
     "job.operation.unknown": "Unknown",
 
     // Job list page
@@ -92,5 +116,27 @@ export const jobMessages = defineMessages({
     "job.list.noteColumn": "Note",
     "job.list.confirmCancelTitle": "Are you sure you want to cancel?",
     "job.list.cancelFailed": "Failed to cancel.",
+    "job.list.rollbackCheckButton": "Check rollback",
+    "job.rollbackCheck.title": "Bulk update rollback check",
+    "job.rollbackCheck.executedInfo":
+      "Bulk update executed at: {{datetime}} / User: {{user}}",
+    "job.rollbackCheck.loadFailed": "Failed to load rollback information.",
+    "job.rollbackCheck.noItems": "There are no changes to roll back.",
+    "job.rollbackCheck.rollbackWithSkip": "Roll back (skip_updated=true)",
+    "job.rollbackCheck.rollbackWithoutSkip": "Roll back (skip_updated not set)",
+    "job.rollbackCheck.rollbackStarted":
+      "Started rollback job (ID: {{jobId}}).",
+    "job.rollbackCheck.rollbackFailed": "Failed to start the rollback.",
+    "job.rollbackCheck.alreadyRolledBack":
+      "This job has already been rolled back.",
+    "job.rollbackCheck.highlightLegend":
+      "Rows highlighted in blue were changed again after the bulk update and cannot be rolled back.",
+    "job.rollbackCheck.entryColumn": "Item name",
+    "job.rollbackCheck.attrColumn": "Attribute name",
+    "job.rollbackCheck.beforeColumn": "Value before change",
+    "job.rollbackCheck.afterColumn": "Value after change",
+    "job.rollbackCheck.currentColumn": "Current value",
+    "job.rollbackCheck.currentSetAtColumn": "Current value set at",
+    "job.rollbackCheck.currentSetByColumn": "Current value set by",
   },
 });
