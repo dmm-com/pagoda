@@ -125,21 +125,28 @@ describe("Conditions", () => {
       wrapper: TestWrapper,
     });
 
-    expect(screen.queryAllByRole("row")).toHaveLength(4);
+    // Insertion bands and the append row are table rows too; only content rows
+    // carry the list marker.
+    const rows = screen
+      .queryAllByRole("row")
+      .filter(
+        (row) => row.getAttribute("data-list-id") === "trigger-conditions",
+      );
+    expect(rows).toHaveLength(4);
 
-    const row0 = screen.queryAllByRole("row")[0];
+    const row0 = rows[0];
     expect(within(row0).getByText("attr1")).toBeInTheDocument();
     expect(within(row0).getByDisplayValue("str cond")).toBeInTheDocument();
 
-    const row1 = screen.queryAllByRole("row")[1];
+    const row1 = rows[1];
     expect(within(row1).getByText("attr2")).toBeInTheDocument();
     expect(within(row1).getAllByRole("checkbox")[1]).toBeChecked();
 
-    const row2 = screen.queryAllByRole("row")[2];
+    const row2 = rows[2];
     expect(within(row2).getByText("attr3")).toBeInTheDocument();
     expect(within(row2).getByDisplayValue("ref1")).toBeInTheDocument();
 
-    const row3 = screen.queryAllByRole("row")[3];
+    const row3 = rows[3];
     expect(within(row3).getByText("attr4")).toBeInTheDocument();
     expect(within(row3).getByDisplayValue("name")).toBeInTheDocument();
     expect(within(row3).getByDisplayValue("ref1")).toBeInTheDocument();

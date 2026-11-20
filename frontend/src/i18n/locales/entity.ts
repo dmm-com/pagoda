@@ -67,12 +67,10 @@ export const entityMessages = defineMessages({
     "entity.form.displayAttrPlaceholder": "表示ラベルに使う属性名 (任意)",
     "entity.form.defaultValueAriaLabel": "{{index}} 番目の属性のデフォルト値",
     "entity.form.deleteAttrAriaLabel": "{{index}} 番目の属性を削除",
-    "entity.form.appendAttrAriaLabel": "{{index}} 番目の後に属性を追加",
     "entity.form.attrMenuAriaLabel": "{{index}} 番目の属性の詳細メニューを開く",
     "entity.form.mandatoryAriaLabel": "{{index}} 番目の属性を必須にする",
     "entity.form.deleteInChainAriaLabel":
       "{{index}} 番目の属性を関連削除に連動する",
-    "entity.form.addAttrAriaLabel": "属性を追加",
 
     // Entity form: attribute fields
     "entity.form.attributesTitle": "属性情報",
@@ -174,6 +172,17 @@ export const entityMessages = defineMessages({
     "entity.edit.newTitlePrefix": "新規作成",
     "entity.edit.newEntityTitle": "新規モデルの作成",
     "entity.edit.description": "エンティテイティ詳細 / 編集",
+
+    // Repeatable attribute / isolation-rule rows
+    "entity.form.appendAttribute": "属性を追加",
+    "entity.form.insertAttributeBefore": "{{row}}行目の前に属性を追加",
+    "entity.form.appendIsolationRule": "設定を追加",
+    "entity.form.insertIsolationRuleBefore": "{{row}}行目の前に設定を追加",
+    "entity.form.deleteIsolationRule": "{{row}}行目の設定を削除",
+    "entity.form.appendIsolationCondition": "条件を追加",
+    "entity.form.appendIsolationConditionAriaLabel": "設定{{rule}}の条件を追加",
+    "entity.form.insertIsolationConditionBefore": "{{row}}件目の前に条件を追加",
+    "entity.form.deleteIsolationCondition": "{{row}}件目の条件を削除",
   },
   en: {
     // Entity list
@@ -242,12 +251,10 @@ export const entityMessages = defineMessages({
       "Attribute name for the display label (optional)",
     "entity.form.defaultValueAriaLabel": "Default value of attribute {{index}}",
     "entity.form.deleteAttrAriaLabel": "Delete attribute {{index}}",
-    "entity.form.appendAttrAriaLabel": "Add attribute after {{index}}",
     "entity.form.attrMenuAriaLabel": "Open detail menu of attribute {{index}}",
     "entity.form.mandatoryAriaLabel": "Make attribute {{index}} mandatory",
     "entity.form.deleteInChainAriaLabel":
       "Link attribute {{index}} to related deletion",
-    "entity.form.addAttrAriaLabel": "Add attribute",
 
     // Entity form: attribute fields
     "entity.form.attributesTitle": "Attribute information",
@@ -355,5 +362,20 @@ export const entityMessages = defineMessages({
     "entity.edit.newTitlePrefix": "New",
     "entity.edit.newEntityTitle": "Create a new entity",
     "entity.edit.description": "Entity details / edit",
+
+    // Repeatable attribute / isolation-rule rows
+    "entity.form.appendAttribute": "Add attribute",
+    "entity.form.insertAttributeBefore":
+      "Insert an attribute before row {{row}}",
+    "entity.form.appendIsolationRule": "Add setting",
+    "entity.form.insertIsolationRuleBefore":
+      "Insert a setting before row {{row}}",
+    "entity.form.deleteIsolationRule": "Delete setting in row {{row}}",
+    "entity.form.appendIsolationCondition": "Add condition",
+    "entity.form.appendIsolationConditionAriaLabel":
+      "Add a condition to setting {{rule}}",
+    "entity.form.insertIsolationConditionBefore":
+      "Insert a condition before item {{row}}",
+    "entity.form.deleteIsolationCondition": "Delete condition {{row}}",
   },
 });

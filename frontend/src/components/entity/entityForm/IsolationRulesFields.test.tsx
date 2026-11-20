@@ -162,11 +162,13 @@ describe("IsolationRulesFields", () => {
   test("adds the first rule and then its first condition", () => {
     render(<Harness withRule={false} />, { wrapper: TestWrapper });
 
-    fireEvent.click(screen.getByTestId("AddIcon"));
-    expect(screen.getAllByTestId("AddIcon")).toHaveLength(2);
+    fireEvent.click(screen.getByTestId("append-row-isolation-rule"));
+    expect(
+      screen.getByTestId("append-isolation-condition-0"),
+    ).toBeInTheDocument();
     expect(screen.getByTestId("rules")).toHaveTextContent('"conditions":[]');
 
-    fireEvent.click(screen.getAllByTestId("AddIcon")[0]);
+    fireEvent.click(screen.getByTestId("append-isolation-condition-0"));
     expect(screen.getByPlaceholderText("値")).toBeDisabled();
     expect(screen.getByTestId("rules")).toHaveTextContent('"isUnmatch":false');
   });

@@ -357,7 +357,7 @@ exports[`EntryEditPage > should match snapshot 1`] = `
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1egp9pz-MuiTableCell-root"
                 >
                   <div
-                    class="MuiBox-root css-136r79r"
+                    class="MuiBox-root css-wg04mb"
                   >
                     <div
                       class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-ck5q85-MuiFormControl-root-MuiTextField-root"
@@ -774,7 +774,7 @@ exports[`EntryEditPage > should match snapshot 1`] = `
                 class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1egp9pz-MuiTableCell-root"
               >
                 <div
-                  class="MuiBox-root css-136r79r"
+                  class="MuiBox-root css-wg04mb"
                 >
                   <div
                     class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-ck5q85-MuiFormControl-root-MuiTextField-root"

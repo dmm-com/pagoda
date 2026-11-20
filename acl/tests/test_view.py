@@ -3,7 +3,7 @@ import json
 from django.urls import reverse
 
 from acl.models import ACLBase
-from airone.lib.acl import ACLType
+from airone.lib.acl import ACLObjType, ACLType
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
@@ -463,3 +463,44 @@ class ViewTest(AironeViewTest):
         self.assertEqual(
             aclobj.full.history.count(), self._test_data["history_count"]["aclobj.full"]
         )
+
+    def _create_private_entity_entry(self):
+        admin = self.admin_login()
+        entity = Entity.objects.create(name="private-entity", created_user=admin, is_public=False)
+        entry = Entry.objects.create(name="private-entry", schema=entity, created_user=admin)
+        self.assertTrue(entry.is_public)
+        return admin, entity, entry
+
+    def test_post_acl_set_for_entry_without_parent_permission(self):
+        _admin, _entity, entry = self._create_private_entity_entry()
+
+        self.guest_login()
+        params = {
+            "object_id": str(entry.id),
+            # "0" used to resolve to the bare ACLBase row, which skipped the
+            # parent Entity permission check.
+            "object_type": "0",
+            "acl": [],
+            "default_permission": str(ACLType.Writable.id),
+        }
+        resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")
+
+        self.assertEqual(resp.status_code, 400)
+        entry.refresh_from_db()
+        self.assertTrue(entry.is_public)
+
+    def test_post_acl_set_with_mismatched_object_type(self):
+        _admin, _entity, entry = self._create_private_entity_entry()
+
+        self.guest_login()
+        params = {
+            "object_id": str(entry.id),
+            "object_type": str(int(ACLObjType.Entity)),
+            "acl": [],
+            "default_permission": str(ACLType.Writable.id),
+        }
+        resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")
+
+        # A mismatched object_type used to look the wrong row up (500); the stored
+        # row is authoritative now, so this is a plain permission denial.
+        self.assertEqual(resp.status_code, 400)

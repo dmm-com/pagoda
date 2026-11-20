@@ -1,6 +1,7 @@
 from unittest import mock
 
 from django.contrib.auth import hashers
+from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase
 
 from user.forms import UsernameBasedPasswordResetForm
@@ -55,3 +56,20 @@ class FormTest(TestCase):
             form.cleaned_data = {"username": "unknown"}
             form.save(domain_override="example.com", from_email=self.FROM_EMAIL)
             self.assertFalse(m.called)
+
+    def test_save_without_domain_override_is_rejected(self):
+        """
+        The reset link domain must be provided explicitly; deriving it from
+        the request is not allowed (reset-link poisoning, CWE-640).
+        """
+        User.objects.create(
+            username=self.USERNAME,
+            password=hashers.make_password(self.PASSWORD),
+            email=self.EMAIL,
+            is_active=True,
+        )
+        form = UsernameBasedPasswordResetForm()
+        form.cleaned_data = {"username": self.USERNAME}
+
+        with self.assertRaises(ImproperlyConfigured):
+            form.save(from_email=self.FROM_EMAIL)

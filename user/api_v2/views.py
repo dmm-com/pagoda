@@ -3,7 +3,6 @@ from typing import Any, cast
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMultiAlternatives
 from django.db.models import QuerySet
 from django.template import loader
@@ -25,6 +24,7 @@ from rest_framework.views import APIView
 from airone.exceptions import ImportDataError
 from airone.exceptions.model import UnexpectedAttributeType
 from airone.lib.acl import ACLType
+from airone.lib.canonical import get_canonical_url_parts
 from airone.lib.configuration_export import ConfigurationExportAPI
 from airone.lib.drf import EnvelopeYAMLParser, IsSuperuser
 from airone.lib.text import normalize_search_text
@@ -565,19 +565,18 @@ class PasswordResetAPI(viewsets.GenericViewSet[Any]):
 
         UserModelClass = get_user_model()
         user_email = getattr(user, UserModelClass.get_email_field_name())
-        use_https = request.is_secure()
+        # Build the reset link from settings-derived parts instead of the
+        # client-controlled Host header (reset-link poisoning, CWE-640).
         token_generator = default_token_generator
-        current_site = get_current_site(request)
-        site_name = current_site.name
-        domain = current_site.domain
+        url_parts = get_canonical_url_parts(request)
         context = {
             "email": user_email,
             "uid": urlsafe_base64_encode(force_bytes(user.pk)),
             "user": user,
-            "domain": domain,
-            "site_name": site_name,
+            "domain": url_parts["domain"],
+            "site_name": url_parts["site_name"],
             "token": token_generator.make_token(user),
-            "protocol": "https" if use_https else "http",
+            "protocol": url_parts["protocol"],
         }
         self._send_mail(
             subject_template_name="registration/password_reset_subject.txt",
