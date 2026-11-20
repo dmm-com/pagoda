@@ -1986,7 +1986,12 @@ class OrgPositionBulkUpdateItemSerializer(serializers.Serializer[Any]):
 class OrgPositionBulkUpdateSerializer(serializers.Serializer[Any]):
     modelid = serializers.IntegerField(min_value=1)
     attr_id = serializers.IntegerField(min_value=1)
-    updates = OrgPositionBulkUpdateItemSerializer(many=True, min_length=1)
+    updates = OrgPositionBulkUpdateItemSerializer(many=True)
+
+    def validate_updates(self, value: list[Any]) -> list[Any]:
+        if not value:
+            raise ValidationError("At least one organization position update is required.")
+        return value
 
 
 class ItemRollbackSerializer(serializers.Serializer[Any]):

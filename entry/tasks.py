@@ -1359,7 +1359,10 @@ def bulk_update_entries(
             operations: list[dict[str, Any]] = []
             for entry in entries_to_register.values():
                 operations.extend(
-                    [{"index": {"_id": entry.id}}, entry.get_es_document()]
+                    [
+                        {"index": {"_id": entry.id}},
+                        cast(dict[str, Any], entry.get_es_document()),
+                    ]
                 )
             es.bulk_entries(operations)
             es.refresh_index()
