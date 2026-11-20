@@ -1349,9 +1349,7 @@ def bulk_update_entries(
 
         if updated_entries:
             es = ESS()
-            entries_to_register: dict[int, Entry] = {
-                entry.id: entry for entry in updated_entries
-            }
+            entries_to_register: dict[int, Entry] = {entry.id: entry for entry in updated_entries}
             for entry in updated_entries:
                 for referring_entry in entry.get_refers_objects():
                     entries_to_register[referring_entry.id] = referring_entry

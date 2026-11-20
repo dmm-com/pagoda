@@ -1401,9 +1401,7 @@ class OrgPositionBulkUpdateAPI(generics.GenericAPIView[Any]):
             return Response("Duplicate entry IDs are not allowed.", status=400)
         entries = {
             entry.id: entry
-            for entry in Entry.objects.filter(
-                id__in=entry_ids, schema=entity, is_active=True
-            )
+            for entry in Entry.objects.filter(id__in=entry_ids, schema=entity, is_active=True)
         }
         if len(entries) != len(set(entry_ids)):
             return Response("One or more entries do not belong to the entity.", status=400)
