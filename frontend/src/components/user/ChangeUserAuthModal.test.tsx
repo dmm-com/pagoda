@@ -1,7 +1,13 @@
 /**
  */
 
-import { act, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 
 import { TestWrapper } from "../../TestWrapper";
 
@@ -61,43 +67,45 @@ describe("ChangeUserAuthModal", () => {
   test("should handle a success on updating auth method", async () => {
     vi.spyOn(aironeApiClient, "updateUserAuth").mockResolvedValue(undefined);
 
+    const closeModal = vi.fn();
     render(
-      <ChangeUserAuthModal user={user} openModal={true} closeModal={vi.fn()} />,
+      <ChangeUserAuthModal
+        user={user}
+        openModal={true}
+        closeModal={closeModal}
+      />,
       {
         wrapper: TestWrapper,
       },
     );
 
-    await waitFor(() => {
-      screen.getByRole("button", { name: "送信" }).click();
-    });
-
-    await waitFor(() => {
-      expect(
-        screen.queryByText("認証方法の変更に成功しました"),
-      ).not.toBeInTheDocument();
-    });
+    fireEvent.click(screen.getByRole("button", { name: "送信" }));
+    expect(
+      await screen.findByText("認証方法の変更に成功しました"),
+    ).toBeInTheDocument();
+    expect(closeModal).toHaveBeenCalled();
   });
 
   test("should handle a failure on updating auth method", async () => {
     vi.spyOn(aironeApiClient, "updateUserAuth").mockRejectedValue(new Error());
 
+    const closeModal = vi.fn();
     render(
-      <ChangeUserAuthModal user={user} openModal={true} closeModal={vi.fn()} />,
+      <ChangeUserAuthModal
+        user={user}
+        openModal={true}
+        closeModal={closeModal}
+      />,
       {
         wrapper: TestWrapper,
       },
     );
 
-    await waitFor(() => {
-      screen.getByRole("button", { name: "送信" }).click();
-    });
-
-    await waitFor(() => {
-      expect(
-        screen.queryByText("認証方法の変更に失敗しました"),
-      ).not.toBeInTheDocument();
-    });
+    fireEvent.click(screen.getByRole("button", { name: "送信" }));
+    expect(
+      await screen.findByText("認証方法の変更に失敗しました"),
+    ).toBeInTheDocument();
+    expect(closeModal).not.toHaveBeenCalled();
   });
 
   test("renders in English", async () => {
