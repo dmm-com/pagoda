@@ -1358,7 +1358,7 @@ def bulk_update_entries(
             else:
                 return (
                     JobStatus.ERROR,
-                    "Validation error during bulk update (%s)" % serializer.error_messages,
+                    "Validation error during bulk update (%s)" % serializer.errors,
                     None,
                 )
 
