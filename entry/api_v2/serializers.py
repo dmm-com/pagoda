@@ -908,12 +908,7 @@ class EntryUpdateSerializer(EntryBaseSerializer):
 
         # update entry information to Elasticsearch
         if is_updated:
-            if self.context.get("defer_es", False):
-                deferred_entries = self.context.get("deferred_es_entries")
-                if isinstance(deferred_entries, list):
-                    deferred_entries.append(entry)
-            else:
-                entry.register_es()
+            entry.register_es()
 
         # run task that may run TriggerAction in response to TriggerCondition configuration
         if validated_data["delay_trigger"]:
