@@ -56,11 +56,6 @@ search-semantics changes).
   those no longer diverge. Elasticsearch semantics still can, so keep running
   the final pre-push check against the real stack or rely on CI.
 - **Lint (ruff):** `uv run ruff check .`
-- **Format check (ruff):** `uv run ruff format --check .`
-- **Before creating or updating a PR:** run both `uv run ruff check .` and
-  `uv run ruff format --check .`. The formatter check is separate from lint;
-  passing lint alone does not guarantee that CI will pass. If source files are
-  changed, run `uv run ruff format <changed files>` and rerun both checks.
 - **Type check:** `PAGODA_LITE=1 uv run mypy .` shows all current diagnostics.
   CI runs `uv run python tools/mypy_ratchet.py --base-ref <git-ref>` and fails
   only when the diagnostic multiset grows relative to that revision. It uses
