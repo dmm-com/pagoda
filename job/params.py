@@ -496,6 +496,15 @@ class OrgPositionBulkUpdateItem(JobParamsModel):
     value: Any = None
 
 
+class BulkEditChange(JobParamsModel):
+    """One attribute value that a bulk edit job wrote, recorded for rollback."""
+
+    entry_id: int
+    attr_id: int
+    new_attrv_id: int
+    old_attrv_id: int | None = None
+
+
 class BulkEditParams(JobParamsModel):
     modelid: int
     attr_id: int | None = None
@@ -505,6 +514,24 @@ class BulkEditParams(JobParamsModel):
     referral_name: str | None = None
     value: AttributeValue | None = None
     org_position_updates: list[OrgPositionBulkUpdateItem] | None = None
+    # Written by the bulk edit task after it runs. None means no record exists
+    # (for example, the job predates change recording).
+    changes: list[BulkEditChange] | None = None
+
+
+class BulkEditRollbackSkip(JobParamsModel):
+    entry_id: int
+    attr_id: int
+    reason: str
+
+
+class BulkEditRollbackParams(JobParamsModel):
+    job_id: int
+    # True: keep values that were changed after the bulk edit job. False: restore every value.
+    # Jobs stored before this key existed behave as True.
+    skip_updated: bool = True
+    # Written by the rollback task after it runs; lists what was not restored.
+    skipped: list[BulkEditRollbackSkip] | None = None
 
 
 class EntityImportItem(JobParamsModel):
@@ -598,6 +625,7 @@ CORE_JOB_PARAMS: dict[int, ParamsContract] = _build_core_registry(
         (37, RoleChangeParams),
         (38, RoleChangeParams),
         (39, JobHistoryExportParams),
+        (40, BulkEditRollbackParams),
     ]
 )
 

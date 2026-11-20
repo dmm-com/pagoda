@@ -276,6 +276,67 @@ describe("SearchResults", () => {
   });
 
   describe("bulk operations", () => {
+    test.each([
+      ["Status", false, true],
+      ["RackSpace", false, true],
+      ["RackSpace.Status", false, false],
+      ["Status", true, true],
+    ])("bulk update availability for %s (searchAllEntities=%s)", (attrName, searchAllEntities, visible) => {
+      render(
+        <SearchResults
+          {...defaultProps}
+          searchAllEntities={searchAllEntities}
+          joinAttrs={[{ name: "RackSpace", attrinfo: [{ name: "Status" }] }]}
+          defaultAttrsFilter={{
+            Status: {
+              filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+              keyword: "",
+            },
+            RackSpace: {
+              filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+              keyword: "",
+            },
+            "RackSpace.Status": {
+              filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+              keyword: "",
+              baseAttrname: "RackSpace",
+              joinedAttrname: "Status",
+            },
+          }}
+          entityAttrs={[
+            { id: 42, name: "Status", type: EntryAttributeTypeTypeEnum.STRING },
+            {
+              id: 43,
+              name: "RackSpace",
+              type: EntryAttributeTypeTypeEnum.OBJECT,
+            },
+          ]}
+        />,
+        { wrapper: TestWrapper },
+      );
+      const header = document.querySelector(
+        `th[data-search-column="${attrName}"]`,
+      )!;
+      fireEvent.click(
+        within(header as HTMLElement).getByRole("button", {
+          name: /属性値でフィルタ/,
+        }),
+      );
+      const bulkUpdate = screen.queryByRole("button", { name: "一括更新" });
+      if (!visible) {
+        expect(bulkUpdate).not.toBeInTheDocument();
+        expect(screen.getByText("絞り込み条件")).toBeInTheDocument();
+      } else if (searchAllEntities) {
+        expect(bulkUpdate).toBeDisabled();
+      } else {
+        expect(bulkUpdate).toBeEnabled();
+        fireEvent.click(bulkUpdate!);
+        expect(
+          screen.getByText("一括更新する（変更後の）値に更新"),
+        ).toBeInTheDocument();
+      }
+    });
+
     test("should render checkboxes for bulk operations when not readonly", () => {
       render(<SearchResults {...defaultProps} />, { wrapper: TestWrapper });
 

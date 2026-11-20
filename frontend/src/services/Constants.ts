@@ -217,6 +217,7 @@ export const JobOperations = {
   DELETE_ROLE: 37,
   RESTORE_ROLE: 38,
   EXPORT_JOB_HISTORY: 39,
+  ROLLBACK_BULK_UPDATE: 40,
 };
 
 export const JobRefreshIntervalMilliSec = 5 * 1000;

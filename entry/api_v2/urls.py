@@ -136,4 +136,6 @@ urlpatterns = [
     path("bulk_delete/", views.EntryBulkDeleteAPI.as_view()),
     path("bulk/", views.EntryBulkUpdateAPI.as_view()),
     path("bulk_org_positions/", views.OrgPositionBulkUpdateAPI.as_view()),
+    path("bulk/<int:job_id>/rollback/", views.EntryBulkUpdateRollbackAPI.as_view()),
+    path("bulk/<int:job_id>/rollback_check/", views.EntryBulkUpdateRollbackCheckAPI.as_view()),
 ]
