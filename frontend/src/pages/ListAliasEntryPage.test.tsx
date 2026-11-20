@@ -121,7 +121,7 @@ test("renders in English", async () => {
       },
     ],
     {
-      initialEntries: [listAliasPath(1)],
+      initialEntries: [`${listAliasPath(1)}?query=100%25`],
     },
   );
   await act(async () => {
@@ -134,4 +134,5 @@ test("renders in English", async () => {
   });
 
   expect(screen.getAllByText("Alias settings").length).toBeGreaterThan(0);
+  expect(screen.getByDisplayValue("100%")).toBeInTheDocument();
 });
