@@ -10,6 +10,7 @@ import { UseFormSetValue } from "react-hook-form";
 import { Schema } from "./EntryFormSchema";
 
 import { useTranslation } from "hooks/useTranslation";
+import { ENTRY_DATETIME_FORMAT, serializeDateTime } from "services/DateUtil";
 import { getStagedErrorStyle } from "utils/styleUtils";
 
 const StyledBox = styled(Box)(({}) => ({
@@ -49,14 +50,12 @@ export const DateTimeAttributeValueField: FC<Props> = ({
         render={({ field, fieldState: { error, isDirty } }) => (
           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DateTimePicker
-              format="yyyy/MM/dd HH:mm:ss"
+              format={ENTRY_DATETIME_FORMAT}
               value={field.value ? new Date(field.value) : null}
               onChange={(date: Date | null) => {
                 setValue(
                   `attrs.${attrId}.value.asString`,
-                  date != null && !isNaN(date.getTime()) // if the date is valid
-                    ? date.toISOString()
-                    : "",
+                  serializeDateTime(date),
                   {
                     shouldDirty: true,
                     shouldValidate: true,

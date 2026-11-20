@@ -1,8 +1,11 @@
 import { Box, Button, Typography } from "@mui/material";
 import { DateTimePicker, DesktopDatePicker } from "@mui/x-date-pickers";
+import { format as formatLocalDate, isValid } from "date-fns";
 import { FC, useState } from "react";
 
 import { useTranslation } from "../../hooks/useTranslation";
+
+import { serializeDateTime } from "services/DateUtil";
 
 interface BaseDateRangePickerProps {
   initialStart?: string;
@@ -66,24 +69,18 @@ export const BaseDateRangePicker: FC<BaseDateRangePickerProps> = ({
     setIsEditing(true);
   };
 
-  const formatDate = (date: Date | null): string => {
-    if (!date) return "";
+  const handleApply = () => {
+    const { start, end } = draftDates;
+    if (!start || !end || !isValid(start) || !isValid(end) || validationError)
+      return;
     if (isDateTime) {
-      return new Date(
-        date.getTime() - date.getTimezoneOffset() * 60000,
-      ).toISOString();
+      onApply(serializeDateTime(start), serializeDateTime(end));
     } else {
-      return (
-        new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-          .toISOString()
-          .split("T")[0] ?? ""
+      onApply(
+        formatLocalDate(start, "yyyy-MM-dd"),
+        formatLocalDate(end, "yyyy-MM-dd"),
       );
     }
-  };
-
-  const handleApply = () => {
-    if (validationError != null) return;
-    onApply(formatDate(draftDates.start), formatDate(draftDates.end));
     setIsEditing(false);
   };
 
@@ -143,8 +140,8 @@ export const BaseDateRangePicker: FC<BaseDateRangePickerProps> = ({
             size="small"
             onClick={handleApply}
             disabled={
-              !draftDates.start ||
-              !draftDates.end ||
+              !isValid(draftDates.start) ||
+              !isValid(draftDates.end) ||
               !!validationError ||
               disabled
             }

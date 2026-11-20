@@ -5,6 +5,7 @@ from django.db.models import Max
 from rest_framework import status
 
 from acl.models import ACLType
+from airone.lib.elasticsearch import FilterKey
 from airone.lib.types import (
     AttrType,
     AttrTypeValue,
@@ -1120,6 +1121,46 @@ class ViewTest(BaseViewTest):
         return self.client.post(
             "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
         )
+
+    def test_advanced_search_datetime_filters(self):
+        for name, value in (
+            ("before", "2026-11-20T23:59:59.999Z"),
+            ("saved", "2026-11-21T09:00:00+09:00"),
+            ("after", "2026-11-21T00:00:00.001789Z"),
+            ("later", "2026-11-21T23:59:59.999Z"),
+        ):
+            self.add_entry(self.user, name, self.entity, values={"datetime": value})
+
+        for keyword, filter_key, expected in (
+            ("2026-11-21T09:00:00+09:00", FilterKey.TEXT_CONTAINED, ["saved"]),
+            ("2026-11-21T00:00Z", FilterKey.TEXT_CONTAINED, ["saved"]),
+            ("2026-11-21T00:00:00.001Z", FilterKey.TEXT_CONTAINED, ["after"]),
+            (
+                "2026-11-21T00:00:00.000Z",
+                FilterKey.TEXT_NOT_CONTAINED,
+                ["after", "before", "later"],
+            ),
+            (">2026-11-21T00:00:00Z", FilterKey.TEXT_CONTAINED, ["after", "later"]),
+            ("<2026-11-21T00:00:00Z", FilterKey.TEXT_CONTAINED, ["before"]),
+            (
+                "2026-11-21T00:00:00.001Z~2026-11-21T09:00:00.001+09:00",
+                FilterKey.TEXT_CONTAINED,
+                ["after"],
+            ),
+            ("2026/11/21", FilterKey.TEXT_CONTAINED, ["after", "later", "saved"]),
+            ("2026-11-21T00:00:00.001Z~2026-11-21", FilterKey.TEXT_CONTAINED, ["after", "later"]),
+        ):
+            with self.subTest(keyword=keyword, filter_key=filter_key):
+                resp = self._post_advanced_search(
+                    {
+                        "entities": [self.entity.id],
+                        "attrinfo": [
+                            {"name": "datetime", "keyword": keyword, "filter_key": filter_key}
+                        ],
+                    }
+                )
+                self.assertEqual(resp.status_code, status.HTTP_200_OK)
+                self.assertEqual([v["entry"]["name"] for v in resp.json()["values"]], expected)
 
     def _seed_sort_entries(self):
         """Create three entries with distinct values across string/object/date attrs.

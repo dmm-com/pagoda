@@ -51,6 +51,7 @@
     "debt:duplication": "jscpd --config .jscpd.json --summary .",
     "debt:report": "npm run debt:complexity:frontend && npm run debt:complexity:python && npm run debt:duplication",
     "test": "TZ=UTC vitest run --coverage",
+    "test:datetime": "vitest run frontend/src/components/entry/DateTimeTimezone.test.tsx",
     "test:update": "TZ=UTC vitest run -u"
   },
   "repository": {

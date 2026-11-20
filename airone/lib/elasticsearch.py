@@ -1,7 +1,7 @@
 import enum
 import re
 from collections.abc import Callable, Mapping, Sequence
-from datetime import datetime
+from datetime import UTC, date, datetime, time
 from typing import Any, Generic, Literal, NotRequired, TypeVar, cast
 
 from django.conf import settings
@@ -1205,27 +1205,8 @@ def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> Query:
     """
     cond_attr: list[Query] = [_field_query(Term, EntryIndexField.ATTR_NAME, hint.name)]
 
-    date_results = _is_date(keyword)
-    if date_results:
-        date_params: dict[str, str] = {"format": "yyyy-MM-dd"}
-        for range_check, date_obj in date_results:
-            match range_check:
-                case "<":
-                    # search of before date user specified
-                    date_params["lt"] = date_obj.strftime("%Y-%m-%d")
-                case ">":
-                    # search of after date user specified
-                    date_params["gt"] = date_obj.strftime("%Y-%m-%d")
-                case "~":
-                    # search of date range user specified
-                    start_date, end_date = date_obj
-                    date_params["gte"] = start_date.strftime("%Y-%m-%d")
-                    date_params["lte"] = end_date.strftime("%Y-%m-%d")
-                case _:
-                    # search of exact day
-                    date_params["gte"] = date_obj.strftime("%Y-%m-%d")
-                    date_params["lte"] = date_obj.strftime("%Y-%m-%d")
-
+    date_params = _date_range_params(keyword)
+    if date_params:
         date_cond = _field_query(Range, EntryIndexField.ATTR_DATE_VALUE, date_params)
         str_cond = _field_query(Regexp, EntryIndexField.ATTR_VALUE, _get_regex_pattern(keyword))
 
@@ -1645,91 +1626,71 @@ def make_search_results_for_simple(
     return result
 
 
-def _is_date_check(value: str) -> tuple[str, datetime | tuple[datetime, datetime]] | None:
-    def _parse_basic_iso8601(value: str) -> datetime | None:
-        """Parse a basic ISO 8601 formatted date string
-
-        Only supports YYYY-MM-DDThh:mm:ss format.
-        The 'T' character must be used as the separator between date and time.
-        Returns a datetime object if successful, None if parsing fails.
-        """
-        try:
-            return datetime.fromisoformat(value)
-        except ValueError:
-            return None
-
-    # First check for ISO 8601 format
-    operator = ""
-    iso_value = value
-
-    # Check if there's a comparison operator
-    if value and value[0] in ["<", ">"]:
-        operator = value[0]
-        iso_value = value[1:]
-
-    # Check if there's a date range
-    if "~" in iso_value:
-        date_parts = iso_value.split("~")
-        if len(date_parts) == 2:
-            start_datetime = _parse_basic_iso8601(date_parts[0].strip())
-            end_datetime = _parse_basic_iso8601(date_parts[1].strip())
-            if start_datetime and end_datetime:
-                # Ensure start date is not after end date
-                if start_datetime <= end_datetime:
-                    return "~", (start_datetime, end_datetime)
-
-    # Check for single ISO 8601 format
-    iso_datetime = _parse_basic_iso8601(iso_value)
-    if iso_datetime:
-        return operator, iso_datetime
-
-    # Check for legacy date format
+def _parse_search_date(value: str) -> date | None:
+    """Preserve the distinction between a calendar date and an instant at midnight."""
+    if not value[:1].isdigit():
+        return None
     try:
-        for delimiter in ["-", "/"]:
-            date_format = f"%Y{delimiter}%m{delimiter}%d"
-
-            # Detect date range separated by tilde (~)
-            if "~" in value:
-                date_parts = value.split("~")
-                if len(date_parts) == 2:
-                    # Verify both dates have the same format
-                    start_date_match = re.match(
-                        r"^[0-9]{4}%(del)s[0-9]+%(del)s[0-9]+" % {"del": delimiter},
-                        date_parts[0].strip(),
-                    )
-                    end_date_match = re.match(
-                        r"^[0-9]{4}%(del)s[0-9]+%(del)s[0-9]+" % {"del": delimiter},
-                        date_parts[1].strip(),
-                    )
-
-                    if start_date_match and end_date_match:
-                        start_date = datetime.strptime(date_parts[0].strip(), date_format)
-                        end_date = datetime.strptime(date_parts[1].strip(), date_format)
-
-                        # Validate start date is not after end date
-                        if start_date <= end_date:
-                            return ("~", (start_date, end_date))
-
-            # Process existing date searches with < and > operators
-            if re.match(r"^[<>]?[0-9]{4}%(del)s[0-9]+%(del)s[0-9]+" % {"del": delimiter}, value):
-                if value[0] in ["<", ">"]:
-                    return (
-                        value[0],
-                        datetime.strptime(value[1:].split(" ")[0], date_format),
-                    )
-                else:
-                    return "", datetime.strptime(value.split(" ")[0], date_format)
-
+        return date.fromisoformat(value)
     except ValueError:
-        # datetime.strptime raises ValueError when format matches but contains invalid date values
+        pass
+    try:
+        return datetime.fromisoformat(value)
+    except ValueError:
+        pass
+
+    # The legacy calendar formats also accept single-digit months and days.
+    try:
+        return datetime.strptime(value, "%Y/%m/%d" if "/" in value else "%Y-%m-%d").date()
+    except ValueError:
         return None
 
-    return None
+
+def _date_bound(value: date, end_of_day: bool) -> datetime:
+    if isinstance(value, datetime):
+        return value if value.tzinfo else value.replace(tzinfo=UTC)
+    return datetime.combine(value, time.max if end_of_day else time.min, tzinfo=UTC)
 
 
-def _is_date(value: str) -> list[Any] | None:
-    # checks all specified value is date format
-    result = [_is_date_check(x) for x in value.split(" ") if x]
+def _is_date_check(value: str) -> tuple[str, date | tuple[date, date]] | None:
+    operator = value[:1] if value.startswith(("<", ">")) else ""
+    start, separator, end = value.removeprefix(operator).partition("~")
+    start_date = _parse_search_date(start.strip())
+    if start_date is None:
+        return None
+    if not separator:
+        return operator, start_date
 
-    # If result is not empty and all value is date, this returns the result
-    return result if result and all(result) else None
+    # Both ends of a legacy slash-delimited range must use the same format.
+    if ("/" in start) != ("/" in end):
+        return None
+    end_date = _parse_search_date(end.strip())
+    if end_date is None or _date_bound(start_date, end_of_day=False) > _date_bound(
+        end_date, end_of_day=True
+    ):
+        return None
+    return "~", (start_date, end_date)
+
+
+def _date_range_params(keyword: str) -> dict[str, str]:
+    params: dict[str, str] = {}
+    for token in re.sub(r"\s*~\s*", "~", keyword).split():
+        condition = _is_date_check(token)
+        if condition is None:
+            return {}
+        operator, value = condition
+        if isinstance(value, tuple):
+            bounds = [("gte", value[0]), ("lte", value[1])]
+        elif operator == "<":
+            bounds = [("lt", value)]
+        elif operator == ">":
+            bounds = [("gt", value)]
+        else:
+            bounds = [("gte", value), ("lte", value)]
+
+        for op, bound in bounds:
+            # Specify every component, including milliseconds, so Elasticsearch
+            # never rounds an exact timestamp up to the end of its second.
+            instant = _date_bound(bound, end_of_day=op in ("gt", "lte"))
+            params[op] = instant.isoformat(timespec="milliseconds")
+    return params

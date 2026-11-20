@@ -1,9 +1,10 @@
+from datetime import date, datetime, timezone
 from unittest.mock import patch
 
 from django.test import TestCase
 
 from airone.lib import elasticsearch
-from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint
+from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint, _is_date_check
 from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, AttributeValue, Entry
@@ -719,45 +720,40 @@ class ElasticSearchTest(TestCase):
                 break
 
         self.assertIsNotNone(range_query)
-        self.assertEqual(range_query["attr.date_value"]["format"], "yyyy-MM-dd")
-        self.assertEqual(range_query["attr.date_value"]["gte"], "2023-01-01")
-        self.assertEqual(range_query["attr.date_value"]["lte"], "2023-12-31")
+        self.assertEqual(range_query["attr.date_value"]["gte"], "2023-01-01T00:00:00.000+00:00")
+        self.assertEqual(range_query["attr.date_value"]["lte"], "2023-12-31T23:59:59.999+00:00")
 
     def test_is_date_check(self):
         """Test the _is_date_check function with legacy date formats and ISO8601 datetime formats"""
-        from datetime import datetime, timezone
-
-        from airone.lib.elasticsearch import _is_date_check
-
         # Valid single date (YYYY-MM-DD)
         result = _is_date_check("2023-01-01")
         self.assertEqual(result[0], "")
-        self.assertEqual(result[1], datetime(2023, 1, 1))
+        self.assertEqual(result[1], date(2023, 1, 1))
 
         # Dates with comparison operators
         result = _is_date_check(">2023-12-31")
         self.assertEqual(result[0], ">")
-        self.assertEqual(result[1], datetime(2023, 12, 31))
+        self.assertEqual(result[1], date(2023, 12, 31))
 
         result = _is_date_check("<2023-05-15")
         self.assertEqual(result[0], "<")
-        self.assertEqual(result[1], datetime(2023, 5, 15))
+        self.assertEqual(result[1], date(2023, 5, 15))
 
         # Valid date range (YYYY-MM-DD~YYYY-MM-DD)
         result = _is_date_check("2023-01-01~2023-01-31")
         self.assertEqual(result[0], "~")
-        self.assertEqual(result[1][0], datetime(2023, 1, 1))
-        self.assertEqual(result[1][1], datetime(2023, 1, 31))
+        self.assertEqual(result[1][0], date(2023, 1, 1))
+        self.assertEqual(result[1][1], date(2023, 1, 31))
 
         # Different delimiters (YYYY/MM/DD)
         result = _is_date_check("2023/01/01")
         self.assertEqual(result[0], "")
-        self.assertEqual(result[1], datetime(2023, 1, 1))
+        self.assertEqual(result[1], date(2023, 1, 1))
 
         result = _is_date_check("2023/12/31~2024/01/01")
         self.assertEqual(result[0], "~")
-        self.assertEqual(result[1][0], datetime(2023, 12, 31))
-        self.assertEqual(result[1][1], datetime(2024, 1, 1))
+        self.assertEqual(result[1][0], date(2023, 12, 31))
+        self.assertEqual(result[1][1], date(2024, 1, 1))
 
         # Invalid formats
         self.assertIsNone(_is_date_check("2023-13-01"))  # Invalid month
@@ -833,9 +829,9 @@ class ElasticSearchTest(TestCase):
         # Mixed date and datetime in range (now considered valid)
         self.assertEqual(
             _is_date_check("2023-01-01~2023-01-31T23:59:59"),
-            ("~", (datetime(2023, 1, 1, 0, 0), datetime(2023, 1, 31, 23, 59, 59))),
+            ("~", (date(2023, 1, 1), datetime(2023, 1, 31, 23, 59, 59))),
         )  # Date ~ DateTime
         self.assertEqual(
             _is_date_check("2023-01-01T00:00:00~2023-01-31"),
-            ("~", (datetime(2023, 1, 1, 0, 0, 0), datetime(2023, 1, 31, 0, 0))),
+            ("~", (datetime(2023, 1, 1, 0, 0, 0), date(2023, 1, 31))),
         )  # DateTime ~ Date
