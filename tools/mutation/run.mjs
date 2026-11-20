@@ -31,12 +31,17 @@ async function main() {
 		console.log(`Usage: npm run test:mutation -- [options]
   --since <ref>         Compare against this commit (default: HEAD)
   --include <file>      Replace the default scope with a frontend source path (repeatable)
-  --only <id>           Recheck a mutant in the selected scope (repeatable)
+  --only <id>           Recheck a mutant without a Git diff (repeatable)
   --all                 Inspect the selected scope without a Git diff
+                       Choose at most one of --since, --only, and --all
   --time-budget <sec>   Stop starting mutants after this budget (default: 120)
 
 Setup on macOS or Linux with Node 24+: npm ci --prefix tools/mutation --ignore-scripts`);
 		return;
+	}
+	const modes = [values.all, values.only, values.since !== undefined];
+	if (modes.filter(Boolean).length > 1) {
+		throw new Error("Choose at most one of --since, --only, and --all.");
 	}
 	if (
 		Number(process.versions.node.split(".")[0]) < 24 ||
@@ -52,9 +57,6 @@ Setup on macOS or Linux with Node 24+: npm ci --prefix tools/mutation --ignore-s
 			"Run npm ci --prefix tools/mutation --ignore-scripts with Node 24+.",
 		);
 	}
-	if (values.all && (values.only || values.since)) {
-		throw new Error("--all cannot be combined with --since or --only.");
-	}
 	const budget = Number(values["time-budget"]);
 	if (!Number.isInteger(budget) || budget < 1 || budget > 1800) {
 		throw new Error(
@@ -63,7 +65,7 @@ Setup on macOS or Linux with Node 24+: npm ci --prefix tools/mutation --ignore-s
 	}
 
 	const since = values.since ?? (values.all || values.only ? null : "HEAD");
-  const base = since !== null
+	const base = since !== null
 		? execFileSync(
 				"git",
 				["rev-parse", "--verify", "--end-of-options", `${since}^{commit}`],
