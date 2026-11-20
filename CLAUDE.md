@@ -150,3 +150,14 @@ All models with access control inherit from `acl.models.ACLBase`. Core domain ap
 - **Imports:** All imports at file top. No mid-function imports except for circular dependency prevention (e.g., Entity model import inside plugin mixin methods)
 - **Frontend naming:** PascalCase for components, camelCase for variables/functions
 - **Frontend imports:** Group by external/internal, sort alphabetically
+
+## Pull Requests
+
+Use [the PR template](.github/pull_request_template.md) when creating or updating a
+PR. Read the existing body before editing and preserve relevant context and issue
+links. Keep the English Why and What sections aligned with the current diff. Add
+a How section only when a decision or trade-off needs context beyond the diff.
+Skip details a reviewer or review agent can readily infer from the code.
+
+When using `gh pr create` or `gh pr edit`, pass the completed body with
+`--body-file`.
