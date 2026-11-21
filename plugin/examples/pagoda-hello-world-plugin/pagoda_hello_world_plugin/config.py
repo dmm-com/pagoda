@@ -7,6 +7,7 @@ for use with Airone's plugin task registry system.
 
 import enum
 
+from pagoda_plugin_sdk.models import PluginSchema, PluginSchemaConfig
 from pagoda_plugin_sdk.tasks import PluginTaskConfig
 
 
@@ -33,4 +34,19 @@ PLUGIN_TASK_CONFIG = PluginTaskConfig(
     cancelable_operations=[],
     parallelizable_operations=[],
     downloadable_operations=[],
+)
+
+PLUGIN_MODEL_CONFIG = PluginSchemaConfig(
+    plugin_id="hello-world",
+    schema={
+        "book": PluginSchema(
+            **{
+                "name": "書籍",
+                "attrs": {
+                    "author": {"name": "著者", "type": "string"},
+                    "age": {"name": "年齢", "type": "number"},
+                },
+            }
+        ),
+    },
 )
