@@ -458,6 +458,8 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(user1.email, "user1@example.com")
         self.assertEqual(user1.groups.count(), 2)
+        # Users created as a side effect of the import get no local password.
+        self.assertFalse(user1.has_usable_password())
 
     # utility functions
     def _create_user(self, name):

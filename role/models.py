@@ -113,7 +113,6 @@ class Role(models.Model):
         """Override Model.delete method of Django"""
         from airone.lib import auto_complement
         from job.models import Job, JobOperation
-        from user.models import User
 
         self.is_active = False
         self.name = "%s_deleted_%s" % (
@@ -122,9 +121,7 @@ class Role(models.Model):
         )
         self.save(update_fields=["is_active", "name"])
 
-        user = auto_complement.get_auto_complement_user(None)
-        if not user:
-            user = User.objects.create(username=settings.AIRONE["AUTO_COMPLEMENT_USER"])
+        user = auto_complement.get_or_create_auto_complement_user()
 
         job_register_referrals = Job.new_register_referrals(
             user,

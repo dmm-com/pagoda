@@ -600,7 +600,7 @@ class PasswordResetAPI(viewsets.GenericViewSet[Any]):
                 "is_active": True,
             }
         )
-        if len(active_users) == 1 and active_users[0].has_usable_password():
+        if len(active_users) == 1 and active_users[0].can_reset_password:
             return active_users[0]
         else:
             return None

@@ -37,8 +37,10 @@ def import_users(import_datas: list[dict[str, Any]]) -> None:
             # update user by username
             user = User.objects.filter(username=user_data["username"]).first()
             if not user:
-                # create user
+                # create user. Imported users have no local password, so it
+                # stays unusable instead of an empty (usable) one.
                 user = User(username=user_data["username"])
+                user.set_unusable_password()
                 user.save()
 
         user.username = user_data["username"]

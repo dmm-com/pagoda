@@ -546,6 +546,8 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(user1.email, "user1@example.com")
         self.assertEqual(user1.groups.count(), 2)
+        # Imported users get no local password, so it must stay unusable.
+        self.assertFalse(user1.has_usable_password())
 
     def test_import_by_non_superuser_is_forbidden(self):
         admin = User.objects.create(username="admin", email="admin@example.com", is_superuser=True)
@@ -625,6 +627,19 @@ class ViewTest(AironeViewTest):
             "/user/api/v2/password_reset", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 400)
+
+    @mock.patch("user.api_v2.views.EmailMultiAlternatives")
+    def test_password_reset_does_not_email_user_with_empty_password(self, mock_email):
+        user = User.objects.create(username="empty-password", email="empty@example.com")
+
+        resp = self.client.post(
+            "/user/api/v2/password_reset",
+            {"username": user.username},
+            content_type="application/json",
+        )
+
+        self.assertEqual(resp.status_code, 400)
+        mock_email.assert_not_called()
 
     def test_password_reset_link_ignores_host_header(self):
         """
@@ -779,6 +794,59 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 400)
 
+    def _confirm_password_reset(self, user, password="new-password"):
+        params = {
+            "uidb64": urlsafe_base64_encode(force_bytes(user.pk)),
+            "token": default_token_generator.make_token(user),
+            "password1": password,
+            "password2": password,
+        }
+        return self.client.post(
+            "/user/api/v2/password_reset/confirm", json.dumps(params), "application/json"
+        )
+
+    def test_password_reset_confirm_with_empty_password_user(self):
+        # Accounts without a password (service, LDAP, SSO and imported users)
+        # store an empty password, which has_usable_password() reports as
+        # usable. The reset flow must still refuse them.
+        user = User.objects.create(username="empty-password", email="empty@example.com")
+        self.assertEqual(user.password, "")
+
+        resp = self._confirm_password_reset(user)
+
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(User.objects.get(id=user.id).password, "")
+
+    def test_password_reset_confirm_with_unusable_password_user(self):
+        user = self._create_user("unusable-password")
+        user.set_unusable_password()
+        user.save(update_fields=["password"])
+
+        resp = self._confirm_password_reset(user)
+
+        self.assertEqual(resp.status_code, 400)
+        self.assertFalse(User.objects.get(id=user.id).has_usable_password())
+
+    def test_password_reset_confirm_with_non_local_user(self):
+        user = self._create_user(
+            "ldap-user", authenticate_type=User.AuthenticateType.AUTH_TYPE_LDAP
+        )
+
+        resp = self._confirm_password_reset(user)
+
+        self.assertEqual(resp.status_code, 400)
+        self.assertTrue(User.objects.get(id=user.id).check_password("ldap-user"))
+
+    def test_password_reset_confirm_with_inactive_user(self):
+        user = self._create_user("inactive-user")
+        user.is_active = False
+        user.save(update_fields=["is_active"])
+
+        resp = self._confirm_password_reset(user)
+
+        self.assertEqual(resp.status_code, 400)
+        self.assertTrue(User.objects.get(id=user.id).check_password("inactive-user"))
+
     def test_patch_user_password(self):
         user = self.guest_login()
         old_passwd = user.username
@@ -811,6 +879,25 @@ class ViewTest(AironeViewTest):
             "/user/api/v2/%d/edit_passwd" % co_user.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+
+    def test_set_initial_co_user_password_by_guest(self):
+        user = self.guest_login()
+        co_user = self._create_user("co-user", parent_user=user)
+        co_user.set_unusable_password()
+        co_user.save(update_fields=["password"])
+        params = {
+            "old_passwd": "unused",
+            "new_passwd": "new-passwd",
+            "chk_passwd": "new-passwd",
+        }
+
+        resp = self.client.patch(
+            "/user/api/v2/%d/edit_passwd" % co_user.id, params, content_type="application/json"
+        )
+
+        self.assertEqual(resp.status_code, 200)
+        co_user.refresh_from_db()
+        self.assertTrue(co_user.check_password("new-passwd"))
 
     def test_patch_other_user_password_by_guest(self):
         self.guest_login()

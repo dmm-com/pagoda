@@ -24,6 +24,14 @@ class ModelTest(AironeTestCase):
         self.copy_params = {"new_name_list": [], "post_data": {}}
         self.test_data = None
 
+    def test_new_update_documents_creates_service_user_without_usable_password(self):
+        User.objects.filter(username=settings.AIRONE["AUTO_COMPLEMENT_USER"]).delete()
+
+        Job.new_update_documents(None)
+
+        service_user = User.objects.get(username=settings.AIRONE["AUTO_COMPLEMENT_USER"])
+        self.assertFalse(service_user.has_usable_password())
+
     def test_create_object(self):
         jobinfos = [
             {"method": "new_create", "op": JobOperation.CREATE_ENTRY, "params": self.create_params},

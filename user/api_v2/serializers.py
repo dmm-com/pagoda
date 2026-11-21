@@ -364,7 +364,7 @@ class UserPasswordSerializer(serializers.Serializer[Any]):
             raise ValidationError("You don't have permission to access this object")
 
         # When not have a password, don't check old password.
-        if user.password:
+        if user.password and user.has_usable_password():
             # Whether recv_data matches the old password
             if not user.check_password(attrs["old_passwd"]):
                 raise ValidationError("old password is wrong")
@@ -435,6 +435,12 @@ class PasswordResetConfirmSerializer(serializers.Serializer[Any]):
 
         if not self.token_generator.check_token(user=user, token=value):
             raise ValidationError("invalid token given")
+
+        # Only an active local account with a real password may be reset. This
+        # keeps the flow away from accounts whose password was never set (LDAP,
+        # SSO, imported and service users).
+        if not user.can_reset_password:
+            raise ValidationError("password reset is not allowed for this user")
 
         return value
 

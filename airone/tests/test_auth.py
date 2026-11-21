@@ -109,3 +109,5 @@ class ViewTest(AironeViewTest):
         result = create_user({"username": "hogefuga", "email": "hogefuga@example.com"})
         new_user = User.objects.filter(username="hogefuga").first()
         self.assertEqual(result["user"], new_user)
+        # SSO users authenticate through the provider, so no local password.
+        self.assertFalse(new_user.has_usable_password())

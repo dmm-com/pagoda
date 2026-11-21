@@ -58,10 +58,14 @@ class LDAPBackend(object):
                 Logger.info("Failed to authenticate because of GET or HEAD method")
                 return None
 
-            user = User.objects.create(
+            user = User(
                 username=username,
                 authenticate_type=User.AuthenticateType.AUTH_TYPE_LDAP,
             )
+            # LDAP users authenticate against the directory, so no local
+            # password may ever be usable for them.
+            user.set_unusable_password()
+            user.save()
             return user
         else:
             Logger.info("Failed to authenticate user(%s) in LDAP" % username)

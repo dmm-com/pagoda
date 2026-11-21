@@ -14,7 +14,10 @@ def create_user(
     # Returns User if the AirOne user already exists.
     user = User.objects.filter(username=details["username"], is_active=True).first()
     if not user:
-        # Create a User if the AirOne user does not exist.
-        user = User.objects.create(username=details["username"], email=details["email"])
+        # Create a User if the AirOne user does not exist. SSO users are
+        # authenticated by the identity provider, so they get no local password.
+        user = User(username=details["username"], email=details["email"])
+        user.set_unusable_password()
+        user.save()
 
     return {"user": user}

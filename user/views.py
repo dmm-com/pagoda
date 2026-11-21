@@ -177,7 +177,7 @@ def edit_passwd(request: HttpRequest, user_id: int) -> HttpResponse:
         "user_id": int(user_id),
         "user_name": user.username,
         "user_grade": user_grade,
-        "has_password": bool(user.password),
+        "has_password": bool(user.password) and user.has_usable_password(),
     }
 
     return render(request, "edit_passwd.html", context)
@@ -209,7 +209,7 @@ def do_edit_passwd(request: HttpRequest, user_id: int, recv_data: dict[str, Any]
         return HttpResponse("You don't have permission to access this object", status=400)
 
     # When not have a password, don't check old password.
-    if user.password:
+    if user.password and user.has_usable_password():
         # Whether recv_data matches the old password
         if not user.check_password(recv_data["old_passwd"]):
             return HttpResponse("old password is wrong", status=400)
@@ -353,6 +353,19 @@ class PasswordResetDone(auth_views.PasswordResetDoneView):
 class PasswordResetConfirm(auth_views.PasswordResetConfirmView):
     success_url = reverse_lazy("user:password_reset_complete")
     template_name = "password_reset_confirm.html"
+
+    def get_user(self, uidb64: str) -> User | None:
+        user = super().get_user(uidb64)
+        if user is None:
+            return None
+
+        # The token alone is not enough: an inactive account or one without a
+        # local password must not be resettable here, regardless of how
+        # SECRET_KEY is configured.
+        if not user.can_reset_password:
+            return None
+
+        return user
 
 
 class PasswordResetComplete(auth_views.PasswordResetCompleteView):
