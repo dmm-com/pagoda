@@ -47,7 +47,7 @@ const filters = [
 
 function openMenu(
   attrFilter?: AttrFilter,
-  attrType = EntryAttributeTypeTypeEnum.DATETIME,
+  attrType: EntryAttributeTypeTypeEnum = EntryAttributeTypeTypeEnum.DATETIME,
 ) {
   const onSelect = vi.fn();
   const view = render(
