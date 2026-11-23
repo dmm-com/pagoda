@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from unittest.mock import Mock, patch
 
 from django.db.models import Max
@@ -1123,32 +1124,52 @@ class ViewTest(BaseViewTest):
         )
 
     def test_advanced_search_datetime_filters(self):
-        for name, value in (
-            ("before", "2026-11-20T23:59:59.999Z"),
-            ("saved", "2026-11-21T09:00:00+09:00"),
-            ("after", "2026-11-21T00:00:00.001789Z"),
-            ("later", "2026-11-21T23:59:59.999Z"),
-        ):
+        timestamps = {
+            "before": "2026-11-20T23:59:59.999Z",
+            "start": "2026-11-21T09:00:00+09:00",
+            "fraction": "2026-11-21T00:00:00.123456Z",
+            "end": "2026-11-21T00:00:00.999Z",
+            "next-start": "2026-11-21T00:00:01.000Z",
+            "next-end": "2026-11-21T00:00:01.999999Z",
+            "after": "2026-11-21T00:00:02.000Z",
+            "later": "2026-11-21T23:59:59.999Z",
+        }
+        for name, value in timestamps.items():
             self.add_entry(self.user, name, self.entity, values={"datetime": value})
 
-        for keyword, filter_key, expected in (
-            ("2026-11-21T09:00:00+09:00", FilterKey.TEXT_CONTAINED, ["saved"]),
-            ("2026-11-21T00:00Z", FilterKey.TEXT_CONTAINED, ["saved"]),
-            ("2026-11-21T00:00:00.001Z", FilterKey.TEXT_CONTAINED, ["after"]),
+        first_second = ["start", "fraction", "end"]
+        next_second = ["next-start", "next-end"]
+        two_seconds = [*first_second, *next_second]
+        interval = "2026-11-21T00:00:00.123Z~2026-11-21T09:00:01.000+09:00"
+        for keyword, filter_key, expected_names in (
+            ("2026-11-21T09:00:00+09:00", FilterKey.TEXT_CONTAINED, first_second),
+            ("2026-11-21T00:00Z", FilterKey.TEXT_CONTAINED, first_second),
+            ("2026-11-21T00:00:00.000Z", FilterKey.TEXT_CONTAINED, first_second),
+            ("2026-11-21T00:00:00.123Z", FilterKey.TEXT_CONTAINED, first_second),
             (
-                "2026-11-21T00:00:00.000Z",
+                "2026-11-21T00:00:00.123Z",
                 FilterKey.TEXT_NOT_CONTAINED,
-                ["after", "before", "later"],
+                ["before", *next_second, "after", "later"],
             ),
-            (">2026-11-21T00:00:00Z", FilterKey.TEXT_CONTAINED, ["after", "later"]),
-            ("<2026-11-21T00:00:00Z", FilterKey.TEXT_CONTAINED, ["before"]),
             (
-                "2026-11-21T00:00:00.001Z~2026-11-21T09:00:00.001+09:00",
+                ">2026-11-21T00:00:00.123Z",
                 FilterKey.TEXT_CONTAINED,
-                ["after"],
+                [*next_second, "after", "later"],
             ),
-            ("2026/11/21", FilterKey.TEXT_CONTAINED, ["after", "later", "saved"]),
-            ("2026-11-21T00:00:00.001Z~2026-11-21", FilterKey.TEXT_CONTAINED, ["after", "later"]),
+            ("<2026-11-21T00:00:00.123Z", FilterKey.TEXT_CONTAINED, ["before"]),
+            (interval, FilterKey.TEXT_CONTAINED, two_seconds),
+            (interval, FilterKey.TEXT_NOT_CONTAINED, ["before", "after", "later"]),
+            (
+                "2026-11-21T00:00:00.999Z~2026-11-21T09:00:00.123+09:00",
+                FilterKey.TEXT_CONTAINED,
+                first_second,
+            ),
+            ("2026/11/21", FilterKey.TEXT_CONTAINED, [*two_seconds, "after", "later"]),
+            (
+                "2026-11-21T00:00:01.999Z~2026-11-21",
+                FilterKey.TEXT_CONTAINED,
+                [*next_second, "after", "later"],
+            ),
         ):
             with self.subTest(keyword=keyword, filter_key=filter_key):
                 resp = self._post_advanced_search(
@@ -1160,7 +1181,37 @@ class ViewTest(BaseViewTest):
                     }
                 )
                 self.assertEqual(resp.status_code, status.HTTP_200_OK)
-                self.assertEqual([v["entry"]["name"] for v in resp.json()["values"]], expected)
+                self.assertEqual(
+                    {
+                        row["entry"]["name"]: datetime.fromisoformat(
+                            row["attrs"]["datetime"]["value"]["as_string"]
+                        )
+                        for row in resp.json()["values"]
+                    },
+                    {name: datetime.fromisoformat(timestamps[name]) for name in expected_names},
+                )
+
+    def test_advanced_search_datetime_keyword_in_text(self):
+        keyword = "2026-11-21T00:00:00.123Z"
+        self.add_entry(self.user, "match", self.entity, values={"val": f"recorded at {keyword}"})
+        self.add_entry(
+            self.user, "other", self.entity, values={"val": "recorded at 2026-11-21T00:00:00.999Z"}
+        )
+        for filter_key, expected in (
+            (FilterKey.TEXT_CONTAINED, "match"),
+            (FilterKey.TEXT_NOT_CONTAINED, "other"),
+        ):
+            with self.subTest(filter_key=filter_key):
+                resp = self._post_advanced_search(
+                    {
+                        "entities": [self.entity.id],
+                        "attrinfo": [{"name": "val", "keyword": keyword, "filter_key": filter_key}],
+                    }
+                )
+                self.assertEqual(resp.status_code, status.HTTP_200_OK)
+                self.assertEqual(
+                    [row["entry"]["name"] for row in resp.json()["values"]], [expected]
+                )
 
     def _seed_sort_entries(self):
         """Create three entries with distinct values across string/object/date attrs.

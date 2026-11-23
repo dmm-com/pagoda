@@ -1646,10 +1646,12 @@ def _parse_search_date(value: str) -> date | None:
         return None
 
 
-def _date_bound(value: date, end_of_day: bool) -> datetime:
+def _date_bound(value: date, end_of_unit: bool) -> datetime:
+    """Return the start or end of the specified second or UTC calendar day."""
+    boundary = time.max if end_of_unit else time.min
     if isinstance(value, datetime):
-        return value if value.tzinfo else value.replace(tzinfo=UTC)
-    return datetime.combine(value, time.max if end_of_day else time.min, tzinfo=UTC)
+        return value.replace(microsecond=boundary.microsecond, tzinfo=value.tzinfo or UTC)
+    return datetime.combine(value, boundary, tzinfo=UTC)
 
 
 def _is_date_check(value: str) -> tuple[str, date | tuple[date, date]] | None:
@@ -1665,8 +1667,8 @@ def _is_date_check(value: str) -> tuple[str, date | tuple[date, date]] | None:
     if ("/" in start) != ("/" in end):
         return None
     end_date = _parse_search_date(end.strip())
-    if end_date is None or _date_bound(start_date, end_of_day=False) > _date_bound(
-        end_date, end_of_day=True
+    if end_date is None or _date_bound(start_date, end_of_unit=False) > _date_bound(
+        end_date, end_of_unit=True
     ):
         return None
     return "~", (start_date, end_date)
@@ -1689,8 +1691,6 @@ def _date_range_params(keyword: str) -> dict[str, str]:
             bounds = [("gte", value), ("lte", value)]
 
         for op, bound in bounds:
-            # Specify every component, including milliseconds, so Elasticsearch
-            # never rounds an exact timestamp up to the end of its second.
-            instant = _date_bound(bound, end_of_day=op in ("gt", "lte"))
+            instant = _date_bound(bound, end_of_unit=op in ("gt", "lte"))
             params[op] = instant.isoformat(timespec="milliseconds")
     return params

@@ -1,6 +1,6 @@
 import { Box, Button, Typography } from "@mui/material";
 import { DateTimePicker, DesktopDatePicker } from "@mui/x-date-pickers";
-import { format as formatLocalDate, isValid } from "date-fns";
+import { format as formatLocalDate, getUnixTime, isValid } from "date-fns";
 import { FC, useState } from "react";
 
 import { useTranslation } from "../../hooks/useTranslation";
@@ -53,9 +53,11 @@ export const BaseDateRangePicker: FC<BaseDateRangePickerProps> = ({
     setIsEditing(false);
   }
 
-  // Derived from draftDates; no state needed.
+  // Existing search URLs can include fractions that the picker does not display.
   const validationError =
-    draftDates.start && draftDates.end && draftDates.start > draftDates.end
+    draftDates.start &&
+    draftDates.end &&
+    getUnixTime(draftDates.start) > getUnixTime(draftDates.end)
       ? isDateTime
         ? t("dateRangePicker.invalidDateTimeRange")
         : t("dateRangePicker.invalidDateRange")

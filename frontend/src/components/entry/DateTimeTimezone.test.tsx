@@ -34,12 +34,14 @@ const filters = [
     index: 0,
     key: FilterKey.TEXT_CONTAINED,
     instant: winter,
+    stored: "2025-01-15T23:15:27.123Z",
   },
   {
     label: "exclude",
     index: 1,
     key: FilterKey.TEXT_NOT_CONTAINED,
     instant: summer,
+    stored: "2025-07-15T23:45:38.999Z",
   },
 ];
 
@@ -65,14 +67,26 @@ function openMenu(attrFilter?: AttrFilter) {
 }
 
 describe("datetime search in the browser timezone", { timeout: 30_000 }, () => {
-  test.each(filters)("$label submits and reopens a single datetime", ({
+  test.each(filters)("$label searches and reopens the displayed second", ({
     index,
     key,
     instant,
+    stored,
   }) => {
+    render(
+      <AttributeValue
+        attrInfo={{
+          type: EntryAttributeTypeTypeEnum.DATETIME,
+          value: { asString: stored },
+        }}
+      />,
+      { wrapper: TestWrapper },
+    );
+    const displayed = screen.getByText(localText(instant));
+    expect(displayed).toBeVisible();
     const { onSelect, unmount } = openMenu();
     const input = screen.getAllByRole("textbox")[index];
-    fireEvent.change(input, { target: { value: localText(instant) } });
+    fireEvent.change(input, { target: { value: displayed.textContent } });
     fireEvent.click(
       screen.getAllByRole("button", { name: /Choose date/ })[index],
     );
@@ -85,6 +99,28 @@ describe("datetime search in the browser timezone", { timeout: 30_000 }, () => {
     expect(screen.getAllByRole("textbox")[index]).toHaveValue(
       localText(instant),
     );
+  });
+
+  test("validates a reopened range at the precision shown in its fields", () => {
+    const { onSelect } = openMenu({
+      filterKey: FilterKey.TEXT_CONTAINED,
+      keyword: "2025-01-15T23:15:27.999Z~2025-01-15T23:15:27.123Z",
+    });
+    const start = screen.getAllByRole("textbox", { name: "開始日時" })[0];
+    const end = screen.getAllByRole("textbox", { name: "終了日時" })[0];
+    const rangeError = "終了日時は開始日時以降を指定してください";
+    expect(start).toHaveValue(localText(winter));
+    expect(end).toHaveValue(localText(winter));
+    expect(screen.queryAllByText(rangeError)).toHaveLength(0);
+
+    fireEvent.change(start, {
+      target: { value: localText("2025-01-15T23:15:28.000Z") },
+    });
+    expect(screen.getByText(rangeError)).toBeVisible();
+    const apply = screen.getByRole("button", { name: "適用" });
+    expect(apply).toBeDisabled();
+    fireEvent.click(apply);
+    expect(onSelect).not.toHaveBeenCalled();
   });
 
   test.each(filters)("$label submits and reopens a winter-to-summer range", ({
