@@ -63,7 +63,7 @@ Setup on macOS or Linux with Node 24+: npm ci --prefix tools/mutation --ignore-s
 	}
 
 	const since = values.since ?? (values.all || values.only ? null : "HEAD");
-  const base = since !== null
+	const base = since !== null
 		? execFileSync(
 				"git",
 				["rev-parse", "--verify", "--end-of-options", `${since}^{commit}`],

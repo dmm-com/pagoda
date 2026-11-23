@@ -3,6 +3,10 @@ set -euo pipefail
 
 # Mutator reads the paths discovered by these commands, including untracked files.
 if [[ $# -ge 3 && $(pwd -P) == "$PAGODA_MUTATION_ROOT" && ${!#} == . ]]; then
+  # Use source lines for mutant selection even when Git configures a textconv driver.
+  if [[ "$1:$2" == diff:--relative ]]; then
+    set -- diff --relative --no-textconv "${@:3}"
+  fi
   case "$1:$2" in
     diff:--relative|diff:--name-only|ls-files:--others)
       set -- "${@:1:$#-1}" frontend/src/ vitest.config.ts 'vitest.setup*.ts' \
