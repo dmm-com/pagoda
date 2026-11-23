@@ -45,13 +45,16 @@ const filters = [
   },
 ];
 
-function openMenu(attrFilter?: AttrFilter) {
+function openMenu(
+  attrFilter?: AttrFilter,
+  attrType = EntryAttributeTypeTypeEnum.DATETIME,
+) {
   const onSelect = vi.fn();
   const view = render(
     <SearchResultControlMenu
       attrname="timestamp"
       attrFilter={attrFilter}
-      attrType={EntryAttributeTypeTypeEnum.DATETIME}
+      attrType={attrType}
       anchorElem={document.createElement("button")}
       handleUpdateAttrFilter={vi.fn()}
       handleSelectFilterConditions={onSelect}
@@ -65,6 +68,29 @@ function openMenu(attrFilter?: AttrFilter) {
   );
   return { onSelect, unmount: view.unmount };
 }
+
+test("reopens calendar date filters on the same day in the browser timezone", () => {
+  const { unmount } = openMenu(
+    { filterKey: FilterKey.TEXT_CONTAINED, keyword: "2025-01-15" },
+    EntryAttributeTypeTypeEnum.DATE,
+  );
+  expect(screen.getAllByRole("textbox")[0]).toHaveValue("2025/01/15");
+  unmount();
+
+  openMenu(
+    {
+      filterKey: FilterKey.TEXT_NOT_CONTAINED,
+      keyword: "2025-01-15~2025-01-16",
+    },
+    EntryAttributeTypeTypeEnum.DATE,
+  );
+  expect(screen.getAllByRole("textbox", { name: "開始日" })[1]).toHaveValue(
+    "2025/01/15",
+  );
+  expect(screen.getAllByRole("textbox", { name: "終了日" })[1]).toHaveValue(
+    "2025/01/16",
+  );
+});
 
 describe("datetime search in the browser timezone", { timeout: 30_000 }, () => {
   test.each(filters)("$label searches and reopens the displayed second", ({
