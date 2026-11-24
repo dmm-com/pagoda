@@ -1875,6 +1875,7 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer[Any]):
     exclude_referrals = serializers.ListField(child=serializers.IntegerField(), required=False)
     is_all_entities = serializers.BooleanField(default=False)
     export_style = serializers.CharField()
+    split_array_values = serializers.BooleanField(required=False)
     hint_entry = EntryHintSerializer(required=False)
 
     def validate_entities(self, entities: list[int]) -> list[int]:
@@ -1888,6 +1889,10 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer[Any]):
         return export_style
 
     def validate(self, params: dict[str, Any]) -> dict[str, Any]:
+        # Store the default layout the same way as existing export jobs.
+        if params.get("split_array_values") is True or params["export_style"] != "csv":
+            params.pop("split_array_values", None)
+
         if params["is_all_entities"]:
             attr_names = [x["name"] for x in params["attrinfo"]]
             params["entities"] = list(

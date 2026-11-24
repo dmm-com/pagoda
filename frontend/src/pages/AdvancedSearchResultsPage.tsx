@@ -5,8 +5,14 @@ import {
   Box,
   Button,
   Checkbox,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControlLabel,
   IconButton,
+  Radio,
+  RadioGroup,
   Table,
   TableBody,
   TableCell,
@@ -154,6 +160,9 @@ export const AdvancedSearchResultsPage: FC = () => {
   const searchCriteriaKeyRef = useRef("");
 
   const [openModal, setOpenModal] = useState(false);
+  const [csvExportOpen, setCsvExportOpen] = useState(false);
+  const [splitArrayValues, setSplitArrayValues] = useState(true);
+  const [csvExportPending, setCsvExportPending] = useState(false);
   const [bulkOperationEntryIds, setBulkOperationEntryIds] = useState<
     Array<number>
   >([]);
@@ -276,6 +285,7 @@ export const AdvancedSearchResultsPage: FC = () => {
         referralName,
         referralIncludeModelIds,
         referralExcludeModelIds,
+        exportStyle === "csv" ? splitArrayValues : undefined,
       );
       enqueueSnackbar(NotificationMessages.jobRegistered(t("common.export")), {
         variant: "info",
@@ -287,6 +297,16 @@ export const AdvancedSearchResultsPage: FC = () => {
           variant: "error",
         },
       );
+    }
+  };
+
+  const handleCsvExport = async () => {
+    setCsvExportOpen(false);
+    setCsvExportPending(true);
+    try {
+      await handleExport("csv");
+    } finally {
+      setCsvExportPending(false);
     }
   };
 
@@ -388,6 +408,41 @@ export const AdvancedSearchResultsPage: FC = () => {
   return (
     <Box className="container-fluid">
       {deletionConfirmationDialog}
+      <Dialog
+        open={csvExportOpen}
+        onClose={() => setCsvExportOpen(false)}
+        aria-labelledby="advanced-search-csv-layout"
+      >
+        <DialogTitle id="advanced-search-csv-layout">
+          {t("advancedSearch.resultsPage.csvLayout")}
+        </DialogTitle>
+        <DialogContent>
+          <RadioGroup
+            aria-labelledby="advanced-search-csv-layout"
+            value={splitArrayValues ? "split" : "grouped"}
+            onChange={(_, value) => setSplitArrayValues(value === "split")}
+          >
+            <FormControlLabel
+              value="split"
+              control={<Radio />}
+              label={t("advancedSearch.resultsPage.csvLayoutSplit")}
+            />
+            <FormControlLabel
+              value="grouped"
+              control={<Radio />}
+              label={t("advancedSearch.resultsPage.csvLayoutGrouped")}
+            />
+          </RadioGroup>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCsvExportOpen(false)}>
+            {t("common.cancel")}
+          </Button>
+          <Button variant="contained" onClick={handleCsvExport}>
+            {t("advancedSearch.resultsPage.exportCsv")}
+          </Button>
+        </DialogActions>
+      </Dialog>
       <AironeBreadcrumbs>
         <Typography component={AironeLink} to={topPath()}>
           Top
@@ -429,18 +484,20 @@ export const AdvancedSearchResultsPage: FC = () => {
               {t("advancedSearch.resultsPage.exportYaml")}
             </Button>
           </RateLimitedClickable>
-          <RateLimitedClickable
-            intervalSec={5}
-            onClick={() => handleExport("csv")}
-          >
+          <Box>
             <Button
               sx={{ marginLeft: "16px" }}
               variant="contained"
               color="info"
+              disabled={csvExportPending}
+              onClick={() => {
+                setSplitArrayValues(true);
+                setCsvExportOpen(true);
+              }}
             >
               {t("advancedSearch.resultsPage.exportCsv")}
             </Button>
-          </RateLimitedClickable>
+          </Box>
           {bulkOperationEntryIds.length ==
             AdvancedSerarchResultListParam.MAX_ROW_COUNT &&
           joinAttrs.length == 0 ? (
