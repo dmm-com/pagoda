@@ -155,6 +155,7 @@ screenlog*
 
 # Frontend dependencies and build output
 node_modules/
+/.mutator/
 /static/js/ui.js
 /static/js/ui.js.*
 /static/js/*.ui.js
