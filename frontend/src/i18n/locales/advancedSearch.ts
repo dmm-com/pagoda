@@ -100,9 +100,9 @@ export const advancedSearchMessages = defineMessages({
     "advancedSearch.resultsPage.exportCsv": "CSV 出力",
     "advancedSearch.resultsPage.csvLayout": "CSVの出力形式",
     "advancedSearch.resultsPage.csvLayoutSplit":
-      "新形式（複数値を1件ずつ別の行に出力）",
+      "検索対象アイテムの複数値を1件ずつ別の行に出力",
     "advancedSearch.resultsPage.csvLayoutGrouped":
-      "旧形式（複数値を1つのセルにまとめて出力）",
+      "複数値を1つのセルにまとめて出力",
     "advancedSearch.resultsPage.bulkDelete": "まとめて削除",
     "advancedSearch.resultsPage.confirmDeleteTitle": "本当に削除しますか？",
     "advancedSearch.resultsPage.deleteDialogTitle":
@@ -217,7 +217,7 @@ export const advancedSearchMessages = defineMessages({
     "advancedSearch.resultsPage.exportCsv": "Export CSV",
     "advancedSearch.resultsPage.csvLayout": "CSV layout",
     "advancedSearch.resultsPage.csvLayoutSplit":
-      "New format (one array value per row)",
+      "New format (one source item array value per row)",
     "advancedSearch.resultsPage.csvLayoutGrouped":
       "Legacy format (all array values in one cell)",
     "advancedSearch.resultsPage.bulkDelete": "Bulk delete",

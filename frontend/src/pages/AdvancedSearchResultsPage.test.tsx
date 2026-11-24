@@ -11,8 +11,9 @@ import {
 } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
+import { MemoryRouter } from "react-router";
 
-import { TestWrapper } from "TestWrapper";
+import { TestWrapper, TestWrapperWithoutRoutes } from "TestWrapper";
 import i18n from "i18n/config";
 import {
   AdvancedSearchResultsPage,
@@ -181,7 +182,18 @@ test.each([
     ),
   );
 
-  render(<AdvancedSearchResultsPage />, { wrapper: TestWrapper });
+  const search = new URLSearchParams({
+    join_attrs: JSON.stringify({
+      name: "IP Addresses",
+      attrinfo: [{ name: "Network", keyword: "164" }],
+    }),
+  });
+  render(
+    <MemoryRouter initialEntries={[`/?${search}`]}>
+      <AdvancedSearchResultsPage />
+    </MemoryRouter>,
+    { wrapper: TestWrapperWithoutRoutes },
+  );
   const exportLabel = i18n.t("advancedSearch.resultsPage.exportCsv");
   const exportButton = screen.getByRole("button", { name: exportLabel });
   fireEvent.click(exportButton);
@@ -217,6 +229,14 @@ test.each([
       expect.objectContaining({
         export_style: "csv",
         split_array_values: splitArrayValues,
+        join_attrs: [
+          expect.objectContaining({
+            name: "IP Addresses",
+            attrinfo: [
+              expect.objectContaining({ name: "Network", keyword: "164" }),
+            ],
+          }),
+        ],
       }),
     ]),
   );

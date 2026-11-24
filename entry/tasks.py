@@ -1032,12 +1032,9 @@ def _csv_export_v2(
                 return "\n".join(natsorted(items))
         return ""
 
-    attr_names = [attr["name"] for attr in recv_data["attrinfo"]] + [
-        f"{join_attr['name']}.{attr['name']}"
-        for join_attr in join_attrs
-        for attr in join_attr["attrinfo"]
-    ]
-    records = iter_csv_records(values, attr_names) if split_array_values else iter(values)
+    # Keep each joined item's array values together in its CSV cell.
+    source_attr_names = [attr["name"] for attr in recv_data["attrinfo"]]
+    records = iter_csv_records(values, source_attr_names) if split_array_values else iter(values)
     for index, entry_info in enumerate(records):
         if index % Job.STATUS_CHECK_FREQUENCY == 0 and job.is_canceled():
             return None
@@ -1051,8 +1048,13 @@ def _csv_export_v2(
         for jattr in join_attrs:
             for attr in jattr["attrinfo"]:
                 col_key = f"{jattr['name']}.{attr['name']}"
-                value = entry_info.attrs.get(col_key)
-                line_data.append(_format_value(value) if value else "")
+                joined = entry_info.joined_attrs.get(col_key)
+                if joined is not None:
+                    cell_values = map(_format_value, joined["values"])
+                    line_data.append("\n".join(filter(None, cell_values)))
+                else:
+                    value = entry_info.attrs.get(col_key)
+                    line_data.append(_format_value(value) if value else "")
 
         writer.writerow(line_data)
 
@@ -1111,6 +1113,7 @@ def export_search_result_v2(self: Any, job: Job) -> tuple[JobStatus, str, ACLBas
         include_referrals=params.get("include_referrals", []),
     )
 
+    is_csv = params["export_style"] == "csv"
     split_array_values = params.get("split_array_values", True)
 
     # Apply join_attrs in the same way as AdvancedSearchAPI.post() in views.py
@@ -1119,7 +1122,8 @@ def export_search_result_v2(self: Any, job: Job) -> tuple[JobStatus, str, ACLBas
         user,
         resp,
         join_attr_objects,
-        pair_array_values=params["export_style"] == "csv" and split_array_values,
+        expand_arrays=not is_csv or split_array_values,
+        pair_array_values=is_csv and split_array_values,
     )
 
     output: io.StringIO | None = None

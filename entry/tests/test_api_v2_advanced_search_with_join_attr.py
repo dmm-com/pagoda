@@ -513,15 +513,19 @@ class ViewTest(BaseViewTest):
         ip_entity = self.create_entity(
             user,
             "IP",
-            attrs=[{"name": "Network", "type": AttrType.STRING}],
+            attrs=[
+                {"name": "Network", "type": AttrType.STRING},
+                {"name": "Aliases", "type": AttrType.ARRAY_STRING},
+            ],
         )
         pairs = [
             ("172.27.24.100", "172.27.16.0/20"),
             ("172.27.163.32", "172.27.163.0/24"),
             ("172.27.164.32", "172.27.164.0/24"),
         ]
+        aliases = {ip: [f"ip-{i}-primary", f"ip-{i}-secondary"] for i, (ip, _) in enumerate(pairs)}
         ips = [
-            self.add_entry(user, ip, ip_entity, values={"Network": network})
+            self.add_entry(user, ip, ip_entity, values={"Network": network, "Aliases": aliases[ip]})
             for ip, network in pairs
         ]
         for attr_type in [AttrType.ARRAY_OBJECT, AttrType.ARRAY_NAMED_OBJECT]:
@@ -556,7 +560,8 @@ class ViewTest(BaseViewTest):
                                             {
                                                 "name": "IP Addresses",
                                                 "attrinfo": [
-                                                    {"name": "Network", "keyword": keyword}
+                                                    {"name": "Network", "keyword": keyword},
+                                                    {"name": "Aliases"},
                                                 ],
                                             }
                                         ],
@@ -567,11 +572,15 @@ class ViewTest(BaseViewTest):
                                 "application/json",
                             )
                             self.assertEqual(response.status_code, 200)
-                            cache = Job.objects.last().get_cache()
+                            job = Job.objects.latest("id")
                             expected = [pair for pair in pairs if keyword in pair[1]]
                             if style == "csv":
-                                rows = list(csv.reader(io.StringIO(cache)))
-                                self.assertEqual(rows[0], ["Name", "IP Addresses", "Network"])
+                                download = self.client.get(f"/job/api/v2/{job.id}/download")
+                                self.assertEqual(download.status_code, 200)
+                                rows = list(csv.reader(io.StringIO(download.content.decode())))
+                                self.assertEqual(
+                                    rows[0], ["Name", "IP Addresses", "Network", "Aliases"]
+                                )
                                 vm_rows = [row for row in rows[1:] if row[0] == "vm7264"]
                                 source_cells = {
                                     ip: ip
@@ -579,16 +588,34 @@ class ViewTest(BaseViewTest):
                                     else f"nic-{i}: {ip}"
                                     for i, (ip, _) in enumerate(pairs)
                                 }
-                                full_cell = "\n".join(source_cells.values())
-                                expected_rows = [
-                                    ["vm7264", full_cell if grouped else source_cells[ip], network]
-                                    for ip, network in expected
-                                ]
+                                if grouped:
+                                    expected_rows = [
+                                        [
+                                            "vm7264",
+                                            "\n".join(source_cells.values()),
+                                            "\n".join(network for _, network in expected),
+                                            "\n".join(
+                                                alias for ip, _ in expected for alias in aliases[ip]
+                                            ),
+                                        ]
+                                    ]
+                                else:
+                                    expected_rows = [
+                                        [
+                                            "vm7264",
+                                            source_cells[ip],
+                                            network,
+                                            "\n".join(aliases[ip]),
+                                        ]
+                                        for ip, network in expected
+                                    ]
                                 self.assertCountEqual(vm_rows, expected_rows)
                                 empty_rows = [row for row in rows[1:] if row[0] == "empty"]
-                                self.assertEqual(empty_rows, [] if keyword else [["empty", "", ""]])
+                                self.assertEqual(
+                                    empty_rows, [] if keyword else [["empty", "", "", ""]]
+                                )
                             else:
-                                payload = load_export_payload(cache, ImportType.ENTRY)
+                                payload = load_export_payload(job.get_cache(), ImportType.ENTRY)
                                 entries = payload[0]["entries"]
                                 vm_rows = [row for row in entries if row["name"] == "vm7264"]
                                 # YAML keeps the original full source array on every
