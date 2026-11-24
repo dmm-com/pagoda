@@ -99,7 +99,7 @@ test("@smoke @entry-detail renders attribute values", async ({
 
   for (const attrName of allAttributeNames) {
     await expect(
-      page.getByRole("cell", { name: attrName, exact: true }),
+      page.getByRole("cell").filter({ hasText: new RegExp(`^${attrName}$`) }),
     ).toBeVisible();
   }
 

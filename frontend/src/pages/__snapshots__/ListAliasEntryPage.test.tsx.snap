@@ -200,6 +200,7 @@ exports[`should match snapshot 1`] = `
                   id="_r_3_"
                   placeholder="アイテムを絞り込む"
                   type="text"
+                  value=""
                 />
                 <fieldset
                   aria-hidden="true"
@@ -484,6 +485,7 @@ exports[`should match snapshot 1`] = `
                 id="_r_3_"
                 placeholder="アイテムを絞り込む"
                 type="text"
+                value=""
               />
               <fieldset
                 aria-hidden="true"

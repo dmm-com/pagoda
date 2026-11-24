@@ -158,6 +158,7 @@ const AliasEntryListContent: FC = () => {
         <Box width="600px" mb="16px">
           <SearchBox
             placeholder={t("entry.list.searchPlaceholder")}
+            defaultValue={query}
             onKeyPress={(e) => {
               e.key === "Enter" &&
                 handleChangeQuery(
