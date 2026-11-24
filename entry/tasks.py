@@ -968,6 +968,8 @@ def _csv_export_v2(
     values: list[AdvancedSearchResultRecord],
     recv_data: dict[str, Any],
     has_referral: bool,
+    *,
+    split_array_values: bool = True,
 ) -> io.StringIO | None:
     """CSV export for v2. No Entity column; adds sub-attribute columns from join_attrs."""
     output = io.StringIO(newline="")
@@ -1035,7 +1037,8 @@ def _csv_export_v2(
         for join_attr in join_attrs
         for attr in join_attr["attrinfo"]
     ]
-    for index, entry_info in enumerate(iter_csv_records(values, attr_names)):
+    records = iter_csv_records(values, attr_names) if split_array_values else iter(values)
+    for index, entry_info in enumerate(records):
         if index % Job.STATUS_CHECK_FREQUENCY == 0 and job.is_canceled():
             return None
 
@@ -1108,13 +1111,15 @@ def export_search_result_v2(self: Any, job: Job) -> tuple[JobStatus, str, ACLBas
         include_referrals=params.get("include_referrals", []),
     )
 
+    split_array_values = params.get("split_array_values", True)
+
     # Apply join_attrs in the same way as AdvancedSearchAPI.post() in views.py
     join_attr_objects = AdvancedSearchJoinAttrInfoList.model_validate(join_attrs).root
     resp = AdvancedSearchService.apply_join_attrs(
         user,
         resp,
         join_attr_objects,
-        pair_array_values=params["export_style"] == "csv",
+        pair_array_values=params["export_style"] == "csv" and split_array_values,
     )
 
     output: io.StringIO | None = None
@@ -1124,10 +1129,10 @@ def export_search_result_v2(self: Any, job: Job) -> tuple[JobStatus, str, ACLBas
         case "csv":
             # Use v2 format (no Entity column, with sub-attribute columns)
             # when join_attrs is specified.
-            if join_attrs:
-                output = _csv_export_v2(job, resp.ret_values, params, has_referral)
-            else:
-                output = _csv_export(job, resp.ret_values, params, has_referral)
+            export_csv = _csv_export_v2 if join_attrs else _csv_export
+            output = export_csv(
+                job, resp.ret_values, params, has_referral, split_array_values=split_array_values
+            )
 
     if output:
         job.set_cache(output.getvalue())

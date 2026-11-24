@@ -1246,6 +1246,7 @@ class AironeApiClient {
     referralName?: string,
     referralIncludeModelIds: number[] = [],
     referralExcludeModelIds: number[] = [],
+    splitArrayValues?: boolean,
   ): Promise<void> {
     await this.entry.entryApiV2AdvancedSearchResultExportCreate(
       {
@@ -1256,6 +1257,7 @@ class AironeApiClient {
           hasReferral: hasReferral,
           isAllEntities: isAllEntities,
           exportStyle: format,
+          splitArrayValues,
           hintEntry: hintEntry,
           referralName: referralName,
           ...(referralIncludeModelIds.length > 0

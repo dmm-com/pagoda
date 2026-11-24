@@ -508,7 +508,7 @@ class ViewTest(BaseViewTest):
         "entry.tasks.export_search_result_v2.delay",
         Mock(side_effect=tasks.export_search_result_v2),
     )
-    def test_array_join_exports_pair_source_with_joined_values(self):
+    def test_array_join_csv_layouts_and_yaml_export(self):
         user = self.admin_login()
         ip_entity = self.create_entity(
             user,
@@ -538,9 +538,14 @@ class ViewTest(BaseViewTest):
                 )
                 self.add_entry(user, "vm7264", vm_entity, values={"IP Addresses": source_values})
                 self.add_entry(user, "empty", vm_entity, values={"IP Addresses": []})
-                for style in ["csv", "yaml"]:
+                for style, layout in [
+                    ("csv", {}),
+                    ("csv", {"split_array_values": False}),
+                    ("yaml", {}),
+                ]:
+                    grouped = layout.get("split_array_values") is False
                     for keyword in ["", "164"]:
-                        with self.subTest(style=style, keyword=keyword):
+                        with self.subTest(style=style, grouped=grouped, keyword=keyword):
                             response = self.client.post(
                                 "/entry/api/v2/advanced_search_result_export/",
                                 json.dumps(
@@ -556,6 +561,7 @@ class ViewTest(BaseViewTest):
                                             }
                                         ],
                                         "export_style": style,
+                                        **layout,
                                     }
                                 ),
                                 "application/json",
@@ -567,14 +573,15 @@ class ViewTest(BaseViewTest):
                                 rows = list(csv.reader(io.StringIO(cache)))
                                 self.assertEqual(rows[0], ["Name", "IP Addresses", "Network"])
                                 vm_rows = [row for row in rows[1:] if row[0] == "vm7264"]
+                                source_cells = {
+                                    ip: ip
+                                    if attr_type == AttrType.ARRAY_OBJECT
+                                    else f"nic-{i}: {ip}"
+                                    for i, (ip, _) in enumerate(pairs)
+                                }
+                                full_cell = "\n".join(source_cells.values())
                                 expected_rows = [
-                                    [
-                                        "vm7264",
-                                        ip
-                                        if attr_type == AttrType.ARRAY_OBJECT
-                                        else f"nic-{pairs.index((ip, network))}: {ip}",
-                                        network,
-                                    ]
+                                    ["vm7264", full_cell if grouped else source_cells[ip], network]
                                     for ip, network in expected
                                 ]
                                 self.assertCountEqual(vm_rows, expected_rows)

@@ -98,6 +98,11 @@ export const advancedSearchMessages = defineMessages({
     "advancedSearch.resultsPage.resetAttr": "属性の再設定",
     "advancedSearch.resultsPage.exportYaml": "YAML 出力",
     "advancedSearch.resultsPage.exportCsv": "CSV 出力",
+    "advancedSearch.resultsPage.csvLayout": "CSVの出力形式",
+    "advancedSearch.resultsPage.csvLayoutSplit":
+      "新形式（複数値を1件ずつ別の行に出力）",
+    "advancedSearch.resultsPage.csvLayoutGrouped":
+      "旧形式（複数値を1つのセルにまとめて出力）",
     "advancedSearch.resultsPage.bulkDelete": "まとめて削除",
     "advancedSearch.resultsPage.confirmDeleteTitle": "本当に削除しますか？",
     "advancedSearch.resultsPage.deleteDialogTitle":
@@ -210,6 +215,11 @@ export const advancedSearchMessages = defineMessages({
     "advancedSearch.resultsPage.resetAttr": "Reset attributes",
     "advancedSearch.resultsPage.exportYaml": "Export YAML",
     "advancedSearch.resultsPage.exportCsv": "Export CSV",
+    "advancedSearch.resultsPage.csvLayout": "CSV layout",
+    "advancedSearch.resultsPage.csvLayoutSplit":
+      "New format (one array value per row)",
+    "advancedSearch.resultsPage.csvLayoutGrouped":
+      "Legacy format (all array values in one cell)",
     "advancedSearch.resultsPage.bulkDelete": "Bulk delete",
     "advancedSearch.resultsPage.confirmDeleteTitle":
       "Are you sure you want to delete?",

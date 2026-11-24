@@ -69,6 +69,25 @@ class CsvExportTest(SimpleTestCase):
                     )
                     self.assertEqual(record.model_dump(), original)
 
+    def test_grouped_layout_keeps_array_values_in_one_cell(self):
+        record = AdvancedSearchResultRecord(
+            entity={"id": 1, "name": "VM"},
+            entry={"id": 2, "name": "vm7264"},
+            attrs={"ips": {"type": AttrType.ARRAY_STRING, "value": ["ip1", "ip2"]}},
+            is_readable=True,
+        )
+        output = _csv_export(
+            Mock(is_canceled=Mock(return_value=False)),
+            [record],
+            {"attrinfo": [{"name": "ips"}]},
+            False,
+            split_array_values=False,
+        )
+        self.assertEqual(
+            list(csv.reader(io.StringIO(output.getvalue()))),
+            [["Name", "Entity", "ips"], ["vm7264", "VM", "ip1\nip2"]],
+        )
+
     def test_multiple_arrays_repeat_other_values_for_all_combinations(self):
         record = AdvancedSearchResultRecord(
             entity={"id": 1, "name": "VM"},
