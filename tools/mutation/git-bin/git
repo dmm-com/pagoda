@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# run.mjs puts this shim on the Mutator child's PATH. Mutator reads the files
+# returned by its Git discovery commands, including untracked files. Limit those
+# commands to frontend and Vitest paths and exclude common credential filenames.
+if [[ $# -ge 3 && $(pwd -P) == "$PAGODA_MUTATION_ROOT" && ${!#} == . ]]; then
+  case "$1:$2" in
+    diff:--relative|diff:--name-only|ls-files:--others)
+      set -- "${@:1:$#-1}" frontend/src/ vitest.config.ts 'vitest.setup*.ts' \
+        ':(exclude,glob,icase)**/.env*' \
+        ':(exclude,glob,icase)**/credentials.json' \
+        ':(exclude,glob,icase)**/secrets.json' \
+        ':(exclude,glob,icase)**/*-credentials.*' \
+        ':(exclude,glob,icase)**/*.pem' \
+        ':(exclude,glob,icase)**/*.key' \
+        ':(exclude,glob,icase)**/*.p12'
+      ;;
+  esac
+fi
+
+PATH=$PAGODA_MUTATION_ORIGINAL_PATH exec git "$@"
