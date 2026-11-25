@@ -97,6 +97,12 @@ export interface AdvancedSearchResultExport {
   exportStyle: string;
   /**
    *
+   * @type {boolean}
+   * @memberof AdvancedSearchResultExport
+   */
+  splitArrayValues?: boolean;
+  /**
+   *
    * @type {EntryHint}
    * @memberof AdvancedSearchResultExport
    */
@@ -156,6 +162,10 @@ export function AdvancedSearchResultExportFromJSONTyped(
     isAllEntities:
       json["is_all_entities"] == null ? undefined : json["is_all_entities"],
     exportStyle: json["export_style"],
+    splitArrayValues:
+      json["split_array_values"] == null
+        ? undefined
+        : json["split_array_values"],
     hintEntry:
       json["hint_entry"] == null
         ? undefined
@@ -194,6 +204,7 @@ export function AdvancedSearchResultExportToJSONTyped(
     exclude_referrals: value["excludeReferrals"],
     is_all_entities: value["isAllEntities"],
     export_style: value["exportStyle"],
+    split_array_values: value["splitArrayValues"],
     hint_entry: EntryHintToJSON(value["hintEntry"]),
   };
 }

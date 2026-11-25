@@ -49,7 +49,7 @@ export function translate(
   key: TranslationKey,
   options?: TranslationOptions,
 ): string {
-  return i18n.t(key, options);
+  return i18n.t(key, options ?? {});
 }
 
 export default i18n;

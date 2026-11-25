@@ -1023,6 +1023,22 @@ class ViewTest(AironeViewTest):
         resp = self.client.post("/user/api/v2/%d/token/" % other_user.id)
         self.assertEqual(resp.status_code, 403)
 
+    def test_post_change_auth_of_another_user_is_forbidden(self):
+        self.guest_login()
+        target = self._create_user("target")
+
+        # Switching another account to LDAP would hand it over to whoever knows an
+        # LDAP password bound to the same username.
+        resp = self.client.patch(
+            "/user/api/v2/%d/auth" % target.id,
+            json.dumps({"ldap_password": "CORRECT_PASSWORD"}),
+            "application/json",
+        )
+
+        self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+        target.refresh_from_db()
+        self.assertEqual(target.authenticate_type, User.AuthenticateType.AUTH_TYPE_LOCAL)
+
 
 class RecentActivityAPITest(ViewTest):
     def setUp(self):

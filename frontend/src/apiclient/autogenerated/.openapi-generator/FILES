@@ -34,6 +34,11 @@ models/AdvancedSearchSort.ts
 models/Attr.ts
 models/Attribute.ts
 models/AttributeData.ts
+models/BulkRollbackCheck.ts
+models/BulkRollbackCheckItem.ts
+models/BulkRollbackCheckValue.ts
+models/BulkRollbackJob.ts
+models/BulkRollbackRequest.ts
 models/CategoryCreate.ts
 models/CategoryEntity.ts
 models/CategoryList.ts
