@@ -74,6 +74,38 @@ search-semantics changes).
 - **Run specific test:** `npm run test -- -t "test name pattern"`
 - **Watch mode:** `npm run watch`
 
+### Local mutation checks for coding agents
+
+After ordinary Vitest tests pass for changed behavior, use the mutation
+runner to check whether the assertions detect plausible regressions. Set up
+the frontend dependencies and run the following on macOS or Linux with Node 24+.
+
+```bash
+npm ci --prefix tools/mutation --ignore-scripts
+npm run test:mutation -- --since HEAD
+```
+
+Use `HEAD` for uncommitted changes or the target branch or base commit for
+committed changes. The runner compares against the merge base and includes
+mutants reached by or imported from changed tests. The command prints the
+source scope. Repeat `--include <frontend-source-path>` to replace the
+default scope. Use `--all` to check the entire selected scope or seed a
+baseline before changing tests. Keep the same scope and toolchain for
+comparisons. The default time budget is 120 seconds.
+
+Read `.mutator/pagoda/runs/<run>/agent.json` and select up to three gaps
+relevant to the change. For `notReached`, exercise a path that reaches the
+code. For `notInfected`, choose input that distinguishes the mutant. For
+`notDetected`, assert the observable outcome required by the issue, API
+contract, or user-facing behavior. Rerun the ordinary test and then recheck
+with `--only <id>` and the same source scope. Verify which assertion caught
+the mutation before reporting it. Explain any equivalent mutant in terms of
+observable behavior.
+
+Inspect `run.log` if setup or the baseline fails (exit 4) or if the hard
+deadline expires (exit 124). An empty selection, pending mutants, timeouts,
+or warnings limit the evidence. Use the results as local review feedback.
+
 ### API Client Generation
 - **Generate client:** `npm run generate:client`
 - **Generate custom client:** `npm run generate:custom_client`
@@ -150,3 +182,14 @@ All models with access control inherit from `acl.models.ACLBase`. Core domain ap
 - **Imports:** All imports at file top. No mid-function imports except for circular dependency prevention (e.g., Entity model import inside plugin mixin methods)
 - **Frontend naming:** PascalCase for components, camelCase for variables/functions
 - **Frontend imports:** Group by external/internal, sort alphabetically
+
+## Pull Requests
+
+Use [the PR template](.github/pull_request_template.md) when creating or updating a
+PR. Read the existing body before editing and preserve relevant context and issue
+links. Keep the English Why and What sections aligned with the current diff. Add
+a How section only when a decision or trade-off needs context beyond the diff.
+Skip details a reviewer or review agent can readily infer from the code.
+
+When using `gh pr create` or `gh pr edit`, pass the completed body with
+`--body-file`.

@@ -32,7 +32,7 @@ export function useTranslation<
 
   // thin wrapper forces the key to be predefined; memoized so that `t` keeps
   // a stable identity across renders (safe to use in hook dependency arrays)
-  const responseT = response.t;
+  const responseT = response.t as unknown as TranslateFunction;
   const t: TranslateFunction = useCallback(
     (key, translationOptions) => responseT(key, translationOptions),
     [responseT],

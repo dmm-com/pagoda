@@ -317,7 +317,20 @@ class EntryAliasSerializer(serializers.ModelSerializer[AliasEntry]):
         ]
 
     def validate(self, params: dict[str, Any]) -> dict[str, Any]:
-        if not params["entry"].schema.is_available(params["name"]):
+        # An alias reserves a name inside an Entity, so it may only be managed by
+        # users who are allowed to write the Entry it belongs to.
+        user: User | None = getattr(self.context.get("request"), "user", None)
+        if user is None or not user.is_authenticated:
+            raise PermissionDenied("Authentication is required")
+
+        entry = params["entry"]
+        if user.is_readonly or not user.has_permission(entry, ACLType.Writable):
+            raise PermissionDenied("You don't have permission to change the alias of this entry")
+
+        if not entry.is_active:
+            raise ObjectNotExistsError("Specified entry is inactive")
+
+        if not entry.schema.is_available(params["name"]):
             raise DuplicatedObjectExistsError("A duplicated named Alias exists in this model")
 
         return params
@@ -558,6 +571,15 @@ class EntryBaseSerializer(serializers.ModelSerializer[Entry]):
         if not self.instance:
             if user is None:
                 raise RequiredParameterError("user is required")
+
+            # Creating an Entry mutates the Entity, so it requires write permission
+            # on the schema. This serializer is shared by the v2 API, plugin
+            # overrides and async jobs, so the check belongs here rather than in a
+            # single view.
+            if user.is_readonly or not user.has_permission(schema, ACLType.Writable):
+                raise PermissionDenied(
+                    "You don't have permission to create an entry of this entity"
+                )
 
             for mandatory_attr in schema.attrs.filter(is_mandatory=True, is_active=True):
                 if not user.has_permission(mandatory_attr, ACLType.Writable):
@@ -1673,50 +1695,8 @@ class EntryAttributeValueRestoreSerializer(serializers.ModelSerializer[Attribute
 
         value: str | int | float | bool | dict[str, Any] | list[Any] | None
 
-        # Prepare value based on data_type
-        match instance.data_type:
-            case AttrType.STRING | AttrType.TEXT | AttrType.NUMBER | AttrType.SELECT:
-                value = instance.value
-            case AttrType.BOOLEAN:
-                value = instance.boolean
-            case AttrType.DATE:
-                value = instance.date.isoformat() if instance.date else None
-            case AttrType.DATETIME:
-                value = instance.datetime.isoformat() if instance.datetime else None
-            case AttrType.OBJECT:
-                value = instance.referral.id if instance.referral else None
-            case AttrType.GROUP:
-                value = instance.group.id if instance.group else None
-            case AttrType.ROLE:
-                value = instance.role.id if instance.role else None
-            case AttrType.NAMED_OBJECT:
-                value = {
-                    "name": instance.value if instance.value else "",
-                    "id": instance.referral.id if instance.referral else None,
-                }
-            case AttrType.ARRAY_STRING | AttrType.ARRAY_NUMBER | AttrType.MULTI_SELECT:
-                array_data = list(instance.data_array.all())
-                value = [item.value for item in array_data]
-            case AttrType.ARRAY_OBJECT:
-                array_data = list(instance.data_array.all())
-                value = [item.referral.id for item in array_data if item.referral]
-            case AttrType.ARRAY_GROUP:
-                array_data = list(instance.data_array.all())
-                value = [item.group.id for item in array_data if item.group]
-            case AttrType.ARRAY_ROLE:
-                array_data = list(instance.data_array.all())
-                value = [item.role.id for item in array_data if item.role]
-            case AttrType.ARRAY_NAMED_OBJECT:
-                array_data = list(instance.data_array.all())
-                value = [
-                    {
-                        "name": item.value if item.value else "",
-                        "id": item.referral.id if item.referral else None,
-                    }
-                    for item in array_data
-                ]
-            case _:
-                value = instance.value
+        # Prepare value in the form add_value() accepts
+        value = instance.to_input_value()
 
         # SELECT/MULTI_SELECT restoration may resurrect a value that has since
         # been removed from EntityAttr.choices. add_value() now strictly
@@ -1866,6 +1846,7 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer[Any]):
     exclude_referrals = serializers.ListField(child=serializers.IntegerField(), required=False)
     is_all_entities = serializers.BooleanField(default=False)
     export_style = serializers.CharField()
+    split_array_values = serializers.BooleanField(required=False)
     hint_entry = EntryHintSerializer(required=False)
 
     def validate_entities(self, entities: list[int]) -> list[int]:
@@ -1879,6 +1860,10 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer[Any]):
         return export_style
 
     def validate(self, params: dict[str, Any]) -> dict[str, Any]:
+        # Store the default layout the same way as existing export jobs.
+        if params.get("split_array_values") is True or params["export_style"] != "csv":
+            params.pop("split_array_values", None)
+
         if params["is_all_entities"]:
             attr_names = [x["name"] for x in params["attrinfo"]]
             params["entities"] = list(
@@ -1989,3 +1974,45 @@ class EntryBulkUpdateSerializer(serializers.Serializer[Any]):
 class ItemRollbackSerializer(serializers.Serializer[Any]):
     targets = serializers.ListField(child=serializers.IntegerField(), min_length=1)
     at = serializers.DateTimeField()
+
+
+class BulkRollbackJobSerializer(serializers.Serializer[Any]):
+    """Response of starting a bulk edit rollback job."""
+
+    job_id = serializers.IntegerField()
+
+
+class BulkRollbackRequestSerializer(serializers.Serializer[Any]):
+    """Request body of starting a bulk edit rollback job."""
+
+    skip_updated = serializers.BooleanField(
+        default=True,
+        help_text="If true, values changed after the bulk edit are not restored.",
+    )
+
+
+class BulkRollbackCheckValueSerializer(serializers.Serializer[Any]):
+    """A stored attribute value as shown by the bulk rollback check."""
+
+    value = serializers.JSONField()
+    created_time = serializers.DateTimeField()
+    created_user = serializers.CharField()
+
+
+class BulkRollbackCheckItemSerializer(serializers.Serializer[Any]):
+    entry_id = serializers.IntegerField()
+    entry_name = serializers.CharField()
+    attr_id = serializers.IntegerField()
+    attr_name = serializers.CharField()
+    before = BulkRollbackCheckValueSerializer(allow_null=True)
+    after = BulkRollbackCheckValueSerializer(allow_null=True)
+    current = BulkRollbackCheckValueSerializer(allow_null=True)
+    rollbackable = serializers.BooleanField()
+
+
+class BulkRollbackCheckSerializer(serializers.Serializer[Any]):
+    job_id = serializers.IntegerField()
+    executed_at = serializers.DateTimeField()
+    executed_user = serializers.CharField()
+    has_already_been_rolled_back = serializers.BooleanField()
+    items = BulkRollbackCheckItemSerializer(many=True)

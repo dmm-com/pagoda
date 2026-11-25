@@ -191,3 +191,9 @@ max-complexity-allowed = 15
 exclude = ["**/migrations/**", "apiclient/**"]
 sort = "desc"
 cache-dir = ".cache/complexipy"
+
+[tool.coverage.run]
+concurrency = ["multiprocessing"]
+parallel = true
+relative_files = true
+omit = [".venv/*", "*/migrations/*"]

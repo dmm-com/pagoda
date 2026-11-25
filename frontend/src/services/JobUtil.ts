@@ -94,6 +94,8 @@ export const jobOperationLabel = (jobOperation: number | undefined): string => {
       return translate("job.operation.restore");
     case JobOperations.BULK_EDIT_ENTRY:
       return translate("job.operation.bulkEdit");
+    case JobOperations.ROLLBACK_BULK_UPDATE:
+      return translate("job.operation.rollbackBulkUpdate");
     default:
       return translate("job.operation.unknown");
   }

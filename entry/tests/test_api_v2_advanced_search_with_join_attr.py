@@ -508,20 +508,24 @@ class ViewTest(BaseViewTest):
         "entry.tasks.export_search_result_v2.delay",
         Mock(side_effect=tasks.export_search_result_v2),
     )
-    def test_array_join_exports_pair_source_with_joined_values(self):
+    def test_array_join_csv_layouts_and_yaml_export(self):
         user = self.admin_login()
         ip_entity = self.create_entity(
             user,
             "IP",
-            attrs=[{"name": "Network", "type": AttrType.STRING}],
+            attrs=[
+                {"name": "Network", "type": AttrType.STRING},
+                {"name": "Aliases", "type": AttrType.ARRAY_STRING},
+            ],
         )
         pairs = [
             ("172.27.24.100", "172.27.16.0/20"),
             ("172.27.163.32", "172.27.163.0/24"),
             ("172.27.164.32", "172.27.164.0/24"),
         ]
+        aliases = {ip: [f"ip-{i}-primary", f"ip-{i}-secondary"] for i, (ip, _) in enumerate(pairs)}
         ips = [
-            self.add_entry(user, ip, ip_entity, values={"Network": network})
+            self.add_entry(user, ip, ip_entity, values={"Network": network, "Aliases": aliases[ip]})
             for ip, network in pairs
         ]
         for attr_type in [AttrType.ARRAY_OBJECT, AttrType.ARRAY_NAMED_OBJECT]:
@@ -538,9 +542,14 @@ class ViewTest(BaseViewTest):
                 )
                 self.add_entry(user, "vm7264", vm_entity, values={"IP Addresses": source_values})
                 self.add_entry(user, "empty", vm_entity, values={"IP Addresses": []})
-                for style in ["csv", "yaml"]:
+                for style, layout in [
+                    ("csv", {}),
+                    ("csv", {"split_array_values": False}),
+                    ("yaml", {}),
+                ]:
+                    grouped = layout.get("split_array_values") is False
                     for keyword in ["", "164"]:
-                        with self.subTest(style=style, keyword=keyword):
+                        with self.subTest(style=style, grouped=grouped, keyword=keyword):
                             response = self.client.post(
                                 "/entry/api/v2/advanced_search_result_export/",
                                 json.dumps(
@@ -551,37 +560,62 @@ class ViewTest(BaseViewTest):
                                             {
                                                 "name": "IP Addresses",
                                                 "attrinfo": [
-                                                    {"name": "Network", "keyword": keyword}
+                                                    {"name": "Network", "keyword": keyword},
+                                                    {"name": "Aliases"},
                                                 ],
                                             }
                                         ],
                                         "export_style": style,
+                                        **layout,
                                     }
                                 ),
                                 "application/json",
                             )
                             self.assertEqual(response.status_code, 200)
-                            cache = Job.objects.last().get_cache()
+                            job = Job.objects.latest("id")
                             expected = [pair for pair in pairs if keyword in pair[1]]
                             if style == "csv":
-                                rows = list(csv.reader(io.StringIO(cache)))
-                                self.assertEqual(rows[0], ["Name", "IP Addresses", "Network"])
+                                download = self.client.get(f"/job/api/v2/{job.id}/download")
+                                self.assertEqual(download.status_code, 200)
+                                rows = list(csv.reader(io.StringIO(download.content.decode())))
+                                self.assertEqual(
+                                    rows[0], ["Name", "IP Addresses", "Network", "Aliases"]
+                                )
                                 vm_rows = [row for row in rows[1:] if row[0] == "vm7264"]
-                                expected_rows = [
-                                    [
-                                        "vm7264",
-                                        ip
-                                        if attr_type == AttrType.ARRAY_OBJECT
-                                        else f"nic-{pairs.index((ip, network))}: {ip}",
-                                        network,
+                                source_cells = {
+                                    ip: ip
+                                    if attr_type == AttrType.ARRAY_OBJECT
+                                    else f"nic-{i}: {ip}"
+                                    for i, (ip, _) in enumerate(pairs)
+                                }
+                                if grouped:
+                                    expected_rows = [
+                                        [
+                                            "vm7264",
+                                            "\n".join(source_cells.values()),
+                                            "\n".join(network for _, network in expected),
+                                            "\n".join(
+                                                alias for ip, _ in expected for alias in aliases[ip]
+                                            ),
+                                        ]
                                     ]
-                                    for ip, network in expected
-                                ]
+                                else:
+                                    expected_rows = [
+                                        [
+                                            "vm7264",
+                                            source_cells[ip],
+                                            network,
+                                            "\n".join(aliases[ip]),
+                                        ]
+                                        for ip, network in expected
+                                    ]
                                 self.assertCountEqual(vm_rows, expected_rows)
                                 empty_rows = [row for row in rows[1:] if row[0] == "empty"]
-                                self.assertEqual(empty_rows, [] if keyword else [["empty", "", ""]])
+                                self.assertEqual(
+                                    empty_rows, [] if keyword else [["empty", "", "", ""]]
+                                )
                             else:
-                                payload = load_export_payload(cache, ImportType.ENTRY)
+                                payload = load_export_payload(job.get_cache(), ImportType.ENTRY)
                                 entries = payload[0]["entries"]
                                 vm_rows = [row for row in entries if row["name"] == "vm7264"]
                                 # YAML keeps the original full source array on every

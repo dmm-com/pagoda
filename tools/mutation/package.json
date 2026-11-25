@@ -1,0 +1,10 @@
+{
+  "name": "pagoda-mutation-tools",
+  "private": true,
+  "engines": {
+    "node": ">=24"
+  },
+  "devDependencies": {
+    "@mizchi/mutator": "0.4.5"
+  }
+}

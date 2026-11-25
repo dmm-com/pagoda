@@ -7,11 +7,13 @@ import {
   act,
   fireEvent,
   waitFor,
+  within,
 } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
+import { MemoryRouter } from "react-router";
 
-import { TestWrapper } from "TestWrapper";
+import { TestWrapper, TestWrapperWithoutRoutes } from "TestWrapper";
 import i18n from "i18n/config";
 import {
   AdvancedSearchResultsPage,
@@ -163,6 +165,81 @@ test("should match snapshot", async () => {
   });
 
   expect(result).toMatchSnapshot();
+});
+
+test.each([
+  true,
+  false,
+])("exports CSV with the selected split setting (%s)", async (splitArrayValues) => {
+  const requests: unknown[] = [];
+  server.use(
+    http.post(
+      "http://localhost/entry/api/v2/advanced_search_result_export/",
+      async ({ request }) => {
+        requests.push(await request.json());
+        return new HttpResponse(null, { status: 200 });
+      },
+    ),
+  );
+
+  const search = new URLSearchParams({
+    join_attrs: JSON.stringify({
+      name: "IP Addresses",
+      attrinfo: [{ name: "Network", keyword: "164" }],
+    }),
+  });
+  render(
+    <MemoryRouter initialEntries={[`/?${search}`]}>
+      <AdvancedSearchResultsPage />
+    </MemoryRouter>,
+    { wrapper: TestWrapperWithoutRoutes },
+  );
+  const exportLabel = i18n.t("advancedSearch.resultsPage.exportCsv");
+  const exportButton = screen.getByRole("button", { name: exportLabel });
+  fireEvent.click(exportButton);
+  const dialog = within(screen.getByRole("dialog"));
+  expect(requests).toHaveLength(0);
+  expect(
+    dialog.getByRole("radio", {
+      name: i18n.t("advancedSearch.resultsPage.csvLayoutSplit"),
+    }),
+  ).toBeChecked();
+
+  fireEvent.click(
+    dialog.getByRole("button", { name: i18n.t("common.cancel") }),
+  );
+  await waitFor(() =>
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+  );
+  expect(requests).toHaveLength(0);
+
+  fireEvent.click(exportButton);
+  const reopenedDialog = within(screen.getByRole("dialog"));
+  if (!splitArrayValues) {
+    fireEvent.click(
+      reopenedDialog.getByRole("radio", {
+        name: i18n.t("advancedSearch.resultsPage.csvLayoutGrouped"),
+      }),
+    );
+  }
+  fireEvent.click(reopenedDialog.getByRole("button", { name: exportLabel }));
+
+  await waitFor(() =>
+    expect(requests).toEqual([
+      expect.objectContaining({
+        export_style: "csv",
+        split_array_values: splitArrayValues,
+        join_attrs: [
+          expect.objectContaining({
+            name: "IP Addresses",
+            attrinfo: [
+              expect.objectContaining({ name: "Network", keyword: "164" }),
+            ],
+          }),
+        ],
+      }),
+    ]),
+  );
 });
 
 test("renders in English", async () => {

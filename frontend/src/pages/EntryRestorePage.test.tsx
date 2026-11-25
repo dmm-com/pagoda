@@ -100,7 +100,7 @@ test("renders in English", async () => {
       },
     ],
     {
-      initialEntries: [restoreEntryPath(1)],
+      initialEntries: [restoreEntryPath(1, "機器 100%+&=%20#")],
     },
   );
   await act(async () => {
@@ -113,4 +113,5 @@ test("renders in English", async () => {
   });
 
   expect(screen.getByText("Restore deleted entries")).toBeInTheDocument();
+  expect(screen.getByDisplayValue("機器 100%+&=%20#")).toBeInTheDocument();
 });

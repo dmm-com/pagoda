@@ -3,7 +3,7 @@
 
 import { renderHook, act } from "@testing-library/react";
 import { FC, ReactNode } from "react";
-import { MemoryRouter } from "react-router";
+import { MemoryRouter, useLocation } from "react-router";
 
 import { usePage } from "./usePage";
 
@@ -68,12 +68,19 @@ describe("usePage", () => {
       expect(result.current.page).toBe(1);
     });
 
-    test("should decode URL-encoded query", () => {
+    test.each([
+      ["100%25", "100%"],
+      ["a+b%2Bc%26d%3De%23f", "a b+c&d=e#f"],
+      ["%E3%83%86%E3%82%B9%E3%83%88", "テスト"],
+      ["%2520", "%20"],
+      ["100%2525", "100%25"],
+      ["raw%", "raw%"],
+    ])("reads the external query %s as %s", (encoded, expected) => {
       const { result } = renderHook(() => usePage(), {
-        wrapper: createWrapper(["/?query=%E3%83%86%E3%82%B9%E3%83%88"]),
+        wrapper: createWrapper([`/?query=${encoded}`]),
       });
 
-      expect(result.current.query).toBe("テスト");
+      expect(result.current.query).toBe(expected);
     });
   });
 
@@ -158,16 +165,19 @@ describe("usePage", () => {
       expect(result.current.query).toBe("");
     });
 
-    test("should URL-encode query with special characters", () => {
-      const { result } = renderHook(() => usePage(), {
-        wrapper: createWrapper(["/"]),
-      });
+    test("writes a query that other URL consumers can read", () => {
+      const { result } = renderHook(
+        () => ({ ...usePage(), search: useLocation().search }),
+        { wrapper: createWrapper(["/?page=5"]) },
+      );
 
       act(() => {
-        result.current.changeQuery("テスト");
+        result.current.changeQuery("テスト 100%+&=%20#");
       });
 
-      expect(result.current.query).toBe("テスト");
+      expect(new URLSearchParams(result.current.search).get("query")).toBe(
+        "テスト 100%+&=%20#",
+      );
     });
   });
 });

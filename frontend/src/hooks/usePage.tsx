@@ -21,9 +21,7 @@ export const usePage = (): UsePageReturn => {
     const pageNumber = pageParam ? Number(pageParam) : 1;
     return {
       page: isNaN(pageNumber) ? 1 : pageNumber,
-      query: params.has("query")
-        ? decodeURIComponent(params.get("query") ?? "")
-        : "",
+      query: params.get("query") ?? "",
     };
   }, [location.search]);
 
@@ -46,7 +44,7 @@ export const usePage = (): UsePageReturn => {
       startTransition(() => {
         const params = new URLSearchParams();
         if (newQuery) {
-          params.set("query", encodeURIComponent(newQuery));
+          params.set("query", newQuery);
         }
         params.set("page", "1");
         navigate({

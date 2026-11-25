@@ -122,6 +122,64 @@ class AttributeValue(models.Model):
     def get_status(self, val: int) -> int:
         return self.status & val
 
+    def to_input_value(self) -> Any:
+        """Convert this stored value into the input form accepted by add_value()."""
+        value: Any
+        match self.data_type:
+            case AttrType.STRING | AttrType.TEXT | AttrType.NUMBER:
+                value = self.value
+            case AttrType.BOOLEAN:
+                value = self.boolean
+            case AttrType.DATE:
+                value = self.date.isoformat() if self.date else None
+            case AttrType.DATETIME:
+                value = self.datetime.isoformat() if self.datetime else None
+            case AttrType.OBJECT:
+                value = self.referral.id if self.referral else None
+            case AttrType.GROUP:
+                value = self.group.id if self.group else None
+            case AttrType.ROLE:
+                value = self.role.id if self.role else None
+            case AttrType.NAMED_OBJECT:
+                value = {
+                    "name": self.value or "",
+                    "id": self.referral.id if self.referral else None,
+                }
+            case AttrType.NAMED_OBJECT_BOOLEAN:
+                value = {
+                    "name": self.value or "",
+                    "id": self.referral.id if self.referral else None,
+                    "boolean": self.boolean,
+                }
+            case AttrType.ARRAY_STRING | AttrType.ARRAY_NUMBER | AttrType.MULTI_SELECT:
+                value = [item.value for item in self.data_array.all()]
+            case AttrType.ARRAY_OBJECT:
+                value = [item.referral.id for item in self.data_array.all() if item.referral]
+            case AttrType.ARRAY_GROUP:
+                value = [item.group.id for item in self.data_array.all() if item.group]
+            case AttrType.ARRAY_ROLE:
+                value = [item.role.id for item in self.data_array.all() if item.role]
+            case AttrType.ARRAY_NAMED_OBJECT:
+                value = [
+                    {
+                        "name": item.value or "",
+                        "id": item.referral.id if item.referral else None,
+                    }
+                    for item in self.data_array.all()
+                ]
+            case AttrType.ARRAY_NAMED_OBJECT_BOOLEAN:
+                value = [
+                    {
+                        "name": item.value or "",
+                        "id": item.referral.id if item.referral else None,
+                        "boolean": item.boolean,
+                    }
+                    for item in self.data_array.all()
+                ]
+            case _:
+                value = self.value
+        return value
+
     def clone(self, user: User, **extra_params: Any) -> "AttributeValue":
         cloned_value = AttributeValue.objects.get(id=self.id)
 
