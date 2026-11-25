@@ -154,7 +154,10 @@ class Common(Configuration):  # type: ignore[misc]
     TEMPLATES = [
         {
             "BACKEND": "django.template.backends.django.DjangoTemplates",
-            "DIRS": [PROJECT_PATH + "/../templates/", PROJECT_PATH + "/../custom_view/templates/"],
+            "DIRS": [
+                PROJECT_PATH + "/../custom_view/templates/",
+                PROJECT_PATH + "/../templates/",
+            ],
             "APP_DIRS": True,
             "OPTIONS": {
                 "context_processors": [
