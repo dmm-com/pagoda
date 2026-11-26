@@ -240,7 +240,7 @@ const EntityDifferenceContent: FC<{ entityId: number }> = ({ entityId }) => {
         description={t("entity.difference.desc")}
       />
 
-      <Container>
+      <Container sx={{ pb: "50px" }}>
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
             <Autocomplete
