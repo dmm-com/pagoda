@@ -77,6 +77,12 @@ class SearchReferralACLTest(TestCase):
                 obj.is_public = True
                 obj.save()
 
+    def test_unreadable_hit_does_not_include_readable_referrals(self):
+        self.target.is_public = False
+        self.target.save(update_fields=["is_public"])
+
+        self.assertEqual(self.referrals(), [])
+
     def test_group_role_grants_and_revocation_are_current(self):
         self.source.is_public = False
         self.source.save()

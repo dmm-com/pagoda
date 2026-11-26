@@ -1427,13 +1427,13 @@ def make_search_results(
 
     # Resolve referral metadata and permissions from current database state in one batch.
     readable_referrals: dict[int, AdvancedSearchResultRecordIdNamePair] = {}
-    if user is not None and hint_referral is not None:
+    reader = ACLReader(user) if user is not None and hint_referral is not None else None
+    if reader is not None:
         referral_ids = {
             referral["id"]
             for _, entry_info in ordered_hits
             for referral in entry_info.get("referrals", [])
         }
-        reader = ACLReader(user)
         referral_entries = Entry.objects.filter(
             id__in=referral_ids, is_active=True, schema__is_active=True
         ).select_related("schema")
@@ -1459,11 +1459,13 @@ def make_search_results(
                     list[AdvancedSearchResultRecordIdNamePair], entry_info.get("referrals", [])
                 )
             else:
-                record.referrals = [
-                    readable_referrals[referral["id"]]
-                    for referral in entry_info.get("referrals", [])
-                    if referral["id"] in readable_referrals
-                ]
+                record.referrals = []
+                if reader is not None and reader.has_permission(entry, ACLType.Readable):
+                    record.referrals = [
+                        readable_referrals[referral["id"]]
+                        for referral in entry_info.get("referrals", [])
+                        if referral["id"] in readable_referrals
+                    ]
 
         # Check for has permission to Entry. But it will be omitted when user is None.
         if (
