@@ -6,7 +6,7 @@ from datetime import date, datetime
 from typing import Any, Optional, Union, cast
 
 from django.conf import settings
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Prefetch, Q, QuerySet
 from elasticsearch import NotFoundError
 from simple_history.models import HistoricalRecords
@@ -2037,12 +2037,29 @@ class Entry(ACLBase):
     def save_autoname(
         self, past_path: list[int] | None = None, *, name_changed: bool = False
     ) -> None:
-        """Save the generated name and propagate name changes to referring entries.
+        """Save generated names and reindex entries affected by automatic renames.
 
         Set name_changed when the caller has already changed and saved the name.
         """
-        if past_path is None:
-            past_path = []
+        renamed_ids: set[int] = set()
+        self._save_autoname(past_path or [], name_changed, renamed_ids)
+        if not renamed_ids:
+            return
+
+        def reindex_renamed_entries() -> None:
+            referrers = Entry.get_referred_entries(list(renamed_ids))
+            entries = Entry.objects.filter(
+                Q(pk__in=renamed_ids) | Q(pk__in=referrers.values("pk")), is_active=True
+            )
+            es = ESS()
+            for entry in entries.iterator():
+                entry.register_es(es)
+
+        transaction.on_commit(reindex_renamed_entries)
+
+    def _save_autoname(
+        self, past_path: list[int], name_changed: bool, renamed_ids: set[int]
+    ) -> None:
         autoname = self.autoname
         if self.name != autoname:
             name_changed = True
@@ -2056,6 +2073,7 @@ class Entry(ACLBase):
                 self.name = autoname
 
             self.save(update_fields=["name"])
+            renamed_ids.add(self.id)
 
         # A caller may have already saved a manually changed name.
         if not name_changed:
@@ -2068,7 +2086,7 @@ class Entry(ACLBase):
                 continue
 
             if referred_item.schema.item_name_type == ItemNameType.ATTR:
-                referred_item.save_autoname(past_path + [self.id])
+                referred_item._save_autoname(past_path + [self.id], False, renamed_ids)
 
     def add_alias(self, name: str) -> "AliasEntry":
         # validate name that is not duplicated with other Item names and Aliases in this model
