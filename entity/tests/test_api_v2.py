@@ -5431,9 +5431,11 @@ class EntityDiffAPITest(AironeViewTest):
         t0, t1 = t - datetime.timedelta(days=2), t - datetime.timedelta(days=1)
         changed = self.add_entry(self.user, "changed", self.entity)
         same = self.add_entry(self.user, "same", self.entity)
+        empty = self.add_entry(self.user, "empty", self.entity)
         self._set_value(changed, "a", t0 - datetime.timedelta(hours=1))
         self._set_value(changed, "b", t0 + datetime.timedelta(hours=1))
         self._set_value(same, "x", t0 - datetime.timedelta(hours=1))
+        self._set_value(empty, "", t0 + datetime.timedelta(hours=1))
 
         resp = self.client.get(
             "/entity/api/v2/diff",
@@ -5457,13 +5459,16 @@ class EntityDiffAPITest(AironeViewTest):
         both = self.add_entry(self.user, "both", self.entity)
         only_other = self.add_entry(self.user, "only_other", self.entity)
         same = self.add_entry(self.user, "same", self.entity)
+        empty = self.add_entry(self.user, "empty", self.entity)
         before, after = t0 - datetime.timedelta(hours=1), t0 + datetime.timedelta(hours=1)
         for entry in (both, only_other):
             self._set_value(entry, "a", before, "other")
             self._set_value(entry, "b", after, "other")
         self._set_value(both, "a", before)
         self._set_value(both, "b", after)
+        self._set_value(only_other, "", after)
         self._set_value(same, "x", before)
+        self._set_value(empty, "", after)
 
         resp = self.client.get(
             "/entity/api/v2/diff",
