@@ -74,6 +74,17 @@ describe("WebhookFields", () => {
     expect(getValues("webhooks.0.label")).toEqual("label");
     expect(getValues("webhooks.0.isEnabled")).toBeTruthy();
 
+    const editHeaders = screen
+      .getByTestId("ModeEditOutlineOutlinedIcon")
+      .closest("button");
+    if (!editHeaders) throw new Error("Missing header editor button");
+    fireEvent.click(editHeaders);
+    expect(screen.getByText("AdditionalHeader (Optional)")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "閉じる" }));
+    expect(
+      screen.queryByText("AdditionalHeader (Optional)"),
+    ).not.toBeInTheDocument();
+
     // add second webhook
     act(() => {
       // now there is 1 webhook, and each webhook has 3 buttons (headers, delete, add)

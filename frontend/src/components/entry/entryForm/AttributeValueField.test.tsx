@@ -36,7 +36,7 @@ const server = setupServer(
     return HttpResponse.json({ count: 0, results: [] });
   }),
   // getRoles
-  http.get("http://localhost/role/api/v2/", () => {
+  http.get("/role/api/v2/", () => {
     return HttpResponse.json([]);
   }),
 );

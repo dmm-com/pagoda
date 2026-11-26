@@ -105,8 +105,24 @@ describe("JobList", () => {
       screen.queryByRole("button", { name: "キャンセル" }),
     ).not.toBeInTheDocument();
   });
-  test("should truncate long job text to 300 characters", () => {
-    const text = "a".repeat(301);
+  test.each([
+    {
+      text: "a".repeat(300),
+      preview: "a".repeat(300),
+      expands: false,
+      length: 300,
+    },
+    {
+      text: "a".repeat(300) + "b",
+      preview: "a".repeat(300) + "...",
+      expands: true,
+      length: 301,
+    },
+  ])("shows the appropriate preview for $length characters", ({
+    text,
+    preview,
+    expands,
+  }) => {
     render(
       <JobList
         jobs={[
@@ -125,9 +141,15 @@ describe("JobList", () => {
       { wrapper: TestWrapper },
     );
 
-    expect(screen.getByText("a".repeat(300) + "...")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "全文を表示" }));
-    expect(screen.getByText(text)).toBeInTheDocument();
+    expect(screen.getByText(preview)).toBeVisible();
+    if (expands) {
+      fireEvent.click(screen.getByRole("button", { name: "全文を表示" }));
+      expect(screen.getByText(text)).toBeVisible();
+    } else {
+      expect(
+        screen.queryByRole("button", { name: "全文を表示" }),
+      ).not.toBeInTheDocument();
+    }
   });
 
   test("shows the complete error message without expansion", () => {

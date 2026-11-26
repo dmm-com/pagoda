@@ -92,6 +92,50 @@ test("should call advanced search once when changing to the next page", async ()
   expect(requests[1].entry_offset).toBe(100);
 });
 
+test.each([
+  { totalCount: 1, canLoadMore: false },
+  { totalCount: 2, canLoadMore: true },
+])("can load more is $canLoadMore when 1 of $totalCount joined results is loaded", async ({
+  totalCount,
+  canLoadMore,
+}) => {
+  server.use(
+    http.post("http://localhost/entry/api/v2/advanced_search/", () =>
+      HttpResponse.json({
+        count: 1,
+        total_count: totalCount,
+        values: [
+          {
+            entry: { id: 2, name: "entry1" },
+            entity: { id: 1, name: "entity1" },
+            attrs: {},
+            is_readable: true,
+          },
+        ],
+      }),
+    ),
+  );
+  const search = new URLSearchParams({
+    entity: "1",
+    join_attrs: JSON.stringify({
+      name: "attr1",
+      attrinfo: [{ name: "attr2" }],
+    }),
+  });
+
+  render(
+    <MemoryRouter initialEntries={[`/?${search}`]}>
+      <AdvancedSearchResultsPage />
+    </MemoryRouter>,
+    { wrapper: TestWrapperWithoutRoutes },
+  );
+
+  await screen.findByText("entry1");
+  const loadMoreIcon = await screen.findByTestId("ArrowDropDownIcon");
+  const loadMore = loadMoreIcon.closest<HTMLButtonElement>("button");
+  expect(loadMore?.disabled).toBe(!canLoadMore);
+});
+
 test("starts with no checked items and preserves explicit selections across pages", async () => {
   server.use(
     http.post(
