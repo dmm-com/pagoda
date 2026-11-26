@@ -361,6 +361,19 @@ class PasswordResetConfirm(auth_views.PasswordResetConfirmView):
     success_url = reverse_lazy("user:password_reset_complete")
     template_name = "password_reset_confirm.html"
 
+    def get_user(self, uidb64: str) -> User | None:
+        user = super().get_user(uidb64)
+        if user is None:
+            return None
+
+        # The token alone is not enough: an inactive account or one without a
+        # local password must not be resettable here, regardless of how
+        # SECRET_KEY is configured.
+        if not user.can_reset_password:
+            return None
+
+        return user
+
 
 class PasswordResetComplete(auth_views.PasswordResetCompleteView):
     template_name = "password_reset_complete.html"

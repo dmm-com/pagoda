@@ -617,6 +617,23 @@ class ViewTest(AironeViewTest):
 
         mock_email.assert_called_once()
 
+    @mock.patch("user.api_v2.views.EmailMultiAlternatives")
+    def test_password_reset_does_not_email_ineligible_users(self, mock_email):
+        users = [
+            User.objects.create(username="empty-password", email="empty@example.com"),
+            self._create_user("ldap-user", authenticate_type=User.AuthenticateType.AUTH_TYPE_LDAP),
+        ]
+        for user in users:
+            with self.subTest(username=user.username):
+                resp = self.client.post(
+                    "/user/api/v2/password_reset",
+                    json.dumps({"username": user.username}),
+                    "application/json",
+                )
+                self.assertEqual(resp.status_code, 400)
+
+        mock_email.assert_not_called()
+
     def test_password_reset_with_unknown_user(self):
         params = {
             "username": "unknown",
@@ -778,6 +795,59 @@ class ViewTest(AironeViewTest):
             "/user/api/v2/password_reset/confirm", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 400)
+
+    def _confirm_password_reset(self, user, password="new-password"):
+        params = {
+            "uidb64": urlsafe_base64_encode(force_bytes(user.pk)),
+            "token": default_token_generator.make_token(user),
+            "password1": password,
+            "password2": password,
+        }
+        return self.client.post(
+            "/user/api/v2/password_reset/confirm", json.dumps(params), "application/json"
+        )
+
+    def test_password_reset_confirm_with_empty_password_user(self):
+        # Accounts without a password (service, LDAP, SSO and imported users)
+        # store an empty password, which has_usable_password() reports as
+        # usable. The reset flow must still refuse them.
+        user = User.objects.create(username="empty-password", email="empty@example.com")
+        self.assertEqual(user.password, "")
+
+        resp = self._confirm_password_reset(user)
+
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(User.objects.get(id=user.id).password, "")
+
+    def test_password_reset_confirm_with_unusable_password_user(self):
+        user = self._create_user("unusable-password")
+        user.set_unusable_password()
+        user.save(update_fields=["password"])
+
+        resp = self._confirm_password_reset(user)
+
+        self.assertEqual(resp.status_code, 400)
+        self.assertFalse(User.objects.get(id=user.id).has_usable_password())
+
+    def test_password_reset_confirm_with_non_local_user(self):
+        user = self._create_user(
+            "ldap-user", authenticate_type=User.AuthenticateType.AUTH_TYPE_LDAP
+        )
+
+        resp = self._confirm_password_reset(user)
+
+        self.assertEqual(resp.status_code, 400)
+        self.assertTrue(User.objects.get(id=user.id).check_password("ldap-user"))
+
+    def test_password_reset_confirm_with_inactive_user(self):
+        user = self._create_user("inactive-user")
+        user.is_active = False
+        user.save(update_fields=["is_active"])
+
+        resp = self._confirm_password_reset(user)
+
+        self.assertEqual(resp.status_code, 400)
+        self.assertTrue(User.objects.get(id=user.id).check_password("inactive-user"))
 
     def test_patch_user_password(self):
         user = self.guest_login()

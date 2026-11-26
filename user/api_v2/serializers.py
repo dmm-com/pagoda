@@ -436,6 +436,12 @@ class PasswordResetConfirmSerializer(serializers.Serializer[Any]):
         if not self.token_generator.check_token(user=user, token=value):
             raise ValidationError("invalid token given")
 
+        # Only an active local account with a real password may be reset. This
+        # keeps the flow away from accounts whose password was never set (LDAP,
+        # SSO, imported and service users).
+        if not user.can_reset_password:
+            raise ValidationError("password reset is not allowed for this user")
+
         return value
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
