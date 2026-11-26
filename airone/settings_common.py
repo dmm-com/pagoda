@@ -36,7 +36,7 @@ def ensure_secure_secret_key(secret_key: str | None) -> None:
     value an attacker cannot guess. The caller decides whether it is a
     production process; this function only judges the value itself.
     """
-    if not secret_key or secret_key in INSECURE_SECRET_KEYS:
+    if secret_key is None or secret_key.strip() in {"", *INSECURE_SECRET_KEYS}:
         raise ImproperlyConfigured(
             "AIRONE_SECRET_KEY is unset or set to a published default. "
             "Set it to a unique secret value (for example with "

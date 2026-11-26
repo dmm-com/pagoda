@@ -17,6 +17,11 @@ class EnsureSecureSecretKeyTest(SimpleTestCase):
         with self.assertRaises(ImproperlyConfigured):
             ensure_secure_secret_key("")
 
+    def test_blank_or_padded_default_key_is_rejected(self):
+        for secret_key in ("  ", " changeme "):
+            with self.subTest(secret_key=secret_key), self.assertRaises(ImproperlyConfigured):
+                ensure_secure_secret_key(secret_key)
+
     def test_default_key_is_rejected(self):
         with self.assertRaises(ImproperlyConfigured):
             ensure_secure_secret_key(DEFAULT_SECRET_KEY)

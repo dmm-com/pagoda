@@ -105,9 +105,8 @@ class User(AbstractUser):
 
         Only an active local account with a real, usable password may be reset.
         Accounts without a local password (LDAP, SSO, imported and service
-        users) must not be reachable through the flow, because every input of
-        their reset token is known or guessable. has_usable_password() reports
-        an empty password as usable, hence the explicit emptiness check.
+        users) are ineligible. Django's has_usable_password() reports an empty
+        password as usable, hence the explicit emptiness check.
         """
         return (
             self.is_active

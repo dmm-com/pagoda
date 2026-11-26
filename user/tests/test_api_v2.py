@@ -617,6 +617,23 @@ class ViewTest(AironeViewTest):
 
         mock_email.assert_called_once()
 
+    @mock.patch("user.api_v2.views.EmailMultiAlternatives")
+    def test_password_reset_does_not_email_ineligible_users(self, mock_email):
+        users = [
+            User.objects.create(username="empty-password", email="empty@example.com"),
+            self._create_user("ldap-user", authenticate_type=User.AuthenticateType.AUTH_TYPE_LDAP),
+        ]
+        for user in users:
+            with self.subTest(username=user.username):
+                resp = self.client.post(
+                    "/user/api/v2/password_reset",
+                    json.dumps({"username": user.username}),
+                    "application/json",
+                )
+                self.assertEqual(resp.status_code, 400)
+
+        mock_email.assert_not_called()
+
     def test_password_reset_with_unknown_user(self):
         params = {
             "username": "unknown",

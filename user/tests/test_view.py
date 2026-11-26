@@ -776,6 +776,20 @@ class ViewTest(AironeViewTest):
         resp = view.form_valid(form_with_ldap_user)
         self.assertEqual(resp.status_code, 400)
 
+    def test_password_reset_does_not_email_legacy_empty_password_user(self):
+        user = User.objects.create(username="empty-password", email="empty@example.com")
+        mail.outbox = []
+
+        with override_settings(ALLOWED_HOSTS=["pagoda.example.com"]):
+            resp = self.client.post(
+                reverse("user:password_reset"),
+                {"username": user.username},
+                HTTP_HOST="pagoda.example.com",
+            )
+
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(len(mail.outbox), 0)
+
     def test_password_reset_link_ignores_host_header(self):
         """
         Regression test for reset-link poisoning via the Host header (CWE-640).
