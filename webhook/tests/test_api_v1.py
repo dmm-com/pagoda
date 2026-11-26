@@ -9,17 +9,17 @@ from webhook.models import Webhook
 
 
 class APITest(AironeViewTest):
-    @mock.patch("webhook.api_v1.views.requests")
-    def test_create_invalid_endpoint_webhook(self, mock_requests):
+    @mock.patch("webhook.api_v1.views.post_webhook")
+    def test_create_invalid_endpoint_webhook(self, mock_post_webhook):
         user = self.guest_login()
         entity = Entity.objects.create(name="test-entity", created_user=user)
 
-        # Declare requests mock that responds HTTP 400(ERROR)
+        # Declare webhook mock that responds HTTP 400(ERROR)
         mock_resp = mock.Mock()
         mock_resp.ok = False
         mock_resp.reason = "test-failure"
         mock_resp.text = "test-failure"
-        mock_requests.post.return_value = mock_resp
+        mock_post_webhook.return_value = mock_resp
 
         resp = self.client.post(
             "/webhook/api/v1/set/%s" % entity.id,
@@ -47,16 +47,16 @@ class APITest(AironeViewTest):
         self.assertTrue(webhook.is_enabled)
         self.assertFalse(webhook.is_verified)
 
-    @mock.patch("webhook.api_v1.views.requests")
-    def test_create_valid_endpoint_webhook(self, mock_requests):
+    @mock.patch("webhook.api_v1.views.post_webhook")
+    def test_create_valid_endpoint_webhook(self, mock_post_webhook):
         user = self.guest_login()
         entity = Entity.objects.create(name="test-entity", created_user=user)
 
-        # Declare requests mock that responds HTTP 200(Success)
+        # Declare webhook mock that responds HTTP 200(Success)
         mock_resp = mock.Mock()
         mock_resp.ok = True
         mock_resp.text = "test-failure"
-        mock_requests.post.return_value = mock_resp
+        mock_post_webhook.return_value = mock_resp
 
         resp = self.client.post(
             "/webhook/api/v1/set/%s" % entity.id,
@@ -84,16 +84,16 @@ class APITest(AironeViewTest):
         self.assertTrue(webhook.is_enabled)
         self.assertTrue(webhook.is_verified)
 
-    @mock.patch("webhook.api_v1.views.requests")
-    def test_edit_invalid_webhook(self, mock_requests):
+    @mock.patch("webhook.api_v1.views.post_webhook")
+    def test_edit_invalid_webhook(self, mock_post_webhook):
         user = self.guest_login()
         entity = Entity.objects.create(name="test-entity", created_user=user)
 
-        # Declare requests mock that responds HTTP 200(Success)
+        # Declare webhook mock that responds HTTP 200(Success)
         mock_resp = mock.Mock()
         mock_resp.ok = True
         mock_resp.text = "test-failure"
-        mock_requests.post.return_value = mock_resp
+        mock_post_webhook.return_value = mock_resp
 
         resp = self.client.post(
             "/webhook/api/v1/set/%s" % entity.id,
@@ -113,12 +113,12 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.content.decode("utf-8"), "Invalid Webhook ID is specified")
 
-    @mock.patch("webhook.api_v1.views.requests")
-    def test_edit_unreachable_webhook(self, mock_requests):
+    @mock.patch("webhook.api_v1.views.post_webhook")
+    def test_edit_unreachable_webhook(self, mock_post_webhook):
         user = self.guest_login()
         entity = Entity.objects.create(name="test-entity", created_user=user)
 
-        mock_requests.post.side_effect = ConnectionError()
+        mock_post_webhook.side_effect = ConnectionError()
 
         resp = self.client.post(
             "/webhook/api/v1/set/%s" % entity.id,
@@ -139,8 +139,8 @@ class APITest(AironeViewTest):
         webhook = Webhook.objects.get(id=resp.json()["webhook_id"])
         self.assertFalse(webhook.is_verified)
 
-    @mock.patch("webhook.api_v1.views.requests")
-    def test_edit_webhook_instance(self, mock_requests):
+    @mock.patch("webhook.api_v1.views.post_webhook")
+    def test_edit_webhook_instance(self, mock_post_webhook):
         user = self.guest_login()
         entity = Entity.objects.create(name="test-entity", created_user=user)
         webhook = Webhook.objects.create(
@@ -152,11 +152,11 @@ class APITest(AironeViewTest):
         # a webhook that is editable through this entity has to belong to it
         entity.webhooks.add(webhook)
 
-        # Declare requests mock that responds HTTP 200(Success)
+        # Declare webhook mock that responds HTTP 200(Success)
         mock_resp = mock.Mock()
         mock_resp.ok = True
         mock_resp.text = "test-failure"
-        mock_requests.post.return_value = mock_resp
+        mock_post_webhook.return_value = mock_resp
 
         resp = self.client.post(
             "/webhook/api/v1/set/%s" % entity.id,
@@ -232,8 +232,8 @@ class APITest(AironeViewTest):
 
         self.assertIsNotNone(Webhook.objects.filter(id=webhook.id).first())
 
-    @mock.patch("webhook.api_v1.views.requests")
-    def test_cannot_update_webhook_of_another_entity(self, mock_requests):
+    @mock.patch("webhook.api_v1.views.post_webhook")
+    def test_cannot_update_webhook_of_another_entity(self, mock_post_webhook):
         user = self.guest_login()
         own_entity = Entity.objects.create(name="own-entity", created_user=user)
 
@@ -260,10 +260,10 @@ class APITest(AironeViewTest):
         victim_webhook.refresh_from_db()
         self.assertEqual(victim_webhook.url, "https://victim.example.com")
         self.assertFalse(own_entity.webhooks.filter(id=victim_webhook.id).exists())
-        mock_requests.post.assert_not_called()
+        mock_post_webhook.assert_not_called()
 
-    @mock.patch("webhook.api_v1.views.requests")
-    def test_edit_webhook_with_non_integer_id(self, mock_requests):
+    @mock.patch("webhook.api_v1.views.post_webhook")
+    def test_edit_webhook_with_non_integer_id(self, mock_post_webhook):
         user = self.guest_login()
         entity = Entity.objects.create(name="test-entity", created_user=user)
 
@@ -282,10 +282,12 @@ class APITest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.content.decode("utf-8"), "Invalid Webhook ID is specified")
-        mock_requests.post.assert_not_called()
+        mock_post_webhook.assert_not_called()
 
-    @mock.patch("webhook.api_v1.views.requests")
-    def test_cannot_modify_shared_webhook_without_permission_on_all_entities(self, mock_requests):
+    @mock.patch("webhook.api_v1.views.post_webhook")
+    def test_cannot_modify_shared_webhook_without_permission_on_all_entities(
+        self, mock_post_webhook
+    ):
         user = self.guest_login()
         own_entity = Entity.objects.create(name="own-entity", created_user=user)
 
@@ -313,7 +315,7 @@ class APITest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 403)
-        mock_requests.post.assert_not_called()
+        mock_post_webhook.assert_not_called()
 
         webhook.refresh_from_db()
         self.assertEqual(webhook.url, "https://example.com")

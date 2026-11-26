@@ -1,22 +1,18 @@
 import json
 from typing import Any, cast
 
-import requests
-import urllib3
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.http import HttpRequest, HttpResponse
 from django.http.response import JsonResponse
-from requests.exceptions import ConnectionError
-from urllib3.exceptions import InsecureRequestWarning
+from requests.exceptions import RequestException
 
 from airone.lib.acl import ACLType
 from airone.lib.http import get_obj_with_check_perm, http_post
+from airone.lib.webhook import post_webhook
 from entity.models import Entity
 from user.models import User
 from webhook.models import Webhook
-
-urllib3.disable_warnings(InsecureRequestWarning)
 
 
 def _has_full_permission_on_webhook(user: User, webhook: Webhook) -> bool:
@@ -93,13 +89,12 @@ def set_webhook(request: HttpRequest, entity_id: int, recv_data: dict[str, Any])
         entity.webhooks.add(webhook)
 
     try:
-        resp = requests.post(
+        resp = post_webhook(
             recv_data["webhook_url"],
             headers={
                 x["header_key"]: x["header_value"] for x in recv_data.get("request_headers", [])
             },
             data=json.dumps({}),
-            verify=False,
         )
 
         # The is_verified parameter will be set True,
@@ -110,7 +105,7 @@ def set_webhook(request: HttpRequest, entity_id: int, recv_data: dict[str, Any])
         else:
             webhook.is_verified = False
             webhook.verification_error_details = resp.reason
-    except ConnectionError as e:
+    except RequestException as e:
         webhook.is_verified = False
         webhook.verification_error_details = str(e)
 

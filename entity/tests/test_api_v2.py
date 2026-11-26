@@ -5,11 +5,11 @@ from unittest import mock
 from unittest.mock import patch
 from urllib.parse import urlencode
 
-import requests
 import yaml
 from django.conf import settings
 from django.urls import reverse
 from django.utils import timezone
+from requests.exceptions import RequestException
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
@@ -18,6 +18,7 @@ from airone.lib.drf import YAMLRenderer
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest, load_export_payload
 from airone.lib.types import AttrType
+from airone.lib.webhook import WebhookResponse
 from common.lib.import_detector import ImportType
 from common.tests.compat import post_import
 from entity import tasks
@@ -1498,14 +1499,12 @@ class ViewTest(AironeViewTest):
     @mock.patch(
         "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
     )
-    @mock.patch("requests.post")
+    @mock.patch("entity.api_v2.serializers.post_webhook")
     def test_create_entity_with_webhook_is_verified(self, mock_post):
-        def mock_post_side_effect(url, *args, **kwargs):
+        def mock_post_side_effect(url, *, data, headers):
             if url == "http://example.net/":
-                mock_response = mock.Mock()
-                mock_response.status_code = 200
-                return mock_response
-            return requests.post(url, *args, **kwargs)
+                return WebhookResponse(200, "OK")
+            raise RequestException("unreachable")
 
         mock_post.side_effect = mock_post_side_effect
 
@@ -2821,14 +2820,12 @@ class ViewTest(AironeViewTest):
                 self.assertEqual([x.id for x in entity_attr.referral.all()], [])
 
     @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
-    @mock.patch("requests.post")
+    @mock.patch("entity.api_v2.serializers.post_webhook")
     def test_update_entity_with_webhook_is_verified(self, mock_post):
-        def mock_post_side_effect(url, *args, **kwargs):
+        def mock_post_side_effect(url, *, data, headers):
             if url == "http://example.net/":
-                mock_response = mock.Mock()
-                mock_response.status_code = 200
-                return mock_response
-            return requests.post(url, *args, **kwargs)
+                return WebhookResponse(200, "OK")
+            raise RequestException("unreachable")
 
         mock_post.side_effect = mock_post_side_effect
 

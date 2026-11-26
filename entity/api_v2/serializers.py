@@ -12,14 +12,13 @@ if TYPE_CHECKING:
     from airone.lib.resources import AironeModelResource
     from isolation.models import IsolationCondition
 
-import requests
 from django.conf import settings
 from django.core.validators import URLValidator
 from django.db import transaction
 from drf_spectacular.utils import extend_schema_field
 from pydantic import BaseModel, model_validator
 from pydantic import ValidationError as PydanticValidationError
-from requests.exceptions import ConnectionError
+from requests.exceptions import RequestException
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
@@ -34,6 +33,7 @@ from airone.lib.drf import (
 )
 from airone.lib.log import Logger
 from airone.lib.types import AttrType, AttrTypeValue
+from airone.lib.webhook import post_webhook
 from entity.admin import EntityAttrResource, EntityResource
 from entity.models import Entity, EntityAttr, ItemNameType
 from entity.services import EntityImportPreviewService
@@ -1069,11 +1069,10 @@ class EntitySerializer(serializers.ModelSerializer[Entity]):
             entity.webhooks.add(webhook)
 
             try:
-                resp = requests.post(
+                resp = post_webhook(
                     webhook.url,
-                    json.dumps({}),
+                    data=json.dumps({}),
                     headers={x["header_key"]: x["header_value"] for x in webhook.headers},
-                    verify=False,
                 )
                 # The is_verified parameter will be set True,
                 # when requests received HTTP 200 from specifying endpoint.
@@ -1083,7 +1082,7 @@ class EntitySerializer(serializers.ModelSerializer[Entity]):
                 else:
                     webhook.is_verified = False
                     webhook.verification_error_details = resp.reason
-            except ConnectionError as e:
+            except RequestException as e:
                 webhook.is_verified = False
                 webhook.verification_error_details = str(e)
 

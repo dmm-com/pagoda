@@ -1,16 +1,13 @@
 import json
 from typing import Literal
 
-import requests
-import urllib3
 from django.conf import settings
-from urllib3.exceptions import InsecureRequestWarning
+from requests.exceptions import RequestException
 
 from airone.lib.log import Logger
+from airone.lib.webhook import post_webhook
 from entry.models import Entry
 from user.models import User
-
-urllib3.disable_warnings(InsecureRequestWarning)
 
 EventType = Literal["entry.create", "entry.update", "entry.delete"]
 
@@ -23,20 +20,26 @@ def _send_request_to_webhook_endpoint(entry: Entry, user: User, event_type: Even
         )
         return
 
-    # send requests for each webhook endpoints
+    first_error: RequestException | None = None
     for webhook in entry.schema.webhooks.filter(is_enabled=True, is_verified=True):
-        requests.post(
-            webhook.url,
-            headers={x["header_key"]: x["header_value"] for x in webhook.headers},
-            verify=False,
-            data=json.dumps(
-                {
-                    "event": event_type,
-                    "data": entry.to_dict(user),
-                    "user": user.username,
-                }
-            ),
-        )
+        try:
+            post_webhook(
+                webhook.url,
+                headers={x["header_key"]: x["header_value"] for x in webhook.headers},
+                data=json.dumps(
+                    {
+                        "event": event_type,
+                        "data": entry.to_dict(user),
+                        "user": user.username,
+                    }
+                ),
+            )
+        except RequestException as exc:
+            if first_error is None:
+                first_error = exc
+
+    if first_error is not None:
+        raise first_error
 
 
 def notify_entry_create(entry: Entry, user: User) -> None:
