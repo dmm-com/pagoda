@@ -2,9 +2,12 @@ import json
 from datetime import timedelta
 from unittest.mock import Mock, patch
 
+from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
 from django.test import override_settings
 from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 from airone.lib.test import AironeViewTest
 from user.forms import UsernameBasedPasswordResetForm
@@ -823,3 +826,66 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.guest.refresh_from_db()
         self.assertEqual(self.guest.token_lifetime, 0)
+
+    def _password_reset_confirm_url(self, user):
+        return reverse(
+            "user:password_reset_confirm",
+            kwargs={
+                "uidb64": urlsafe_base64_encode(force_bytes(user.pk)),
+                "token": default_token_generator.make_token(user),
+            },
+        )
+
+    def _assert_reset_link_is_invalid(self, user):
+        resp = self.client.get(self._password_reset_confirm_url(user))
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(resp.context["validlink"])
+
+    def test_password_reset_confirm_with_empty_password_user(self):
+        # Legacy accounts without a password (imported, SSO) store an empty
+        # string, which has_usable_password() reports as usable.
+        user = User(username="empty-password", email="empty@example.com")
+        user.save()
+        self.assertEqual(user.password, "")
+
+        self._assert_reset_link_is_invalid(user)
+
+    def test_password_reset_confirm_with_unusable_password_user(self):
+        user = self._create_user("unusable-password")
+        user.set_unusable_password()
+        user.save(update_fields=["password"])
+
+        self._assert_reset_link_is_invalid(user)
+
+    def test_password_reset_confirm_with_ldap_user(self):
+        user = self._create_user(
+            "ldap-user",
+            authenticate_type=User.AuthenticateType.AUTH_TYPE_LDAP,
+        )
+
+        self._assert_reset_link_is_invalid(user)
+
+    def test_password_reset_confirm_with_inactive_user(self):
+        user = self._create_user("inactive-user")
+        user.is_active = False
+        user.save(update_fields=["is_active"])
+
+        self._assert_reset_link_is_invalid(user)
+
+    def test_password_reset_confirm_with_local_user(self):
+        resp = self.client.get(self._password_reset_confirm_url(self.guest))
+        self.assertEqual(resp.status_code, 302)
+
+        # Django stores the token in the session and redirects to a URL without
+        # it, so the next request is the one that renders the form.
+        resp = self.client.get(resp.url)
+        self.assertTrue(resp.context["validlink"])
+
+        resp = self.client.post(
+            resp.wsgi_request.get_full_path(),
+            {"new_password1": "new-password-1234", "new_password2": "new-password-1234"},
+        )
+        self.assertEqual(resp.status_code, 302)
+
+        self.guest.refresh_from_db()
+        self.assertTrue(self.guest.check_password("new-password-1234"))

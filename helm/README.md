@@ -13,7 +13,12 @@ airone` to see the charts.
 
 To install the airone chart:
 
-    helm install my-airone airone/airone
+    helm install my-airone airone/airone --set airone.secretKey=<random value>
+
+The chart has no default signing key: rendering fails unless `airone.secretKey`
+is set or `airone.existingSecret` points at a Secret that contains a `secretKey`
+key. Use a unique random value, for example one produced by
+`django.core.management.utils.get_random_secret_key()`.
 
 To uninstall the chart:
 

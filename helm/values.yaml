@@ -49,7 +49,9 @@ airone:
   existingSecret: ""
   database: airone
   index: airone
-  secretKey: changeme
+  # Required: a unique random value for Django's SECRET_KEY. No default is
+  # shipped, so the template fails until this or existingSecret is set.
+  secretKey: ""
   debug: ""
   allowedHosts: ""
   fileStorePath: ""
