@@ -30,6 +30,10 @@ def restore_data(
         raise ValidationError("A permission in this history no longer exists")
     current_ids = set(role.permissions.values_list("pk", flat=True))
     changed_ids = current_ids.symmetric_difference(permission_ids)
+    if not role.is_active:
+        # Reactivating a deleted role grants its retained permissions again.
+        # Validate removals as well as every permission that becomes effective.
+        changed_ids = current_ids.union(permission_ids)
     for permission in HistoricalPermission.objects.filter(pk__in=changed_ids):
         target = ACLBase.objects.filter(
             pk=int(permission.codename.split(".")[0]), is_active=True

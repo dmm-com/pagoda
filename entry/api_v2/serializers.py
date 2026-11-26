@@ -3,7 +3,6 @@ from collections.abc import Mapping
 from datetime import date, datetime
 from typing import Any, Literal, NotRequired, TypedDict, cast
 
-from django.contrib.auth.models import Permission
 from django.db.models import Prefetch, QuerySet
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
@@ -14,7 +13,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from acl.models import ACLBase
 from airone.lib import custom_view, drf
-from airone.lib.acl import ACLType, get_permission_level
+from airone.lib.acl import ACLReader, ACLType, get_permission_level
 from airone.lib.drf import (
     DuplicatedObjectExistsError,
     IncorrectTypeError,
@@ -351,46 +350,17 @@ _DISPLAY_LABEL_ALLOWED_TYPES: frozenset[int] = frozenset(
 )
 
 
-class _DisplayLabelReader:
-    """Share a lazy role snapshot within one response without caching across requests."""
-
-    def __init__(self, user: User):
-        self.user = user
-        self._role_permissions: dict[str, int] | None = None
-
-    def _get_role_permissions(self) -> dict[str, int]:
-        if self._role_permissions is None:
-            roles = [belonging.role.id for belonging in self.user.belonging_roles()]
-            self._role_permissions = {}
-            codenames = Permission.objects.filter(
-                historicalpermission__roles__id__in=roles,
-                name__in=[level.name for level in ACLType.all()],
-            ).values_list("codename", flat=True)
-            for codename in codenames:
-                object_id, separator, _ = codename.partition(".")
-                if not separator:
-                    continue
-                level = int(codename.rsplit(".", 1)[-1])
-                self._role_permissions[object_id] = max(
-                    self._role_permissions.get(object_id, 0), level
-                )
-        return self._role_permissions
-
-    def has_permission(self, obj: ACLBase, level: ACLType) -> bool:
-        return self.user.has_permission(obj, level, role_permissions=self._get_role_permissions)
-
-
-def _display_label_reader(context: Mapping[str, Any]) -> _DisplayLabelReader | None:
+def _display_label_reader(context: Mapping[str, Any]) -> ACLReader | None:
     request = context.get("request")
     if request is None:
         return None
     if not hasattr(request, "_display_label_reader"):
-        request._display_label_reader = _DisplayLabelReader(request.user)
-    return cast(_DisplayLabelReader, request._display_label_reader)
+        request._display_label_reader = ACLReader(request.user)
+    return cast(ACLReader, request._display_label_reader)
 
 
 def _resolve_display_label(
-    display_attr_name: str, referred_entry: Entry | None, reader: _DisplayLabelReader | None
+    display_attr_name: str, referred_entry: Entry | None, reader: ACLReader | None
 ) -> str | None:
     """Resolve the value of `display_attr_name` on `referred_entry` as a label string.
 
@@ -457,7 +427,7 @@ def _resolve_display_label(
 
 
 def _build_object_payload(
-    referral: ACLBase, display_attr_name: str, reader: _DisplayLabelReader | None
+    referral: ACLBase, display_attr_name: str, reader: ACLReader | None
 ) -> EntryAttributeValueObject:
     """Build the object payload dict for an object-like attribute value.
 

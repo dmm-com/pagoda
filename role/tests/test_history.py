@@ -1,6 +1,7 @@
 import json
 from unittest.mock import patch
 
+from airone.lib.acl import ACLType
 from airone.lib.test import AironeViewTest
 from group.models import Group
 from job.api_v2.serializers import JobSerializers
@@ -195,6 +196,164 @@ class RoleHistoryTest(AironeViewTest):
         )
         self.assertEqual(response.status_code, 403)
         self.assertFalse(Job.objects.filter(operation=JobOperation.RESTORE_ROLE).exists())
+
+    def test_deleted_role_cannot_reactivate_retained_permissions(self):
+        self.admin.is_superuser = False
+        self.admin.save()
+        admin_group = Group.objects.create(name="former administrators")
+        self.admin.groups.add(admin_group)
+        for via_group in (False, True):
+            for level in ACLType.availables():
+                with self.subTest(via_group=via_group, level=level):
+                    role = Role.objects.create(name=f"deleted-{via_group}-{level.id}")
+                    if via_group:
+                        role.admin_groups.add(admin_group)
+                    else:
+                        role.admin_users.add(self.admin)
+                    role.users.add(self.member)
+                    entity = self.create_entity(self.admin, f"protected-{role.pk}", is_public=False)
+                    permission = getattr(entity, level.name)
+                    permission.roles.add(role)
+                    permission_history = permission.history.first()
+                    role.save()
+                    original = role.history.first()
+                    self.assertTrue(self.admin.has_permission(entity, level))
+                    role.delete()
+                    self.assertFalse(self.admin.has_permission(entity, ACLType.Readable))
+                    before = role.history.count()
+                    for source, history_id in (
+                        ("role", original.history_id),
+                        ("permission", permission_history.history_id),
+                    ):
+                        response = self.client.post(
+                            f"/role/api/v2/{role.pk}/restore/",
+                            {"history_id": history_id, "history_source": source},
+                        )
+                        self.assertEqual(response.status_code, 403)
+                    role.refresh_from_db()
+                    self.assertFalse(role.is_active)
+                    self.assertEqual(role.history.count(), before)
+                    self.assertEqual(list(role.permissions.all()), [permission])
+                    self.assertFalse(self.member.has_permission(entity, ACLType.Readable))
+        self.assertFalse(Job.objects.filter(operation=JobOperation.RESTORE_ROLE).exists())
+
+    def test_restore_worker_rechecks_retained_permissions_after_deletion(self):
+        entity = self.create_entity(self.admin, "protected", is_public=False)
+        entity.full.roles.add(self.role)
+        self.role.save()
+        original = self.role.history.first()
+        self.admin.is_superuser = False
+        self.admin.save()
+        response = self.client.post(
+            f"/role/api/v2/{self.role.pk}/restore/", {"history_id": original.history_id}
+        )
+        self.assertEqual(response.status_code, 202)
+        self.role.delete()
+        before = self.role.history.count()
+        job = Job.objects.get(pk=response.json()["job_id"])
+        job.run(will_delay=False)
+        job.refresh_from_db()
+        self.role.refresh_from_db()
+        self.assertEqual(job.status, JobStatus.ERROR)
+        self.assertFalse(self.role.is_active)
+        self.assertEqual(self.role.history.count(), before)
+        self.assertFalse(self.admin.has_permission(entity, ACLType.Full))
+
+    def test_deleted_role_restore_requires_independent_full_permission_at_execution(self):
+        entity = self.create_entity(self.admin, "protected", is_public=False)
+        entity.readable.roles.add(self.role)
+        self.role.save()
+        original = self.role.history.first()
+        self.role.delete()
+        independent = Role.objects.create(name="independent approvers")
+        independent.users.add(self.admin)
+        entity.full.roles.add(independent)
+        self.admin.is_superuser = False
+        self.admin.save()
+        response = self.client.post(
+            f"/role/api/v2/{self.role.pk}/restore/", {"history_id": original.history_id}
+        )
+        self.assertEqual(response.status_code, 202)
+        entity.full.roles.remove(independent)
+        job = Job.objects.get(pk=response.json()["job_id"])
+        job.run(will_delay=False)
+        job.refresh_from_db()
+        self.role.refresh_from_db()
+        self.assertEqual(job.status, JobStatus.ERROR)
+        self.assertFalse(self.role.is_active)
+        self.assertFalse(self.member.has_permission(entity, ACLType.Readable))
+
+    def test_deleted_role_restore_with_independent_full_permission(self):
+        entity = self.create_entity(self.admin, "protected", is_public=False)
+        entity.readable.roles.add(self.role)
+        self.role.save()
+        original = self.role.history.first()
+        self.role.delete()
+        independent = Role.objects.create(name="independent approvers")
+        independent.users.add(self.admin)
+        entity.full.roles.add(independent)
+        self.admin.is_superuser = False
+        self.admin.save()
+        response = self.client.post(
+            f"/role/api/v2/{self.role.pk}/restore/", {"history_id": original.history_id}
+        )
+        self.assertEqual(response.status_code, 202)
+        job = Job.objects.get(pk=response.json()["job_id"])
+        job.run(will_delay=False)
+        job.refresh_from_db()
+        self.role.refresh_from_db()
+        self.assertEqual(job.status, JobStatus.DONE)
+        self.assertTrue(self.role.is_active)
+        self.assertEqual(self.role.name, "original")
+        self.assertEqual(list(self.role.permissions.all()), [entity.readable])
+        self.assertEqual(list(self.role.users.all()), [self.member])
+        self.assertTrue(self.member.has_permission(entity, ACLType.Readable))
+
+    def test_deleted_role_restore_checks_parent_full_permission(self):
+        entity = self.create_entity(self.admin, "protected parent", is_public=False)
+        entry = self.add_entry(self.admin, "protected child", entity, is_public=False)
+        entry.readable.roles.add(self.role)
+        self.role.save()
+        original = self.role.history.first()
+        self.role.delete()
+        independent = Role.objects.create(name="independent approvers")
+        independent.users.add(self.admin)
+        entry.full.roles.add(independent)
+        entity.readable.roles.add(independent)
+        self.admin.is_superuser = False
+        self.admin.save()
+        response = self.client.post(
+            f"/role/api/v2/{self.role.pk}/restore/", {"history_id": original.history_id}
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(Job.objects.filter(operation=JobOperation.RESTORE_ROLE).exists())
+        entity.full.roles.add(independent)
+        response = self.client.post(
+            f"/role/api/v2/{self.role.pk}/restore/", {"history_id": original.history_id}
+        )
+        self.assertEqual(response.status_code, 202)
+        job = Job.objects.get(pk=response.json()["job_id"])
+        job.run(will_delay=False)
+        job.refresh_from_db()
+        self.assertEqual(job.status, JobStatus.DONE)
+
+    def test_active_role_restore_keeps_unchanged_permissions(self):
+        entity = self.create_entity(self.admin, "protected", is_public=False)
+        entity.readable.roles.add(self.role)
+        self.role.save()
+        original = self.role.history.first()
+        self.admin.is_superuser = False
+        self.admin.save()
+        self.assertFalse(self.admin.has_permission(entity, ACLType.Full))
+        response = self.client.post(
+            f"/role/api/v2/{self.role.pk}/restore/", {"history_id": original.history_id}
+        )
+        self.assertEqual(response.status_code, 202)
+        job = Job.objects.get(pk=response.json()["job_id"])
+        job.run(will_delay=False)
+        job.refresh_from_db()
+        self.assertEqual(job.status, JobStatus.DONE)
+        self.assertEqual(list(self.role.permissions.all()), [entity.readable])
 
     def test_reverse_membership_change_is_recorded(self):
         self.member.role.clear()
