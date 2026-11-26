@@ -13,8 +13,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from acl.models import ACLBase
 from airone.lib import custom_view, drf
-from airone.lib.acl import ACLType, get_permission_level
-from airone.lib.acl_reader import ACLReader
+from airone.lib.acl import ACLReader, ACLType, get_permission_level
 from airone.lib.drf import (
     DuplicatedObjectExistsError,
     IncorrectTypeError,

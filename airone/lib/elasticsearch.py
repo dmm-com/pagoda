@@ -10,8 +10,7 @@ from elasticsearch.dsl.query import Bool, Exists, Ids, Match, Nested, Query, Ran
 from pydantic import BaseModel, SerializerFunctionWrapHandler, model_serializer
 from typing_extensions import TypedDict
 
-from airone.lib.acl import ACLType
-from airone.lib.acl_reader import ACLReader
+from airone.lib.acl import ACLReader, ACLType
 from airone.lib.es_inmemory import InMemoryElasticsearch
 from airone.lib.log import Logger
 from airone.lib.types import AttrType, BaseIntEnum, coerce_number
