@@ -2,6 +2,7 @@ import json
 from unittest import mock
 
 from django.conf import settings
+from requests.exceptions import RequestException
 
 from airone.lib.event_notification import (
     notify_entry_create,
@@ -34,6 +35,22 @@ class EventNotificationTest(AironeViewTest):
 
         # clear data which is used in individual tests
         self._test_data = {}
+
+    @mock.patch("airone.lib.event_notification.post_webhook")
+    def test_delivery_continues_after_a_webhook_fails(self, mock_post_webhook):
+        second = Webhook.objects.create(
+            url="https://other.example.com", headers=[], is_enabled=True, is_verified=True
+        )
+        self.entity.webhooks.add(second)
+        mock_post_webhook.side_effect = [RequestException("Destination rejected"), None]
+
+        with self.assertRaisesRegex(RequestException, "Destination rejected"):
+            notify_entry_create(self.entry, self.user)
+
+        self.assertEqual(
+            {call.args[0] for call in mock_post_webhook.call_args_list},
+            {self.webhook.url, second.url},
+        )
 
     @mock.patch("airone.lib.event_notification.post_webhook")
     def test_notify_entry_create(self, mock_post_webhook):

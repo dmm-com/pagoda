@@ -24,7 +24,7 @@ POST requests after TLS or response failures, and closes responses without
 downloading their bodies.
 
 Registration keeps an unreachable or rejected endpoint unverified and records
-the verification error. A delivery failure follows the existing notification
-job error handling. Existing endpoints using internal addresses, self-signed
+the verification error. A transport failure marks the notification job as failed
+after the other eligible endpoints have been attempted. Existing endpoints using internal addresses, self-signed
 certificates, redirects, or custom routing headers must be updated to satisfy
 these restrictions.
