@@ -98,6 +98,10 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: test
         run: npm run test
+      - name: Check datetime entry and search outside UTC
+        run: |
+          TZ=Asia/Tokyo npm run test:datetime
+          TZ=America/New_York npm run test:datetime
       - name: Upload coverage report
         id: coverage-artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

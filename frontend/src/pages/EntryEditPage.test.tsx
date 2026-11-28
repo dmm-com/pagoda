@@ -407,11 +407,14 @@ describe("EntryEditPage", () => {
   });
 
   describe("loading state", () => {
-    test("should show loading indicator initially", async () => {
-      // Delay the API response to see loading state
+    test("should show loading indicator until the model arrives", async () => {
+      let finishRequest!: () => void;
+      const pending = new Promise<void>((resolve) => {
+        finishRequest = resolve;
+      });
       server.use(
         http.get("http://localhost/entity/api/v2/2/", async () => {
-          await new Promise((resolve) => setTimeout(resolve, 100));
+          await pending;
           return HttpResponse.json(mockEntity);
         }),
       );
@@ -434,8 +437,9 @@ describe("EntryEditPage", () => {
         });
       });
 
-      // Loading should be shown initially
       expect(screen.getByTestId("loading")).toBeInTheDocument();
+      finishRequest();
+      expect(await screen.findByText("アイテム編集")).toBeVisible();
     });
   });
 

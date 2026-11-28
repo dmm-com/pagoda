@@ -2,6 +2,8 @@ import { FC } from "react";
 
 import { BaseDateRangePicker } from "./BaseDateRangePicker";
 
+import { ENTRY_DATETIME_FORMAT } from "services/DateUtil";
+
 interface DateTimeRangePickerProps {
   initialStart?: string;
   initialEnd?: string;
@@ -13,7 +15,7 @@ interface DateTimeRangePickerProps {
 }
 
 export const DateTimeRangePicker: FC<DateTimeRangePickerProps> = ({
-  format = "yyyy/MM/dd HH:mm",
+  format = ENTRY_DATETIME_FORMAT,
   ampm = false,
   ...props
 }) => {

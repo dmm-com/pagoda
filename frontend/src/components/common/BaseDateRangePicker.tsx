@@ -1,8 +1,15 @@
 import { Box, Button, Typography } from "@mui/material";
 import { DateTimePicker, DesktopDatePicker } from "@mui/x-date-pickers";
+import { getUnixTime, isValid } from "date-fns";
 import { FC, useState } from "react";
 
 import { useTranslation } from "../../hooks/useTranslation";
+
+import {
+  parseCalendarDate,
+  serializeCalendarDate,
+  serializeDateTime,
+} from "services/DateUtil";
 
 interface BaseDateRangePickerProps {
   initialStart?: string;
@@ -26,33 +33,41 @@ export const BaseDateRangePicker: FC<BaseDateRangePickerProps> = ({
   isDateTime = false,
 }) => {
   const { t } = useTranslation();
-  const [draftDates, setDraftDates] = useState<{
-    start: Date | null;
-    end: Date | null;
-  }>({
-    start: initialStart ? new Date(initialStart) : null,
-    end: initialEnd ? new Date(initialEnd) : null,
-  });
+  function getInitialDates() {
+    const parseDate = isDateTime
+      ? (value: string) => new Date(value)
+      : parseCalendarDate;
+    return {
+      start: initialStart ? parseDate(initialStart) : null,
+      end: initialEnd ? parseDate(initialEnd) : null,
+    };
+  }
+
+  const [draftDates, setDraftDates] = useState(getInitialDates);
   const [isEditing, setIsEditing] = useState(false);
 
   // Reset drafts when the initial values change (render-time adjustment
   // instead of an effect; see "You Might Not Need an Effect" in React docs).
-  const [prevInitial, setPrevInitial] = useState({ initialStart, initialEnd });
+  const [prevInitial, setPrevInitial] = useState({
+    initialStart,
+    initialEnd,
+    isDateTime,
+  });
   if (
     prevInitial.initialStart !== initialStart ||
-    prevInitial.initialEnd !== initialEnd
+    prevInitial.initialEnd !== initialEnd ||
+    prevInitial.isDateTime !== isDateTime
   ) {
-    setPrevInitial({ initialStart, initialEnd });
-    setDraftDates({
-      start: initialStart ? new Date(initialStart) : null,
-      end: initialEnd ? new Date(initialEnd) : null,
-    });
+    setPrevInitial({ initialStart, initialEnd, isDateTime });
+    setDraftDates(getInitialDates());
     setIsEditing(false);
   }
 
-  // Derived from draftDates; no state needed.
+  // Existing search URLs can include fractions that the picker does not display.
   const validationError =
-    draftDates.start && draftDates.end && draftDates.start > draftDates.end
+    draftDates.start &&
+    draftDates.end &&
+    getUnixTime(draftDates.start) > getUnixTime(draftDates.end)
       ? isDateTime
         ? t("dateRangePicker.invalidDateTimeRange")
         : t("dateRangePicker.invalidDateRange")
@@ -66,24 +81,15 @@ export const BaseDateRangePicker: FC<BaseDateRangePickerProps> = ({
     setIsEditing(true);
   };
 
-  const formatDate = (date: Date | null): string => {
-    if (!date) return "";
-    if (isDateTime) {
-      return new Date(
-        date.getTime() - date.getTimezoneOffset() * 60000,
-      ).toISOString();
-    } else {
-      return (
-        new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-          .toISOString()
-          .split("T")[0] ?? ""
-      );
-    }
-  };
-
   const handleApply = () => {
-    if (validationError != null) return;
-    onApply(formatDate(draftDates.start), formatDate(draftDates.end));
+    const { start, end } = draftDates;
+    if (!start || !end || !isValid(start) || !isValid(end) || validationError)
+      return;
+    if (isDateTime) {
+      onApply(serializeDateTime(start), serializeDateTime(end));
+    } else {
+      onApply(serializeCalendarDate(start), serializeCalendarDate(end));
+    }
     setIsEditing(false);
   };
 
@@ -143,8 +149,8 @@ export const BaseDateRangePicker: FC<BaseDateRangePickerProps> = ({
             size="small"
             onClick={handleApply}
             disabled={
-              !draftDates.start ||
-              !draftDates.end ||
+              !isValid(draftDates.start) ||
+              !isValid(draftDates.end) ||
               !!validationError ||
               disabled
             }

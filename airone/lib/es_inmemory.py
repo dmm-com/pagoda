@@ -37,7 +37,7 @@ import json
 import os
 import re
 import threading
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from typing import Any
 
 from elasticsearch import NotFoundError
@@ -307,9 +307,12 @@ def _as_datetime(value: Any) -> datetime | None:
     else:
         return None
 
-    if parsed is not None and parsed.tzinfo is not None:
-        parsed = parsed.astimezone(tz=None).replace(tzinfo=None)
-    return parsed
+    if parsed is None:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=UTC)
+    # Elasticsearch's date mapping stores instants at millisecond precision.
+    return parsed.replace(microsecond=parsed.microsecond // 1000 * 1000)
 
 
 # ---------------------------------------------------------------------------
