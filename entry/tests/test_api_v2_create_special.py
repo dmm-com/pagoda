@@ -583,6 +583,59 @@ class ViewTest(BaseViewTest):
         self.assertEqual(item_sg.name, previous_name.replace("LB0001", "LB0002"))
 
     @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
+    def test_advanced_search_updates_object_name_after_cascaded_autoname(self):
+        model_lb = self.create_entity(
+            self.user,
+            "LB",
+            attrs=[{"name": "label", "type": AttrType.STRING, "name_order": 1}],
+            item_name_type=ItemNameType.ATTR,
+        )
+        model_sg = self.create_entity(
+            self.user,
+            "ServiceGroup",
+            attrs=[{"name": "LB", "type": AttrType.OBJECT, "ref": model_lb, "name_order": 1}],
+            item_name_type=ItemNameType.ATTR,
+        )
+        model_service = self.create_entity(
+            self.user,
+            "Service",
+            attrs=[{"name": "service_group", "type": AttrType.OBJECT, "ref": model_sg}],
+        )
+        item_lb = self.add_entry(self.user, "LB0001", model_lb, values={"label": "LB0001"})
+        item_sg = self.add_entry(self.user, "LB0001", model_sg, values={"LB": item_lb})
+        self.add_entry(self.user, "Service1", model_service, values={"service_group": item_sg})
+        lb_name_attr = model_lb.attrs.get(name="label")
+
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.put(
+                f"/entry/api/v2/{item_lb.id}/",
+                {"attrs": [{"id": lb_name_attr.id, "value": "LB0002"}]},
+                content_type="application/json",
+            )
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        item_sg.refresh_from_db()
+        self.assertEqual(item_sg.name, "LB0002")
+
+        for keyword, expected_count in (("", 1), ("LB0002", 1), ("LB0001", 0)):
+            with self.subTest(keyword=keyword):
+                result = self.client.post(
+                    "/entry/api/v2/advanced_search/",
+                    {
+                        "entities": [model_service.id],
+                        "attrinfo": [{"name": "service_group", "keyword": keyword}],
+                    },
+                    content_type="application/json",
+                )
+                self.assertEqual(result.status_code, status.HTTP_200_OK)
+                entries = result.json()["values"]
+                self.assertEqual(len(entries), expected_count)
+                if expected_count:
+                    self.assertEqual(
+                        entries[0]["attrs"]["service_group"]["value"]["as_object"],
+                        {"id": item_sg.id, "name": "LB0002"},
+                    )
+
+    @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
     def test_update_for_autoname_item(self):
         (model_lb, model_sg) = self._create_lb_models_for_autoname()
 

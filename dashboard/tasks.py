@@ -48,6 +48,8 @@ def _csv_export(
     values: list[AdvancedSearchResultRecord],
     recv_data: dict[str, Any],
     has_referral: bool,
+    *,
+    split_array_values: bool = True,
 ) -> io.StringIO | None:
     output = io.StringIO(newline="")
     # Keep LF row terminators consistent with multiline text values.
@@ -62,7 +64,8 @@ def _csv_export(
         writer.writerow(["Name"] + ["Entity"] + [x["name"] for x in recv_data["attrinfo"]])
 
     attr_names = [attr["name"] for attr in recv_data["attrinfo"]]
-    for index, entry_info in enumerate(iter_csv_records(values, attr_names)):
+    records = iter_csv_records(values, attr_names) if split_array_values else iter(values)
+    for index, entry_info in enumerate(records):
         line_data = [entry_info.entry["name"]]
 
         # Abort processing when job is canceled

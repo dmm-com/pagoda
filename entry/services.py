@@ -382,10 +382,10 @@ class AdvancedSearchService:
         2. Group by Entity in the DB and apply filters via search_entries()
         3. Attach attributes of entries that passed the filter under the key
            join_attr.name.subattr_name
-        4. Expand ARRAY-type attrs into one row per referral for exports, or
-           retain one row with aligned joined_attrs for the search table.
-           With pair_array_values, keep only the corresponding source element
-           in each expanded row (CSV). Otherwise retain the full array (YAML).
+        4. Expand ARRAY-type attrs into one row per referral for split CSV
+           and YAML, or retain one row with aligned joined_attrs for grouped
+           CSV and the search table. With pair_array_values, keep only the
+           corresponding source element in each expanded row.
         """
         for join_attr in join_attrs:
             has_filter = any(a.keyword or a.filter_key for a in join_attr.attrinfo)

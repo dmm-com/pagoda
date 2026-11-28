@@ -169,6 +169,7 @@ class SearchExportParams(JobParamsModel):
     entities: list[int]
     attrinfo: list[AttrHintParams]
     export_style: Literal["yaml", "csv"]
+    split_array_values: bool = True
     has_referral: bool = False
     referral_name: str | None = None
     include_referrals: list[int] = Field(default_factory=list)

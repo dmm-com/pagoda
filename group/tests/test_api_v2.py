@@ -255,3 +255,18 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual([g["name"] for g in body], ["group-a", "group-b", "group-c"])
         self.assertEqual([g["display_name"] for g in body], ["", "", ""])
+
+    def test_list_by_non_superuser(self):
+        # The group list and tree are needed to build selects in the UI, so the
+        # superuser gate on writes must not become a read restriction.
+        user = self.guest_login()
+        group = self._create_group("hoge")
+        user.groups.add(group)
+
+        resp = self.client.get("/group/api/v2/groups")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual([x["id"] for x in resp.json()["results"]], [group.id])
+
+        resp = self.client.get("/group/api/v2/groups/tree")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual([x["id"] for x in resp.json()], [group.id])

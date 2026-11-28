@@ -6,8 +6,9 @@ on:
       - master
   pull_request:
     paths:
-      - 'frontend/**/*.ts'
-      - 'frontend/**/*.tsx'
+      - 'frontend/**'
+      - 'e2e/**'
+      - '!e2e/live/**'
       - '.github/workflows/build-frontend.yml'
       - '.node-version'
       - 'package.json'
@@ -19,7 +20,9 @@ on:
       - 'tsconfig.lib.json'
       - 'vitest.config.ts'
       - 'tools/publish_coverage_summary.py'
-      - '*.config.{js,mjs,ts}'
+      - '*.config.js'
+      - '*.config.mjs'
+      - '*.config.ts'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -70,6 +73,10 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: build
         run: npm run build:development
+      - name: Check list search URLs in Chromium
+        run: |
+          npx playwright install --with-deps chromium
+          npx playwright test --config=e2e/playwright.config.ts list-search-url.spec.ts
       - name: build(library)
         run: npm run build:lib
   test:
